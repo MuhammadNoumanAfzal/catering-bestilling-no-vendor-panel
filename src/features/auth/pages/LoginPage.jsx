@@ -15,7 +15,7 @@ export default function LoginPage() {
           {
             label: "Password",
             type: "password",
-            placeholder: "••••••••",
+            placeholder: "........",
           },
         ]}
         rememberMeLabel="Remember me"

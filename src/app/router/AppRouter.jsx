@@ -4,8 +4,11 @@ import ForgotPasswordPage from "../../features/auth/pages/ForgotPasswordPage";
 import LoginPage from "../../features/auth/pages/LoginPage";
 import NewPasswordPage from "../../features/auth/pages/NewPasswordPage";
 import VerificationPage from "../../features/auth/pages/VerificationPage";
+import AcceptedOrderPage from "../../features/order/pages/AcceptedOrderPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import AppSectionPage from "../../features/home/pages/AppSectionPage";
+import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
+import OrdersPage from "../../features/order/pages/OrdersPage";
 
 export default function AppRouter() {
   return (
@@ -18,15 +21,9 @@ export default function AppRouter() {
       <Route path="/" element={<AppLayout />}>
         <Route path="home" element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route
-          path="orders"
-          element={
-            <AppSectionPage
-              title="Orders"
-              description="This page is ready to receive order tables, filters and API-backed actions while keeping the same shared sidebar and navbar."
-            />
-          }
-        />
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="orders/:orderId" element={<OrderDetailPage />} />
+        <Route path="orders/:orderId/accepted" element={<AcceptedOrderPage />} />
         <Route
           path="menu"
           element={

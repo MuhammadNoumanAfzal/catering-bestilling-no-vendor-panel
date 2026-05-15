@@ -2,15 +2,15 @@ import { Link } from "react-router-dom";
 
 function Field({ label, type = "text", placeholder, helperText }) {
   return (
-    <label className="auth-field">
-      <span className="auth-field-label type-para">{label}</span>
+    <label className="flex flex-col gap-1.5">
+      <span className="type-para text-[#4c4037]">{label}</span>
       <input
-        className="auth-input type-subpara"
+        className="type-subpara min-h-[42px] rounded-lg border border-[#ddd4cb] bg-white px-3 text-[#1d1713] outline-none transition duration-150 placeholder:text-[#b0a79e] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
         type={type}
         placeholder={placeholder}
       />
       {helperText ? (
-        <span className="auth-field-helper type-subpara">{helperText}</span>
+        <span className="type-subpara text-[#aaa094]">{helperText}</span>
       ) : null}
     </label>
   );
@@ -18,7 +18,10 @@ function Field({ label, type = "text", placeholder, helperText }) {
 
 function OtpField({ value }) {
   return (
-    <div className="auth-otp-box type-h5" aria-label={`Digit ${value}`}>
+    <div
+      className="type-h5 grid min-h-12 place-items-center rounded-lg border border-[#ddd4cb] bg-white text-[#1d1713]"
+      aria-label={`Digit ${value}`}
+    >
       {value}
     </div>
   );
@@ -42,13 +45,13 @@ export default function AuthCard({
   passwordRules,
 }) {
   return (
-    <div className="auth-card">
-      <div className="auth-card-body">
-        <h1 className="auth-card-title type-h3">{title}</h1>
-        <p className="auth-card-subtitle type-para">{subtitle}</p>
+    <div className="w-full rounded-[14px] border border-[#e9dfd6] bg-white/95 shadow-[0_18px_44px_rgba(61,44,30,0.12)] sm:max-w-[362px]">
+      <div className="px-[22px] pb-5 pt-6">
+        <h1 className="type-h3 m-0 text-center text-[#16110d]">{title}</h1>
+        <p className="type-para mb-[18px] mt-2 text-center text-[#6d6259]">{subtitle}</p>
 
         {otpValues ? (
-          <div className="auth-otp-row">
+          <div className="mb-[18px] mt-1 grid grid-cols-4 gap-2.5">
             {otpValues.map((value) => (
               <OtpField key={`${title}-${value}`} value={value} />
             ))}
@@ -56,7 +59,7 @@ export default function AuthCard({
         ) : null}
 
         {fields.length > 0 ? (
-          <div className="auth-fields">
+          <div className="flex flex-col gap-3">
             {fields.map((field) => (
               <Field key={field.label} {...field} />
             ))}
@@ -64,14 +67,16 @@ export default function AuthCard({
         ) : null}
 
         {passwordRules ? (
-          <div
-            className="auth-password-rules"
-            aria-label="Password requirements"
-          >
+          <div className="mt-3 flex flex-wrap gap-2" aria-label="Password requirements">
             {passwordRules.map((rule) => (
               <span
                 key={rule.label}
-                className={`auth-password-rule ${rule.isValid ? "is-valid" : ""}`}
+                className={[
+                  "rounded-full px-2.5 py-1 text-[11px] font-bold",
+                  rule.isValid
+                    ? "bg-[rgba(92,165,112,0.14)] text-[#337447]"
+                    : "bg-[#efe7de] text-[#8b8077]",
+                ].join(" ")}
               >
                 {rule.label}
               </span>
@@ -80,10 +85,10 @@ export default function AuthCard({
         ) : null}
 
         {rememberMeLabel || auxiliaryLinkLabel ? (
-          <div className="auth-meta-row">
+          <div className="mt-2.5 flex items-center justify-between gap-3">
             {rememberMeLabel ? (
-              <label className="auth-checkbox type-para">
-                <input type="checkbox" />
+              <label className="type-para inline-flex items-center gap-1.5 text-[#786d64]">
+                <input className="accent-[#cf6e38]" type="checkbox" />
                 <span>{rememberMeLabel}</span>
               </label>
             ) : (
@@ -91,30 +96,39 @@ export default function AuthCard({
             )}
 
             {auxiliaryLinkLabel && auxiliaryLinkTo ? (
-              <Link className="auth-link type-para" to={auxiliaryLinkTo}>
+              <Link
+                className="type-para text-[#2f69c8] no-underline hover:underline"
+                to={auxiliaryLinkTo}
+              >
                 {auxiliaryLinkLabel}
               </Link>
             ) : null}
           </div>
         ) : null}
 
-        <button className="auth-primary-button type-para" type="button">
+        <button
+          className="type-para mt-[14px] min-h-[42px] w-full rounded-lg bg-[#cf6e38] font-bold text-white transition duration-150 hover:bg-[#bf622f] active:translate-y-px"
+          type="button"
+        >
           {actionLabel}
         </button>
 
-        {note ? <p className="auth-note type-para">{note}</p> : null}
+        {note ? <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p> : null}
 
         {backLinkLabel && backLinkTo ? (
-          <Link className="auth-back-link type-para" to={backLinkTo}>
+          <Link
+            className="type-para mt-[14px] block text-center text-[#8b8077] no-underline hover:underline"
+            to={backLinkTo}
+          >
             {backLinkLabel}
           </Link>
         ) : null}
 
         {footerText ? (
-          <p className="auth-card-footer type-para">
+          <p className="type-para mt-[14px] block text-center text-[#8b8077]">
             {footerText}{" "}
             {footerLinkLabel && footerLinkTo ? (
-              <Link className="auth-link" to={footerLinkTo}>
+              <Link className="text-[#2f69c8] no-underline hover:underline" to={footerLinkTo}>
                 {footerLinkLabel}
               </Link>
             ) : null}

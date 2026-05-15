@@ -16,31 +16,31 @@ import {
 
 export default function DashboardPage() {
   return (
-    <div className="dashboard-page">
-      <header className="dashboard-hero">
+    <div className="flex flex-col gap-4">
+      <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="dashboard-title type-h3">Dashboard</h1>
-          <p className="dashboard-subtitle type-subpara">
+          <h1 className="type-h3 m-0 text-[#1c1510]">Dashboard</h1>
+          <p className="type-subpara mt-1.5 text-[#7a6c61]">
             Welcome back, Raj. Here&apos;s how your business is performing today.
           </p>
         </div>
       </header>
 
-      <section className="dashboard-overview-grid">
+      <section className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
         {overviewStats.map((stat) => (
           <OverviewCard key={stat.label} {...stat} />
         ))}
       </section>
 
       <SectionCard title="Urgent Orders" badgeCount={urgentOrders.length} actionLabel="View all">
-        <div className="dashboard-orders-stack">
+        <div className="flex flex-col gap-2.5">
           {urgentOrders.map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}
         </div>
       </SectionCard>
 
-      <div className="dashboard-dual-grid">
+      <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-4 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
         <SectionCard title="Quick Actions">
           <QuickActions actions={quickActions} />
         </SectionCard>
@@ -50,7 +50,7 @@ export default function DashboardPage() {
         </SectionCard>
       </div>
 
-      <div className="dashboard-bottom-grid">
+      <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] gap-4 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
         <SectionCard title="Earning Overview" actionLabel="Last 7 Days">
           <EarningChart values={chartValues} />
         </SectionCard>
