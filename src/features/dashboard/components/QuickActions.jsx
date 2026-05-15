@@ -8,13 +8,17 @@ const iconMap = {
 
 export default function QuickActions({ actions }) {
   return (
-    <div className="dashboard-action-list">
+    <div className="flex flex-col gap-2">
       {actions.map((action) => {
         const Icon = iconMap[action.icon];
 
         return (
-          <button key={action.label} className="dashboard-action-button type-para" type="button">
-            <span className="dashboard-action-button-inner">
+          <button
+            key={action.label}
+            className="type-para min-h-10 rounded-md border border-[#d8d8d8] bg-white px-[14px] text-[#241913]"
+            type="button"
+          >
+            <span className="inline-flex items-center justify-center gap-1.5 font-bold">
               {Icon ? <Icon size={14} strokeWidth={2.2} /> : null}
               <span>{action.label}</span>
             </span>

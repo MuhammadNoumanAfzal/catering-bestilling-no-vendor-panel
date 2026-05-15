@@ -24,24 +24,35 @@ const sidebarItems = [
 
 export default function AppLayout() {
   return (
-    <div className="app-shell">
-      <aside className="app-sidebar">
-        <div className="app-sidebar-top">
-          <div className="app-brand">
-            <img className="app-brand-logo" src="/logo.png" alt="Catering bestilling.no" />
+    <div className="flex min-h-screen bg-[#f4f0ea] text-[#201914] max-[960px]:flex-col">
+      <aside className="flex w-[252px] shrink-0 flex-col justify-between bg-[#cd6434] p-[10px] text-[#fff8f3] max-[960px]:w-full">
+        <div className="flex flex-col gap-3">
+          <div className="rounded-[14px] bg-white/15 px-3 py-2.5">
+            <img className="block h-auto w-28" src="/logo.png" alt="Catering bestilling.no" />
           </div>
 
-          <button className="app-sidebar-store" type="button">
+          <button
+            className="flex items-center justify-between rounded-[10px] bg-[#f7efe8] px-3 py-[9px] text-[#71361b]"
+            type="button"
+          >
             <span className="type-subpara">View Store</span>
             <ChevronDown size={14} />
           </button>
 
-          <nav className="app-sidebar-nav" aria-label="Primary navigation">
+          <nav
+            className="mt-1 flex flex-col gap-1.5 max-[960px]:flex-row max-[960px]:flex-wrap"
+            aria-label="Primary navigation"
+          >
             {sidebarItems.map(({ icon: Icon, label, to }) => (
               <NavLink
                 key={label}
                 className={({ isActive }) =>
-                  `app-sidebar-link ${isActive ? "is-active" : ""}`
+                  [
+                    "flex items-center gap-2.5 rounded-[10px] px-3 py-[11px] transition-colors duration-150",
+                    isActive
+                      ? "bg-white text-[#bb582d] shadow-[0_8px_16px_rgba(126,54,17,0.14)]"
+                      : "text-inherit hover:bg-white/15",
+                  ].join(" ")
                 }
                 to={to}
               >
@@ -52,41 +63,57 @@ export default function AppLayout() {
           </nav>
         </div>
 
-        <button className="app-sidebar-logout" type="button">
+        <button
+          className="flex w-full items-center gap-2.5 rounded-[10px] bg-transparent px-3 py-[11px] transition-colors duration-150 hover:bg-white/15"
+          type="button"
+        >
           <LogOut size={16} />
           <span className="type-subpara">Logout</span>
         </button>
       </aside>
 
-      <div className="app-main-area">
-        <header className="app-topbar">
-          <div className="app-search">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9] px-5 py-3 max-[960px]:flex-col max-[960px]:items-stretch">
+          <div className="max-w-[480px] flex-1">
             <input
-              className="app-search-input type-subpara"
+              className="type-subpara min-h-[38px] w-full rounded-full border border-[#e4d9cf] bg-white px-[14px] text-[#241913] outline-none transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
               placeholder="Search order, menu item or customer"
               type="text"
             />
           </div>
 
-          <div className="app-topbar-right">
-            <span className="app-status-pill type-subpara">Restaurant Active</span>
+          <div className="flex items-center gap-2.5 max-[960px]:flex-wrap max-[960px]:justify-between">
+            <span className="type-subpara rounded-full bg-[#d7f5d8] px-3 py-[7px] uppercase text-[#237a39]">
+              Restaurant Active
+            </span>
 
-            <button className="app-icon-button" type="button" aria-label="Notifications">
+            <button
+              className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#e4d9cf] bg-white text-[#241913]"
+              type="button"
+              aria-label="Notifications"
+            >
               <Bell size={16} />
             </button>
 
-            <button className="app-user-chip" type="button">
-              <img className="app-user-avatar" src="/heroBg.webp" alt="Raj Holder" />
-              <span className="app-user-meta">
+            <button
+              className="inline-flex items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913]"
+              type="button"
+            >
+              <img
+                className="h-7 w-7 rounded-full object-cover"
+                src="/heroBg.webp"
+                alt="Raj Holder"
+              />
+              <span className="flex flex-col items-start leading-[1.15]">
                 <strong className="type-subpara">Raj Holder</strong>
-                <span className="type-subpara">Admin</span>
+                <span className="type-subpara text-[#8f7f73]">Admin</span>
               </span>
               <ChevronDown size={14} />
             </button>
           </div>
         </header>
 
-        <main className="app-content">
+        <main className="flex-1 p-5 max-[720px]:p-[14px]">
           <Outlet />
         </main>
       </div>

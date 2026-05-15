@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
           },
         ]}
         actionLabel="Send Reset Link"
-        backLinkLabel="← Back to login"
+        backLinkLabel="< Back to login"
         backLinkTo="/auth/login"
       />
     </AuthLayout>

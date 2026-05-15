@@ -1,30 +1,58 @@
+const toneClasses = {
+  "is-danger":
+    "border-[#efc1bc] bg-[linear-gradient(180deg,#fff9f8_0%,#fffefe_100%)] shadow-[inset_4px_0_0_#d64537]",
+  "is-warning":
+    "border-[#f0d176] bg-[linear-gradient(180deg,#fffdf5_0%,#fffefd_100%)] shadow-[inset_4px_0_0_#f3b300]",
+};
+
+const badgeToneClasses = {
+  "is-danger": "bg-[#ffe6e3] text-[#df674f]",
+  "is-warning": "bg-[#fff0cf] text-[#d49700]",
+};
+
 export default function OrderCard({ order }) {
   return (
-    <article className={`dashboard-order-card ${order.tone ?? ""}`}>
-      <div className="dashboard-order-main">
-        <div className="dashboard-order-heading">
+    <article
+      className={`flex items-end justify-between gap-4 rounded-[14px] border px-3 pb-3 pt-[14px] ${
+        toneClasses[order.tone] ?? toneClasses["is-danger"]
+      } max-[720px]:flex-col max-[720px]:items-stretch`}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
-            <div className="dashboard-order-topline">
-              <strong className="dashboard-order-id type-h5">{order.id}</strong>
-              <span className="dashboard-order-status-badge type-subpara">{order.statusLabel}</span>
+            <div className="flex items-center gap-2">
+              <strong className="type-h5 text-[#18120e]">{order.id}</strong>
+              <span
+                className={`type-subpara inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-bold ${
+                  badgeToneClasses[order.tone] ?? badgeToneClasses["is-danger"]
+                }`}
+              >
+                {order.statusLabel}
+              </span>
             </div>
-            <h3 className="dashboard-order-title type-h4">{order.title}</h3>
+            <h3 className="type-h4 mt-[7px] text-[17px] text-[#1b1510]">{order.title}</h3>
           </div>
-          <strong className="dashboard-order-amount type-h5">{order.amount}</strong>
+          <strong className="type-h5 text-[#1b1510]">{order.amount}</strong>
         </div>
 
-        <p className="dashboard-order-meta type-subpara">
+        <p className="type-subpara mt-[10px] flex flex-wrap gap-[10px] text-[11px] font-bold text-[#211914]">
           <span>{order.guests}</span>
           <span>{order.timing}</span>
         </p>
-        <p className="dashboard-order-detail type-subpara">{order.address}</p>
+        <p className="type-subpara mt-1 text-[11px] font-semibold text-[#382d26]">{order.address}</p>
       </div>
 
-      <div className="dashboard-order-actions">
-        <button className="dashboard-button dashboard-button-primary type-subpara" type="button">
+      <div className="flex items-center gap-2 max-[720px]:flex-col max-[720px]:items-stretch">
+        <button
+          className="type-subpara min-h-7 min-w-[95px] rounded border-0 bg-[#cf6e38] px-[14px] text-[10px] font-bold text-white"
+          type="button"
+        >
           Start Preparing
         </button>
-        <button className="dashboard-button dashboard-button-secondary type-subpara" type="button">
+        <button
+          className="type-subpara min-h-7 min-w-[95px] rounded border border-[#b8b4af] bg-white px-[14px] text-[10px] font-bold text-[#2f2822]"
+          type="button"
+        >
           View Details
         </button>
       </div>
