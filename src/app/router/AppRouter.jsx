@@ -7,10 +7,12 @@ import VerificationPage from "../../features/auth/pages/VerificationPage";
 import AcceptedOrderPage from "../../features/order/pages/AcceptedOrderPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
+import FinancePage from "../../features/finance/pages/FinancePage";
 import AppSectionPage from "../../features/home/pages/AppSectionPage";
 import MenuPage from "../../features/menu/pages/MenuPage";
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
+import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
 
 export default function AppRouter() {
   return (
@@ -28,24 +30,8 @@ export default function AppRouter() {
         <Route path="orders/:orderId/accepted" element={<AcceptedOrderPage />} />
         <Route path="menu" element={<MenuPage />} />
         <Route path="delivery" element={<DeliveryPage />} />
-        <Route
-          path="finance"
-          element={
-            <AppSectionPage
-              title="Finance"
-              description="This area is ready for payouts, invoices, summaries and finance API integration."
-            />
-          }
-        />
-        <Route
-          path="reviews"
-          element={
-            <AppSectionPage
-              title="Reviews"
-              description="Customer reviews, replies and rating insights can plug into this shared page shell."
-            />
-          }
-        />
+        <Route path="finance" element={<FinancePage />} />
+        <Route path="reviews" element={<ReviewsPage />} />
         <Route
           path="settings"
           element={
