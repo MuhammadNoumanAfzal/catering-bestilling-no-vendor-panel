@@ -6,7 +6,9 @@ import NewPasswordPage from "../../features/auth/pages/NewPasswordPage";
 import VerificationPage from "../../features/auth/pages/VerificationPage";
 import AcceptedOrderPage from "../../features/order/pages/AcceptedOrderPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
+import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
 import AppSectionPage from "../../features/home/pages/AppSectionPage";
+import MenuPage from "../../features/menu/pages/MenuPage";
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
 
@@ -24,24 +26,8 @@ export default function AppRouter() {
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:orderId" element={<OrderDetailPage />} />
         <Route path="orders/:orderId/accepted" element={<AcceptedOrderPage />} />
-        <Route
-          path="menu"
-          element={
-            <AppSectionPage
-              title="Menu"
-              description="Use this section for menu categories, items and availability controls without rebuilding the app shell."
-            />
-          }
-        />
-        <Route
-          path="delivery"
-          element={
-            <AppSectionPage
-              title="Delivery"
-              description="Delivery tracking, rider assignments and fulfillment timelines can be added here later with the same layout."
-            />
-          }
-        />
+        <Route path="menu" element={<MenuPage />} />
+        <Route path="delivery" element={<DeliveryPage />} />
         <Route
           path="finance"
           element={
