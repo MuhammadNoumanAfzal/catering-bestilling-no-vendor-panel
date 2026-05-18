@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import DetailPanel from "./DetailPanel";
 
-function MenuItemModal({ details, itemName, onClose }) {
+function MenuItemModal({ details, onClose }) {
   if (!details) {
     return null;
   }
@@ -16,11 +16,11 @@ function MenuItemModal({ details, itemName, onClose }) {
       aria-label="Order item details"
     >
       <div
-        className="relative w-full max-w-[520px] rounded-[14px] bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+        className="relative w-full max-w-[600px] overflow-hidden rounded-[14px] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
         onClick={(event) => event.stopPropagation()}
       >
         <button
-          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e4ddd5] bg-white text-[#5b524b]"
+          className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e4ddd5] bg-white cursor-pointer text-[#5b524b]"
           onClick={onClose}
           type="button"
           aria-label="Close"
@@ -28,58 +28,53 @@ function MenuItemModal({ details, itemName, onClose }) {
           <X size={18} />
         </button>
 
-        <h3 className="text-center text-[22px] font-extrabold text-[#17120e]">Order details</h3>
-
-        <div className="mt-4 grid grid-cols-4 gap-2 overflow-hidden rounded-[10px]">
-          {[...Array(4)].map((_, index) => (
-            <div
-              key={`${itemName}-${index}`}
-              className={`h-[86px] rounded-[8px] bg-cover bg-center ${index === 1 ? "col-span-2" : ""}`}
-              style={{ backgroundImage: 'url("/heroBg.webp")' }}
-            />
-          ))}
+        <div className="border-b border-[#e9e0d8] px-5 py-4">
+          <h3 className="text-center type-h3 font-extrabold text-[#17120e]">Order details</h3>
         </div>
 
-        <div className="mt-3.5 flex flex-wrap justify-between gap-x-3 gap-y-1.5 text-[11px] font-semibold text-[#7a6c61]">
-          <span>Food Item</span>
-          <span>Customer Theme</span>
-          <span>Chef choice</span>
-          <span>Order #12453</span>
-        </div>
+        <div className="px-4 pb-4 pt-3">
+          <div
+            className="h-[174px] w-full rounded-[14px] bg-cover bg-center"
+            style={{ backgroundImage: 'url("/heroBg.webp")' }}
+            aria-hidden="true"
+          />
 
-        <div className="mt-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h4 className="text-[32px] font-extrabold leading-[1.15] text-[#17120e]">
-                {details.title}
-              </h4>
-              {details.facts?.map((fact) => (
-                <p key={fact} className="mt-1 text-[14px] font-medium leading-[1.55] text-[#72665d]">
-                  • {fact}
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[14px]">
+            <span className="text-[#7b6f64]">
+              Status: <strong className="font-bold text-[#2ca24f]">Accepted</strong>
+            </span>
+            <span className="text-[#7b6f64]">
+              Customer: <strong className="font-bold text-[#17120e]">Thomas</strong>
+            </span>
+            <span className="text-[#7b6f64]">
+              Order ID: <strong className="font-bold text-[#17120e]">#12549</strong>
+            </span>
+          </div>
+
+          <div className="mt-5">
+            <h4 className="text-[22px] font-extrabold text-[#17120e]">Items</h4>
+
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <span className="type-h5 font-semibold leading-none text-[#7f7368]">15</span>
+              <div className="min-w-0 flex-1 type-h5 font-extrabold leading-[1.3] text-[#6d6259]">
+                Tasty Super Star Package
+              </div>
+              <span className="shrink-0 text-[16px] font-bold text-[#6d6259]">{details.price}</span>
+            </div>
+
+            <div className="mt-3 space-y-2.5 pl-4 text-[#75695f]">
+              {details.items?.map((item) => (
+                <p key={item} className="list-item type-para font-medium leading-[1.35]">
+                  {item}
+                </p>
+              ))}
+              {details.extras?.map((item) => (
+                <p key={item} className="list-item type-para font-medium leading-[1.35]">
+                  {item}
                 </p>
               ))}
             </div>
-            <span className="shrink-0 pt-1 text-[28px] font-bold text-[#17120e]">{details.price}</span>
           </div>
-        </div>
-
-        <div className="mt-5">
-          <div className="text-[22px] font-extrabold text-[#17120e]">Items</div>
-          <div className="mt-2.5 space-y-2">
-            {details.items?.map((item) => (
-              <p key={item} className="text-[14px] font-medium leading-[1.6] text-[#62564f]">
-                • {item}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-1.5">
-          {details.extras?.map((item) => (
-            <p key={item} className="text-[14px] font-medium leading-[1.55] text-[#62564f]">
-              {item}
-            </p>
-          ))}
         </div>
       </div>
     </div>
@@ -103,14 +98,14 @@ export default function OrderItemsPanel({ orderItem, note, addOns }) {
               <strong className="block text-[19px] font-extrabold leading-[1.2] text-[#17120e] sm:text-[20px]">
                 {orderItem.name}
               </strong>
-              <p className="mt-1.5 text-[13px] font-medium leading-[1.55] text-[#6f6358]">
+              <p className="mt-1.5 text-[16px] font-medium leading-[1.55] text-[#6f6358]">
                 {orderItem.quantity}
               </p>
             </div>
           </div>
 
           <div className="mt-3">
-            <div className="text-[11px] font-extrabold tracking-[0.04em] text-[#9b9086]">
+            <div className="text-[16px] font-extrabold tracking-[0.04em] text-[#9b9086]">
               {orderItem.description}
             </div>
             <div className="mt-2.5 grid grid-cols-1 gap-x-4 gap-y-1.5 md:grid-cols-2">
@@ -125,7 +120,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns }) {
               ))}
             </div>
             <button
-              className="mt-3 border-0 bg-transparent p-0 text-[11px] font-bold text-[#75695f]"
+              className="mt-3 inline-flex h-9 cursor-pointer items-center justify-center rounded-[8px] border border-[#d8d1ca] bg-white px-4 text-[14px] font-semibold text-[#75695f]"
               onClick={() => setIsModalOpen(true)}
               type="button"
             >
@@ -135,14 +130,14 @@ export default function OrderItemsPanel({ orderItem, note, addOns }) {
         </div>
 
         <div className="mt-4">
-          <span className="block text-[11px] font-extrabold tracking-[0.04em] text-[#8a7a6d]">
+          <span className="block text-[16px] font-extrabold tracking-[0.04em] text-[#8a7a6d]">
             ADD ON
           </span>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {addOns.map((addon) => (
               <span
                 key={addon}
-                className="inline-flex min-h-6 items-center rounded-full border border-[#d2cbc3] bg-[#918780] px-[10px] text-[10px] font-semibold text-white"
+                className="inline-flex min-h-6 items-center rounded-full border border-[#d2cbc3] bg-[#918780] px-[10px] text-[14px] font-semibold text-white"
               >
                 {addon}
               </span>
@@ -150,20 +145,16 @@ export default function OrderItemsPanel({ orderItem, note, addOns }) {
           </div>
         </div>
 
-        <div className="mt-4 text-[11px] font-extrabold tracking-[0.04em] text-[#8a7a6d]">
+        <div className="mt-4 text-[16px] font-extrabold tracking-[0.04em] text-[#8a7a6d]">
           SPECIAL INSTRUCTIONS
         </div>
-        <div className="mt-2 rounded-md bg-[#ffc8b5] px-3 py-3 text-[10px] font-semibold uppercase leading-[1.5] italic text-[#c76d3f]">
+        <div className="mt-2 rounded-md bg-[#ffc8b5] px-3 py-3 text-[14px] font-semibold uppercase leading-[1.5] italic text-[#c76d3f]">
           {note}
         </div>
       </DetailPanel>
 
       {isModalOpen ? (
-        <MenuItemModal
-          details={orderItem.modalDetails}
-          itemName={orderItem.name}
-          onClose={() => setIsModalOpen(false)}
-        />
+        <MenuItemModal details={orderItem.modalDetails} onClose={() => setIsModalOpen(false)} />
       ) : null}
     </>
   );

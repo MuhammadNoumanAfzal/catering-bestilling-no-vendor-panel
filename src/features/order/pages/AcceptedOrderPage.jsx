@@ -13,7 +13,7 @@ export default function AcceptedOrderPage() {
   if (!orderDetail) {
     return (
       <section className="flex flex-col gap-3">
-        <Link className="text-[12px] font-bold text-[#5d7fc9] no-underline" to="/orders">
+        <Link className="text-[22px] font-bold text-[#5d7fc9] no-underline" to="/orders">
           &lt; Back to Orders
         </Link>
         <div className="rounded-xl border border-[#dfd8cf] bg-white px-2 pb-2.5 pt-2 shadow-[0_2px_8px_rgba(42,27,18,0.06)]">
@@ -26,7 +26,7 @@ export default function AcceptedOrderPage() {
   return (
     <section className="flex flex-col gap-3">
       <header className="flex flex-col gap-1">
-        <Link className="text-[12px] font-bold text-[#5d7fc9] no-underline" to="/orders">
+        <Link className="text-[22px] font-bold text-[#5d7fc9] no-underline" to="/orders">
           &lt; Back to Orders
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">

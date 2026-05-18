@@ -4,10 +4,10 @@ import DetailPanel from "./DetailPanel";
 export default function ConfirmedLifecyclePanel({ statusTitle, statusSubtitle, actions }) {
   return (
     <DetailPanel title="Order Lifecycle">
-      <div className="mb-3 flex flex-col items-center gap-1.5 text-center">
-        <CircleCheckBig className="text-[#21a44d]" size={30} strokeWidth={2.2} />
-        <strong className="text-[13px] font-extrabold text-[#17120e]">{statusTitle}</strong>
-        <p className="m-0 text-[10px] font-semibold leading-[1.35] text-[#8a7a6d]">
+      <div className="mb-3 flex flex-col items-center gap-2 text-center">
+        <CircleCheckBig className="text-[#21a44d]" size={36} strokeWidth={2.2} />
+        <strong className="text-[17px] font-extrabold text-[#17120e]">{statusTitle}</strong>
+        <p className="m-0 text-[12px] font-semibold leading-[1.4] text-[#8a7a6d]">
           {statusSubtitle}
         </p>
       </div>

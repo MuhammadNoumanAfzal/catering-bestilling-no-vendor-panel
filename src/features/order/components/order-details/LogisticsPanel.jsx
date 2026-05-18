@@ -3,7 +3,7 @@ import DetailPanel from "./DetailPanel";
 function Field({ label, value }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[11px] font-bold text-[#8a7a6d]">{label}</span>
+      <span className="text-[16px] font-bold text-[#8a7a6d]">{label}</span>
       <strong className="text-[14px] font-extrabold text-[#17120e]">{value}</strong>
     </div>
   );
