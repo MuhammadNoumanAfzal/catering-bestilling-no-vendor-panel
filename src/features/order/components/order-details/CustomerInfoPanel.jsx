@@ -1,11 +1,11 @@
-import { X } from "lucide-react";
+import { CircleAlert, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import DetailPanel from "./DetailPanel";
 
 function Field({ label, value, fullWidth = false }) {
   return (
     <div className={`flex flex-col gap-1 ${fullWidth ? "md:col-span-2" : ""}`}>
-      <span className="text-[10px] font-bold text-[#8a7a6d]">{label}</span>
+      <span className="text-[16px]  text-[#8a7a6d]">{label}</span>
       <strong className="text-[13px] font-extrabold text-[#17120e]">{value}</strong>
     </div>
   );
@@ -86,7 +86,7 @@ export default function CustomerInfoPanel({ customer }) {
 
   return (
     <>
-      <DetailPanel title="Customer Information">
+      <DetailPanel title="Customer Information" titleIcon={UserRound}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <Field label="Name" value={customer.name} />
           <Field label="Organization" value={customer.organization} />
@@ -95,14 +95,17 @@ export default function CustomerInfoPanel({ customer }) {
           <Field fullWidth label="Email Address" value={customer.email} />
         </div>
 
-        <div className="mt-[14px] flex items-center justify-between gap-2.5 border-t border-[#ebe5de] pt-3">
-          <span className="text-[11px] font-bold text-[#61554b]">{customer.historyText}</span>
+        <div className="mt-[14px] flex items-center justify-between gap-2.5 rounded-[10px] bg-[#edf5ff] px-3 py-3">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#4f5f73]">
+            <CircleAlert size={15} strokeWidth={2.1} className="text-[#1e1e1e]" />
+            {customer.historyText}
+          </span>
           <button
-            className="border-0 bg-transparent p-0 text-[12px] font-bold text-[#3e72d7]"
+            className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-bold text-[#3e72d7]"
             onClick={() => setIsHistoryOpen(true)}
             type="button"
           >
-            View Order History
+            View Order history
           </button>
         </div>
       </DetailPanel>

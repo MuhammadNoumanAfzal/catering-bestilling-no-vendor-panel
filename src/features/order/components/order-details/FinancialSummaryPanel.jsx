@@ -7,14 +7,14 @@ export default function FinancialSummaryPanel({ summary }) {
         {summary.map((item, index) => (
           <div
             key={item.label}
-            className={`flex items-start justify-between gap-3 text-[11px] font-bold text-[#6f6358] ${
+            className={`flex items-start justify-between gap-3 text-[16px]  text-black  ${
               index === summary.length - 1
                 ? "mt-0.5 border-t border-[#ebe2d9] pt-[10px] text-base text-[#17120e]"
                 : ""
             }`}
           >
             <span>{item.label}</span>
-            <strong>{item.value}</strong>
+            <p>{item.value}</p>
           </div>
         ))}
       </div>

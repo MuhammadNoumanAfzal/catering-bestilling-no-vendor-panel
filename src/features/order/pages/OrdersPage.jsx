@@ -82,12 +82,12 @@ export default function OrdersPage() {
       return;
     }
 
-    if (action.label === "Accept") {
-      navigate(`/orders/${row.id.replace("#", "")}/accepted`);
+    if (action.navigateToDetail) {
+      navigate(`/orders/${row.id.replace("#", "")}`);
       return;
     }
 
-    if (action.navigateToDetail) {
+    if (action.label === "Accept") {
       navigate(`/orders/${row.id.replace("#", "")}`);
     }
   }
