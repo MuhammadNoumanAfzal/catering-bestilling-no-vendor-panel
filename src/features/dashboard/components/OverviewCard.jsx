@@ -33,7 +33,7 @@ export default function OverviewCard({
       <div className="inline-flex h-8 w-8 items-center justify-center rounded-[7px] bg-[#fff4ef]">
         {Icon ? <Icon className="text-[#d66c3a]" size={24} strokeWidth={2.2} /> : null}
       </div>
-      <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] text-[#18120e]">{label}</p>
+      <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] ">{label}</p>
       <strong className="type-h2 mt-2 block text-[34px] leading-none text-[#16110d]">{value}</strong>
       {variant === "capacity" ? (
         <div className="mt-2.5">

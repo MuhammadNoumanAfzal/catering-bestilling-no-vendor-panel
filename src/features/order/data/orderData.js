@@ -1,5 +1,11 @@
 export const orderMetrics = [
-  { label: "Total Orders", value: "45", helper: "2 vs yesterday", icon: "clipboard" },
+  {
+    label: "Total Orders",
+    value: "45",
+    helper: "2 vs yesterday",
+    helperTone: "is-positive",
+    icon: "clipboard",
+  },
   { label: "New Orders", value: "7", helper: "1 urgent", icon: "cart" },
   { label: "Accepted", value: "18", helper: "7 prepare", icon: "check" },
   { label: "Preparing", value: "5", helper: "2 delayed", icon: "chef" },

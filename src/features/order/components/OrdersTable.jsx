@@ -1,25 +1,45 @@
 import { ChevronDown, Users } from "lucide-react";
+import { useState } from "react";
 
 const statusToneClasses = {
-  "is-new": "bg-[#fff0c6] text-[#c88b00]",
-  "is-ready": "bg-[#d7f4dc] text-[#299b48]",
-  "is-preparing": "bg-[#f0dcff] text-[#b00df5]",
-  "is-accepted": "bg-[#dde7ff] text-[#4470dc]",
-  "is-delivery": "bg-[#ffe1d8] text-[#d66c3a]",
-  "is-reject": "bg-[#f1d7ef] text-[#9a4d93]",
-  "is-canceled": "bg-[#ffd6d6] text-[#ca3131]",
-  "is-delivered": "bg-[#dff7d9] text-[#248d32]",
+  "is-new": "border border-[#9fd8f6] bg-[#d4efff] text-[#1877b9]",
+  "is-ready": "bg-[#2fc35b] text-white",
+  "is-preparing": "bg-[#d9b8ff] text-[#6f2bbd]",
+  "is-accepted": "bg-[#5f88ff] text-white",
+  "is-delivery": "bg-[#d56f3c] text-white",
+  "is-reject": "bg-[#f7c9ec] text-[#a33980]",
+  "is-canceled": "bg-[#dc1010] text-white",
+  "is-delivered": "bg-[#5fd84f] text-[#103d0e]",
 };
 
 const actionToneClasses = {
   "is-primary": "border-[#cf6e38] bg-[#cf6e38] text-white",
-  "is-muted": "border-[#9a948e] bg-[#9a948e] text-white",
-  "is-success": "border-[#7ce267] bg-[#7ce267] text-[#124f0f]",
+  "is-muted": "border-[#8f8881] bg-[#8f8881] text-white",
+  "is-success": "border-[#6ddc56] bg-[#6ddc56] text-[#124f0f]",
 };
 
+const actionMenuItems = [
+  "Start preparing",
+  "Ready",
+  "Out for delivery",
+  "Delivered",
+  "Canceled",
+];
+
 export default function OrdersTable({ rows, onActionClick }) {
+  const [openMenuKey, setOpenMenuKey] = useState(null);
+
+  function handleMenuToggle(menuKey) {
+    setOpenMenuKey((currentKey) => (currentKey === menuKey ? null : menuKey));
+  }
+
+  function handleMenuAction(row, action, nextLabel) {
+    setOpenMenuKey(null);
+    onActionClick(row, { ...action, label: nextLabel, fromDropdown: true });
+  }
+
   return (
-    <div className="overflow-x-auto rounded-[10px] border border-[#e9e1d8]">
+    <div className="overflow-x-auto rounded-[14px] border border-[#ddd3ca] bg-white shadow-[0_2px_10px_rgba(42,27,18,0.05)]">
       <table className="w-full border-collapse bg-white">
         <thead>
           <tr>
@@ -38,7 +58,10 @@ export default function OrdersTable({ rows, onActionClick }) {
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={`${row.id}-${row.customer}-${index}`}>
+            <tr
+              key={`${row.id}-${row.customer}-${index}`}
+              className={row.statusTone === "is-new" ? "bg-[#eef8ff]" : "bg-white"}
+            >
               <td className="w-7 border-b border-[#eee7df] px-[10px] py-3 last:border-b-0">
                 <input className="h-3 w-3 accent-[#cf6e38]" type="checkbox" />
               </td>
@@ -72,19 +95,43 @@ export default function OrdersTable({ rows, onActionClick }) {
               </td>
               <td className="border-b border-[#eee7df] px-[10px] py-3 last:border-b-0">
                 <div className="flex flex-wrap gap-1.5">
-                  {row.actions.map((action) => (
-                    <button
-                      key={action.label}
-                      className={`inline-flex min-h-[22px] items-center gap-1 rounded-full border px-[10px] text-[11px] leading-none ${actionToneClasses[action.tone] ?? actionToneClasses["is-muted"]} ${
-                        action.hasDropdown ? "pr-2" : ""
-                      }`}
-                      onClick={() => onActionClick(row, action)}
-                      type="button"
-                    >
-                      <span>{action.label}</span>
-                      {action.hasDropdown ? <ChevronDown size={10} strokeWidth={2.4} /> : null}
-                    </button>
-                  ))}
+                  {row.actions.map((action) => {
+                    const menuKey = `${row.id}-${action.label}`;
+                    const isMenuOpen = openMenuKey === menuKey;
+                    const hasDropdown = Boolean(action.hasDropdown);
+
+                    return (
+                      <div key={action.label} className="relative">
+                        <button
+                          className={`inline-flex min-h-[24px] cursor-pointer items-center gap-1 rounded-full border px-[10px] text-[11px] font-semibold leading-none ${actionToneClasses[action.tone] ?? actionToneClasses["is-muted"]} ${
+                            hasDropdown ? "pr-2" : ""
+                          }`}
+                          onClick={() =>
+                            hasDropdown ? handleMenuToggle(menuKey) : onActionClick(row, action)
+                          }
+                          type="button"
+                        >
+                          <span>{action.label}</span>
+                          {hasDropdown ? <ChevronDown size={10} strokeWidth={2.4} /> : null}
+                        </button>
+
+                        {hasDropdown && isMenuOpen ? (
+                          <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[132px] rounded-[6px] border border-[#ddd4cb] bg-white p-1 shadow-[0_10px_24px_rgba(25,18,12,0.16)]">
+                            {actionMenuItems.map((item) => (
+                              <button
+                                key={item}
+                                className="block w-full cursor-pointer whitespace-nowrap rounded-[4px] px-2 py-1 text-left text-[10px] font-medium text-[#5e554d] transition hover:bg-[#f6f1eb]"
+                                onClick={() => handleMenuAction(row, action, item)}
+                                type="button"
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
               </td>
             </tr>
