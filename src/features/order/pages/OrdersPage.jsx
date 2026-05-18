@@ -12,7 +12,7 @@ import {
   orderTabs,
 } from "../data/orderData";
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 10;
 
 function normalizeLabel(value) {
   return value.toLowerCase().replace(/\s+/g, "");
@@ -22,27 +22,23 @@ export default function OrdersPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [activeFilter, setActiveFilter] = useState("");
-  const [sortOption, setSortOption] = useState("Latest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [orderRows, setOrderRows] = useState(ordersTableRows);
 
   const filteredRows = useMemo(() => {
     const baseRows =
       activeTab === "All"
-        ? ordersTableRows
-        : ordersTableRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeTab));
+        ? orderRows
+        : orderRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeTab));
 
     const chipFilteredRows = activeFilter
       ? baseRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeFilter))
       : baseRows;
 
-    return [...chipFilteredRows].sort((firstRow, secondRow) => {
-      if (sortOption === "Oldest") {
-        return firstRow.customer.localeCompare(secondRow.customer);
-      }
-
-      return secondRow.customer.localeCompare(firstRow.customer);
-    });
-  }, [activeFilter, activeTab, sortOption]);
+    return [...chipFilteredRows].sort((firstRow, secondRow) =>
+      secondRow.customer.localeCompare(firstRow.customer),
+    );
+  }, [activeFilter, activeTab, orderRows]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
@@ -61,11 +57,6 @@ export default function OrdersPage() {
     setCurrentPage(1);
   }
 
-  function handleSortToggle() {
-    setSortOption((currentSort) => (currentSort === "Latest" ? "Oldest" : "Latest"));
-    setCurrentPage(1);
-  }
-
   function handlePageChange(nextPage) {
     if (nextPage < 1 || nextPage > totalPages) {
       return;
@@ -75,6 +66,27 @@ export default function OrdersPage() {
   }
 
   function handleActionClick(row, action) {
+    if (action.fromDropdown) {
+      setOrderRows((currentRows) =>
+        currentRows.map((currentRow) =>
+          currentRow.id === row.id
+            ? {
+                ...currentRow,
+                actions: currentRow.actions.map((currentAction, index) =>
+                  index === 0 ? { ...currentAction, label: action.label, hasDropdown: true } : currentAction,
+                ),
+              }
+            : currentRow,
+        ),
+      );
+      return;
+    }
+
+    if (action.label === "Accept") {
+      navigate(`/orders/${row.id.replace("#", "")}/accepted`);
+      return;
+    }
+
     if (action.navigateToDetail) {
       navigate(`/orders/${row.id.replace("#", "")}`);
     }
@@ -83,8 +95,8 @@ export default function OrdersPage() {
   return (
     <section className="flex flex-col gap-[14px]">
       <header className="flex flex-col gap-0.5">
-        <h1 className="type-h3 m-0 text-[#1a1410]">Orders</h1>
-        <p className="type-subpara m-0 text-[#75695f]">
+        <h1 className="type-h2 m-0 text-[#1a1410]">Orders</h1>
+        <p className="type-para m-0 ">
           Manage all your catering orders and track production status.
         </p>
       </header>
@@ -95,14 +107,13 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-[#dfd8cf] bg-white px-2 pb-2.5 pt-2 shadow-[0_2px_8px_rgba(42,27,18,0.06)]">
-        <OrderTabs
-          activeTab={activeTab}
-          onSortToggle={handleSortToggle}
-          onTabChange={handleTabChange}
-          sortOption={sortOption}
-          tabs={orderTabs}
-        />
+      <OrderTabs
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        tabs={orderTabs}
+      />
+
+      <div className="bg-transparent px-0 pb-0 pt-0">
         <OrdersTable onActionClick={handleActionClick} rows={paginatedRows} />
         <OrderFilters
           activeFilter={activeFilter}
