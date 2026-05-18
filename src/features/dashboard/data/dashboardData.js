@@ -86,6 +86,7 @@ export const reviews = [
   {
     name: "Elena Rodriguez",
     rating: "5.0",
+    time: "2 hours ago",
     summary:
       "The corporate lunch was spectacular! The grilled salmon was perfectly seasoned and arrived hot.",
     id: "#ORD-1245",
@@ -93,6 +94,7 @@ export const reviews = [
   {
     name: "Elena Rodriguez",
     rating: "5.0",
+    time: "2 hours ago",
     summary:
       "The corporate lunch was spectacular! The grilled salmon was perfectly seasoned and arrived hot.",
     id: "#ORD-1245",
@@ -100,6 +102,7 @@ export const reviews = [
   {
     name: "Elena Rodriguez",
     rating: "5.0",
+    time: "2 hours ago",
     summary:
       "The corporate lunch was spectacular! The grilled salmon was perfectly seasoned and arrived hot.",
     id: "#ORD-1245",

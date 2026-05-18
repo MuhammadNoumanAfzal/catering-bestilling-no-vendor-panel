@@ -19,8 +19,8 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="type-h3 m-0 text-[#1c1510]">Dashboard</h1>
-          <p className="type-subpara mt-1.5 text-[#7a6c61]">
+          <h1 className="type-h2 m-0 text-[#1c1510]">Dashboard</h1>
+          <p className="type-para mt-1.5 text-[#7a6c61]">
             Welcome back, Raj. Here&apos;s how your business is performing today.
           </p>
         </div>
@@ -51,7 +51,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] gap-4 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
-        <SectionCard title="Earning Overview" actionLabel="Last 7 Days">
+        <SectionCard title="Earning Overview" actionLabel="Last 7 days" actionVariant="dropdown">
           <EarningChart values={chartValues} />
         </SectionCard>
 
