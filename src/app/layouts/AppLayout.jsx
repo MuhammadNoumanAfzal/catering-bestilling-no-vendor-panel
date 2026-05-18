@@ -1,24 +1,24 @@
 import {
   Bell,
+  BadgeDollarSign,
   ChevronDown,
-  CreditCard,
-  LayoutGrid,
+  CookingPot,
+  House,
   LogOut,
-  Package,
+  MessageSquareText,
   Settings,
-  ShoppingCart,
-  Star,
+  ShoppingBasket,
   Truck,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 
 const sidebarItems = [
-  { label: "Home", to: "/dashboard", icon: LayoutGrid },
-  { label: "Orders", to: "/orders", icon: ShoppingCart },
-  { label: "Menu", to: "/menu", icon: Package },
+  { label: "Home", to: "/dashboard", icon: House },
+  { label: "Orders", to: "/orders", icon: ShoppingBasket },
+  { label: "Menu", to: "/menu", icon: CookingPot },
   { label: "Delivery", to: "/delivery", icon: Truck },
-  { label: "Finance", to: "/finance", icon: CreditCard },
-  { label: "Reviews", to: "/reviews", icon: Star },
+  { label: "Finance", to: "/finance", icon: BadgeDollarSign },
+  { label: "Reviews", to: "/reviews", icon: MessageSquareText },
   { label: "Settings", to: "/settings", icon: Settings },
 ];
 

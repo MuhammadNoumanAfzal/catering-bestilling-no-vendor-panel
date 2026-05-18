@@ -1,4 +1,10 @@
-import { CalendarDays, ChartNoAxesColumnIncreasing, CircleAlert, ClipboardList } from "lucide-react";
+import {
+  ArrowUp,
+  CalendarDays,
+  ChartNoAxesColumnIncreasing,
+  CircleAlert,
+  ClipboardList,
+} from "lucide-react";
 
 const iconMap = {
   calendar: CalendarDays,
@@ -24,8 +30,8 @@ export default function OverviewCard({
         variant === "capacity" ? "pb-3" : ""
       }`}
     >
-      <div className="inline-flex h-6 w-6 items-center justify-center rounded-[7px] bg-[#fff4ef]">
-        {Icon ? <Icon className="text-[#d66c3a]" size={16} strokeWidth={2.2} /> : null}
+      <div className="inline-flex h-8 w-8 items-center justify-center rounded-[7px] bg-[#fff4ef]">
+        {Icon ? <Icon className="text-[#d66c3a]" size={24} strokeWidth={2.2} /> : null}
       </div>
       <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] text-[#18120e]">{label}</p>
       <strong className="type-h2 mt-2 block text-[34px] leading-none text-[#16110d]">{value}</strong>
@@ -37,14 +43,16 @@ export default function OverviewCard({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="type-para mt-1.5 text-[13px] font-medium leading-[1.35] text-[#6f645b]">
+          <p className="type-para mt-1.5 text-[13px] font-medium leading-[1.35] ">
             {helper}
           </p>
         </div>
       ) : (
-        <p className="type-para mt-2.5 flex items-center gap-[5px] text-[13px] font-medium leading-[1.35] text-[#6f645b]">
+        <p className="type-para mt-2.5 flex items-center gap-[5px] text-[13px] font-medium leading-[1.35] ">
           {helperTone === "is-positive" ? (
-            <span className="h-[9px] w-[9px] shrink-0 rounded-full bg-[#78cc8b] shadow-[0_0_0_2px_rgba(120,204,139,0.18)]" />
+            <span className="inline-flex shrink-0 text-[#2fbe5b]">
+              <ArrowUp size={14} strokeWidth={2.2} />
+            </span>
           ) : null}
           {helper}
         </p>
