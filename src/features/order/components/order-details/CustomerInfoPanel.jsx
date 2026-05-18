@@ -1,4 +1,5 @@
 import { CircleAlert, UserRound, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import DetailPanel from "./DetailPanel";
 
@@ -30,18 +31,29 @@ function HistoryStatus({ status, tone }) {
 
 function OrderHistoryDrawer({ customer, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/35" onClick={onClose}>
-      <aside
-        className="flex h-full w-full max-w-[340px] flex-col bg-white px-4 pb-5 pt-3 shadow-[-8px_0_30px_rgba(0,0,0,0.12)]"
+    <motion.div
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 flex justify-end bg-black/35"
+      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }}
+      onClick={onClose}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+    >
+      <motion.aside
+        animate={{ opacity: 1, x: 0 }}
+        className="flex h-full w-full max-w-[360px] flex-col bg-white px-4 pb-5 pt-3 shadow-[-8px_0_30px_rgba(0,0,0,0.12)]"
+        exit={{ opacity: 0.95, x: 28 }}
+        initial={{ opacity: 0.95, x: 28 }}
         onClick={(event) => event.stopPropagation()}
+        transition={{ duration: 0.24, ease: "easeOut" }}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-[24px] font-extrabold leading-[1.15] text-[#17120e]">Order History</h3>
-            <p className="mt-1 text-[12px] font-medium text-[#8a7a6d]">{customer.name}</p>
+            <h3 className="text-[28px] font-extrabold leading-[1.15] text-[#17120e]">Order History</h3>
+            <p className="mt-1 text-[14px] font-medium text-[#8a7a6d]">{customer.name}</p>
           </div>
           <button
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#e6ddd4] bg-white text-[#6d6259]"
+            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e6ddd4] bg-white text-[#6d6259]"
             onClick={onClose}
             type="button"
             aria-label="Close order history"
@@ -57,27 +69,27 @@ function OrderHistoryDrawer({ customer, onClose }) {
               className="rounded-[10px] border border-[#cfc7bf] bg-white px-3 py-3 shadow-[0_1px_4px_rgba(38,23,14,0.04)]"
             >
               <div className="flex items-start justify-between gap-3">
-                <span className="text-[9px] font-bold uppercase tracking-[0.04em] text-[#9a8f86]">
+                <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-[#9a8f86]">
                   {order.id}
                 </span>
                 <HistoryStatus status={order.status} tone={order.statusTone} />
               </div>
 
-              <h4 className="mt-1.5 text-[18px] font-extrabold leading-[1.2] text-[#17120e]">
+              <h4 className="mt-1.5 text-[20px] font-extrabold leading-[1.2] text-[#17120e]">
                 {order.title}
               </h4>
 
-              <div className="mt-2 flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.03em] text-[#8b8077]">
+              <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#8b8077]">
                 <span>{order.date}</span>
                 <span>{order.guests}</span>
               </div>
 
-              <div className="mt-2 text-[14px] font-extrabold text-[#17120e]">{order.amount}</div>
+              <div className="mt-2 text-[16px] font-extrabold text-[#17120e]">{order.amount}</div>
             </article>
           ))}
         </div>
-      </aside>
-    </div>
+      </motion.aside>
+    </motion.div>
   );
 }
 
@@ -110,9 +122,11 @@ export default function CustomerInfoPanel({ customer }) {
         </div>
       </DetailPanel>
 
-      {isHistoryOpen ? (
-        <OrderHistoryDrawer customer={customer} onClose={() => setIsHistoryOpen(false)} />
-      ) : null}
+      <AnimatePresence>
+        {isHistoryOpen ? (
+          <OrderHistoryDrawer customer={customer} onClose={() => setIsHistoryOpen(false)} />
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }
