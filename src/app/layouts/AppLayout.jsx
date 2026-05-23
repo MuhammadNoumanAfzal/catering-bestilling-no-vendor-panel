@@ -19,6 +19,7 @@ const sidebarItems = [
   { label: "Delivery", to: "/delivery", icon: Truck },
   { label: "Finance", to: "/finance", icon: BadgeDollarSign },
   { label: "Reviews", to: "/reviews", icon: MessageSquareText },
+  { label: "Notifications", to: "/notifications", icon: Bell },
   { label: "Settings", to: "/settings", icon: Settings },
 ];
 
@@ -87,13 +88,13 @@ export default function AppLayout() {
               Restaurant Active
             </span>
 
-            <button
+            <NavLink
               className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#e4d9cf] bg-white text-[#241913]"
-              type="button"
+              to="/notifications"
               aria-label="Notifications"
             >
               <Bell size={16} />
-            </button>
+            </NavLink>
 
             <button
               className="inline-flex items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913]"
