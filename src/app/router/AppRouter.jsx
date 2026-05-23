@@ -10,6 +10,7 @@ import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
 import FinancePage from "../../features/finance/pages/FinancePage";
 import AppSectionPage from "../../features/home/pages/AppSectionPage";
 import MenuPage from "../../features/menu/pages/MenuPage";
+import NotificationsPage from "../../features/notifications/pages/NotificationsPage";
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
@@ -32,6 +33,7 @@ export default function AppRouter() {
         <Route path="delivery" element={<DeliveryPage />} />
         <Route path="finance" element={<FinancePage />} />
         <Route path="reviews" element={<ReviewsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route
           path="settings"
           element={
