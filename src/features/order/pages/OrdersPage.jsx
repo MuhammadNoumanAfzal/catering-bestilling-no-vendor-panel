@@ -11,6 +11,10 @@ import {
   ordersTableRows,
   orderTabs,
 } from "../data/orderData";
+import {
+  confirmOrderStatusAction,
+  showOrderStatusUpdated,
+} from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
 
@@ -65,7 +69,7 @@ export default function OrdersPage() {
     setCurrentPage(nextPage);
   }
 
-  function handleActionClick(row, action) {
+  async function handleActionClick(row, action) {
     if (action.fromDropdown) {
       setOrderRows((currentRows) =>
         currentRows.map((currentRow) =>
@@ -79,6 +83,7 @@ export default function OrdersPage() {
             : currentRow,
         ),
       );
+      await showOrderStatusUpdated(`${action.label} updated for ${row.id}.`);
       return;
     }
 
@@ -88,7 +93,60 @@ export default function OrdersPage() {
     }
 
     if (action.label === "Accept") {
+      const result = await confirmOrderStatusAction("Accept order", row.id);
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await showOrderStatusUpdated(`Order ${row.id} accepted.`);
       navigate(`/orders/${row.id.replace("#", "")}`);
+      return;
+    }
+
+    if (action.label === "Reject") {
+      const result = await confirmOrderStatusAction("Reject order", row.id);
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      setOrderRows((currentRows) =>
+        currentRows.map((currentRow) =>
+          currentRow.id === row.id
+            ? {
+                ...currentRow,
+                status: "Canceled",
+                statusTone: "is-canceled",
+                actions: [{ label: "View Details", tone: "is-muted" }],
+              }
+            : currentRow,
+        ),
+      );
+      await showOrderStatusUpdated(`Order ${row.id} rejected.`);
+      return;
+    }
+
+    if (action.label === "Mark delivered") {
+      const result = await confirmOrderStatusAction("Mark delivered", row.id);
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      setOrderRows((currentRows) =>
+        currentRows.map((currentRow) =>
+          currentRow.id === row.id
+            ? {
+                ...currentRow,
+                status: "Delivered",
+                statusTone: "is-delivered",
+                actions: [{ label: "View Details", tone: "is-muted" }],
+              }
+            : currentRow,
+        ),
+      );
+      await showOrderStatusUpdated(`Order ${row.id} marked as delivered.`);
     }
   }
 
