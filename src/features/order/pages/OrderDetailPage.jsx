@@ -5,6 +5,10 @@ import LifecyclePanel from "../components/order-details/LifecyclePanel";
 import LogisticsPanel from "../components/order-details/LogisticsPanel";
 import OrderItemsPanel from "../components/order-details/OrderItemsPanel";
 import { getOrderDetailById } from "../data/orderData";
+import {
+  confirmOrderStatusAction,
+  showOrderStatusUpdated,
+} from "../../../utils/vendorAlerts";
 
 export default function OrderDetailPage() {
   const navigate = useNavigate();
@@ -24,9 +28,28 @@ export default function OrderDetailPage() {
     );
   }
 
-  function handleLifecycleActionClick(action) {
+  async function handleLifecycleActionClick(action) {
     if (action.navigateToAccepted) {
+      const result = await confirmOrderStatusAction("Accept order", orderDetail.id);
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await showOrderStatusUpdated(`Order ${orderDetail.id} accepted.`);
       navigate(`/orders/${orderId}/accepted`);
+      return;
+    }
+
+    if (/reject/i.test(action.label)) {
+      const result = await confirmOrderStatusAction("Reject order", orderDetail.id);
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      await showOrderStatusUpdated(`Order ${orderDetail.id} rejected.`);
+      navigate("/orders");
     }
   }
 

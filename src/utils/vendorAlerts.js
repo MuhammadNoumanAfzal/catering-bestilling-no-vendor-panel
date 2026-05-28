@@ -131,6 +131,66 @@ export function showReplyPostedSuccess() {
   return showVendorSuccessToast("Reply posted successfully.");
 }
 
+export function showResetLinkSentSuccess() {
+  return Swal.fire(
+    withBaseOptions({
+      icon: "success",
+      title: "Reset link sent",
+      text: "We sent a password reset link to your email address.",
+      confirmButtonText: "Continue",
+    }),
+  );
+}
+
+export function showPasswordResetSuccess() {
+  return Swal.fire(
+    withBaseOptions({
+      icon: "success",
+      title: "Password updated",
+      text: "Your password has been reset successfully.",
+      confirmButtonText: "Back to login",
+    }),
+  );
+}
+
+export function showVerificationSuccess() {
+  return Swal.fire(
+    withBaseOptions({
+      icon: "success",
+      title: "Code verified",
+      text: "Your verification code was confirmed successfully.",
+      confirmButtonText: "Continue",
+    }),
+  );
+}
+
+export function confirmOrderStatusAction(actionLabel, orderId) {
+  return confirmVendorAction({
+    title: `${actionLabel}?`,
+    text: orderId
+      ? `Apply "${actionLabel}" to order ${orderId}?`
+      : `Apply "${actionLabel}" to this order?`,
+    confirmButtonText: actionLabel,
+    cancelButtonText: "Not now",
+    icon: "question",
+  });
+}
+
+export function showOrderStatusUpdated(title) {
+  return showVendorSuccessToast(title);
+}
+
+export function showMenuSavedSuccess() {
+  return Swal.fire(
+    withBaseOptions({
+      icon: "success",
+      title: "Add-on saved",
+      text: "Your menu add-on was saved successfully.",
+      confirmButtonText: "Continue",
+    }),
+  );
+}
+
 export function promptVendorAuthRequired() {
   return Swal.fire(
     withBaseOptions({

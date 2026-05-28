@@ -7,6 +7,11 @@ import MenuImageUploadCard from "../components/MenuImageUploadCard";
 import MenuPageFooter from "../components/MenuPageFooter";
 import MenuTextField from "../components/MenuTextField";
 import { dietaryTags, presetCategories } from "../data/menuData";
+import {
+  showMenuSavedSuccess,
+  showVendorErrorAlert,
+  showVendorSuccessToast,
+} from "../../../utils/vendorAlerts";
 
 export default function MenuPage() {
   const [addOnName, setAddOnName] = useState("");
@@ -22,6 +27,35 @@ export default function MenuPage() {
         ? currentTags.filter((currentTag) => currentTag !== tag)
         : [...currentTags, tag],
     );
+  }
+
+  async function handleAddAnotherItem() {
+    setAddOnName("");
+    setPrice("");
+    setSelectedTags(["Vegetarian"]);
+    setAvailableImmediately(true);
+    setSelectedCategory("Beverages");
+    setNewCategory("");
+    await showVendorSuccessToast("Ready to add another item.");
+  }
+
+  async function handleCancel() {
+    setAddOnName("");
+    setPrice("");
+    setSelectedTags(["Vegetarian"]);
+    setAvailableImmediately(true);
+    setSelectedCategory("Beverages");
+    setNewCategory("");
+    await showVendorSuccessToast("Menu changes discarded.");
+  }
+
+  async function handleSave() {
+    if (!addOnName.trim() || !price.trim()) {
+      await showVendorErrorAlert("Please fill in the add-on name and price before saving.");
+      return;
+    }
+
+    await showMenuSavedSuccess();
   }
 
   return (
@@ -83,7 +117,8 @@ export default function MenuPage() {
 
       <div className="mt-7 flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
         <button
-          className="type-subpara flex h-[36px] w-full max-w-[312px] items-center justify-center gap-2 rounded-[7px] border border-[#cbc4bd] bg-white text-[#211913]"
+          className="type-subpara flex h-[36px] w-full max-w-[312px] cursor-pointer items-center justify-center gap-2 rounded-[7px] border border-[#cbc4bd] bg-white text-[#211913]"
+          onClick={handleAddAnotherItem}
           type="button"
         >
           <Plus size={12} />
@@ -92,13 +127,15 @@ export default function MenuPage() {
 
         <div className="flex items-center gap-3 self-end max-[720px]:self-auto">
           <button
-            className="h-[38px] min-w-[104px] rounded-[8px] border border-[#4a4038] bg-white px-4 text-[12px] font-bold text-[#15110f]"
+            className="h-[38px] min-w-[104px] cursor-pointer rounded-[8px] border border-[#4a4038] bg-white px-4 text-[12px] font-bold text-[#15110f]"
+            onClick={handleCancel}
             type="button"
           >
             Cancel
           </button>
           <button
-            className="h-[38px] min-w-[110px] rounded-[8px] bg-[#d96e39] px-4 text-[12px] font-bold text-white shadow-[0_6px_16px_rgba(217,110,57,0.26)]"
+            className="h-[38px] min-w-[110px] cursor-pointer rounded-[8px] bg-[#d96e39] px-4 text-[12px] font-bold text-white shadow-[0_6px_16px_rgba(217,110,57,0.26)]"
+            onClick={handleSave}
             type="button"
           >
             Save Add-ons
