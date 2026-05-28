@@ -15,10 +15,11 @@ export default function QuickActions({ actions }) {
         return (
           <button
             key={action.label}
-            className="type-para min-h-10 rounded-md border border-[#d8d8d8] bg-white px-[14px] text-[#241913]"
+            className="type-para min-h-10 cursor-pointer rounded-md border border-[#d8d8d8] bg-white px-[14px] text-[#241913]"
+            onClick={action.onClick}
             type="button"
           >
-            <span className="inline-flex cursor-pointer items-center justify-center gap-1.5 font-bold">
+            <span className="inline-flex items-center justify-center gap-1.5 font-bold">
               {Icon ? <Icon size={14} strokeWidth={2.2} /> : null}
               <span>{action.label}</span>
             </span>

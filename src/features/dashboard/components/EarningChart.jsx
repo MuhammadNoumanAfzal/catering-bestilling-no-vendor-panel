@@ -1,7 +1,7 @@
-export default function EarningChart({ values }) {
+export default function EarningChart({ values, subtitle }) {
   return (
     <>
-      <p className="type-para -mt-1 ">Revenue performance over the last 7 days</p>
+      <p className="type-para -mt-1 ">{subtitle}</p>
       <div className="mt-[40px] grid grid-cols-[48px_minmax(0,1fr)] gap-[10px] items-stretch max-[720px]:grid-cols-1">
         <div className="flex h-[210px] flex-col justify-between text-[#4e433a] max-[720px]:hidden">
           <span className="type-subpara">$10000</span>
