@@ -12,6 +12,7 @@ import {
   Truck,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "../../features/auth/context/AuthContext";
 
 const sidebarItems = [
   { label: "Home", to: "/dashboard", icon: House },
@@ -26,6 +27,8 @@ const sidebarItems = [
 ];
 
 export default function AppLayout() {
+  const { logout, user } = useAuth();
+
   return (
     <div className="flex min-h-screen bg-[#f4f0ea] text-[#201914] max-[960px]:flex-col">
       <aside className="flex w-[252px] shrink-0 flex-col justify-between bg-[#cd6434] p-[10px] text-[#fff8f3] max-[960px]:w-full">
@@ -35,7 +38,7 @@ export default function AppLayout() {
           </div>
 
           <button
-            className="flex items-center justify-between rounded-[10px] bg-[#f7efe8] px-3 py-[9px] text-[#71361b]"
+            className="flex cursor-pointer items-center justify-between rounded-[10px] bg-[#f7efe8] px-3 py-[9px] text-[#71361b]"
             type="button"
           >
             <span className="type-subpara">View Store</span>
@@ -67,7 +70,8 @@ export default function AppLayout() {
         </div>
 
         <button
-          className="flex w-full items-center gap-2.5 rounded-[10px] bg-transparent px-3 py-[11px] transition-colors duration-150 hover:bg-white/15"
+          className="flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] bg-transparent px-3 py-[11px] transition-colors duration-150 hover:bg-white/15"
+          onClick={logout}
           type="button"
         >
           <LogOut size={16} />
@@ -99,7 +103,7 @@ export default function AppLayout() {
             </NavLink>
 
             <button
-              className="inline-flex items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913]"
+              className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913]"
               type="button"
             >
               <img
@@ -108,8 +112,8 @@ export default function AppLayout() {
                 alt="Raj Holder"
               />
               <span className="flex flex-col items-start leading-[1.15]">
-                <strong className="type-subpara">Raj Holder</strong>
-                <span className="type-subpara text-[#8f7f73]">Admin</span>
+                <strong className="type-subpara">{user?.name || "Raj Holder"}</strong>
+                <span className="type-subpara text-[#8f7f73]">{user?.role || "Admin"}</span>
               </span>
               <ChevronDown size={14} />
             </button>
