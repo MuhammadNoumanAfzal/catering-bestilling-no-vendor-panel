@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AuthCard from "../components/AuthCard";
 import { useAuth } from "../context/AuthContext";
 import AuthLayout from "../layouts/AuthLayout";
+import { showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -13,8 +14,6 @@ export default function LoginPage() {
     identifier: "",
     password: "",
   });
-  const [errorMessage, setErrorMessage] = useState("");
-
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard", { replace: true });
@@ -27,18 +26,18 @@ export default function LoginPage() {
         ...current,
         [field]: event.target.value,
       }));
-      setErrorMessage("");
     };
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const result = login(formState);
 
     if (!result.ok) {
-      setErrorMessage(result.message);
+      await showVendorErrorAlert(result.message, "Login failed");
       return;
     }
 
+    await showVendorSuccessToast("Logged in successfully.");
     const nextPath = location.state?.from?.pathname || "/dashboard";
     navigate(nextPath, { replace: true });
   }
@@ -70,7 +69,6 @@ export default function LoginPage() {
         auxiliaryLinkTo="/auth/forgot-password"
         actionDisabled={!formState.identifier.trim() || !formState.password.trim()}
         actionLabel="Login"
-        actionNote={errorMessage}
         onAction={handleLogin}
         footerText="Don't have an account?"
         footerLinkLabel="Contact Admin"

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import SupportAttachmentDropzone from "./SupportAttachmentDropzone";
 import SupportFieldSelect from "./SupportFieldSelect";
+import { showSupportTicketSubmitted } from "../../../utils/vendorAlerts";
 
 const issueTypeOptions = [
   { value: "payout-delay", label: "Payout delayed" },
@@ -52,7 +53,7 @@ export default function SupportTicketForm() {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (!isReadyToSubmit) {
@@ -61,6 +62,7 @@ export default function SupportTicketForm() {
 
     setSubmitted(true);
     setForm(initialForm);
+    await showSupportTicketSubmitted();
   }
 
   return (

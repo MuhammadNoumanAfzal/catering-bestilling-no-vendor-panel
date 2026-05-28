@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { servicePostalCodes } from "../data/deliveryData";
+import { showVendorSuccessToast } from "../../../utils/vendorAlerts";
 
 const DELIVERY_SETTINGS_STORAGE_KEY = "delivery-settings";
 
@@ -160,7 +161,7 @@ export default function useDeliverySettings() {
     handleCloseAddSlotModal();
   }
 
-  function handleCancelChanges() {
+  async function handleCancelChanges() {
     setSelectedModes(savedSettings.selectedModes);
     setPostalCode("");
     setPostalCodes(savedSettings.postalCodes);
@@ -173,9 +174,10 @@ export default function useDeliverySettings() {
     setIsAddSlotModalOpen(false);
     setCustomSlotDraft("");
     setSaveMessage("Changes discarded.");
+    await showVendorSuccessToast("Delivery changes discarded.");
   }
 
-  function handleSaveChanges() {
+  async function handleSaveChanges() {
     const nextSavedSettings = {
       selectedModes,
       postalCodes,
@@ -193,6 +195,7 @@ export default function useDeliverySettings() {
       JSON.stringify(nextSavedSettings),
     );
     setSaveMessage("Changes saved.");
+    await showVendorSuccessToast("Delivery settings saved.");
   }
 
   const filteredPostalCodes = postalCodes.filter((code) =>

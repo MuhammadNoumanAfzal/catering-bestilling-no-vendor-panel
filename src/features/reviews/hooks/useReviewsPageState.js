@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { reviewItems } from "../data/reviewsData";
+import { showReplyPostedSuccess } from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
 
@@ -187,12 +188,13 @@ export default function useReviewsPageState() {
     }));
   }
 
-  function handleReplySubmit() {
+  async function handleReplySubmit() {
     if (!selectedReviewId) {
       return;
     }
 
     setSelectedReviewId(null);
+    await showReplyPostedSuccess();
   }
 
   return {

@@ -1,4 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  confirmVendorDeactivateStore,
+  confirmVendorDeleteStore,
+  confirmVendorResetSettings,
+  showVendorErrorAlert,
+  showVendorSuccessToast,
+} from "../../../utils/vendorAlerts";
 
 const SETTINGS_STORAGE_KEY = "settings-page-state";
 
@@ -152,20 +159,29 @@ export default function useSettingsPageState() {
     }));
   }
 
-  function handleCancel() {
+  async function handleCancel() {
     setSettings(savedSettings);
     setPasswordForm(emptyPasswordForm);
     setSaveMessage("Changes discarded.");
+    await showVendorSuccessToast("Settings changes discarded.");
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (passwordForm.currentPassword || passwordForm.newPassword || passwordForm.confirmPassword) {
       if (passwordForm.newPassword.length < 8) {
+        await showVendorErrorAlert(
+          "Use at least 8 characters for the new password.",
+          "Password too short",
+        );
         setSaveMessage("Use at least 8 characters for the new password.");
         return;
       }
 
       if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        await showVendorErrorAlert(
+          "New password and confirm password must match.",
+          "Password mismatch",
+        );
         setSaveMessage("New password and confirm password must match.");
         return;
       }
@@ -175,17 +191,31 @@ export default function useSettingsPageState() {
     window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     setPasswordForm(emptyPasswordForm);
     setSaveMessage("Changes saved.");
+    await showVendorSuccessToast("Settings saved successfully.");
   }
 
-  function handleResetAllSettings() {
+  async function handleResetAllSettings() {
+    const result = await confirmVendorResetSettings();
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
     setSettings(defaultSettings);
     setSavedSettings(defaultSettings);
     setPasswordForm(emptyPasswordForm);
     window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(defaultSettings));
     setSaveMessage("Settings reset to default.");
+    await showVendorSuccessToast("Settings reset to default.");
   }
 
-  function handleDeactivateStore() {
+  async function handleDeactivateStore() {
+    const result = await confirmVendorDeactivateStore();
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
     const deactivatedSettings = {
       ...settings,
       hours: settings.hours.map((item) => ({
@@ -200,14 +230,22 @@ export default function useSettingsPageState() {
     setSavedSettings(deactivatedSettings);
     window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(deactivatedSettings));
     setSaveMessage("Store deactivated.");
+    await showVendorSuccessToast("Store deactivated.");
   }
 
-  function handleDeleteStore() {
+  async function handleDeleteStore() {
+    const result = await confirmVendorDeleteStore();
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
     window.localStorage.removeItem(SETTINGS_STORAGE_KEY);
     setSettings(defaultSettings);
     setSavedSettings(defaultSettings);
     setPasswordForm(emptyPasswordForm);
     setSaveMessage("Store deleted permanently.");
+    await showVendorSuccessToast("Store deleted permanently.");
   }
 
   const passwordStrength = useMemo(() => {
