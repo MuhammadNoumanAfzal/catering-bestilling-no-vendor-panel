@@ -1,6 +1,5 @@
 import ReplyReviewModal from "../components/ReplyReviewModal";
 import ReviewsFiltersBar from "../components/ReviewsFiltersBar";
-import ReviewsFooter from "../components/ReviewsFooter";
 import ReviewsListSection from "../components/ReviewsListSection";
 import ReviewsPageHeader from "../components/ReviewsPageHeader";
 import ReviewsPagination from "../components/ReviewsPagination";
@@ -80,9 +79,6 @@ export default function ReviewsPage() {
           totalPages={totalPages}
         />
       </div>
-
-      <ReviewsFooter />
-
       <ReplyReviewModal
         draftReply={selectedReview ? replyDrafts[selectedReview.id] ?? "" : ""}
         onClose={handleReplyClose}
