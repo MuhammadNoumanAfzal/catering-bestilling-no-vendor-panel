@@ -1,8 +1,8 @@
-import { CalendarDays, Circle, Wallet } from "lucide-react";
+import { Banknote, CalendarDays, CircleDollarSign } from "lucide-react";
 
 const iconMap = {
-  orange: Wallet,
-  green: Circle,
+  orange: CircleDollarSign,
+  green: Banknote,
   blue: CalendarDays,
 };
 
@@ -21,7 +21,7 @@ const amountStyles = {
 export default function FinancePayoutStatus({ items }) {
   return (
     <section className="rounded-[12px] border border-[#ddd5ce] bg-white px-5 py-5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
-      <h2 className="type-h4 m-0 text-[#181310]">Payout Status</h2>
+      <h2 className="type-h3 m-0 text-[#181310]">Payout Status</h2>
 
       <div className="mt-4 flex flex-col gap-3.5">
         {items.map((item) => {
@@ -34,16 +34,20 @@ export default function FinancePayoutStatus({ items }) {
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-full ${toneStyles[item.tone]}`}
+                  className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full ${toneStyles[item.tone]}`}
                 >
-                  <Icon size={18} />
+                  <Icon size={36} />
                 </span>
                 <span>
-                  <strong className="type-para block text-[15px] text-[#1a1410]">{item.title}</strong>
-                  <span className="type-para text-[13px] text-[#86786d]">{item.description}</span>
+                  <strong className="type-h5 block text-[#1a1410]">
+                    {item.title}
+                  </strong>
+                  <span className="type-subpara whitespace-nowrap text-[#86786d]">
+                    {item.description}
+                  </span>
                 </span>
               </div>
-              <span className={`type-para text-[15px] font-bold ${amountStyles[item.tone]}`}>
+              <span className={`type-h5 ${amountStyles[item.tone]}`}>
                 {item.amount}
               </span>
             </div>
