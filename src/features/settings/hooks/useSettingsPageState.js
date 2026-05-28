@@ -115,6 +115,18 @@ export default function useSettingsPageState() {
     };
   }
 
+  function handleAccountFieldChange(field) {
+    return (event) => {
+      setSettings((current) => ({
+        ...current,
+        account: {
+          ...current.account,
+          [field]: event.target.value,
+        },
+      }));
+    };
+  }
+
   function handleNotificationToggle(field) {
     setSettings((current) => ({
       ...current,
@@ -315,6 +327,7 @@ export default function useSettingsPageState() {
   return {
     activeTab,
     handleBusinessHourChange,
+    handleAccountFieldChange,
     handleCancel,
     handleDeactivateStore,
     handleDeleteStore,

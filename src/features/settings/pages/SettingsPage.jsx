@@ -8,6 +8,7 @@ import useSettingsPageState from "../hooks/useSettingsPageState";
 export default function SettingsPage() {
   const {
     activeTab,
+    handleAccountFieldChange,
     handleBusinessHourChange,
     handleCancel,
     handleDeactivateStore,
@@ -55,6 +56,7 @@ export default function SettingsPage() {
         <SettingsAccountSecurityPanel
           account={settings.account}
           businessName={settings.businessName}
+          handleAccountFieldChange={handleAccountFieldChange}
           handlePasswordChange={handlePasswordChange}
           handleTogglePasswordVisibility={handleTogglePasswordVisibility}
           passwordForm={passwordForm}

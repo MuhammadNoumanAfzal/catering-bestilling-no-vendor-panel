@@ -25,7 +25,7 @@ export default function SettingsBusinessHoursSection({
             className="flex items-center gap-3 rounded-[8px] border border-[#e8dfd7] bg-[#fffdfb] px-3 py-2 max-[760px]:flex-col max-[760px]:items-stretch"
           >
             <button
-              className="flex min-w-[110px] cursor-pointer items-center gap-2 text-left text-[12px] font-semibold text-[#2b221d]"
+              className="flex min-w-[110px] cursor-pointer items-center gap-2 text-left text-[14px] font-semibold text-[#2b221d]"
               onClick={() => onToggleDay(item.day)}
               type="button"
             >

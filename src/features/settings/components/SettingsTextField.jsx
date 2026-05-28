@@ -8,7 +8,7 @@ export default function SettingsTextField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-bold text-[#2a211b]">{label}</span>
+      <span className="text-[13px] font-bold text-[#2a211b]">{label}</span>
       {multiline ? (
         <textarea
           className="type-subpara min-h-[96px] w-full resize-none rounded-[7px] border border-[#cec5bd] bg-white px-3 py-3 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
