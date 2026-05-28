@@ -2,13 +2,16 @@ import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 import SettingsSectionCard from "./SettingsSectionCard";
 
-function AccountField({ label, value }) {
+function AccountField({ label, onChange, value }) {
   return (
     <div className="grid grid-cols-[100px_minmax(0,1fr)] items-center gap-3 max-[640px]:grid-cols-1 max-[640px]:gap-1.5">
-      <span className="text-[11px] font-bold text-[#1f1814]">{label}</span>
-      <div className="flex h-[30px] items-center rounded-[7px] bg-[#f2f2f2] px-3 text-[11px] text-[#4d433d]">
-        {value}
-      </div>
+      <span className="text-[13px] font-bold text-[#1f1814]">{label}</span>
+      <input
+        className="h-[34px] rounded-[7px] border border-[#d9d9d9] bg-[#f2f2f2] px-3 text-[12px] text-[#4d433d] outline-none transition placeholder:text-[#9d9187] focus:border-[#cf6e38] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
+        onChange={onChange}
+        type="text"
+        value={value}
+      />
     </div>
   );
 }
@@ -24,7 +27,7 @@ function PasswordField({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-bold text-[#1f1814]">{label}</span>
+      <span className="text-[13px] font-bold text-[#1f1814]">{label}</span>
       <div className="relative">
         <input
           className="type-subpara h-[38px] w-full rounded-[8px] border border-[#d5cbc3] bg-white px-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
@@ -49,6 +52,7 @@ function PasswordField({
 export default function SettingsAccountSecurityPanel({
   account,
   businessName,
+  handleAccountFieldChange,
   handlePasswordChange,
   handleTogglePasswordVisibility,
   passwordForm,
@@ -86,12 +90,36 @@ export default function SettingsAccountSecurityPanel({
         </div>
 
         <div className="space-y-3">
-          <AccountField label="Full Name" value={account.fullName} />
-          <AccountField label="Email Address" value={account.emailAddress} />
-          <AccountField label="Phone Number" value={account.phoneNumber} />
-          <AccountField label="Role" value={account.role} />
-          <AccountField label="Username" value={account.username} />
-          <AccountField label="Account ID" value={account.accountId} />
+          <AccountField
+            label="Full Name"
+            onChange={handleAccountFieldChange("fullName")}
+            value={account.fullName}
+          />
+          <AccountField
+            label="Email Address"
+            onChange={handleAccountFieldChange("emailAddress")}
+            value={account.emailAddress}
+          />
+          <AccountField
+            label="Phone Number"
+            onChange={handleAccountFieldChange("phoneNumber")}
+            value={account.phoneNumber}
+          />
+          <AccountField
+            label="Role"
+            onChange={handleAccountFieldChange("role")}
+            value={account.role}
+          />
+          <AccountField
+            label="Username"
+            onChange={handleAccountFieldChange("username")}
+            value={account.username}
+          />
+          <AccountField
+            label="Account ID"
+            onChange={handleAccountFieldChange("accountId")}
+            value={account.accountId}
+          />
         </div>
       </SettingsSectionCard>
 

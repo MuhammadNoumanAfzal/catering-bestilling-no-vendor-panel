@@ -13,9 +13,9 @@ export default function SettingsToggleRow({
   return (
     <div className="flex items-center justify-between gap-3 border-b border-[#f0e7df] py-2.5 last:border-b-0 last:pb-0 first:pt-0">
       <div>
-        <p className="text-[12px] font-bold text-[#201914]">{label}</p>
+        <p className="text-[14px] font-bold text-[#201914]">{label}</p>
         {helper ? (
-          <p className="mt-1 text-[11px] text-[#8a7c70]">{helper}</p>
+          <p className="mt-1 text-[12px] text-[#8a7c70]">{helper}</p>
         ) : null}
       </div>
       <button

@@ -12,7 +12,7 @@ export default function SettingsTabs({ activeTab, onChange }) {
         return (
           <button
             key={tab.id}
-            className={`cursor-pointer rounded-[8px] px-3 py-2 text-[11px] font-bold transition ${
+            className={`cursor-pointer rounded-[8px] px-3 py-2 text-[13px] font-bold transition ${
               isActive
                 ? "bg-[#de6f39] text-white shadow-[0_8px_20px_rgba(222,111,57,0.22)]"
                 : "text-[#2b221d]"

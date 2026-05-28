@@ -97,14 +97,40 @@ export function confirmVendorDeleteStore() {
     withBaseOptions({
       icon: "warning",
       title: "Delete Store Permanently?",
-      text: "This action is permanent and cannot be undone. Type DELETE to confirm.",
+      html: `
+        <p class="vendor-delete-alert__lead">
+          This action is permanent and cannot be undone. All menus, orders,
+          customer data, and store settings will be permanently deleted from your
+          account.
+        </p>
+        <div class="vendor-delete-alert__notice">
+          <span class="vendor-delete-alert__notice-icon">!</span>
+          <p>
+            Contact <span>customer support</span> first if you need help
+            recovering specific account data before proceeding.
+          </p>
+        </div>
+        <label class="vendor-delete-alert__field">
+          <span>Type <strong>DELETE</strong> to confirm</span>
+        </label>
+      `,
       input: "text",
-      inputPlaceholder: "DELETE",
+      inputPlaceholder: "Delete",
       showCancelButton: true,
       confirmButtonText: "Delete Permanently",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#ff2918",
       cancelButtonColor: MUTED_BUTTON,
+      customClass: {
+        popup: "vendor-delete-alert",
+        title: "vendor-delete-alert__title",
+        htmlContainer: "vendor-delete-alert__content",
+        input: "vendor-delete-alert__input",
+        actions: "vendor-delete-alert__actions",
+        confirmButton: "vendor-delete-alert__confirm",
+        cancelButton: "vendor-delete-alert__cancel",
+        validationMessage: "vendor-delete-alert__validation",
+      },
       inputValidator: (value) => {
         if ((value || "").trim().toUpperCase() !== "DELETE") {
           return "Type DELETE to continue.";
