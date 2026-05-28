@@ -18,7 +18,7 @@ export default function ReplyReviewModal({
       <div className="w-full max-w-[480px] rounded-[12px] bg-white p-4 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="type-para m-0 text-[#181310]">Reply to Review</h2>
+            <h2 className="type-h3 m-0 text-[#181310]">Reply to Review</h2>
           </div>
           <button className="text-[#473d36]" onClick={onClose} type="button">
             <X size={15} />
@@ -32,8 +32,8 @@ export default function ReplyReviewModal({
             src={review.avatar}
           />
           <div className="min-w-0 flex-1">
-            <p className="type-para m-0 text-[#181310]">{review.author}</p>
-            <p className="mt-1 text-[10px] font-medium text-[#9b8f85]">
+            <p className="type-h4 m-0 text-[#181310]">{review.author}</p>
+            <p className="mt-1 text-[14px] font-medium text-[#9b8f85]">
               {review.reviewDate} | Order {review.id}
             </p>
           </div>
@@ -48,21 +48,33 @@ export default function ReplyReviewModal({
               className={index < review.rating ? "" : "text-[#ddd3ca]"}
             />
           ))}
-          <span className="ml-1 text-[10px] font-semibold text-[#181310]">{review.rating}.0</span>
+          <span className="ml-1 text-[14px] font-semibold text-[#181310]">
+            {review.rating}.0
+          </span>
         </div>
 
-        <p className="mt-3 text-[10px] font-medium leading-[1.55] text-[#3f352e]">{review.text}</p>
+        <p className="mt-3 text-[14px] font-medium leading-[1.55] text-[#3f352e]">
+          {review.text}
+        </p>
 
         <div className="mt-3 rounded-[8px] border border-[#e8dfd7] bg-[#fcfbfa] p-3">
-          <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-[10px] max-[520px]:grid-cols-1">
-            <span className="font-semibold text-[#7e7166]">Order Amount</span>
-            <span className="font-semibold text-[#181310]">{review.orderAmount}</span>
-            <span className="font-semibold text-[#7e7166]">Order Type</span>
-            <span className="font-semibold text-[#181310]">{review.deliveryType}</span>
-            <span className="font-semibold text-[#7e7166]">Delivery Time</span>
-            <span className="font-semibold text-[#181310]">{review.deliveryTime}</span>
-            <span className="font-semibold text-[#7e7166]">Reviewed On</span>
-            <span className="font-semibold text-[#181310]">{review.reviewedOn}</span>
+          <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-[14px] max-[520px]:grid-cols-1">
+            <span className="font-semibold ">Order Amount</span>
+            <span className="font-semibold text-[#181310]">
+              {review.orderAmount}
+            </span>
+            <span className="font-semibold ">Order Type</span>
+            <span className="font-semibold text-[#181310]">
+              {review.deliveryType}
+            </span>
+            <span className="font-semibold ">Delivery Time</span>
+            <span className="font-semibold text-[#181310]">
+              {review.deliveryTime}
+            </span>
+            <span className="font-semibold ">Reviewed On</span>
+            <span className="font-semibold text-[#181310]">
+              {review.reviewedOn}
+            </span>
           </div>
         </div>
 
@@ -87,7 +99,7 @@ export default function ReplyReviewModal({
             Cancel
           </button>
           <button
-            className="rounded-[4px] bg-[#de6f39] px-4 py-[6px] text-[9px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-[4px] cursor-alias bg-[#de6f39] px-4 py-[6px] text-[9px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!isReadyToPost}
             onClick={onSubmit}
             type="button"
