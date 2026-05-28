@@ -40,48 +40,59 @@ export default function FinanceOrdersTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
-              <tr key={`${row[0]}-${index}`} className="border-b border-[#f2ece6] last:border-b-0">
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
-                  {(currentPage - 1) * pageSize + index + 1}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[14px] font-extrabold text-[#1c1510]">
-                  {row[0]}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
-                  {row[1]}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
-                  {row[2]}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3">
-                  <div className="flex flex-col gap-0.5 text-[11px] font-bold leading-[1.2] text-[#75695f]">
-                    <span>{row[3]}</span>
-                  </div>
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
-                  {row[4]}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#de5f5f]">
-                  {row[5]}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
-                  {row[6]}
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3">
-                  <span
-                    className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-[11px] text-[11px] font-bold ${
-                      row[7] === "Pending" ? "bg-[#fff4dd] text-[#d8a12f]" : "bg-[#edf9ef] text-[#38a657]"
-                    }`}
-                  >
-                    {row[7]}
-                  </span>
-                </td>
-                <td className="border-b border-[#eee7df] px-[10px] py-3 text-[14px] font-bold tracking-[0.2em] text-[#6f6358]">
-                  ...
+            {rows.length ? (
+              rows.map((row, index) => (
+                <tr key={`${row[0]}-${index}`} className="border-b border-[#f2ece6] last:border-b-0">
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
+                    {(currentPage - 1) * pageSize + index + 1}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[14px] font-extrabold text-[#1c1510]">
+                    {row[0]}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
+                    {row[1]}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
+                    {row[2]}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3">
+                    <div className="flex flex-col gap-0.5 text-[11px] font-bold leading-[1.2] text-[#75695f]">
+                      <span>{row[3]}</span>
+                    </div>
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
+                    {row[4]}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#de5f5f]">
+                    {row[5]}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e]">
+                    {row[6]}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3">
+                    <span
+                      className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-[11px] text-[11px] font-bold ${
+                        row[7] === "Pending" ? "bg-[#fff4dd] text-[#d8a12f]" : "bg-[#edf9ef] text-[#38a657]"
+                      }`}
+                    >
+                      {row[7]}
+                    </span>
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[14px] font-bold tracking-[0.2em] text-[#6f6358]">
+                    ...
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  className="px-[10px] py-8 text-center text-[13px] font-semibold text-[#8b7d72]"
+                  colSpan={10}
+                >
+                  No orders match the selected filters.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
