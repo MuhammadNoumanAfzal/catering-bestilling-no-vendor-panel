@@ -1,6 +1,5 @@
 import DeliveryActionsBar from "../components/DeliveryActionsBar";
 import DeliveryAddSlotModal from "../components/DeliveryAddSlotModal";
-import DeliveryFooter from "../components/DeliveryFooter";
 import DeliveryLimitsSection from "../components/DeliveryLimitsSection";
 import DeliveryModeSection from "../components/DeliveryModeSection";
 import DeliveryPostalCodesSection from "../components/DeliveryPostalCodesSection";
@@ -104,8 +103,6 @@ export default function DeliveryPage() {
         onSave={handleSaveChanges}
         saveMessage={saveMessage}
       />
-
-      <DeliveryFooter />
 
       {isAddSlotModalOpen ? (
         <DeliveryAddSlotModal

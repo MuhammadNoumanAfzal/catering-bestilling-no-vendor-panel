@@ -1,5 +1,4 @@
 import SettingsAccountSecurityPanel from "../components/SettingsAccountSecurityPanel";
-import SettingsFooter from "../components/SettingsFooter";
 import SettingsActionsBar from "../components/SettingsActionsBar";
 import SettingsBusinessProfilePanel from "../components/SettingsBusinessProfilePanel";
 import SettingsTabs from "../components/SettingsTabs";
@@ -83,8 +82,6 @@ export default function SettingsPage() {
         onSave={handleSave}
         saveMessage={saveMessage}
       />
-
-      <SettingsFooter />
     </section>
   );
 }

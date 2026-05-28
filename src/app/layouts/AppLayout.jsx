@@ -12,6 +12,7 @@ import {
   Truck,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
+import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { confirmVendorLogout } from "../../utils/vendorAlerts";
 
@@ -132,6 +133,8 @@ export default function AppLayout() {
         <main className="flex-1 p-5 max-[720px]:p-[14px]">
           <Outlet />
         </main>
+
+        <AppFooter />
       </div>
     </div>
   );

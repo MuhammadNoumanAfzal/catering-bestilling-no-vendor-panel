@@ -1,4 +1,3 @@
-import SupportCenterFooter from "../components/SupportCenterFooter";
 import SupportTicketForm from "../components/SupportTicketForm";
 
 export default function SupportCenterPage() {
@@ -12,8 +11,6 @@ export default function SupportCenterPage() {
       </header>
 
       <SupportTicketForm />
-
-      <SupportCenterFooter />
     </section>
   );
 }

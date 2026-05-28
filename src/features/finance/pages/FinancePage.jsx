@@ -1,4 +1,3 @@
-import FinanceFooter from "../components/FinanceFooter";
 import FinanceOrdersFilters from "../components/FinanceOrdersFilters";
 import FinanceOrdersTable from "../components/FinanceOrdersTable";
 import FinanceOverviewSection from "../components/FinanceOverviewSection";
@@ -71,8 +70,6 @@ export default function FinancePage() {
           totalPages={totalPages}
         />
       </div>
-
-      <FinanceFooter />
     </section>
   );
 }

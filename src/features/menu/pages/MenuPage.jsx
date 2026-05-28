@@ -4,7 +4,6 @@ import MenuAvailabilityCard from "../components/MenuAvailabilityCard";
 import MenuCategoryPanel from "../components/MenuCategoryPanel";
 import MenuCheckboxGroup from "../components/MenuCheckboxGroup";
 import MenuImageUploadCard from "../components/MenuImageUploadCard";
-import MenuPageFooter from "../components/MenuPageFooter";
 import MenuTextField from "../components/MenuTextField";
 import { dietaryTags, presetCategories } from "../data/menuData";
 import {
@@ -142,8 +141,6 @@ export default function MenuPage() {
           </button>
         </div>
       </div>
-
-      <MenuPageFooter />
     </section>
   );
 }
