@@ -1,4 +1,5 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import ConfirmedLifecyclePanel from "../components/order-details/ConfirmedLifecyclePanel";
 import CustomerInfoPanel from "../components/order-details/CustomerInfoPanel";
 import FinancialSummaryPanel from "../components/order-details/FinancialSummaryPanel";
 import LifecyclePanel from "../components/order-details/LifecyclePanel";
@@ -13,7 +14,9 @@ import {
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const orderDetail = getOrderDetailById(orderId);
+  const isAcceptedView = searchParams.get("stage") === "accepted";
 
   if (!orderDetail) {
     return (
@@ -37,7 +40,7 @@ export default function OrderDetailPage() {
       }
 
       await showOrderStatusUpdated(`Order ${orderDetail.id} accepted.`);
-      navigate(`/orders/${orderId}/accepted`);
+      setSearchParams({ stage: "accepted" });
       return;
     }
 
@@ -51,6 +54,16 @@ export default function OrderDetailPage() {
       await showOrderStatusUpdated(`Order ${orderDetail.id} rejected.`);
       navigate("/orders");
     }
+  }
+
+  async function handleConfirmedActionClick(action) {
+    const result = await confirmOrderStatusAction(action.label, orderDetail.id);
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    await showOrderStatusUpdated(`${orderDetail.id} updated to ${action.label.toLowerCase()}.`);
   }
 
   return (
@@ -81,10 +94,19 @@ export default function OrderDetailPage() {
         </div>
 
         <aside className="flex flex-col gap-3">
-          <LifecyclePanel
-            actions={orderDetail.lifecycleActions}
-            onActionClick={handleLifecycleActionClick}
-          />
+          {isAcceptedView ? (
+            <ConfirmedLifecyclePanel
+              actions={orderDetail.confirmedLifecycleActions}
+              onActionClick={handleConfirmedActionClick}
+              statusSubtitle={orderDetail.confirmedStatus.subtitle}
+              statusTitle={orderDetail.confirmedStatus.title}
+            />
+          ) : (
+            <LifecyclePanel
+              actions={orderDetail.lifecycleActions}
+              onActionClick={handleLifecycleActionClick}
+            />
+          )}
           <FinancialSummaryPanel summary={orderDetail.financialSummary} />
         </aside>
       </div>

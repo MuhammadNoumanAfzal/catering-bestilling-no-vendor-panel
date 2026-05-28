@@ -5,7 +5,6 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 import NewPasswordPage from "../../features/auth/pages/NewPasswordPage";
 import ProtectedRoute from "../../features/auth/components/ProtectedRoute";
 import VerificationPage from "../../features/auth/pages/VerificationPage";
-import AcceptedOrderPage from "../../features/order/pages/AcceptedOrderPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
 import FinancePage from "../../features/finance/pages/FinancePage";
@@ -31,7 +30,10 @@ export default function AppRouter() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
-          <Route path="orders/:orderId/accepted" element={<AcceptedOrderPage />} />
+          <Route
+            path="orders/:orderId/accepted"
+            element={<Navigate to="..?stage=accepted" relative="path" replace />}
+          />
           <Route path="menu" element={<MenuPage />} />
           <Route path="delivery" element={<DeliveryPage />} />
           <Route path="finance" element={<FinancePage />} />

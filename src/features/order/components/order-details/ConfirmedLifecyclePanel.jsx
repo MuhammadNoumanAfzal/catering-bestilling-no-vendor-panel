@@ -1,7 +1,12 @@
 import { CircleCheckBig } from "lucide-react";
 import DetailPanel from "./DetailPanel";
 
-export default function ConfirmedLifecyclePanel({ statusTitle, statusSubtitle, actions }) {
+export default function ConfirmedLifecyclePanel({
+  statusTitle,
+  statusSubtitle,
+  actions,
+  onActionClick,
+}) {
   return (
     <DetailPanel title="Order Lifecycle">
       <div className="mb-3 flex flex-col items-center gap-2 text-center">
@@ -21,6 +26,7 @@ export default function ConfirmedLifecyclePanel({ statusTitle, statusSubtitle, a
                 ? "border-[#cf6e38] bg-[#cf6e38] text-white"
                 : "border-[#d8cec4] bg-white text-[#2b231e]"
             }`}
+            onClick={() => onActionClick?.(action)}
             type="button"
           >
             {action.label}
