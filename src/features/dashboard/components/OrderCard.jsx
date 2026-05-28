@@ -10,7 +10,7 @@ const badgeToneClasses = {
   "is-warning": "bg-[#fff0cf] text-[#d49700]",
 };
 
-export default function OrderCard({ order }) {
+export default function OrderCard({ onPrimaryAction, onSecondaryAction, order }) {
   return (
     <article
       className={`flex items-end justify-between gap-4 rounded-[14px] border px-3 pb-3 pt-[14px] ${
@@ -49,12 +49,14 @@ export default function OrderCard({ order }) {
       <div className="flex items-center gap-2 max-[720px]:flex-col max-[720px]:items-stretch">
         <button
           className="type-para min-h-9 cursor-pointer min-w-[120px] rounded border-0 bg-[#cf6e38] px-[16px] text-[10px] font-bold text-white"
+          onClick={() => onPrimaryAction?.(order)}
           type="button"
         >
           Start Preparing
         </button>
         <button
           className="type-para min-h-9 cursor-pointer min-w-[120px] rounded border border-[#b8b4af] bg-white px-[16px] text-[10px] font-bold text-[#2f2822]"
+          onClick={() => onSecondaryAction?.(order)}
           type="button"
         >
           View Details

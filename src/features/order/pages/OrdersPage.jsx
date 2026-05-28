@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import OrderFilters from "../components/OrderFilters";
 import OrderMetricCard from "../components/OrderMetricCard";
 import OrderPagination from "../components/OrderPagination";
@@ -24,6 +24,7 @@ function normalizeLabel(value) {
 
 export default function OrdersPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
   const [activeFilter, setActiveFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,6 +51,23 @@ export default function OrdersPage() {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
     return filteredRows.slice(startIndex, startIndex + PAGE_SIZE);
   }, [currentPage, filteredRows]);
+
+  useEffect(() => {
+    const nextTab = searchParams.get("tab");
+    const nextFilter = searchParams.get("filter");
+
+    if (nextTab) {
+      setActiveTab(nextTab);
+    }
+
+    if (nextFilter) {
+      setActiveFilter(nextFilter);
+    }
+
+    if (nextTab || nextFilter) {
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   function handleTabChange(tabLabel) {
     setActiveTab(tabLabel);

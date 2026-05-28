@@ -19,16 +19,19 @@ export default function OverviewCard({
   helper,
   helperTone,
   icon,
+  onClick,
   variant,
   progress,
 }) {
   const Icon = iconMap[icon];
 
   return (
-    <article
-      className={`relative min-h-[102px] overflow-hidden rounded-[10px] border border-[#e8e2da] bg-white px-3 pb-[14px] pt-3 shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)] ${
+    <button
+      className={`relative min-h-[102px] cursor-pointer overflow-hidden rounded-[10px] border border-[#e8e2da] bg-white px-3 pb-[14px] pt-3 text-left shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)] transition hover:translate-y-[-1px] ${
         variant === "capacity" ? "pb-3" : ""
       }`}
+      onClick={onClick}
+      type="button"
     >
       <div className="inline-flex h-8 w-8 items-center justify-center rounded-[7px] bg-[#fff4ef]">
         {Icon ? <Icon className="text-[#d66c3a]" size={24} strokeWidth={2.2} /> : null}
@@ -57,6 +60,6 @@ export default function OverviewCard({
           {helper}
         </p>
       )}
-    </article>
+    </button>
   );
 }

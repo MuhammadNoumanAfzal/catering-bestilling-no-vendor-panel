@@ -1,6 +1,6 @@
 import { ChevronRight, Star } from "lucide-react";
 
-export default function ReviewsList({ reviews }) {
+export default function ReviewsList({ onManageReviews, reviews }) {
   return (
     <>
       <p className="type-para -mt-1 ">Customer feedback on latest events</p>
@@ -53,7 +53,8 @@ export default function ReviewsList({ reviews }) {
         ))}
       </div>
       <button
-        className="type-para cursor-pointer mt-3 inline-flex items-center gap-1 border-0 bg-transparent p-0 text-[#2f69c8]"
+        className="type-para mt-3 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-[#2f69c8]"
+        onClick={onManageReviews}
         type="button"
       >
         Manage reviews
