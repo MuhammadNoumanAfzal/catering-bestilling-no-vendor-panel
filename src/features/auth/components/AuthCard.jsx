@@ -1,13 +1,16 @@
 import { Link } from "react-router-dom";
 
-function Field({ label, type = "text", placeholder, helperText }) {
+function Field({ label, type = "text", placeholder, helperText, name, onChange, value }) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="type-para text-[#4c4037]">{label}</span>
       <input
         className="type-subpara min-h-[42px] rounded-lg border border-[#ddd4cb] bg-white px-3 text-[#1d1713] outline-none transition duration-150 placeholder:text-[#b0a79e] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+        name={name}
+        onChange={onChange}
         type={type}
         placeholder={placeholder}
+        value={value}
       />
       {helperText ? (
         <span className="type-subpara text-[#aaa094]">{helperText}</span>
@@ -43,6 +46,9 @@ export default function AuthCard({
   note,
   rememberMeLabel,
   passwordRules,
+  actionDisabled = false,
+  actionNote,
+  onAction,
 }) {
   return (
     <div className="w-full rounded-[14px] border border-[#e9dfd6] bg-white/95 shadow-[0_18px_44px_rgba(61,44,30,0.12)] sm:max-w-[362px]">
@@ -87,7 +93,7 @@ export default function AuthCard({
         {rememberMeLabel || auxiliaryLinkLabel ? (
           <div className="mt-2.5 flex items-center justify-between gap-3">
             {rememberMeLabel ? (
-              <label className="type-para inline-flex items-center gap-1.5 text-[#786d64]">
+              <label className="type-para inline-flex cursor-pointer items-center gap-1.5 text-[#786d64]">
                 <input className="accent-[#cf6e38]" type="checkbox" />
                 <span>{rememberMeLabel}</span>
               </label>
@@ -107,11 +113,17 @@ export default function AuthCard({
         ) : null}
 
         <button
-          className="type-para mt-[14px] min-h-[42px] w-full rounded-lg bg-[#cf6e38] font-bold text-white transition duration-150 hover:bg-[#bf622f] active:translate-y-px"
+          className="type-para mt-[14px] min-h-[42px] w-full cursor-pointer rounded-lg bg-[#cf6e38] font-bold text-white transition duration-150 hover:bg-[#bf622f] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55"
+          disabled={actionDisabled}
+          onClick={onAction}
           type="button"
         >
           {actionLabel}
         </button>
+
+        {actionNote ? (
+          <p className="type-para mt-2 text-center text-[#cf6e38]">{actionNote}</p>
+        ) : null}
 
         {note ? <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p> : null}
 
