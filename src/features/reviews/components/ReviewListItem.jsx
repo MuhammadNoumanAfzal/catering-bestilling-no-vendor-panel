@@ -18,7 +18,7 @@ export default function ReviewListItem({ review }) {
           />
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="type-para m-0 text-[#181310]">{review.author}</h3>
+              <h3 className="type-h4 m-0 text-[#181310]">{review.author}</h3>
             </div>
             <div className="mt-1 flex items-center gap-2">
               <div className="flex items-center gap-1 text-[#f4c33f]">
@@ -31,20 +31,20 @@ export default function ReviewListItem({ review }) {
                   />
                 ))}
               </div>
-              <span className="text-[9px] font-medium text-[#a3978b]">{review.age}</span>
+              <span className="text-[14px] font-medium text-[#a3978b]">{review.age}</span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end leading-none">
-            <span className="text-[7px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
+            <span className="text-[14px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
               Order Ref
             </span>
-            <span className="mt-1 text-[10px] font-extrabold text-[#201914]">#{review.id}</span>
+            <span className="mt-1 text-[14px] font-extrabold text-[#201914]">#{review.id}</span>
           </div>
           <button
-            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#d8d0c9] bg-white px-3 py-[7px] text-[10px] font-bold text-[#201914]"
+            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#d8d0c9] cursor-pointer bg-white px-3 py-[7px] text-[10px] font-bold text-[#201914]"
             onClick={review.onReplyClick}
             type="button"
           >
@@ -57,18 +57,18 @@ export default function ReviewListItem({ review }) {
       <p className="type-subpara mt-3 text-[#75695f]">{review.text}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-[#fff2ec] px-2.5 py-1 text-[9px] font-bold text-[#d96e39]">
+        <span className="rounded-full bg-[#fff2ec] px-2.5 py-1 text-[12px] font-bold text-[#d96e39]">
           {review.orderType}
         </span>
-        <span className="rounded-full border border-[#ecd8d8] bg-[#fff7f7] px-2.5 py-1 text-[9px] font-bold text-[#dd7777]">
+        <span className="rounded-full border border-[#ecd8d8] bg-[#fff7f7] px-2.5 py-1 text-[12px] font-bold text-[#dd7777]">
           {review.eventLabel}
         </span>
       </div>
 
       {review.tone === "alert" ? (
         <div className="mt-3 flex items-center gap-2 rounded-[4px] border border-[#eda5a5] bg-[#fff3f3] px-3 py-2">
-          <AlertCircle size={12} className="shrink-0 text-[#df5f5f]" />
-          <span className="text-[9px] font-medium text-[#d85e5e]">
+          <AlertCircle size={12} className="shrink-0 text-[#d12929]" />
+          <span className="text-[12px] font-medium text-[#e62828]">
             Priority Attention Required: Negative feedback affects merchant score.
           </span>
         </div>

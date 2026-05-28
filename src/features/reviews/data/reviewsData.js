@@ -1,15 +1,15 @@
 export const ratingBreakdown = [
-  { stars: 5, count: 993 },
-  { stars: 4, count: 520 },
-  { stars: 3, count: 236 },
-  { stars: 2, count: 41 },
-  { stars: 1, count: 12 },
+  { stars: 5, count: 78 },
+  { stars: 4, count: 32 },
+  { stars: 3, count: 12 },
+  { stars: 2, count: 4 },
+  { stars: 1, count: 2 },
 ];
 
 export const reviewStats = [
-  { label: "TOTAL REVIEWS", value: "4.8", helper: "Based on 128 reviews" },
-  { label: "NEW REVIEWS", value: "25", helper: "In the last 30 days" },
-  { label: "RESPONSES", value: "98%", helper: "Reply rate of 112/114" },
+  { label: "TOTAL REVIEWS", value: "4.8", helper: "All time reviews" },
+  { label: "NEW REVIEWS", value: "25", helper: "In last 30 days" },
+  { label: "RESPONSE RATE", value: "98%", helper: "You replied to 23 of 25" },
 ];
 
 export const reviewFilters = ["All", "5.0", "4.0", "3.0", "2.0", "1.0"];
