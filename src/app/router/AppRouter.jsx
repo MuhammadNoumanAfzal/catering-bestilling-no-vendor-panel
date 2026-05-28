@@ -13,6 +13,7 @@ import NotificationsPage from "../../features/notifications/pages/NotificationsP
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
+import SettingsPage from "../../features/settings/pages/SettingsPage";
 import SupportCenterPage from "../../features/support/pages/SupportCenterPage";
 
 export default function AppRouter() {
@@ -34,7 +35,8 @@ export default function AppRouter() {
         <Route path="finance" element={<FinancePage />} />
         <Route path="reviews" element={<ReviewsPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="settings" element={<SupportCenterPage />} />
+        <Route path="support" element={<SupportCenterPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );
