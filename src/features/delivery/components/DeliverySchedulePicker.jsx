@@ -1,4 +1,9 @@
-export default function DeliverySchedulePicker({ days, activeDays, onToggleDay }) {
+export default function DeliverySchedulePicker({
+  days,
+  activeDays,
+  onToggleDay,
+  disabled = false,
+}) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {days.map((day) => {
@@ -11,7 +16,8 @@ export default function DeliverySchedulePicker({ days, activeDays, onToggleDay }
               isActive
                 ? "border-[#ef8b5d] bg-[#fff1ea] text-[#d16d3a]"
                 : "border-[#bdb6af] bg-[#d9d9d9] text-[#5d5650]"
-            }`}
+            } ${disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+            disabled={disabled}
             onClick={() => onToggleDay(day)}
             type="button"
           >
