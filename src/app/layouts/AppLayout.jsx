@@ -20,7 +20,7 @@ const sidebarItems = [
   { label: "Finance", to: "/finance", icon: BadgeDollarSign },
   { label: "Reviews", to: "/reviews", icon: MessageSquareText },
   { label: "Notifications", to: "/notifications", icon: Bell },
-  { label: "Settings", to: "/settings", icon: Settings },
+  { label: "Support", to: "/settings", icon: Settings },
 ];
 
 export default function AppLayout() {

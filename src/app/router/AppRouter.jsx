@@ -8,12 +8,12 @@ import AcceptedOrderPage from "../../features/order/pages/AcceptedOrderPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
 import FinancePage from "../../features/finance/pages/FinancePage";
-import AppSectionPage from "../../features/home/pages/AppSectionPage";
 import MenuPage from "../../features/menu/pages/MenuPage";
 import NotificationsPage from "../../features/notifications/pages/NotificationsPage";
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
+import SupportCenterPage from "../../features/support/pages/SupportCenterPage";
 
 export default function AppRouter() {
   return (
@@ -34,15 +34,7 @@ export default function AppRouter() {
         <Route path="finance" element={<FinancePage />} />
         <Route path="reviews" element={<ReviewsPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
-        <Route
-          path="settings"
-          element={
-            <AppSectionPage
-              title="Settings"
-              description="Store profile, preferences and security settings can be added here without touching the navigation layout."
-            />
-          }
-        />
+        <Route path="settings" element={<SupportCenterPage />} />
       </Route>
     </Routes>
   );
