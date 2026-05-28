@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/AuthContext";
+import { confirmVendorLogout } from "../../utils/vendorAlerts";
 
 const sidebarItems = [
   { label: "Home", to: "/dashboard", icon: House },
@@ -28,6 +29,14 @@ const sidebarItems = [
 
 export default function AppLayout() {
   const { logout, user } = useAuth();
+
+  async function handleLogout() {
+    const result = await confirmVendorLogout();
+
+    if (result.isConfirmed) {
+      logout();
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f4f0ea] text-[#201914] max-[960px]:flex-col">
@@ -71,7 +80,7 @@ export default function AppLayout() {
 
         <button
           className="flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] bg-transparent px-3 py-[11px] transition-colors duration-150 hover:bg-white/15"
-          onClick={logout}
+          onClick={handleLogout}
           type="button"
         >
           <LogOut size={16} />
