@@ -21,6 +21,9 @@ import {
   showOrderStatusUpdated,
 } from "../../../utils/vendorAlerts";
 
+const MENU_SELECTED_ITEM_STORAGE_KEY = "vendor-menu-selected-item";
+const MENU_DRAFT_STORAGE_KEY = "vendor-menu-builder-state";
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [chartRange, setChartRange] = useState("Last 7 Days");
@@ -63,7 +66,11 @@ export default function DashboardPage() {
     ...action,
     onClick:
       action.label === "Add new menu items"
-        ? () => navigate("/menu")
+        ? () => {
+            window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
+            window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
+            navigate("/menu/create");
+          }
         : action.label === "View Pending Orders"
           ? () => navigate("/orders?tab=Pending")
           : () => navigate("/delivery"),
