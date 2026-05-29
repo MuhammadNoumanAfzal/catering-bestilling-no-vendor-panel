@@ -157,18 +157,30 @@ textarea {
 }
 
 .vendor-delete-alert {
-  width: min(100%, 470px) !important;
-  border-radius: 14px !important;
-  padding: 18px 18px 16px !important;
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.32) !important;
+  width: min(100%, 540px) !important;
+  border-radius: 22px !important;
+  padding: 20px 24px 18px !important;
+  box-shadow: 0 32px 90px rgba(17, 10, 6, 0.22) !important;
+}
+
+.vendor-delete-alert .swal2-icon.swal2-warning {
+  margin: 0 auto 10px !important;
+  border-color: #f4b27e !important;
+  color: #f4b27e !important;
+  transform: scale(0.98);
+}
+
+.vendor-delete-alert .swal2-icon.swal2-warning [class^="swal2-icon-content"] {
+  color: #f4b27e !important;
 }
 
 .vendor-delete-alert__title {
   margin: 0 !important;
   color: #ff2918 !important;
-  font-size: 31px !important;
+  font-size: 42px !important;
   font-weight: 800 !important;
-  line-height: 1.05 !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.03em !important;
   text-align: left !important;
 }
 
@@ -181,31 +193,32 @@ textarea {
 .vendor-delete-alert__lead {
   margin: 0 !important;
   color: #5b514a !important;
-  font-size: 11px !important;
-  line-height: 1.45 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  max-width: 43ch;
 }
 
 .vendor-delete-alert__notice {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   margin-top: 14px;
-  border-radius: 6px;
-  background: #f5f5f5;
-  padding: 9px 10px;
+  border-radius: 12px;
+  background: #f3f1ef;
+  padding: 12px 14px;
 }
 
 .vendor-delete-alert__notice-icon {
   display: inline-flex;
-  height: 14px;
-  width: 14px;
-  flex: 0 0 14px;
+  height: 20px;
+  width: 20px;
+  flex: 0 0 20px;
   align-items: center;
   justify-content: center;
   border: 1px solid #82756b;
   border-radius: 999px;
   color: #4c423d;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
 }
@@ -213,9 +226,9 @@ textarea {
 .vendor-delete-alert__notice p {
   margin: 0;
   color: #4c423d;
-  font-size: 9px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .vendor-delete-alert__notice span {
@@ -230,9 +243,9 @@ textarea {
 
 .vendor-delete-alert__field span {
   color: #443934;
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.35;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .vendor-delete-alert__field strong {
@@ -241,36 +254,40 @@ textarea {
 }
 
 .vendor-delete-alert__input {
-  height: 30px !important;
+  height: 42px !important;
   margin: 8px 0 0 !important;
-  border: 0 !important;
-  border-radius: 4px !important;
-  background: #efefef !important;
+  border: 1px solid #f0d4ca !important;
+  border-radius: 10px !important;
+  background: #f7f7f7 !important;
   box-shadow: none !important;
   color: #201712 !important;
-  font-size: 10px !important;
-  padding: 0 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 0 14px !important;
 }
 
 .vendor-delete-alert__input:focus {
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(255, 41, 24, 0.14) !important;
+  border-color: #ff8d82 !important;
+  box-shadow: 0 0 0 3px rgba(255, 41, 24, 0.12) !important;
 }
 
 .vendor-delete-alert__actions {
-  margin: 22px 0 0 !important;
+  margin: 18px 0 0 !important;
   padding: 0 !important;
   justify-content: flex-end !important;
-  gap: 8px !important;
+  gap: 10px !important;
 }
 
 .vendor-delete-alert__cancel,
 .vendor-delete-alert__confirm {
   margin: 0 !important;
-  border-radius: 4px !important;
-  font-size: 10px !important;
+  min-height: 40px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
   line-height: 1 !important;
+  padding: 0 16px !important;
 }
 
 .vendor-delete-alert__cancel {
@@ -280,17 +297,31 @@ textarea {
 }
 
 .vendor-delete-alert__confirm {
-  min-height: 34px !important;
-  padding: 0 12px !important;
   box-shadow: none !important;
 }
 
 .vendor-delete-alert__validation {
-  margin: 8px 0 0 !important;
-  border-radius: 6px !important;
+  margin: 10px 0 0 !important;
+  border-radius: 10px !important;
   background: #fff2f1 !important;
   color: #d33 !important;
-  font-size: 11px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
-  padding: 8px 10px !important;
+  padding: 10px 12px !important;
+}
+
+@media (max-width: 640px) {
+  .vendor-delete-alert {
+    width: min(100%, 92vw) !important;
+    padding: 18px 16px 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .vendor-delete-alert__title {
+    font-size: 36px !important;
+  }
+
+  .vendor-delete-alert__lead {
+    font-size: 13px !important;
+  }
 }
