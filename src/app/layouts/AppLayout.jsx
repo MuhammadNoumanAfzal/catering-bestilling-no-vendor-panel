@@ -44,16 +44,8 @@ export default function AppLayout() {
       <aside className="flex w-[252px] shrink-0 flex-col justify-between bg-[#cd6434] p-[10px] text-[#fff8f3] max-[960px]:w-full">
         <div className="flex flex-col gap-3">
           <div className="rounded-[14px] bg-white/15 px-3 py-2.5">
-            <img className="block h-auto w-28" src="/logo.png" alt="Catering bestilling.no" />
+            <img className="block h-auto w-28" src="/logo2.webp" alt="Catering bestilling.no" />
           </div>
-
-          <button
-            className="flex cursor-pointer items-center justify-between rounded-[10px] bg-[#f7efe8] px-3 py-[9px] text-[#71361b]"
-            type="button"
-          >
-            <span className="type-subpara">View Store</span>
-            <ChevronDown size={14} />
-          </button>
 
           <nav
             className="mt-1 flex flex-col gap-1.5 max-[960px]:flex-row max-[960px]:flex-wrap"

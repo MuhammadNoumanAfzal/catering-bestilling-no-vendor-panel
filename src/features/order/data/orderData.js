@@ -576,9 +576,11 @@ export const orderDetailRecords = {
 };
 
 export function getOrderDetailById(orderId) {
-  return orderDetailRecords[orderId] ?? null;
+  const normalizedOrderId = String(orderId || "").replace("#", "");
+  return orderDetailRecords[normalizedOrderId] ?? null;
 }
 
 export function getAcceptedOrderDetailById(orderId) {
-  return orderDetailRecords[orderId] ?? null;
+  const normalizedOrderId = String(orderId || "").replace("#", "");
+  return orderDetailRecords[normalizedOrderId] ?? null;
 }
