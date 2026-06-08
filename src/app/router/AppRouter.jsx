@@ -6,16 +6,10 @@ import NewPasswordPage from "../../features/auth/pages/NewPasswordPage";
 import ProtectedRoute from "../../features/auth/components/ProtectedRoute";
 import VerificationPage from "../../features/auth/pages/VerificationPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
-import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
 import FinancePage from "../../features/finance/pages/FinancePage";
-import CreateAddOnPage from "../../features/menu/pages/CreateAddOnPage";
-import CreateMenuPage from "../../features/menu/pages/CreateMenuPage";
-import MenuPage from "../../features/menu/pages/MenuPage";
-import NotificationsPage from "../../features/notifications/pages/NotificationsPage";
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
-import SettingsPage from "../../features/settings/pages/SettingsPage";
 import SupportCenterPage from "../../features/support/pages/SupportCenterPage";
 
 export default function AppRouter() {
@@ -36,15 +30,15 @@ export default function AppRouter() {
             path="orders/:orderId/accepted"
             element={<Navigate to="..?stage=accepted" relative="path" replace />}
           />
-          <Route path="menu" element={<MenuPage />} />
-          <Route path="menu/add-ons/create" element={<CreateAddOnPage />} />
-          <Route path="menu/create" element={<CreateMenuPage />} />
-          <Route path="delivery" element={<DeliveryPage />} />
+          <Route path="menu" element={<Navigate to="/dashboard" replace />} />
+          <Route path="menu/add-ons/create" element={<Navigate to="/dashboard" replace />} />
+          <Route path="menu/create" element={<Navigate to="/dashboard" replace />} />
+          <Route path="delivery" element={<Navigate to="/dashboard" replace />} />
           <Route path="finance" element={<FinancePage />} />
           <Route path="reviews" element={<ReviewsPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="notifications" element={<Navigate to="/dashboard" replace />} />
           <Route path="support" element={<SupportCenterPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>
     </Routes>

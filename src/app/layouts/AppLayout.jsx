@@ -2,14 +2,11 @@ import {
   Bell,
   BadgeDollarSign,
   ChevronDown,
-  CookingPot,
   House,
   LifeBuoy,
   LogOut,
   MessageSquareText,
-  Settings,
   ShoppingBasket,
-  Truck,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
@@ -19,13 +16,9 @@ import { confirmVendorLogout } from "../../utils/vendorAlerts";
 const sidebarItems = [
   { label: "Home", to: "/dashboard", icon: House },
   { label: "Orders", to: "/orders", icon: ShoppingBasket },
-  { label: "Menu", to: "/menu", icon: CookingPot },
-  { label: "Delivery", to: "/delivery", icon: Truck },
   { label: "Finance", to: "/finance", icon: BadgeDollarSign },
   { label: "Reviews", to: "/reviews", icon: MessageSquareText },
-  { label: "Notifications", to: "/notifications", icon: Bell },
   { label: "Support", to: "/support", icon: LifeBuoy },
-  { label: "Settings", to: "/settings", icon: Settings },
 ];
 
 export default function AppLayout() {
@@ -95,14 +88,6 @@ export default function AppLayout() {
             <span className="type-subpara rounded-full bg-[#d7f5d8] px-3 py-[7px] uppercase text-[#237a39]">
               Restaurant Active
             </span>
-
-            <NavLink
-              className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#e4d9cf] bg-white text-[#241913]"
-              to="/notifications"
-              aria-label="Notifications"
-            >
-              <Bell size={16} />
-            </NavLink>
 
             <button
               className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913]"
