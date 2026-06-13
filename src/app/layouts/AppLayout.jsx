@@ -1,12 +1,15 @@
 import {
-  Bell,
   BadgeDollarSign,
+  Bell,
   ChevronDown,
   House,
   LifeBuoy,
   LogOut,
   MessageSquareText,
+  Settings,
   ShoppingBasket,
+  Truck,
+  Utensils,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
@@ -16,9 +19,21 @@ import { confirmVendorLogout } from "../../utils/vendorAlerts";
 const sidebarItems = [
   { label: "Home", to: "/dashboard", icon: House },
   { label: "Orders", to: "/orders", icon: ShoppingBasket },
+  { label: "Menu", to: "/menu", icon: Utensils },
+  { label: "Delivery", to: "/delivery", icon: Truck },
   { label: "Finance", to: "/finance", icon: BadgeDollarSign },
   { label: "Reviews", to: "/reviews", icon: MessageSquareText },
+  { label: "Notifications", to: "/notifications", icon: Bell },
   { label: "Support", to: "/support", icon: LifeBuoy },
+  { label: "Settings", to: "/settings", icon: Settings },
+];
+
+const mobileNavItems = [
+  { label: "Home", to: "/dashboard", icon: House },
+  { label: "Orders", to: "/orders", icon: ShoppingBasket },
+  { label: "Menu", to: "/menu", icon: Utensils },
+  { label: "Finance", to: "/finance", icon: BadgeDollarSign },
+  { label: "Settings", to: "/settings", icon: Settings },
 ];
 
 export default function AppLayout() {
@@ -34,25 +49,29 @@ export default function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#f4f0ea] text-[#201914] max-[960px]:flex-col">
-      <aside className="flex w-[252px] shrink-0 flex-col justify-between bg-[#cd6434] p-[10px] text-[#fff8f3] max-[960px]:w-full">
-        <div className="flex flex-col gap-3">
-          <div className="rounded-[14px] bg-white/15 px-3 py-2.5">
-            <img className="block h-auto w-28" src="/logo2.webp" alt="Catering bestilling.no" />
+      <aside className="relative flex w-[252px] shrink-0 flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#d86c3d_0%,#cb6134_52%,#b95028_100%)] p-4 text-[#fff8f3] shadow-[8px_0_24px_rgba(121,61,23,0.16)] max-[960px]:hidden">
+        <div className="absolute -right-14 top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" aria-hidden="true" />
+        <div className="absolute bottom-16 -left-10 h-24 w-24 rounded-full bg-[#ffd9c6]/10 blur-2xl" aria-hidden="true" />
+
+        <div className="relative flex flex-col gap-4">
+          <div className="rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+            <img className="block h-auto w-32" src="/logo2.webp" alt="Catering bestilling.no" />
+            <p className="type-subpara mt-3 text-white/75">Vendor dashboard</p>
           </div>
 
           <nav
-            className="mt-1 flex flex-col gap-1.5 max-[960px]:flex-row max-[960px]:flex-wrap"
+            className="mt-1 flex flex-col gap-2 max-[960px]:flex-row max-[960px]:flex-wrap"
             aria-label="Primary navigation"
           >
-            {sidebarItems.map(({ icon: Icon, label, to }) => (
+            {sidebarItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
               <NavLink
                 key={label}
                 className={({ isActive }) =>
                   [
-                    "flex items-center gap-2.5 rounded-[10px] px-3 py-[11px] transition-colors duration-150",
+                    "flex items-center gap-2.5 rounded-[16px] px-4 py-3 text-[13px] font-semibold transition-all duration-150",
                     isActive
-                      ? "bg-white text-[#bb582d] shadow-[0_8px_16px_rgba(126,54,17,0.14)]"
-                      : "text-inherit hover:bg-white/15",
+                      ? "bg-white text-[#c85e2f] shadow-[0_10px_22px_rgba(90,35,12,0.16)]"
+                      : "text-white/92 hover:bg-white/10 hover:text-white",
                   ].join(" ")
                 }
                 to={to}
@@ -65,7 +84,7 @@ export default function AppLayout() {
         </div>
 
         <button
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] bg-transparent px-3 py-[11px] transition-colors duration-150 hover:bg-white/15"
+          className="relative z-[1] flex w-full cursor-pointer items-center gap-2.5 rounded-[16px] border border-white/10 bg-white/10 px-4 py-3 text-white backdrop-blur-sm transition-colors duration-150 hover:bg-white/15"
           onClick={handleLogout}
           type="button"
         >
@@ -75,26 +94,26 @@ export default function AppLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9] px-5 py-3 max-[960px]:flex-col max-[960px]:items-stretch">
-          <div className="max-w-[480px] flex-1">
+        <header className="flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9]/95 px-5 py-3 backdrop-blur-sm max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
+          <div className="max-w-[480px] flex-1 max-[960px]:hidden">
             <input
-              className="type-subpara min-h-[38px] w-full rounded-full border border-[#e4d9cf] bg-white px-[14px] text-[#241913] outline-none transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+              className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
               placeholder="Search order, menu item or customer"
               type="text"
             />
           </div>
 
-          <div className="flex items-center gap-2.5 max-[960px]:flex-wrap max-[960px]:justify-between">
-            <span className="type-subpara rounded-full bg-[#d7f5d8] px-3 py-[7px] uppercase text-[#237a39]">
+          <div className="flex items-center gap-2.5 max-[960px]:hidden">
+            <span className="type-subpara rounded-full border border-[#c7ebcf] bg-[#e7f8ea] px-3 py-[7px] uppercase text-[#237a39] shadow-[0_4px_12px_rgba(35,122,57,0.08)]">
               Restaurant Active
             </span>
 
             <button
-              className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913]"
+              className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_6px_18px_rgba(38,23,14,0.06)]"
               type="button"
             >
               <img
-                className="h-7 w-7 rounded-full object-cover"
+                className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
                 src="/heroBg.webp"
                 alt="Raj Holder"
               />
@@ -105,14 +124,80 @@ export default function AppLayout() {
               <ChevronDown size={14} />
             </button>
           </div>
+
+          <div className="hidden flex-col gap-3 max-[960px]:flex">
+            <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,#e57a45_0%,#cf6837_100%)] p-4 text-white shadow-[0_14px_28px_rgba(121,61,23,0.18)]">
+              <div className="flex items-center justify-between gap-3">
+                <img className="block h-auto w-32" src="/logo2.webp" alt="Catering bestilling.no" />
+                <button
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between gap-3 max-[480px]:flex-col max-[480px]:items-stretch">
+                <span className="type-subpara inline-flex w-fit items-center rounded-full bg-white px-3 py-[7px] uppercase text-[#237a39] shadow-[0_8px_18px_rgba(35,122,57,0.12)]">
+                  Restaurant Active
+                </span>
+
+                <button
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_10px_20px_rgba(38,23,14,0.08)]"
+                  type="button"
+                >
+                  <img
+                    className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
+                    src="/heroBg.webp"
+                    alt="Raj Holder"
+                  />
+                  <span className="flex flex-col items-start leading-[1.15]">
+                    <strong className="type-subpara">{user?.name || "Raj Holder"}</strong>
+                    <span className="type-subpara text-[#8f7f73]">{user?.role || "Admin"}</span>
+                  </span>
+                  <ChevronDown size={14} />
+                </button>
+              </div>
+            </div>
+
+            <input
+              className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+              placeholder="Search order, menu item or customer"
+              type="text"
+            />
+          </div>
         </header>
 
-        <main className="flex-1 p-5 max-[720px]:p-[14px]">
+        <main className="flex-1 p-5 max-[720px]:p-[14px] max-[960px]:pb-[92px]">
           <Outlet />
         </main>
 
         <AppFooter />
       </div>
+
+      <nav
+        className="hidden max-[960px]:fixed max-[960px]:inset-x-0 max-[960px]:bottom-0 max-[960px]:z-20 max-[960px]:grid max-[960px]:grid-cols-5 max-[960px]:gap-1 max-[960px]:border-t max-[960px]:border-[#e3d6ca] max-[960px]:bg-white/95 max-[960px]:px-2 max-[960px]:py-2 max-[960px]:shadow-[0_-10px_24px_rgba(38,23,14,0.08)]"
+        aria-label="Mobile navigation"
+      >
+        {mobileNavItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
+          <NavLink
+            key={label}
+            className={({ isActive }) =>
+              [
+                "flex flex-col items-center justify-center gap-1 rounded-[14px] px-2 py-2 text-[10px] font-semibold transition",
+                isActive
+                  ? "bg-[#cf6e38] text-white shadow-[0_8px_16px_rgba(207,110,56,0.22)]"
+                  : "text-[#6f645b] active:bg-[#f6ebe3]",
+              ].join(" ")
+            }
+            to={to}
+          >
+            <Icon size={16} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }

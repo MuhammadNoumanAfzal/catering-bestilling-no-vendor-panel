@@ -48,14 +48,14 @@ export default function OrderCard({ onPrimaryAction, onSecondaryAction, order })
 
       <div className="flex items-center gap-2 max-[720px]:flex-col max-[720px]:items-stretch">
         <button
-          className="type-para min-h-9 cursor-pointer min-w-[120px] rounded border-0 bg-[#cf6e38] px-[16px] text-[10px] font-bold text-white"
+          className="type-para min-h-9 cursor-pointer min-w-[120px] rounded border-0 bg-[#cf6e38] px-[16px] text-[10px] font-bold text-white max-[720px]:w-full max-[720px]:min-w-0"
           onClick={() => onPrimaryAction?.(order)}
           type="button"
         >
           Start Preparing
         </button>
         <button
-          className="type-para min-h-9 cursor-pointer min-w-[120px] rounded border border-[#b8b4af] bg-white px-[16px] text-[10px] font-bold text-[#2f2822]"
+          className="type-para min-h-9 cursor-pointer min-w-[120px] rounded border border-[#b8b4af] bg-white px-[16px] text-[10px] font-bold text-[#2f2822] max-[720px]:w-full max-[720px]:min-w-0"
           onClick={() => onSecondaryAction?.(order)}
           type="button"
         >

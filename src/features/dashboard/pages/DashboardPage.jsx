@@ -98,8 +98,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex items-start justify-between gap-4">
+    <div className="flex flex-col gap-4 max-[720px]:gap-3">
+      <header className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-2">
         <div>
           <h1 className="type-h2 m-0 text-[#1c1510]">Dashboard</h1>
           <p className="type-para mt-1.5 ">
@@ -109,7 +109,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
+      <section className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1 max-[640px]:grid-cols-2">
         {dashboardOverviewStats.map((stat) => (
           <OverviewCard key={stat.label} {...stat} />
         ))}
