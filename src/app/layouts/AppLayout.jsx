@@ -28,13 +28,7 @@ const sidebarItems = [
   { label: "Settings", to: "/settings", icon: Settings },
 ];
 
-const mobileNavItems = [
-  { label: "Home", to: "/dashboard", icon: House },
-  { label: "Orders", to: "/orders", icon: ShoppingBasket },
-  { label: "Menu", to: "/menu", icon: Utensils },
-  { label: "Finance", to: "/finance", icon: BadgeDollarSign },
-  { label: "Settings", to: "/settings", icon: Settings },
-];
+
 
 export default function AppLayout() {
   const { logout, user } = useAuth();
@@ -177,15 +171,16 @@ export default function AppLayout() {
       </div>
 
       <nav
-        className="hidden max-[960px]:fixed max-[960px]:inset-x-0 max-[960px]:bottom-0 max-[960px]:z-20 max-[960px]:grid max-[960px]:grid-cols-5 max-[960px]:gap-1 max-[960px]:border-t max-[960px]:border-[#e3d6ca] max-[960px]:bg-white/95 max-[960px]:px-2 max-[960px]:py-2 max-[960px]:shadow-[0_-10px_24px_rgba(38,23,14,0.08)]"
+        className="hidden max-[960px]:fixed max-[960px]:inset-x-0 max-[960px]:bottom-0 max-[960px]:z-20 max-[960px]:flex flex-row flex-nowrap overflow-x-auto hide-scrollbar gap-1.5 border-t border-[#e3d6ca] bg-white/95 px-3 py-2 shadow-[0_-10px_24px_rgba(38,23,14,0.08)]"
+        style={{ WebkitOverflowScrolling: "touch" }}
         aria-label="Mobile navigation"
       >
-        {mobileNavItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
+        {sidebarItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
           <NavLink
             key={label}
             className={({ isActive }) =>
               [
-                "flex flex-col items-center justify-center gap-1 rounded-[14px] px-2 py-2 text-[10px] font-semibold transition",
+                "flex flex-col items-center justify-center gap-1 rounded-[14px] px-3.5 py-2 text-[10px] font-semibold transition shrink-0 min-w-[70px] whitespace-nowrap",
                 isActive
                   ? "bg-[#cf6e38] text-white shadow-[0_8px_16px_rgba(207,110,56,0.22)]"
                   : "text-[#6f645b] active:bg-[#f6ebe3]",
