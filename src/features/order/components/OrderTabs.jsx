@@ -46,7 +46,10 @@ export default function OrderTabs({ tabs, activeTab, onTabChange }) {
   return (
     <div className="rounded-[10px] border border-[#ddd4cb] bg-white px-4 py-2.5">
       <div className="flex items-center justify-between gap-4 max-[960px]:flex-col max-[960px]:items-start">
-        <div className="flex flex-1 items-center gap-4 pr-1 max-[720px]:w-full max-[720px]:overflow-x-auto max-[720px]:gap-3">
+        <div
+          className="flex flex-1 items-center gap-4 pr-1 max-[720px]:w-full max-[720px]:overflow-x-auto hide-scrollbar max-[720px]:gap-3"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {orderedTabs.map((tab) => (
             <button
               key={tab.label}

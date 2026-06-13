@@ -177,7 +177,7 @@ export default function OrdersPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-7 gap-2 max-[1180px]:grid-cols-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-1">
+      <div className="grid grid-cols-7 gap-2 max-[1180px]:grid-cols-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-2">
         {orderMetrics.map((metric) => (
           <OrderMetricCard key={metric.label} {...metric} />
         ))}
