@@ -25,12 +25,12 @@ export default function KitchenStatus({ items }) {
           return (
             <button
               key={item.label}
-              className={`cursor-pointer rounded border px-[10px] pb-[10px] pt-2 text-left transition hover:translate-y-[-1px] ${toneClasses[item.tone]}`}
+              className={`cursor-pointer rounded border px-[10px] pb-[10px] pt-2 text-left transition hover:translate-y-[-1px] max-[720px]:px-3 ${toneClasses[item.tone]}`}
               onClick={item.onClick}
               type="button"
             >
               <span className="type-para">{item.label}</span>
-              <strong className="type-h1 mt-1 block text-[48px] leading-[0.95] text-[#201914]">
+              <strong className="type-h1 mt-1 block text-[48px] leading-[0.95] text-[#201914] max-[720px]:text-[34px]">
                 {item.value}
               </strong>
               <div className="mt-2 flex items-center justify-between gap-2">

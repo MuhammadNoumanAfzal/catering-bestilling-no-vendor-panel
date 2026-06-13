@@ -27,7 +27,7 @@ export default function OverviewCard({
 
   return (
     <button
-      className={`relative min-h-[102px] cursor-pointer overflow-hidden rounded-[10px] border border-[#e8e2da] bg-white px-3 pb-[14px] pt-3 text-left shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)] transition hover:translate-y-[-1px] ${
+      className={`relative min-h-[102px] w-full cursor-pointer overflow-hidden rounded-[10px] border border-[#e8e2da] bg-white px-3 pb-[14px] pt-3 text-left shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)] transition hover:translate-y-[-1px] max-[720px]:min-h-[92px] max-[720px]:px-3 max-[720px]:pb-3 max-[720px]:pt-3 ${
         variant === "capacity" ? "pb-3" : ""
       }`}
       onClick={onClick}
@@ -37,7 +37,7 @@ export default function OverviewCard({
         {Icon ? <Icon className="text-[#d66c3a]" size={24} strokeWidth={2.2} /> : null}
       </div>
       <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] ">{label}</p>
-      <strong className="type-h2 mt-2 block text-[34px] leading-none text-[#16110d]">{value}</strong>
+      <strong className="type-h2 mt-2 block text-[34px] leading-none text-[#16110d] max-[720px]:text-[28px]">{value}</strong>
       {variant === "capacity" ? (
         <div className="mt-2.5">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e2e2e2]" aria-hidden="true">

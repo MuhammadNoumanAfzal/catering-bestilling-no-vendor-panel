@@ -12,8 +12,8 @@ export default function SectionCard({
   onActionOptionSelect,
 }) {
   return (
-    <section className="rounded-[10px] border border-[#e8e2da] bg-white px-[10px] pb-3 pt-2.5 shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)]">
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <section className="rounded-[10px] border border-[#e8e2da] bg-white px-[10px] pb-3 pt-2.5 shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)] max-[720px]:px-3 max-[720px]:pt-3">
+      <div className="mb-3 flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-2">
         <div className="flex items-center gap-1.5">
           <h2 className="type-h3 m-0 text-[#1c1510]">{title}</h2>
           {badgeCount ? (
@@ -24,7 +24,7 @@ export default function SectionCard({
         </div>
         {actionLabel ? (
           actionVariant === "dropdown" ? (
-            <div className="flex items-center gap-1.5 rounded-full border border-[#d9d1c9] bg-white px-2 py-[4px] shadow-[0_1px_2px_rgba(38,23,14,0.08)]">
+            <div className="flex items-center gap-1.5 rounded-full border border-[#d9d1c9] bg-white px-2 py-[4px] shadow-[0_1px_2px_rgba(38,23,14,0.08)] max-[720px]:flex-wrap">
               {actionOptions.length > 0 ? (
                 <>
                   {actionOptions.map((option) => {

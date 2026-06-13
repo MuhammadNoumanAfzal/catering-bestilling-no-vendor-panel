@@ -3,7 +3,7 @@ import { ChevronRight, Star } from "lucide-react";
 export default function ReviewsList({ onManageReviews, reviews }) {
   return (
     <>
-      <p className="type-para -mt-1 ">Customer feedback on latest events</p>
+      <p className="type-para -mt-1 max-[720px]:text-[12px]">Customer feedback on latest events</p>
       <div className="mt-3 flex flex-col gap-3">
         {reviews.map((review, index) => (
           <article
@@ -17,7 +17,7 @@ export default function ReviewsList({ onManageReviews, reviews }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2.5">
                 <div>
-                  <h3 className="type-para m-0 text-[#201914]">
+                  <h3 className="type-para m-0 text-[#201914] max-[720px]:text-[12px]">
                     {review.name}
                   </h3>
                   <div className="mt-0.5 flex items-center gap-1.5">
@@ -35,17 +35,17 @@ export default function ReviewsList({ onManageReviews, reviews }) {
                       ))}
                     </div>
                     {review.time ? (
-                      <span className="type-subpara text-[9px] text-[#7a6c61]">
+                      <span className="type-subpara text-[9px] text-[#7a6c61] max-[720px]:text-[8px]">
                         {review.time}
                       </span>
                     ) : null}
                   </div>
                 </div>
-                <span className="type-subpara text-[9px] text-[#7a6c61]">
+                <span className="type-subpara text-[9px] text-[#7a6c61] max-[720px]:text-[8px]">
                   {review.id}
                 </span>
               </div>
-              <p className="type-subpara mt-1.5 text-[10px] leading-[1.4] ]">
+              <p className="type-subpara mt-1.5 text-[10px] leading-[1.4] max-[720px]:text-[9px]">
                 {review.summary}
               </p>
             </div>

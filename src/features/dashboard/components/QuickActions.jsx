@@ -15,7 +15,7 @@ export default function QuickActions({ actions }) {
         return (
           <button
             key={action.label}
-            className="type-para min-h-10 cursor-pointer rounded-md border border-[#d8d8d8] bg-white px-[14px] text-[#241913]"
+            className="type-para min-h-10 cursor-pointer rounded-md border border-[#d8d8d8] bg-white px-[14px] text-[#241913] max-[720px]:px-3"
             onClick={action.onClick}
             type="button"
           >
