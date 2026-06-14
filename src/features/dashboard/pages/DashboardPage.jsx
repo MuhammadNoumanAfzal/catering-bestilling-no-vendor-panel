@@ -103,7 +103,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="type-h2 m-0 text-[#1c1510]">Dashboard</h1>
           <p className="type-para mt-1.5 ">
-            Welcome back, Raj. Here&apos;s how your business is performing
+            Welcome back, Nouman. Here&apos;s how your business is performing
             today.
           </p>
         </div>
