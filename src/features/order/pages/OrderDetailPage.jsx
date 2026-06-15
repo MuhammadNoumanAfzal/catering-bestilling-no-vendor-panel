@@ -5,18 +5,171 @@ import FinancialSummaryPanel from "../components/order-details/FinancialSummaryP
 import LifecyclePanel from "../components/order-details/LifecyclePanel";
 import LogisticsPanel from "../components/order-details/LogisticsPanel";
 import OrderItemsPanel from "../components/order-details/OrderItemsPanel";
-import { getOrderDetailById } from "../data/orderData";
+import { getOrderDetailById, ordersTableRows, orderDetailRecords } from "../data/orderData";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
 } from "../../../utils/vendorAlerts";
 
+function getStatusFromActionLabel(label) {
+  const norm = label.toLowerCase();
+  if (norm.includes("prepare") || norm.includes("preparing")) return "Preparing";
+  if (norm.includes("ready")) return "Ready";
+  if (norm.includes("delivery") || norm.includes("out for delivery")) return "Out for delivery";
+  if (norm.includes("delivered") || norm.includes("mark delivered")) return "Delivered";
+  if (norm.includes("cancel") || norm.includes("canceled") || norm.includes("reject")) return "Canceled";
+  if (norm.includes("accept")) return "Accepted";
+  return label;
+}
+
+function getActionsForStatus(status) {
+  if (status === "New") {
+    return [
+      { label: "Accept", tone: "is-primary", navigateToDetail: true },
+      { label: "Reject", tone: "is-muted" }
+    ];
+  }
+  if (status === "Accepted") {
+    return [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }];
+  }
+  if (status === "Preparing") {
+    return [{ label: "Ready", tone: "is-primary", hasDropdown: true }];
+  }
+  if (status === "Ready") {
+    return [{ label: "Out for delivery", tone: "is-primary", hasDropdown: true }];
+  }
+  if (status === "Out for delivery") {
+    return [{ label: "Delivered", tone: "is-primary", hasDropdown: true }];
+  }
+  return [{ label: "View Details", tone: "is-muted", navigateToDetail: true }];
+}
+
+function getToneForStatus(status) {
+  if (status === "New") return "is-new";
+  if (status === "Accepted") return "is-accepted";
+  if (status === "Preparing") return "is-preparing";
+  if (status === "Ready") return "is-ready";
+  if (status === "Out for delivery") return "is-delivery";
+  if (status === "Delivered") return "is-delivered";
+  if (status === "Canceled") return "is-canceled";
+  if (status === "Reject") return "is-reject";
+  return "is-new";
+}
+
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const orderDetail = getOrderDetailById(orderId);
-  const isAcceptedView = searchParams.get("stage") === "accepted";
+  const [triggerVal, setTriggerVal] = useState(0);
+
+  const orderDetail = useMemo(() => {
+    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
+    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
+    const cleanId = orderId.replace("#", "");
+
+    if (!savedDetailsRaw) {
+      window.localStorage.setItem("vendor-order-details", JSON.stringify(orderDetailRecords));
+    }
+
+    const detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
+    if (!detail) return null;
+
+    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
+    const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
+    const mainOrder = currentOrders.find((o) => o.id.replace("#", "") === cleanId);
+
+    const currentStatus = mainOrder ? mainOrder.status : (detail.status || "New");
+
+    let lifecycleActions = [];
+    let confirmedLifecycleActions = [];
+    let isAccepted = false;
+    let statusTitle = "";
+    let statusSubtitle = "";
+
+    if (currentStatus === "New") {
+      isAccepted = false;
+      lifecycleActions = [
+        { label: "Accept Order", primary: true, navigateToAccepted: true },
+        { label: "Reject Order", primary: false },
+      ];
+    } else {
+      isAccepted = true;
+      statusTitle = `Order is ${currentStatus}`;
+
+      if (currentStatus === "Accepted") {
+        statusSubtitle = "Update status to notify the customer";
+        confirmedLifecycleActions = [
+          { label: "Preparing", primary: true },
+          { label: "Request Changes", primary: false },
+        ];
+      } else if (currentStatus === "Preparing") {
+        statusSubtitle = "Preparing the fresh ingredients";
+        confirmedLifecycleActions = [
+          { label: "Ready", primary: true },
+        ];
+      } else if (currentStatus === "Ready") {
+        statusSubtitle = "Waiting to be picked up";
+        confirmedLifecycleActions = [
+          { label: "Out for delivery", primary: true },
+        ];
+      } else if (currentStatus === "Out for delivery") {
+        statusSubtitle = "On the way to the customer";
+        confirmedLifecycleActions = [
+          { label: "Delivered", primary: true },
+        ];
+      } else if (currentStatus === "Delivered") {
+        statusSubtitle = "Successfully delivered to customer";
+        confirmedLifecycleActions = [];
+      } else {
+        statusTitle = "Order Canceled";
+        statusSubtitle = "This order was canceled or rejected";
+        confirmedLifecycleActions = [];
+      }
+    }
+
+    return {
+      ...detail,
+      status: currentStatus,
+      isAcceptedView: isAccepted,
+      lifecycleActions,
+      confirmedStatus: {
+        title: statusTitle,
+        subtitle: statusSubtitle,
+      },
+      confirmedLifecycleActions,
+    };
+  }, [orderId, triggerVal]);
+
+  const isAcceptedView = orderDetail?.isAcceptedView;
+
+  function updateOrderStatus(nextStatus) {
+    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
+    const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
+    const nextOrders = currentOrders.map((order) => {
+      if (order.id.replace("#", "") === orderId) {
+        return {
+          ...order,
+          status: nextStatus,
+          statusTone: getToneForStatus(nextStatus),
+          actions: getActionsForStatus(nextStatus),
+        };
+      }
+      return order;
+    });
+    window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
+
+    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
+    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
+    const cleanId = orderId.replace("#", "");
+    if (currentDetails[cleanId]) {
+      currentDetails[cleanId] = {
+        ...currentDetails[cleanId],
+        status: nextStatus,
+      };
+      window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
+    }
+
+    setTriggerVal((prev) => prev + 1);
+  }
 
   if (!orderDetail) {
     return (
@@ -39,8 +192,8 @@ export default function OrderDetailPage() {
         return;
       }
 
+      updateOrderStatus("Accepted");
       await showOrderStatusUpdated(`Order ${orderDetail.id} accepted.`);
-      setSearchParams({ stage: "accepted" });
       return;
     }
 
@@ -51,6 +204,7 @@ export default function OrderDetailPage() {
         return;
       }
 
+      updateOrderStatus("Canceled");
       await showOrderStatusUpdated(`Order ${orderDetail.id} rejected.`);
       navigate("/orders");
     }
@@ -63,6 +217,8 @@ export default function OrderDetailPage() {
       return;
     }
 
+    const nextStatus = getStatusFromActionLabel(action.label);
+    updateOrderStatus(nextStatus);
     await showOrderStatusUpdated(`${orderDetail.id} updated to ${action.label.toLowerCase()}.`);
   }
 
