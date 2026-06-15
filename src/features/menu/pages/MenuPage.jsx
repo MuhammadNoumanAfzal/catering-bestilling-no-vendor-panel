@@ -9,6 +9,7 @@ import {
   menuManagementItems,
   menuManagementTabs,
   menuSortOptions,
+  optionalAddOns,
 } from "../data/menuData";
 import {
   confirmVendorAction,
@@ -26,7 +27,15 @@ export default function MenuPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [sortBy, setSortBy] = useState("Latest");
-  const [items, setItems] = useState(menuManagementItems);
+  const [items, setItems] = useState(() => {
+    const savedMenusRaw = window.localStorage.getItem("vendor-menu-items");
+    if (savedMenusRaw) {
+      return JSON.parse(savedMenusRaw);
+    } else {
+      window.localStorage.setItem("vendor-menu-items", JSON.stringify(menuManagementItems));
+      return menuManagementItems;
+    }
+  });
 
   function openFreshCreateMenu() {
     window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
@@ -34,12 +43,32 @@ export default function MenuPage() {
     navigate("/menu/create");
   }
 
+  const addOnsList = useMemo(() => {
+    const savedAddOnsRaw = window.localStorage.getItem("vendor-addon-items");
+    const savedAddOns = savedAddOnsRaw ? JSON.parse(savedAddOnsRaw) : [];
+    const combined = [...optionalAddOns, ...savedAddOns];
+
+    return combined.map((addon) => ({
+      id: addon.id,
+      title: addon.addOnName || addon.name,
+      description: addon.category || "Optional Add-on",
+      price: addon.price.toString().startsWith("$") ? addon.price : `$${addon.price}`,
+      meta: addon.availableImmediately ?? true ? "Available immediately" : "Scheduled",
+      image: addon.image || "/heroBg.webp",
+      status: addon.availableImmediately ?? true ? "Active" : "Paused",
+      badge: addon.category || "Add-on",
+      tone: addon.availableImmediately ?? true ? "active" : "paused",
+      isAddOn: true,
+      rawAddon: addon,
+    }));
+  }, [items]);
+
   const filteredItems = useMemo(() => {
     const baseItems =
       activeTab === "All"
         ? items
         : activeTab === "Add-ons"
-          ? []
+          ? addOnsList
           : items.filter((item) => normalizeStatus(item.status) === normalizeStatus(activeTab));
 
     const nextItems = [...baseItems];
@@ -65,9 +94,32 @@ export default function MenuPage() {
     }
 
     return nextItems;
-  }, [activeTab, items, sortBy]);
+  }, [activeTab, items, sortBy, addOnsList]);
 
   async function handleDelete(item) {
+    if (item.isAddOn) {
+      const result = await confirmVendorAction({
+        title: "Delete add-on?",
+        text: `Remove "${item.title}" from add-ons?`,
+        confirmButtonText: "Delete",
+        cancelButtonText: "Keep it",
+        icon: "warning",
+        confirmButtonColor: "#ff2918",
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      const savedAddOnsRaw = window.localStorage.getItem("vendor-addon-items");
+      const savedAddOns = savedAddOnsRaw ? JSON.parse(savedAddOnsRaw) : [];
+      const updatedAddOns = savedAddOns.filter((entry) => entry.id !== item.id);
+      window.localStorage.setItem("vendor-addon-items", JSON.stringify(updatedAddOns));
+      setItems((current) => [...current]);
+      await showVendorSuccessToast("Add-on removed successfully.");
+      return;
+    }
+
     const result = await confirmVendorAction({
       title: "Delete menu?",
       text: `Remove "${item.title}" from menu management?`,
@@ -81,7 +133,11 @@ export default function MenuPage() {
       return;
     }
 
-    setItems((current) => current.filter((entry) => entry.id !== item.id));
+    setItems((current) => {
+      const nextList = current.filter((entry) => entry.id !== item.id);
+      window.localStorage.setItem("vendor-menu-items", JSON.stringify(nextList));
+      return nextList;
+    });
     await showVendorSuccessToast("Menu removed successfully.");
   }
 
@@ -126,7 +182,7 @@ export default function MenuPage() {
           />
         ))}
 
-        <MenuCreateNewCard onClick={openFreshCreateMenu} />
+        <MenuCreateNewCard onClick={activeTab === "Add-ons" ? handleCreateAddOn : openFreshCreateMenu} />
       </div>
     </section>
   );

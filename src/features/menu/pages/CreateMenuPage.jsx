@@ -246,16 +246,59 @@ export default function CreateMenuPage() {
     };
   }
 
-  async function handleCancel() {
-    if (isViewMode || isEditMode) {
-      window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-      navigate("/menu");
-      return;
+  function saveMenuToList(status) {
+    const payload = buildMenuPayload(status);
+
+    const savedMenusRaw = window.localStorage.getItem("vendor-menu-items");
+    let currentMenus = savedMenusRaw ? JSON.parse(savedMenusRaw) : [];
+
+    const selectedItemRaw = window.localStorage.getItem(MENU_SELECTED_ITEM_STORAGE_KEY);
+    const selectedItem = selectedItemRaw ? JSON.parse(selectedItemRaw) : null;
+
+    const menuId = (isEditMode || isViewMode) && selectedItem ? selectedItem.id : `menu-${Date.now()}`;
+
+    const displayPrice = payload.basePrice.toString().startsWith("$")
+      ? payload.basePrice
+      : `$${payload.basePrice} per person`;
+
+    const normalizedItem = {
+      id: menuId,
+      title: payload.menuTitle,
+      description: payload.description,
+      price: displayPrice,
+      meta: `${payload.menuItems.length} menu items included`,
+      image: payload.coverImage || "/heroBg.webp",
+      status: status === "published" ? "Active" : "Draft",
+      badge: payload.category || "Catering",
+      tone: status === "published" ? "active" : "draft",
+
+      category: payload.category,
+      menuType: payload.menuType,
+      coverImage: payload.coverImage,
+      galleryImage: payload.galleryImage,
+      selectedDays: payload.selectedDays,
+      leadTime: payload.leadTime,
+      blackoutDate: payload.blackoutDate,
+      selectedDietary: payload.selectedDietary,
+      customDietary: payload.customDietary,
+      minimumGuests: payload.minimumGuests,
+      menuItems: payload.menuItems,
+      selectedAddOnIds: payload.selectedAddOnIds,
+    };
+
+    if (isEditMode || isViewMode) {
+      currentMenus = currentMenus.map((item) => (item.id === menuId ? normalizedItem : item));
+    } else {
+      currentMenus = [normalizedItem, ...currentMenus];
     }
 
-    resetForm();
+    window.localStorage.setItem("vendor-menu-items", JSON.stringify(currentMenus));
+  }
+
+  async function handleCancel() {
+    window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
     window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
-    await showVendorSuccessToast("Menu changes discarded.");
+    navigate("/menu");
   }
 
   async function handleSaveDraft() {
@@ -264,14 +307,11 @@ export default function CreateMenuPage() {
       return;
     }
 
-    window.localStorage.setItem(
-      MENU_DRAFT_STORAGE_KEY,
-      JSON.stringify(buildMenuPayload("draft")),
-    );
+    saveMenuToList("draft");
+    window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
+    window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
     await showVendorSuccessToast("Menu saved as draft.");
-    if (isEditMode) {
-      navigate("/menu");
-    }
+    navigate("/menu");
   }
 
   async function handlePublish() {
@@ -282,12 +322,10 @@ export default function CreateMenuPage() {
       return;
     }
 
-    window.localStorage.setItem(
-      MENU_DRAFT_STORAGE_KEY,
-      JSON.stringify(buildMenuPayload("published")),
-    );
-    await showMenuSavedSuccess();
+    saveMenuToList("published");
+    await showVendorSuccessToast("Menu published successfully.");
     window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
+    window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
     navigate("/menu");
   }
 
