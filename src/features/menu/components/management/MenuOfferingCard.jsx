@@ -46,27 +46,33 @@ export default function MenuOfferingCard({ item, onDelete, onEdit, onView }) {
 
         <div className="mt-3.5 flex items-center justify-between border-t border-[#eee6df] pt-2.5">
           <div className="flex items-center gap-3.5">
-            <button
-              className="cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-90 transition"
-              onClick={() => onView(item)}
-              type="button"
-            >
-              <Eye size={19} />
-            </button>
-            <button
-              className="cursor-pointer text-[#d96e39] hover:text-[#c75e2c] active:scale-90 transition"
-              onClick={() => onEdit(item)}
-              type="button"
-            >
-              <Pencil size={19} />
-            </button>
-            <button
-              className="cursor-pointer text-[#8d8075] hover:text-[#ff2918] active:scale-90 transition"
-              onClick={() => onDelete(item)}
-              type="button"
-            >
-              <Trash2 size={19} />
-            </button>
+            {!item.isAddOn && (
+              <>
+                <button
+                  className="cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-90 transition"
+                  onClick={() => onView(item)}
+                  type="button"
+                >
+                  <Eye size={19} />
+                </button>
+                <button
+                  className="cursor-pointer text-[#d96e39] hover:text-[#c75e2c] active:scale-90 transition"
+                  onClick={() => onEdit(item)}
+                  type="button"
+                >
+                  <Pencil size={19} />
+                </button>
+              </>
+            )}
+            {(!item.isAddOn || (item.isAddOn && typeof item.id === "string" && item.id.startsWith("addon-"))) && (
+              <button
+                className="cursor-pointer text-[#8d8075] hover:text-[#ff2918] active:scale-90 transition"
+                onClick={() => onDelete(item)}
+                type="button"
+              >
+                <Trash2 size={19} />
+              </button>
+            )}
           </div>
         </div>
       </div>
