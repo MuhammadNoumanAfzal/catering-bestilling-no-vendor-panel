@@ -21,7 +21,7 @@ function formatFilterDate(dateValue) {
 
 export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState("All");
-  const [selectedFilter, setSelectedFilter] = useState("Custom Date");
+  const [selectedFilter, setSelectedFilter] = useState("Last Month");
   const [customRange, setCustomRange] = useState(defaultCustomRange);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [detailNotification, setDetailNotification] = useState(null);

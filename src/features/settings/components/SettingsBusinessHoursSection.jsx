@@ -43,6 +43,7 @@ export default function SettingsBusinessHoursSection({
 
             <div className="grid flex-1 grid-cols-2 gap-3 max-[760px]:grid-cols-1">
               <SettingsSelectField
+                disabled={!item.enabled}
                 label=""
                 onChange={(event) => onChangeTime(item.day, "open", event.target.value)}
                 options={timeOptions}
@@ -50,6 +51,7 @@ export default function SettingsBusinessHoursSection({
                 value={item.open}
               />
               <SettingsSelectField
+                disabled={!item.enabled}
                 label=""
                 onChange={(event) => onChangeTime(item.day, "close", event.target.value)}
                 options={timeOptions}

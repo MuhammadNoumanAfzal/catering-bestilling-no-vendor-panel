@@ -30,24 +30,24 @@ export default function FinancePayoutStatus({ items }) {
           return (
             <div
               key={item.title}
-              className="flex items-start justify-between gap-4 rounded-[12px] border border-[#efe6de] px-4 py-4"
+              className="flex items-start justify-between gap-4 rounded-[12px] border border-[#efe6de] px-4 py-4 max-[420px]:flex-col max-[420px]:gap-3"
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full ${toneStyles[item.tone]}`}
+                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${toneStyles[item.tone]}`}
                 >
-                  <Icon size={36} />
+                  <Icon size={16} />
                 </span>
-                <span>
+                <span className="flex flex-col">
                   <strong className="type-h5 block text-[#1a1410]">
                     {item.title}
                   </strong>
-                  <span className="type-subpara whitespace-nowrap text-[#86786d]">
+                  <span className="type-subpara text-[#86786d]">
                     {item.description}
                   </span>
                 </span>
               </div>
-              <span className={`type-h5 ${amountStyles[item.tone]}`}>
+              <span className={`type-h5 shrink-0 max-[420px]:pl-10 ${amountStyles[item.tone]}`}>
                 {item.amount}
               </span>
             </div>
