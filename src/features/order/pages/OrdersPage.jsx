@@ -5,6 +5,7 @@ import OrderMetricCard from "../components/OrderMetricCard";
 import OrderPagination from "../components/OrderPagination";
 import OrdersTable from "../components/OrdersTable";
 import OrderTabs from "../components/OrderTabs";
+import OrderDetailModal from "../components/OrderDetailModal";
 import {
   orderFilterChips,
   orderMetrics,
@@ -73,6 +74,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [activeFilter, setActiveFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrderIdForModal, setSelectedOrderIdForModal] = useState(null);
   const [orderRows, setOrderRows] = useState(() => {
     const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
     if (savedOrdersRaw) {
@@ -214,9 +216,11 @@ export default function OrdersPage() {
         }
 
         await showOrderStatusUpdated(`Order ${row.id} accepted.`);
+        navigate(`/orders/${row.id.replace("#", "")}`);
+        return;
       }
 
-      navigate(`/orders/${row.id.replace("#", "")}`);
+      setSelectedOrderIdForModal(row.id);
       return;
     }
 
@@ -376,6 +380,13 @@ export default function OrdersPage() {
         totalItems={filteredRows.length}
         totalPages={totalPages}
       />
+
+      {selectedOrderIdForModal && (
+        <OrderDetailModal
+          orderId={selectedOrderIdForModal}
+          onClose={() => setSelectedOrderIdForModal(null)}
+        />
+      )}
     </section>
   );
 }
