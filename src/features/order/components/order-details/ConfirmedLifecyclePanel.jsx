@@ -6,6 +6,7 @@ export default function ConfirmedLifecyclePanel({
   statusSubtitle,
   actions,
   onActionClick,
+  onOrderAdjustmentClick,
 }) {
   return (
     <DetailPanel title="Order Lifecycle">
@@ -32,6 +33,13 @@ export default function ConfirmedLifecyclePanel({
             {action.label}
           </button>
         ))}
+        <button
+          className="min-h-[30px] rounded border text-[11px] font-bold border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4] transition"
+          onClick={onOrderAdjustmentClick}
+          type="button"
+        >
+          Order Adjustment
+        </button>
       </div>
     </DetailPanel>
   );
