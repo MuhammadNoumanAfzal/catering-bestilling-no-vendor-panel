@@ -88,7 +88,7 @@ export default function SupportTicketForm() {
                 return (
                   <button
                     key={option.id}
-                    className="inline-flex cursor-pointer items-center gap-2 text-[16px] font-semibold text-[#3c322b]"
+                    className="inline-flex cursor-pointer items-center gap-2 text-[14px] font-semibold text-[#3c322b]"
                     onClick={() => handleCategoryChange(option.id)}
                     type="button"
                   >
@@ -121,7 +121,7 @@ export default function SupportTicketForm() {
                 Related Order (Optional)
               </span>
               <input
-                className="type-subpara h-[38px] w-full rounded-[6px] border border-[#d8d0c8] bg-white px-3 text-[#241913] outline-none transition placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
+                className="h-[42px] w-full rounded-[8px] border border-[#d8d0c8] bg-white px-3 text-[14px] text-[#241913] outline-none transition placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
                 onChange={handleFieldChange("relatedOrder")}
                 placeholder="Enter Order ID (e.g. #1456)"
                 type="text"
@@ -133,7 +133,7 @@ export default function SupportTicketForm() {
           <label className="flex flex-col gap-1">
             <span className="text-[14px] font-bold text-[#2a211b]">Description</span>
             <textarea
-              className="type-subpara min-h-[118px] w-full resize-none rounded-[8px] border border-[#d8d0c8] bg-white px-3 py-3 text-[#241913] outline-none transition placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+              className="min-h-[118px] w-full resize-none rounded-[8px] border border-[#d8d0c8] bg-white px-3 py-3 text-[14px] text-[#241913] outline-none transition placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
               maxLength={1200}
               onChange={handleFieldChange("description")}
               placeholder="Please describe your issue in detail..."
@@ -155,13 +155,13 @@ export default function SupportTicketForm() {
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-          <p className="type-subpara text-[#6f6258]">
+          <p className="text-[13px] font-semibold text-[#6f6258]">
             {submitted
               ? "Ticket submitted successfully. Our support team will review it soon."
               : "Our team usually responds within 24 hours."}
           </p>
           <button
-            className="h-[36px] min-w-[118px] cursor-pointer rounded-[8px] bg-[#d96e39] px-4 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-[42px] min-w-[122px] cursor-pointer rounded-[8px] bg-[#d96e39] px-5 text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!isReadyToSubmit}
             type="submit"
           >

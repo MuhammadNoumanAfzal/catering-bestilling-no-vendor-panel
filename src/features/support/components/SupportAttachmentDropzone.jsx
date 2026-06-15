@@ -6,10 +6,10 @@ export default function SupportAttachmentDropzone({ fileName }) {
       <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-[#fff1ea] text-[#d96e39]">
         <Upload size={14} />
       </div>
-      <p className="mt-2 text-[11px] font-semibold text-[#6d6158]">
+      <p className="mt-2 text-[12px] font-semibold text-[#6d6158]">
         {fileName || "Upload Screenshot"}
       </p>
-      <p className="mt-1 text-[10px] text-[#9b8f84]">
+      <p className="mt-1 text-[11px] text-[#9b8f84]">
         PNG, JPG, JPEG under 2MB
       </p>
     </div>
