@@ -43,11 +43,11 @@ export default function CreateAddOnBasicInfoSection({
 
             <div className="rounded-[10px] border border-[#ddd4cb] bg-[#fffaf6] px-3 py-3">
               <Label>Category</Label>
-              <p className="mb-2 text-[11px] font-medium text-[#8b7f74]">
+              <p className="mb-2 text-[13px] font-medium text-[#8b7f74]">
                 Create your add-on list for better management.
               </p>
 
-              <span className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
+              <span className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
                 Choose a category
               </span>
               <div className="flex flex-wrap gap-2">
@@ -57,7 +57,7 @@ export default function CreateAddOnBasicInfoSection({
                   return (
                     <button
                       key={option}
-                      className={`cursor-pointer rounded-full border px-3 py-[6px] text-[11px] font-semibold transition ${
+                      className={`cursor-pointer rounded-full border px-3 py-[6px] text-[13px] font-semibold transition ${
                         isSelected
                           ? "border-[#cf6e38] bg-[#fff1e8] text-[#cf6e38]"
                           : "border-[#d7cec4] bg-white text-[#544840]"
@@ -72,7 +72,7 @@ export default function CreateAddOnBasicInfoSection({
               </div>
 
               <div className="mt-4 border-t border-[#e6dbd2] pt-3">
-                <span className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
+                <span className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
                   Or create a new category
                 </span>
                 <TextInput

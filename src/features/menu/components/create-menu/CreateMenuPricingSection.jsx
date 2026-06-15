@@ -24,7 +24,7 @@ export default function CreateMenuPricingSection({
             return (
               <button
                 key={mode}
-              className={`h-[34px] cursor-pointer rounded-[8px] text-[12px] font-bold transition ${
+              className={`h-[34px] cursor-pointer rounded-[8px] text-[13px] font-bold transition ${
                   isActive
                     ? "bg-white text-[#17120e] shadow-[0_2px_4px_rgba(0,0,0,0.06)]"
                     : "text-[#6f645b]"

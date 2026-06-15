@@ -30,7 +30,7 @@ export default function MenuManagementToolbar({
 
         <div className="relative">
           <select
-            className="h-[36px] cursor-pointer appearance-none rounded-[18px] border border-[#d9d0c8] bg-white px-3 pr-8 text-[13px] font-semibold text-[#2a211b]"
+            className="h-[40px] cursor-pointer appearance-none rounded-[18px] border border-[#d9d0c8] bg-white px-4 pr-8 text-[14px] font-semibold text-[#2a211b]"
             onChange={(event) => onSortChange(event.target.value)}
             value={valueSort}
           >

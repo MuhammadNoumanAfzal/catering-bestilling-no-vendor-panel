@@ -10,14 +10,14 @@ export default function MenuManagementHeader({ onCreateAddOn, onCreateMenu }) {
 
       <div className="flex items-center gap-2 max-[720px]:w-full max-[720px]:flex-col max-[720px]:items-stretch">
         <button
-          className="h-[36px] cursor-pointer rounded-[8px] border border-[#e1c9bd] bg-white px-3 text-[12px] font-bold text-[#d96e39]"
+          className="h-[40px] cursor-pointer rounded-[8px] border border-[#e1c9bd] bg-white px-4 text-[14px] font-bold text-[#d96e39]"
           onClick={onCreateAddOn}
           type="button"
         >
           + Create Add-ons
         </button>
         <button
-          className="h-[36px] cursor-pointer rounded-[8px] bg-[#d96e39] px-3 text-[12px] font-bold text-white"
+          className="h-[40px] cursor-pointer rounded-[8px] bg-[#d96e39] px-4 text-[14px] font-bold text-white"
           onClick={onCreateMenu}
           type="button"
         >

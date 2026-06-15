@@ -23,7 +23,7 @@ export default function CreateAddOnAvailabilitySection({
               return (
                 <label
                   key={option}
-                  className="flex cursor-pointer items-center gap-2 rounded-[8px] border border-[#ddd4cb] bg-white px-3 py-2 text-[12px] font-semibold text-[#3f342d]"
+                  className="flex cursor-pointer items-center gap-2 rounded-[8px] border border-[#ddd4cb] bg-white px-3 py-2 text-[13px] font-semibold text-[#3f342d]"
                 >
                   <input
                     checked={isChecked}
@@ -44,7 +44,7 @@ export default function CreateAddOnAvailabilitySection({
               <strong className="block text-[14px] font-bold text-[#1f1814]">
                 Available immediately
               </strong>
-              <p className="mt-1 text-[11px] font-medium text-[#8b7f74]">
+              <p className="mt-1 text-[13px] font-medium text-[#8b7f74]">
                 Will be visible on active menus.
               </p>
             </div>

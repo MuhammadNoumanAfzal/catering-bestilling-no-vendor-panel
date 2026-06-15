@@ -11,7 +11,7 @@ export default function CreateMenuSectionCard({
       <header className="mb-3">
         <h2 className="m-0 text-[21px] font-extrabold text-[#17120e]">{title}</h2>
         {description ? (
-          <p className="mt-1 text-[12px] font-medium text-[#8b7f74]">{description}</p>
+          <p className="mt-1 text-[13px] font-medium text-[#8b7f74]">{description}</p>
         ) : null}
       </header>
       {children}
