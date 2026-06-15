@@ -1,6 +1,7 @@
 import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 import SettingsSectionCard from "./SettingsSectionCard";
+import { strengthToneClasses } from "../data/settingsData";
 
 function AccountField({ label, onChange, value }) {
   return (
@@ -60,12 +61,7 @@ export default function SettingsAccountSecurityPanel({
   passwordsMatch,
   passwordVisibility,
 }) {
-  const strengthToneClasses = {
-    neutral: "text-[#8c7d70]",
-    weak: "text-[#ce5d37]",
-    medium: "text-[#b67b1d]",
-    strong: "text-[#179a74]",
-  };
+
 
   return (
     <div className="grid grid-cols-2 gap-4 max-[1120px]:grid-cols-1">
