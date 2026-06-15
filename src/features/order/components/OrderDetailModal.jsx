@@ -41,7 +41,9 @@ export default function OrderDetailModal({ orderId, onClose }) {
   const orderData = useMemo(() => {
     const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
     const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
-    const mainOrder = currentOrders.find((o) => o.id === orderId);
+    const mainOrder = currentOrders.find(
+      (o) => o.id.replace("#", "") === orderId.replace("#", "")
+    );
 
     const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
     const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
@@ -50,7 +52,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
     const status = mainOrder ? mainOrder.status : (detail?.status || "New");
     const customer = mainOrder ? mainOrder.customer : (detail?.customer?.name || "Thomas");
-    const idVal = orderId;
+    const idVal = orderId.startsWith("#") ? orderId : `#${orderId}`;
 
     const priceVal = detail?.orderItem?.modalDetails?.price || "$435.00";
     const qtyVal = detail?.guests || 15;

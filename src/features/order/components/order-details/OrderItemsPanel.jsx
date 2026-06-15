@@ -1,87 +1,10 @@
-import { X } from "lucide-react";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import DetailPanel from "./DetailPanel";
-
-function MenuItemModal({ details, onClose }) {
-  if (!details) {
-    return null;
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Order item details"
-    >
-      <div
-        className="relative w-full max-w-[600px] overflow-hidden rounded-[14px] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e4ddd5] bg-white cursor-pointer text-[#5b524b]"
-          onClick={onClose}
-          type="button"
-          aria-label="Close"
-        >
-          <X size={18} />
-        </button>
-
-        <div className="border-b border-[#e9e0d8] px-5 py-4">
-          <h3 className="text-center type-h3 font-extrabold text-[#17120e]">Order details</h3>
-        </div>
-
-        <div className="px-4 pb-4 pt-3">
-          <div
-            className="h-[174px] w-full rounded-[14px] bg-cover bg-center"
-            style={{ backgroundImage: 'url("/heroBg.webp")' }}
-            aria-hidden="true"
-          />
-
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[14px]">
-            <span className="text-[#7b6f64]">
-              Status: <strong className="font-bold text-[#2ca24f]">Accepted</strong>
-            </span>
-            <span className="text-[#7b6f64]">
-              Customer: <strong className="font-bold text-[#17120e]">Thomas</strong>
-            </span>
-            <span className="text-[#7b6f64]">
-              Order ID: <strong className="font-bold text-[#17120e]">#12549</strong>
-            </span>
-          </div>
-
-          <div className="mt-5">
-            <h4 className="text-[22px] font-extrabold text-[#17120e]">Items</h4>
-
-            <div className="mt-3 flex items-start justify-between gap-3">
-              <span className="type-h5 font-semibold leading-none text-[#7f7368]">15</span>
-              <div className="min-w-0 flex-1 type-h5 font-extrabold leading-[1.3] text-[#6d6259]">
-                Tasty Super Star Package
-              </div>
-              <span className="shrink-0 text-[16px] font-bold text-[#6d6259]">{details.price}</span>
-            </div>
-
-            <div className="mt-3 space-y-2.5 pl-4 text-[#75695f]">
-              {details.items?.map((item) => (
-                <p key={item} className="list-item type-para font-medium leading-[1.35]">
-                  {item}
-                </p>
-              ))}
-              {details.extras?.map((item) => (
-                <p key={item} className="list-item type-para font-medium leading-[1.35]">
-                  {item}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import OrderDetailModal from "../OrderDetailModal";
 
 export default function OrderItemsPanel({ orderItem, note, addOns }) {
+  const { orderId } = useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -154,7 +77,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns }) {
       </DetailPanel>
 
       {isModalOpen ? (
-        <MenuItemModal details={orderItem.modalDetails} onClose={() => setIsModalOpen(false)} />
+        <OrderDetailModal orderId={orderId} onClose={() => setIsModalOpen(false)} />
       ) : null}
     </>
   );
