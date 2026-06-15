@@ -257,11 +257,13 @@ export default function OrderDetailPage() {
               onActionClick={handleConfirmedActionClick}
               statusSubtitle={orderDetail.confirmedStatus.subtitle}
               statusTitle={orderDetail.confirmedStatus.title}
+              onOrderAdjustmentClick={() => navigate(`/orders/${orderId}/adjust`)}
             />
           ) : (
             <LifecyclePanel
               actions={orderDetail.lifecycleActions}
               onActionClick={handleLifecycleActionClick}
+              onOrderAdjustmentClick={() => navigate(`/orders/${orderId}/adjust`)}
             />
           )}
           <FinancialSummaryPanel summary={orderDetail.financialSummary} />

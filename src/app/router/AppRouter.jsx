@@ -13,6 +13,7 @@ import CreateMenuPage from "../../features/menu/pages/CreateMenuPage";
 import MenuPage from "../../features/menu/pages/MenuPage";
 import NotificationsPage from "../../features/notifications/pages/NotificationsPage";
 import OrderDetailPage from "../../features/order/pages/OrderDetailPage";
+import OrderAdjustmentPage from "../../features/order/pages/OrderAdjustmentPage";
 import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
 import SettingsPage from "../../features/settings/pages/SettingsPage";
@@ -32,6 +33,7 @@ export default function AppRouter() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
+          <Route path="orders/:orderId/adjust" element={<OrderAdjustmentPage />} />
           <Route
             path="orders/:orderId/accepted"
             element={<Navigate to="..?stage=accepted" relative="path" replace />}

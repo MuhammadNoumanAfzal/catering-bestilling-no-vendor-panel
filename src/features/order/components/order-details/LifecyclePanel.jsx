@@ -1,6 +1,6 @@
 import DetailPanel from "./DetailPanel";
 
-export default function LifecyclePanel({ actions, onActionClick }) {
+export default function LifecyclePanel({ actions, onActionClick, onOrderAdjustmentClick }) {
   return (
     <DetailPanel title="Order Lifecycle">
       <div className="flex flex-col gap-2">
@@ -18,6 +18,13 @@ export default function LifecyclePanel({ actions, onActionClick }) {
             {action.label}
           </button>
         ))}
+        <button
+          className="min-h-[30px] rounded border text-[11px] font-bold border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4] transition"
+          onClick={onOrderAdjustmentClick}
+          type="button"
+        >
+          Order Adjustment
+        </button>
       </div>
     </DetailPanel>
   );
