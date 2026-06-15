@@ -1,7 +1,7 @@
 import { ChevronDown, Upload } from "lucide-react";
 
 export function Label({ children }) {
-  return <span className="mb-1 block text-[13px] font-bold text-[#211913]">{children}</span>;
+  return <span className="mb-1 block text-[14px] font-bold text-[#211913]">{children}</span>;
 }
 
 export function TextInput({
@@ -13,7 +13,7 @@ export function TextInput({
 }) {
   return (
     <input
-      className="h-[40px] w-full rounded-[8px] border border-[#d7cec4] bg-white px-3 text-[13px] text-[#1f1814] outline-none transition placeholder:text-[#aea39a] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
+      className="h-[42px] w-full rounded-[8px] border border-[#d7cec4] bg-white px-3 text-[14px] text-[#1f1814] outline-none transition placeholder:text-[#aea39a] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
       disabled={disabled}
       onChange={onChange}
       placeholder={placeholder}
@@ -26,7 +26,7 @@ export function TextInput({
 export function TextArea({ disabled = false, placeholder, value, onChange }) {
   return (
     <textarea
-      className="min-h-[88px] w-full resize-none rounded-[8px] border border-[#d7cec4] bg-white px-3 py-3 text-[13px] text-[#1f1814] outline-none transition placeholder:text-[#aea39a] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
+      className="min-h-[88px] w-full resize-none rounded-[8px] border border-[#d7cec4] bg-white px-3 py-3 text-[14px] text-[#1f1814] outline-none transition placeholder:text-[#aea39a] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
       disabled={disabled}
       onChange={onChange}
       placeholder={placeholder}
@@ -45,7 +45,7 @@ export function SelectInput({
   return (
     <div className="relative">
       <select
-        className="h-[40px] w-full cursor-pointer appearance-none rounded-[8px] border border-[#d7cec4] bg-white px-3 pr-8 text-[13px] text-[#1f1814] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
+        className="h-[42px] w-full cursor-pointer appearance-none rounded-[8px] border border-[#d7cec4] bg-white px-3 pr-8 text-[14px] text-[#1f1814] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
         disabled={disabled}
         onChange={onChange}
         value={value}
@@ -103,8 +103,8 @@ export function UploadBox({
           <span className="mb-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#d06d3a] shadow-[0_2px_6px_rgba(0,0,0,0.08)]">
             <Upload size={12} />
           </span>
-          <span className="text-[10px] font-semibold text-[#211913]">{label}</span>
-          <span className="mt-1 text-[9px] font-medium text-[#8a7d72]">
+          <span className="text-[12px] font-semibold text-[#211913]">{label}</span>
+          <span className="mt-1 text-[11px] font-medium text-[#8a7d72]">
             PNG, JPG, or WEBP (max 2MB)
           </span>
         </>

@@ -30,7 +30,7 @@ export default function CreateMenuAvailabilitySection({
             return (
               <button
                 key={day}
-              className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border text-[12px] font-semibold transition ${
+              className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border text-[13px] font-bold transition ${
                   isActive
                     ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
                     : "border-[#bdb2a9] bg-white text-[#29211d]"
@@ -77,7 +77,7 @@ export default function CreateMenuAvailabilitySection({
             return (
               <button
                 key={tag}
-              className={`cursor-pointer rounded-full border px-3 py-[8px] text-[12px] font-semibold transition ${
+              className={`cursor-pointer rounded-full border px-3 py-[8px] text-[13px] font-semibold transition ${
                   isActive
                     ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
                     : "border-[#bdb2a9] bg-white text-[#29211d]"

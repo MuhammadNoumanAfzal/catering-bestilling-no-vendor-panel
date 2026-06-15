@@ -18,7 +18,7 @@ export default function CreateMenuAddOnsSection({
           size={14}
         />
         <input
-          className="h-[36px] w-full rounded-full bg-[#f1f4f6] pl-9 pr-3 text-[12px] text-[#1f1814] outline-none placeholder:text-[#a59b93] disabled:cursor-not-allowed disabled:opacity-70"
+          className="h-[40px] w-full rounded-full bg-[#f1f4f6] pl-9 pr-3 text-[14px] text-[#1f1814] outline-none placeholder:text-[#a59b93] disabled:cursor-not-allowed disabled:opacity-70"
           disabled={disabled}
           onChange={onSearchChange}
           placeholder="Search"
@@ -48,10 +48,10 @@ export default function CreateMenuAddOnsSection({
                 className="h-9 w-9 rounded-[8px] object-cover"
                 src={item.image}
               />
-              <span className="min-w-0 flex-1 text-[11px] font-semibold text-[#201914]">
+              <span className="min-w-0 flex-1 text-[13px] font-semibold text-[#201914]">
                 {item.name}
               </span>
-              <span className="text-[11px] font-bold text-[#201914]">{item.price}</span>
+              <span className="text-[13px] font-bold text-[#201914]">{item.price}</span>
             </label>
           );
         })}

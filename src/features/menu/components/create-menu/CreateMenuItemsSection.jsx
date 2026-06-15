@@ -34,7 +34,7 @@ export default function CreateMenuItemsSection({
 
             <div>
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[13px] font-bold text-[#211913]">Title</span>
+                <span className="text-[14px] font-bold text-[#211913]">Title</span>
                 <button
                   className="cursor-pointer text-[#e06c39] disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={disabled}
@@ -63,7 +63,7 @@ export default function CreateMenuItemsSection({
               </div>
 
               <button
-                className="mt-3 h-[36px] cursor-pointer rounded-[8px] bg-[#cf6e38] px-4 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-3 h-[40px] cursor-pointer rounded-[8px] bg-[#cf6e38] px-4 text-[13px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={disabled}
                 onClick={onAddFromOtherPackage}
                 type="button"
@@ -75,7 +75,7 @@ export default function CreateMenuItemsSection({
         ))}
 
         <button
-          className="h-[34px] w-full cursor-pointer rounded-[8px] border border-[#d6cdc4] bg-white text-[11px] font-semibold text-[#332922] disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-[38px] w-full cursor-pointer rounded-[8px] border border-[#d6cdc4] bg-white text-[13px] font-bold text-[#332922] disabled:cursor-not-allowed disabled:opacity-50"
           disabled={disabled}
           onClick={addMenuItem}
           type="button"

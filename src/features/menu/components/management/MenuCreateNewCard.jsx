@@ -10,8 +10,8 @@ export default function MenuCreateNewCard({ onClick }) {
       <span className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[#aaa29a]">
         <Plus size={22} />
       </span>
-      <strong className="text-[14px] font-extrabold text-[#4c423b]">Add New Offering</strong>
-      <p className="mt-2 max-w-[180px] text-[10px] font-medium leading-[1.45] text-[#9b9086]">
+      <strong className="text-[16px] font-extrabold text-[#4c423b]">Add New Offering</strong>
+      <p className="mt-2 max-w-[180px] text-[14px] font-medium leading-[1.45] text-[#9b9086]">
         Create a new catering package for your clients
       </p>
     </button>
