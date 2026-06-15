@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 export default function ReviewsPagination({
   currentPage,
   onPageChange,
@@ -22,24 +24,26 @@ export default function ReviewsPagination({
   });
 
   return (
-    <div className="flex items-center justify-between gap-3 max-[760px]:flex-col max-[760px]:items-start">
-      <span className="type-subpara text-[#7a6d63]">
-        Showing {startItem} to {endItem} of {totalItems} Orders
+    <div className="flex items-center justify-between gap-4 px-4 py-3.5 max-[760px]:flex-col max-[760px]:items-center max-[760px]:text-center">
+      <span className="type-subpara text-[13px] font-medium text-[#7a6d63]">
+        Showing <span className="font-bold text-[#1c1510]">{startItem}</span> to{" "}
+        <span className="font-bold text-[#1c1510]">{endItem}</span> of{" "}
+        <span className="font-bold text-[#1c1510]">{totalItems}</span> Orders
       </span>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         <button
-          className="flex h-5 w-5 items-center justify-center rounded-[3px] border border-[#d8d0c8] bg-white text-[10px] font-bold text-[#8c7f73] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-[6px] border border-[#d8d0c8] bg-white text-[#8c7f73] hover:bg-[#faf7f4] hover:text-[#1c1510] active:scale-95 transition disabled:pointer-events-none disabled:opacity-40"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
           type="button"
         >
-          &lt;
+          <ChevronLeft size={16} />
         </button>
 
         {paginationItems.map((item, index) =>
           item === "ellipsis" ? (
-            <span key={`ellipsis-${index}`} className="px-1 text-[10px] font-semibold text-[#8c7f73]">
+            <span key={`ellipsis-${index}`} className="px-1.5 text-[12px] font-semibold text-[#8c7f73]">
               ...
             </span>
           ) : (
@@ -47,8 +51,8 @@ export default function ReviewsPagination({
               key={item}
               className={
                 item === currentPage
-                  ? "flex h-5 min-w-[20px] items-center justify-center rounded-[3px] bg-[#e36f3a] px-1.5 text-[10px] font-bold text-white"
-                  : "flex h-5 min-w-[20px] items-center justify-center rounded-[3px] bg-transparent px-1.5 text-[10px] font-semibold text-[#8c7f73]"
+                  ? "flex h-8 min-w-[32px] cursor-pointer items-center justify-center rounded-[6px] bg-[#d96e39] px-2 text-[12px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] transition active:scale-95"
+                  : "flex h-8 min-w-[32px] cursor-pointer items-center justify-center rounded-[6px] bg-transparent px-2 text-[12px] font-semibold text-[#8c7f73] hover:bg-[#faf7f4] hover:text-[#1c1510] transition active:scale-95"
               }
               onClick={() => onPageChange(item)}
               type="button"
@@ -59,12 +63,12 @@ export default function ReviewsPagination({
         )}
 
         <button
-          className="flex h-5 w-5 items-center justify-center rounded-[3px] border border-[#d8d0c8] bg-white text-[10px] font-bold text-[#8c7f73] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-[6px] border border-[#d8d0c8] bg-white text-[#8c7f73] hover:bg-[#faf7f4] hover:text-[#1c1510] active:scale-95 transition disabled:pointer-events-none disabled:opacity-40"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
           type="button"
         >
-          &gt;
+          <ChevronRight size={16} />
         </button>
       </div>
     </div>

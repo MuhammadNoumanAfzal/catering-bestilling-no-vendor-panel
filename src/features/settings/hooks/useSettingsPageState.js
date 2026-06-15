@@ -22,8 +22,8 @@ const defaultSettings = {
   businessAddress: "500 Oslo city avenue, Norway",
   businessDescription:
     "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  cuisineType: "Italian",
-  businessType: "Catering Business",
+  cuisineType: "Italiensk",
+  businessType: "Cateringfirma",
   establishedYear: "2001",
   taxId: "NO 0221",
   notifications: {

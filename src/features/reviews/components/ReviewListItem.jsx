@@ -9,7 +9,7 @@ export default function ReviewListItem({ review }) {
           : "border-[#ddd5ce] bg-white"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 max-[520px]:flex-col max-[520px]:items-stretch max-[520px]:gap-3.5">
         <div className="flex items-start gap-3">
           <img
             alt={review.author}
@@ -36,15 +36,15 @@ export default function ReviewListItem({ review }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex flex-col items-end leading-none">
-            <span className="text-[14px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
+        <div className="flex items-center gap-4 max-[520px]:w-full max-[520px]:justify-between max-[520px]:border-t max-[520px]:border-[#efe6de] max-[520px]:pt-2.5">
+          <div className="flex flex-col items-end max-[520px]:items-start leading-none">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
               Order Ref
             </span>
-            <span className="mt-1 text-[14px] font-extrabold text-[#201914]">#{review.id}</span>
+            <span className="mt-1 text-[13px] font-extrabold text-[#201914]">#{review.id}</span>
           </div>
           <button
-            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#d8d0c9] cursor-pointer bg-white px-3 py-[7px] text-[10px] font-bold text-[#201914]"
+            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#d8d0c9] cursor-pointer bg-white px-3 py-[7px] text-[10px] font-bold text-[#201914] active:scale-95 transition"
             onClick={review.onReplyClick}
             type="button"
           >

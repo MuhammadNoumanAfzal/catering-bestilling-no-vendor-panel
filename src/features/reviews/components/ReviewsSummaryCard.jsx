@@ -27,7 +27,7 @@ export default function ReviewsSummaryCard({ breakdown, stats }) {
               return (
                 <div
                   key={item.stars}
-                  className="grid grid-cols-[34px_minmax(220px,1fr)_72px] items-center gap-2"
+                  className="grid grid-cols-[34px_1fr_72px] items-center gap-2"
                 >
                   <span className="flex items-center gap-1 text-[13px] font-extrabold leading-none text-[#5b5047]">
                     <span>{item.stars}</span>

@@ -5,15 +5,27 @@ import SettingsTextField from "./SettingsTextField";
 import SettingsToggleRow from "./SettingsToggleRow";
 
 const cuisineOptions = [
-  { value: "Italian", label: "Italian" },
-  { value: "Asian Fusion", label: "Asian Fusion" },
-  { value: "Middle Eastern", label: "Middle Eastern" },
+  { value: "Norsk", label: "Norsk" },
+  { value: "Italiensk", label: "Italiensk" },
+  { value: "Indisk", label: "Indisk" },
+  { value: "Pakistansk", label: "Pakistansk" },
+  { value: "Kinesisk", label: "Kinesisk" },
+  { value: "Thai", label: "Thai" },
+  { value: "Middelhavs (Mediterranean)", label: "Middelhavs (Mediterranean)" },
+  { value: "Amerikansk", label: "Amerikansk" },
+  { value: "Vegetar / Vegansk", label: "Vegetar / Vegansk" },
+  { value: "Internasjonal", label: "Internasjonal" },
+  { value: "Custom", label: "Custom" },
 ];
 
 const businessTypeOptions = [
-  { value: "Catering Business", label: "Catering Business" },
-  { value: "Cloud Kitchen", label: "Cloud Kitchen" },
+  { value: "Cateringfirma", label: "Cateringfirma" },
   { value: "Restaurant", label: "Restaurant" },
+  { value: "Hjemmekjøkken", label: "Hjemmekjøkken" },
+  { value: "Food Truck", label: "Food Truck" },
+  { value: "Bakeri", label: "Bakeri" },
+  { value: "Kafé", label: "Kafé" },
+  { value: "Custom", label: "Custom" },
 ];
 
 const languageOptions = [
@@ -91,20 +103,40 @@ export default function SettingsBusinessProfilePanel({
           title="Operating Information"
         >
           <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
-            <SettingsSelectField
-              label="Cuisine Type"
-              onChange={handleFieldChange("cuisineType")}
-              options={cuisineOptions}
-              placeholder="Select cuisine"
-              value={settings.cuisineType}
-            />
-            <SettingsSelectField
-              label="Business Type"
-              onChange={handleFieldChange("businessType")}
-              options={businessTypeOptions}
-              placeholder="Select business type"
-              value={settings.businessType}
-            />
+            <div className="flex flex-col gap-3">
+              <SettingsSelectField
+                label="Cuisine Type"
+                onChange={handleFieldChange("cuisineType")}
+                options={cuisineOptions}
+                placeholder="Select cuisine"
+                value={settings.cuisineType}
+              />
+              {settings.cuisineType === "Custom" && (
+                <SettingsTextField
+                  label="Custom Cuisine"
+                  onChange={handleFieldChange("customCuisineType")}
+                  placeholder="Enter custom cuisine"
+                  value={settings.customCuisineType || ""}
+                />
+              )}
+            </div>
+            <div className="flex flex-col gap-3">
+              <SettingsSelectField
+                label="Business Type"
+                onChange={handleFieldChange("businessType")}
+                options={businessTypeOptions}
+                placeholder="Select business type"
+                value={settings.businessType}
+              />
+              {settings.businessType === "Custom" && (
+                <SettingsTextField
+                  label="Custom Business Type"
+                  onChange={handleFieldChange("customBusinessType")}
+                  placeholder="Enter custom business type"
+                  value={settings.customBusinessType || ""}
+                />
+              )}
+            </div>
             <SettingsTextField
               label="Established Year (Optional)"
               onChange={handleFieldChange("establishedYear")}
