@@ -62,6 +62,7 @@ export default function CreateMenuAvailabilitySection({
               disabled={disabled}
               onChange={onBlackoutDateChange}
               placeholder="Select date to exclude..."
+              type="date"
               value={blackoutDate}
             />
           </div>
