@@ -133,12 +133,23 @@ export default function CreateMenuPage() {
     setSelectedAddOnIds(initialState.selectedAddOnIds || []);
   }, [isEditMode, isViewMode]);
 
+  const allAddOns = useMemo(() => {
+    const savedAddOnsRaw = window.localStorage.getItem("vendor-addon-items");
+    if (savedAddOnsRaw) {
+      return JSON.parse(savedAddOnsRaw);
+    } else {
+      window.localStorage.setItem("vendor-addon-items", JSON.stringify(optionalAddOns));
+      return optionalAddOns;
+    }
+  }, []);
+
   const filteredAddOns = useMemo(
     () =>
-      optionalAddOns.filter((item) =>
-        item.name.toLowerCase().includes(addOnSearch.trim().toLowerCase()),
-      ),
-    [addOnSearch],
+      allAddOns.filter((item) => {
+        const title = item.addOnName || item.name || "";
+        return title.toLowerCase().includes(addOnSearch.trim().toLowerCase());
+      }),
+    [allAddOns, addOnSearch],
   );
 
   function toggleDay(day) {
@@ -389,7 +400,7 @@ export default function CreateMenuPage() {
               handleImageUpload(file, (imageData) => updateMenuItem(id, "image", imageData))
             }
             menuItems={menuItems}
-            onAddFromOtherPackage={() => toggleAddOn(optionalAddOns[0].id)}
+            onAddFromOtherPackage={() => toggleAddOn(allAddOns[0]?.id || 1)}
             removeMenuItem={removeMenuItem}
             updateMenuItem={updateMenuItem}
           />
