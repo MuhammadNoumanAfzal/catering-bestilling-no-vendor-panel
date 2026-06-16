@@ -10,6 +10,7 @@ export default function SectionCard({
   children,
   onActionClick,
   onActionOptionSelect,
+  action,
 }) {
   return (
     <section className="rounded-[10px] border border-[#e8e2da] bg-white px-[10px] pb-3 pt-2.5 shadow-[0_1px_2px_rgba(38,23,14,0.08),0_6px_14px_rgba(38,23,14,0.06)] max-[720px]:px-3 max-[720px]:pt-3">
@@ -22,7 +23,7 @@ export default function SectionCard({
             </span>
           ) : null}
         </div>
-        {actionLabel ? (
+        {action ? action : actionLabel ? (
           actionVariant === "dropdown" ? (
             <div className="flex items-center gap-1.5 rounded-full border border-[#d9d1c9] bg-white px-2 py-[4px] shadow-[0_1px_2px_rgba(38,23,14,0.08)] max-[720px]:flex-wrap">
               {actionOptions.length > 0 ? (
