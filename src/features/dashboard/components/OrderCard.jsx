@@ -13,29 +13,27 @@ const badgeToneClasses = {
 export default function OrderCard({ onPrimaryAction, onSecondaryAction, order }) {
   return (
     <article
-      className={`flex items-end justify-between gap-4 rounded-[14px] border px-3 pb-3 pt-[14px] ${
+      className={`relative flex items-end justify-between gap-4 rounded-[14px] border px-3 pb-3 pt-[14px] ${
         toneClasses[order.tone] ?? toneClasses["is-danger"]
       } max-[720px]:flex-col max-[720px]:items-stretch`}
     >
       <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-          <div>
-            <div className="flex items-center gap-2">
-              <strong className="type-h3 text-[#18120e]">{order.id}</strong>
-              <span
-                className={`type-subpara inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-bold ${
-                  badgeToneClasses[order.tone] ?? badgeToneClasses["is-danger"]
-                }`}
-              >
-                {order.statusLabel}
-              </span>
-            </div>
-            <h3 className="type-h4 mt-[7px] text-[17px] text-[#1b1510]">
-              {order.title}
-            </h3>
-          </div>
-          <strong className="type-h5 text-[#1b1510]">{order.amount}</strong>
+        <div className="flex items-center gap-2">
+          <strong className="type-h3 text-[#18120e]">{order.id}</strong>
+          <span
+            className={`type-subpara inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-bold ${
+              badgeToneClasses[order.tone] ?? badgeToneClasses["is-danger"]
+            }`}
+          >
+            {order.statusLabel}
+          </span>
         </div>
+        <h3 className="type-h4 mt-[7px] text-[17px] text-[#1b1510]">
+          {order.title}
+        </h3>
+        <strong className="absolute right-3 top-[42px] type-h5 text-[#1b1510] max-[720px]:static max-[720px]:mt-2 max-[720px]:block">
+          {order.amount}
+        </strong>
 
         <p className="type-para mt-[10px] flex flex-wrap gap-[10px] text-[11px] font-bold text-[#211914]">
           <span>{order.guests}</span>
