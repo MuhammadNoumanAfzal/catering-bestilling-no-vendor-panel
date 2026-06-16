@@ -11,7 +11,7 @@ import {
   Truck,
   Utensils,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { confirmVendorLogout } from "../../utils/vendorAlerts";
@@ -31,6 +31,7 @@ const sidebarItems = [
 
 
 export default function AppLayout() {
+  const navigate = useNavigate();
   const { logout, user } = useAuth();
 
   async function handleLogout() {
@@ -98,11 +99,17 @@ export default function AppLayout() {
           </div>
 
           <div className="flex items-center gap-2.5 max-[960px]:hidden">
-            <span className="type-subpara rounded-full border border-[#c7ebcf] bg-[#e7f8ea] px-3 py-[7px] uppercase text-[#237a39] shadow-[0_4px_12px_rgba(35,122,57,0.08)]">
-              Restaurant Active
-            </span>
+            <button
+              onClick={() => navigate("/notifications")}
+              className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e4d9cf] bg-white text-[#241913] hover:bg-[#fcfaf5] transition shadow-[0_4px_12px_rgba(38,23,14,0.04)]"
+              type="button"
+            >
+              <Bell size={18} />
+              <span className="absolute right-[9px] top-[9px] h-2 w-2 rounded-full bg-[#cf6e38]" />
+            </button>
 
             <button
+              onClick={() => navigate("/settings")}
               className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_6px_18px_rgba(38,23,14,0.06)]"
               type="button"
             >
@@ -123,22 +130,28 @@ export default function AppLayout() {
             <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,#e57a45_0%,#cf6837_100%)] p-4 text-white shadow-[0_14px_28px_rgba(121,61,23,0.18)]">
               <div className="flex items-center justify-between gap-3">
                 <img className="block h-auto w-32" src="/logo2.webp" alt="Catering bestilling.no" />
-                <button
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
-                  onClick={handleLogout}
-                  type="button"
-                >
-                  <LogOut size={16} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
+                    onClick={() => navigate("/notifications")}
+                    type="button"
+                  >
+                    <Bell size={16} />
+                  </button>
+                  <button
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
+                    onClick={handleLogout}
+                    type="button"
+                  >
+                    <LogOut size={16} />
+                  </button>
+                </div>
               </div>
 
               <div className="mt-3 flex items-center justify-between gap-3 max-[480px]:flex-col max-[480px]:items-stretch">
-                <span className="type-subpara inline-flex w-fit items-center rounded-full bg-white px-3 py-[7px] uppercase text-[#237a39] shadow-[0_8px_18px_rgba(35,122,57,0.12)]">
-                  Restaurant Active
-                </span>
-
                 <button
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_10px_20px_rgba(38,23,14,0.08)]"
+                  onClick={() => navigate("/settings")}
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_10px_20px_rgba(38,23,14,0.08)] max-[480px]:w-full justify-between"
                   type="button"
                 >
                   <img
