@@ -1,4 +1,5 @@
 import { CircleAlert, UserRound, X } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import DetailPanel from "./DetailPanel";

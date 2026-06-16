@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ConfirmedLifecyclePanel from "../components/order-details/ConfirmedLifecyclePanel";
 import CustomerInfoPanel from "../components/order-details/CustomerInfoPanel";
 import FinancialSummaryPanel from "../components/order-details/FinancialSummaryPanel";
 import LifecyclePanel from "../components/order-details/LifecyclePanel";
 import LogisticsPanel from "../components/order-details/LogisticsPanel";
 import OrderItemsPanel from "../components/order-details/OrderItemsPanel";
-import { getOrderDetailById, ordersTableRows, orderDetailRecords } from "../data/orderData";
+import { ordersTableRows, orderDetailRecords } from "../data/orderData";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
@@ -63,6 +63,8 @@ export default function OrderDetailPage() {
   const [triggerVal, setTriggerVal] = useState(0);
 
   const orderDetail = useMemo(() => {
+    // Reference triggerVal to justify dependency for recalculation
+    void triggerVal;
     const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
     const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
     const cleanId = orderId.replace("#", "");
@@ -71,7 +73,86 @@ export default function OrderDetailPage() {
       window.localStorage.setItem("vendor-order-details", JSON.stringify(orderDetailRecords));
     }
 
-    const detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
+    let detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
+
+    if (!detail) {
+      const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
+      const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
+      const mainOrder = currentOrders.find((o) => o.id.replace("#", "") === cleanId);
+
+      if (mainOrder) {
+        detail = {
+          id: mainOrder.id,
+          date: mainOrder.date,
+          time: mainOrder.time,
+          customer: {
+            name: mainOrder.customer,
+            organization: `${mainOrder.customer} Ltd`,
+            postalCode: "0278",
+            city: "Oslo",
+            email: `${mainOrder.customer.toLowerCase().replace(/[^a-z0-9]/g, "")}@catering-bestilling.no`,
+            historyText: "Returning customer (2 past orders)",
+            historyOrders: [
+              {
+                id: "ORD-1120",
+                title: mainOrder.event || "Lunch buffet",
+                date: "10 Jan, 2026",
+                amount: `$${(mainOrder.guests * 42).toFixed(2)}`,
+                guests: `${mainOrder.guests} GUESTS`,
+                status: "DELIVERED",
+                statusTone: "delivered",
+              }
+            ],
+          },
+          orderItem: {
+            name: mainOrder.event || "Standard Catering Buffet",
+            quantity: `Full catering package for ${mainOrder.guests} guests.`,
+            description: "CORE ITEMS",
+            includedItems: [
+              "Freshly Roasted Seasonal Veggies (x1)",
+              "Hot Protein Platters (x2)",
+              "Standard Dessert Curation (x1)"
+            ],
+            modalDetails: {
+              title: mainOrder.event || "Standard Catering Buffet",
+              price: `$${(mainOrder.guests * 42).toFixed(2)}`,
+              facts: [
+                "Cuisine: Buffet",
+                `Serves: ${mainOrder.guests} guests`,
+              ],
+              items: [
+                "Includes: Main courses, sides, salads, and dessert box",
+              ],
+              extras: ["Delivery and table setup included"],
+            },
+          },
+          addOns: ["Assorted Cold Beverages", "Environment Friendly Cutlery"],
+          note: "Please contact event manager on arrival.",
+          logistics: {
+            deliveryAddress: "1221 Avenue of the Americas, Floor 42, New York, NY 10020",
+            eventDate: mainOrder.date,
+            deliveryWindow: mainOrder.time,
+            fullAddress: "1221 Avenue of the Americas, Floor 42, New York, NY 10020",
+            eventType: mainOrder.event || "Catering Event",
+            serviceType: "Full Service",
+          },
+          status: mainOrder.status || "New",
+          financialSummary: [
+            { label: "Subtotal", value: `$${(mainOrder.guests * 42).toFixed(2)}` },
+            { label: "Delivery Fee", value: "$30.00" },
+            { label: "Platform Fee (2%)", value: `-$${(mainOrder.guests * 0.84).toFixed(2)}` },
+            { label: "Total", value: `$${(mainOrder.guests * 42 + 30 - mainOrder.guests * 0.84).toFixed(2)}` },
+          ],
+        };
+
+        const updatedDetails = {
+          ...currentDetails,
+          [cleanId]: detail,
+        };
+        window.localStorage.setItem("vendor-order-details", JSON.stringify(updatedDetails));
+      }
+    }
+
     if (!detail) return null;
 
     const savedOrdersRaw = window.localStorage.getItem("vendor-orders");

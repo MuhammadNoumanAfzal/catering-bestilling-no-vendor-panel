@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OrderFilters from "../components/OrderFilters";
@@ -10,6 +11,7 @@ import {
   orderFilterChips,
   ordersTableRows,
   orderTabs,
+  orderDetailRecords,
 } from "../data/orderData";
 import {
   confirmOrderStatusAction,
@@ -117,6 +119,89 @@ function shiftOrderDates(orders) {
       date: dateStr,
     };
   });
+}
+
+function updateOrderDetailsStatus(orderId, nextStatus, rowInfo) {
+  const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
+  const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
+  const cleanId = orderId.replace("#", "");
+
+  let detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
+  if (!detail && rowInfo) {
+    detail = {
+      id: rowInfo.id,
+      date: rowInfo.date,
+      time: rowInfo.time,
+      customer: {
+        name: rowInfo.customer,
+        organization: `${rowInfo.customer} Ltd`,
+        postalCode: "0278",
+        city: "Oslo",
+        email: `${rowInfo.customer.toLowerCase().replace(/[^a-z0-9]/g, "")}@catering-bestilling.no`,
+        historyText: "Returning customer (2 past orders)",
+        historyOrders: [
+          {
+            id: "ORD-1120",
+            title: rowInfo.event || "Lunch buffet",
+            date: "10 Jan, 2026",
+            amount: `$${(rowInfo.guests * 42).toFixed(2)}`,
+            guests: `${rowInfo.guests} GUESTS`,
+            status: "DELIVERED",
+            statusTone: "delivered",
+          }
+        ],
+      },
+      orderItem: {
+        name: rowInfo.event || "Standard Catering Buffet",
+        quantity: `Full catering package for ${rowInfo.guests} guests.`,
+        description: "CORE ITEMS",
+        includedItems: [
+          "Freshly Roasted Seasonal Veggies (x1)",
+          "Hot Protein Platters (x2)",
+          "Standard Dessert Curation (x1)"
+        ],
+        modalDetails: {
+          title: rowInfo.event || "Standard Catering Buffet",
+          price: `$${(rowInfo.guests * 42).toFixed(2)}`,
+          facts: [
+            "Cuisine: Buffet",
+            `Serves: ${rowInfo.guests} guests`,
+          ],
+          items: [
+            "Includes: Main courses, sides, salads, and dessert box",
+          ],
+          extras: ["Delivery and table setup included"],
+        },
+      },
+      addOns: ["Assorted Cold Beverages", "Environment Friendly Cutlery"],
+      note: "Please contact event manager on arrival.",
+      logistics: {
+        deliveryAddress: "1221 Avenue of the Americas, Floor 42, New York, NY 10020",
+        eventDate: rowInfo.date,
+        deliveryWindow: rowInfo.time,
+        fullAddress: "1221 Avenue of the Americas, Floor 42, New York, NY 10020",
+        eventType: rowInfo.event || "Catering Event",
+        serviceType: "Full Service",
+      },
+      status: nextStatus,
+      financialSummary: [
+        { label: "Subtotal", value: `$${(rowInfo.guests * 42).toFixed(2)}` },
+        { label: "Delivery Fee", value: "$30.00" },
+        { label: "Platform Fee (2%)", value: `-$${(rowInfo.guests * 0.84).toFixed(2)}` },
+        { label: "Total", value: `$${(rowInfo.guests * 42 + 30 - rowInfo.guests * 0.84).toFixed(2)}` },
+      ],
+    };
+  } else if (detail) {
+    detail.status = nextStatus;
+  }
+
+  if (detail) {
+    const nextDetails = {
+      ...currentDetails,
+      [cleanId]: detail,
+    };
+    window.localStorage.setItem("vendor-order-details", JSON.stringify(nextDetails));
+  }
 }
 
 export default function OrdersPage() {
@@ -316,16 +401,7 @@ export default function OrdersPage() {
       window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
       setOrderRows(nextOrders);
 
-      const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-      const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-      const cleanId = orderId.replace("#", "");
-      if (currentDetails[cleanId]) {
-        currentDetails[cleanId] = {
-          ...currentDetails[cleanId],
-          status: nextStatus,
-        };
-        window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-      }
+      updateOrderDetailsStatus(orderId, nextStatus, row);
 
       await showOrderStatusUpdated(`Status updated to ${nextStatus} for ${row.id}.`);
       return;
@@ -356,16 +432,7 @@ export default function OrdersPage() {
         window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
         setOrderRows(nextOrders);
 
-        const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-        const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-        const cleanId = orderId.replace("#", "");
-        if (currentDetails[cleanId]) {
-          currentDetails[cleanId] = {
-            ...currentDetails[cleanId],
-            status: nextStatus,
-          };
-          window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-        }
+        updateOrderDetailsStatus(orderId, nextStatus, row);
 
         await showOrderStatusUpdated(`Order ${row.id} accepted.`);
         navigate(`/orders/${row.id.replace("#", "")}`);
@@ -400,16 +467,7 @@ export default function OrdersPage() {
       window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
       setOrderRows(nextOrders);
 
-      const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-      const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-      const cleanId = orderId.replace("#", "");
-      if (currentDetails[cleanId]) {
-        currentDetails[cleanId] = {
-          ...currentDetails[cleanId],
-          status: nextStatus,
-        };
-        window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-      }
+      updateOrderDetailsStatus(orderId, nextStatus, row);
 
       await showOrderStatusUpdated(`Order ${row.id} accepted.`);
       navigate(`/orders/${row.id.replace("#", "")}`);
@@ -440,16 +498,7 @@ export default function OrdersPage() {
       window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
       setOrderRows(nextOrders);
 
-      const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-      const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-      const cleanId = orderId.replace("#", "");
-      if (currentDetails[cleanId]) {
-        currentDetails[cleanId] = {
-          ...currentDetails[cleanId],
-          status: nextStatus,
-        };
-        window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-      }
+      updateOrderDetailsStatus(orderId, nextStatus, row);
 
       await showOrderStatusUpdated(`Order ${row.id} rejected.`);
       return;
@@ -479,16 +528,7 @@ export default function OrdersPage() {
       window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
       setOrderRows(nextOrders);
 
-      const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-      const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-      const cleanId = orderId.replace("#", "");
-      if (currentDetails[cleanId]) {
-        currentDetails[cleanId] = {
-          ...currentDetails[cleanId],
-          status: nextStatus,
-        };
-        window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-      }
+      updateOrderDetailsStatus(orderId, nextStatus, row);
 
       await showOrderStatusUpdated(`Order ${row.id} marked as delivered.`);
     }
