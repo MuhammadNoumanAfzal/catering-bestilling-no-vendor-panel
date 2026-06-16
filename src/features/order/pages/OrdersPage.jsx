@@ -67,37 +67,51 @@ function getToneForStatus(status) {
   return "is-new";
 }
 
+function parseOrderDateString(dateStr) {
+  if (!dateStr) return new Date();
+
+  let d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d;
+
+  const parts = dateStr.trim().split(/\s+/);
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const monthName = parts[1].toLowerCase();
+    const year = parseInt(parts[2], 10);
+
+    const months = [
+      "january", "february", "march", "april", "may", "june",
+      "july", "august", "september", "october", "november", "december"
+    ];
+    const monthIndex = months.indexOf(monthName);
+    if (monthIndex !== -1 && !isNaN(day) && !isNaN(year)) {
+      return new Date(year, monthIndex, day);
+    }
+  }
+
+  return new Date();
+}
+
 function shiftOrderDates(orders) {
   if (!orders || orders.length === 0) return [];
 
-  let maxDate = new Date("2026-04-01");
-  orders.forEach((order) => {
-    const d = new Date(order.date);
-    if (!isNaN(d.getTime()) && d > maxDate) {
-      maxDate = d;
-    }
-  });
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  maxDate.setHours(0, 0, 0, 0);
-
-  const diffMs = today.getTime() - maxDate.getTime();
-  if (diffMs <= 0) {
-    return orders;
-  }
 
   const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
 
-  return orders.map((order) => {
-    const d = new Date(order.date);
-    if (isNaN(d.getTime())) return order;
+  // Distribute 15 orders across 35 days to make filters responsive
+  const daysOffsets = [0, 1, 2, 4, 6, 8, 10, 12, 15, 18, 21, 24, 27, 30, 35];
 
-    const shiftedDate = new Date(d.getTime() + diffMs);
-    const dateStr = `${shiftedDate.getDate()} ${months[shiftedDate.getMonth()]} ${shiftedDate.getFullYear()}`;
+  return orders.map((order, index) => {
+    const daysAgo = daysOffsets[index] !== undefined ? daysOffsets[index] : index * 3.5;
+    const orderDate = new Date(today.getTime());
+    orderDate.setDate(today.getDate() - Math.floor(daysAgo));
+
+    const dateStr = `${orderDate.getDate()} ${months[orderDate.getMonth()]} ${orderDate.getFullYear()}`;
     return {
       ...order,
       date: dateStr,
@@ -136,7 +150,7 @@ export default function OrdersPage() {
     today.setHours(0, 0, 0, 0);
 
     return orderRows.filter((row) => {
-      const rowDate = new Date(row.date);
+      const rowDate = parseOrderDateString(row.date);
       if (isNaN(rowDate.getTime())) return true;
       rowDate.setHours(0, 0, 0, 0);
 
