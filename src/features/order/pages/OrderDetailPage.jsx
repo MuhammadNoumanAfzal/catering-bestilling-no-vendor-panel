@@ -256,8 +256,6 @@ export default function OrderDetailPage() {
             <ConfirmedLifecyclePanel
               actions={orderDetail.confirmedLifecycleActions}
               onActionClick={handleConfirmedActionClick}
-              statusSubtitle={orderDetail.confirmedStatus.subtitle}
-              statusTitle={orderDetail.confirmedStatus.title}
               onOrderAdjustmentClick={() => navigate(`/orders/${orderId}/adjust`)}
               currentStatus={orderDetail.status}
               onStatusSelect={updateOrderStatus}

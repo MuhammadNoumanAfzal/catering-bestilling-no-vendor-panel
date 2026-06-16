@@ -1,4 +1,4 @@
-import { ChevronDown, Users } from "lucide-react";
+import { ChevronDown, Users, Check, X, ArrowRight, Ban, Play } from "lucide-react";
 import { useState } from "react";
 
 const statusToneClasses = {
@@ -13,9 +13,10 @@ const statusToneClasses = {
 };
 
 const actionToneClasses = {
-  "is-primary": "border-[#cf6e38] bg-[#cf6e38] text-white",
-  "is-muted": "border-[#8f8881] bg-[#8f8881] text-white",
-  "is-success": "border-[#6ddc56] bg-[#6ddc56] text-[#124f0f]",
+  "is-primary": "border-[#cf6e38] bg-[#cf6e38] text-white hover:bg-[#cf6e38]/90",
+  "is-muted": "border-[#8f8881] bg-[#8f8881] text-white hover:bg-[#8f8881]/90",
+  "is-success": "border-[#2ca24f] bg-[#2ca24f] text-white hover:bg-[#2ca24f]/90",
+  "is-danger": "border-[#dc2626] bg-[#dc2626] text-white hover:bg-[#dc2626]/90",
 };
 
 const actionMenuItems = [
@@ -25,6 +26,54 @@ const actionMenuItems = [
   "Delivered",
   "Canceled",
 ];
+
+function renderStatusBadge(status, statusTone) {
+  const toneClass = statusToneClasses[statusTone] ?? statusToneClasses["is-new"];
+  
+  let dotClass = "h-1.5 w-1.5 rounded-full ";
+  if (status === "New") {
+    dotClass += "bg-[#1d70a2] animate-pulse";
+  } else if (status === "Accepted") {
+    dotClass += "bg-[#245ce6]";
+  } else if (status === "Preparing") {
+    dotClass += "bg-[#6322ad] animate-pulse";
+  } else if (status === "Ready") {
+    dotClass += "bg-[#1c873b]";
+  } else if (status === "Out for delivery" || status === "Out for Delivery") {
+    dotClass += "bg-[#c4551d] animate-pulse";
+  } else if (status === "Delivered") {
+    dotClass += "bg-[#156e10]";
+  } else {
+    dotClass += "bg-[#dc2626]";
+  }
+
+  return (
+    <span className={`inline-flex min-h-[24px] items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[12px] font-semibold leading-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${toneClass}`}>
+      <span className={dotClass} aria-hidden="true" />
+      <span>{status}</span>
+    </span>
+  );
+}
+
+function getActionIcon(label) {
+  const norm = label.toLowerCase();
+  if (norm === "accept" || norm === "accept order") {
+    return <Check size={12} strokeWidth={3} className="mr-0.5 shrink-0" />;
+  }
+  if (norm === "reject" || norm === "reject order" || norm === "cancel" || norm === "canceled") {
+    return <X size={12} strokeWidth={3} className="mr-0.5 shrink-0" />;
+  }
+  if (norm === "start preparing" || norm === "preparing") {
+    return <Play size={12} strokeWidth={2.5} className="mr-0.5 shrink-0" fill="currentColor" />;
+  }
+  if (norm === "ready") {
+    return <Check size={12} strokeWidth={3} className="mr-0.5 shrink-0" />;
+  }
+  if (norm === "out for delivery" || norm === "delivered" || norm === "mark delivered") {
+    return <ArrowRight size={12} strokeWidth={2.5} className="mr-0.5 shrink-0" />;
+  }
+  return null;
+}
 
 export default function OrdersTable({ rows, onActionClick, onRowClick }) {
   const [openMenuKey, setOpenMenuKey] = useState(null);
@@ -42,13 +91,13 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
     <div className="overflow-x-auto rounded-[14px] border border-[#ddd3ca] bg-white shadow-[0_2px_10px_rgba(42,27,18,0.05)]">
       <table className="w-full border-collapse bg-white">
         <thead>
-          <tr>
+          <tr className="bg-[#fffdfb]">
             <th 
-              className="w-7 border-b border-[#eee7df] px-3 py-3.5 text-left text-[14px] font-extrabold text-[#17120e]"
+              className="w-7 border-b border-[#eee7df] px-4 py-4 text-left text-[14px] font-extrabold text-[#17120e]"
               onClick={(e) => e.stopPropagation()}
             >
               <input 
-                className="h-3.5 w-3.5 accent-[#cf6e38]" 
+                className="h-3.5 w-3.5 accent-[#cf6e38] cursor-pointer" 
                 type="checkbox" 
                 onClick={(e) => e.stopPropagation()}
               />
@@ -56,7 +105,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
             {["OrderID", "Customer", "Event", "Guests", "Delivery date", "Status", "Actions"].map((heading) => (
               <th
                 key={heading}
-                className="border-b border-[#eee7df] px-3 py-3.5 text-left text-[14px] font-extrabold text-[#17120e]"
+                className="border-b border-[#eee7df] px-4 py-4 text-left text-[14px] font-extrabold text-[#17120e]"
               >
                 {heading}
               </th>
@@ -68,52 +117,46 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
             <tr
               key={`${row.id}-${row.customer}-${index}`}
               className={`transition duration-150 cursor-pointer border-b border-[#eee7df] last:border-b-0 hover:bg-[#fff7f2] ${
-                row.statusTone === "is-new" ? "bg-[#eef8ff]" : "bg-white"
+                row.statusTone === "is-new" ? "bg-[#eef8ff]/70" : "bg-white"
               }`}
               onClick={() => onRowClick?.(row)}
             >
               <td 
-                className="w-7 px-3 py-4"
+                className="w-7 px-4 py-4"
                 onClick={(e) => e.stopPropagation()}
               >
                 <input 
-                  className="h-3.5 w-3.5 accent-[#cf6e38]" 
+                  className="h-3.5 w-3.5 accent-[#cf6e38] cursor-pointer" 
                   type="checkbox" 
                   onClick={(e) => e.stopPropagation()}
                 />
               </td>
-              <td className="px-3 py-4 text-[15px] font-extrabold text-[#1c1510]">
+              <td className="px-4 py-4 text-[15px] font-extrabold text-[#1c1510]">
                 {row.id}
               </td>
-              <td className="px-3 py-4 text-[14px] font-semibold text-[#17120e]">
+              <td className="px-4 py-4 text-[14px] font-bold text-[#17120e]">
                 {row.customer}
               </td>
-              <td className="px-3 py-4 text-[14px] font-medium text-[#5e544d]">
+              <td className="px-4 py-4 text-[14px] font-semibold text-[#5e544d]">
                 {row.event}
               </td>
-              <td className="px-3 py-4 text-[14px] font-semibold text-[#17120e]">
+              <td className="px-4 py-4 text-[14px] font-semibold text-[#17120e]">
                 <span className="inline-flex items-center gap-1.5">
                   <Users size={13} strokeWidth={2.2} className="text-[#8f7f73]" />
                   {row.guests}
                 </span>
               </td>
-              <td className="px-3 py-4">
-                <div className="flex flex-col gap-0.5 text-[13px] font-medium leading-[1.25] text-[#5e544d]">
+              <td className="px-4 py-4">
+                <div className="flex flex-col gap-0.5 text-[13px] font-semibold leading-[1.25] text-[#5e544d]">
                   <span>{row.date}</span>
-                  <span className="text-[11px] text-[#8f7f73]">{row.time}</span>
+                  <span className="text-[11px] text-[#8f7f73] font-medium">{row.time}</span>
                 </div>
               </td>
-              <td className="px-3 py-4">
-                <span
-                  className={`inline-flex min-h-[24px] items-center justify-center rounded-full border px-3 py-0.5 text-[12px] font-semibold ${
-                    statusToneClasses[row.statusTone] ?? statusToneClasses["is-new"]
-                  }`}
-                >
-                  {row.status}
-                </span>
+              <td className="px-4 py-4">
+                {renderStatusBadge(row.status, row.statusTone)}
               </td>
               <td 
-                className="px-3 py-4"
+                className="px-4 py-4"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -122,12 +165,18 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                     const isMenuOpen = openMenuKey === menuKey;
                     const hasDropdown = Boolean(action.hasDropdown);
 
+                    // Add special custom styling for Accept vs Reject
+                    let buttonToneClass = actionToneClasses[action.tone] ?? actionToneClasses["is-muted"];
+                    if (action.label === "Accept") {
+                      buttonToneClass = "border-[#2ca24f] bg-[#2ca24f] text-white hover:bg-[#21873f] shadow-[0_2px_8px_rgba(44,162,79,0.2)]";
+                    } else if (action.label === "Reject") {
+                      buttonToneClass = "border-[#e4d9cf] bg-white text-[#dc2626] hover:bg-[#fff2f1] hover:border-[#ffd0cc]";
+                    }
+
                     return (
                       <div key={action.label} className="relative" onClick={(e) => e.stopPropagation()}>
                         <button
-                          className={`inline-flex min-h-[26px] cursor-pointer items-center gap-1 rounded-full border px-3 text-[12px] font-bold leading-none ${
-                            actionToneClasses[action.tone] ?? actionToneClasses["is-muted"]
-                          } ${hasDropdown ? "pr-2" : ""}`}
+                          className={`inline-flex min-h-[28px] cursor-pointer items-center gap-1 rounded-full border px-3.5 text-[12px] font-extrabold leading-none transition duration-150 ${buttonToneClass} ${hasDropdown ? "pr-2" : ""}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (hasDropdown) {
@@ -138,23 +187,30 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                           }}
                           type="button"
                         >
+                          {getActionIcon(action.label)}
                           <span>{action.label}</span>
-                          {hasDropdown ? <ChevronDown size={12} strokeWidth={2.5} /> : null}
+                          {hasDropdown ? <ChevronDown size={12} strokeWidth={2.8} className="opacity-90" /> : null}
                         </button>
 
                         {hasDropdown && isMenuOpen ? (
-                          <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[140px] rounded-[8px] border border-[#ddd4cb] bg-white p-1 shadow-[0_10px_24px_rgba(25,18,12,0.16)]">
+                          <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-[10px] border border-[#e3d6ca] bg-white/95 p-1 shadow-[0_12px_28px_rgba(38,23,14,0.12)] backdrop-blur-sm">
                             {actionMenuItems.map((item) => (
                               <button
                                 key={item}
-                                className="block w-full cursor-pointer whitespace-nowrap rounded-[5px] px-2.5 py-1.5 text-left text-[11px] font-semibold text-[#5e554d] transition hover:bg-[#f6f1eb]"
+                                className="flex w-full items-center gap-1.5 cursor-pointer whitespace-nowrap rounded-[6px] px-3 py-2 text-left text-[11px] font-bold text-[#5e554d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMenuAction(row, action, item);
                                 }}
                                 type="button"
                               >
-                                {item}
+                                <span className={`h-1.5 w-1.5 rounded-full ${
+                                  item === "Start preparing" ? "bg-[#cf6e38]" :
+                                  item === "Ready" ? "bg-[#1c873b]" :
+                                  item === "Out for delivery" ? "bg-[#c4551d]" :
+                                  item === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"
+                                }`} />
+                                <span>{item}</span>
                               </button>
                             ))}
                           </div>
