@@ -5,7 +5,7 @@ function Field({ label, type = "text", placeholder, helperText, name, onChange, 
     <label className="flex flex-col gap-1.5">
       <span className="type-para text-[#4c4037]">{label}</span>
       <input
-        className="type-subpara min-h-[42px] rounded-lg border border-[#ddd4cb] bg-white px-3 text-[#1d1713] outline-none transition duration-150 placeholder:text-[#b0a79e] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+        className="type-subpara min-h-[42px] rounded-lg border border-[#ddd4cb] bg-white px-3 text-[#1d1713] outline-none transition duration-150 placeholder:text-[#baaea0] placeholder:font-normal focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
         name={name}
         onChange={onChange}
         type={type}
@@ -125,7 +125,22 @@ export default function AuthCard({
           <p className="type-para mt-2 text-center text-[#cf6e38]">{actionNote}</p>
         ) : null}
 
-        {note ? <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p> : null}
+        {note ? (
+          note.includes("admin@vendorpanel.com") ? (
+            <div className="mt-[18px] rounded-lg bg-[#faf6f0] border border-[#eee4db] p-2.5 text-center">
+              <span className="block text-[11px] font-bold uppercase tracking-wider text-[#9f9185]">
+                Demo Access
+              </span>
+              <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5 text-[12px] font-bold text-[#5a4d41]">
+                <span className="bg-[#f0e5da] px-2 py-0.5 rounded text-[#bf5d30] select-all">admin@vendorpanel.com</span>
+                <span className="text-[#ccc2b8] font-normal">/</span>
+                <span className="bg-[#f0e5da] px-2 py-0.5 rounded text-[#bf5d30] select-all">admin123</span>
+              </div>
+            </div>
+          ) : (
+            <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p>
+          )
+        ) : null}
 
         {backLinkLabel && backLinkTo ? (
           <Link
