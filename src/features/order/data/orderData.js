@@ -17,6 +17,7 @@ export const orderMetrics = [
 export const orderTabs = [
   { label: "All", count: 45, isActive: true },
   { label: "New", count: 7 },
+  { label: "Modified", count: 0 },
   { label: "Delivered", count: 8 },
   { label: "Pending", count: 3 },
   { label: "Accepted", count: 18 },
@@ -25,6 +26,7 @@ export const orderTabs = [
 
 export const orderFilterChips = [
   "New",
+  "Modified",
   "Accepted",
   "Preparing",
   "Ready",

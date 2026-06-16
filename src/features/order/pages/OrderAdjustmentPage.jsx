@@ -275,6 +275,7 @@ export default function OrderAdjustmentPage() {
     const updatedDetail = {
       ...orderDetail,
       ...existingDetail,
+      status: "Modified",
       guests: personCount,
       date: formattedDate,
       time: formattedTime,
@@ -302,6 +303,9 @@ export default function OrderAdjustmentPage() {
       if (idx !== -1) {
         currentOrders[idx] = {
           ...currentOrders[idx],
+          status: "Modified",
+          statusTone: "is-modified",
+          actions: [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }],
           guests: personCount,
           date: formattedDate,
           time: formattedTime,

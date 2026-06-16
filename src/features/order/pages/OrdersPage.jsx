@@ -54,6 +54,9 @@ function getActionsForStatus(status) {
   if (status === "Out for delivery") {
     return [{ label: "Delivered", tone: "is-primary", hasDropdown: true }];
   }
+  if (status === "Modified") {
+    return [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }];
+  }
   return [{ label: "View Details", tone: "is-muted", navigateToDetail: true }];
 }
 
@@ -66,6 +69,7 @@ function getToneForStatus(status) {
   if (status === "Delivered") return "is-delivered";
   if (status === "Canceled") return "is-canceled";
   if (status === "Reject") return "is-reject";
+  if (status === "Modified") return "is-modified";
   return "is-new";
 }
 

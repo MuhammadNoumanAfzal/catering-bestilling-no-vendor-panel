@@ -10,6 +10,7 @@ const statusToneClasses = {
   "is-reject": "border border-[#ffd0cc] bg-[#fff2f1] text-[#dc2626]",
   "is-canceled": "border border-[#ffd0cc] bg-[#fff2f1] text-[#dc2626]",
   "is-delivered": "border border-[#c1f5b6] bg-[#edfcf2] text-[#156e10]",
+  "is-modified": "border border-[#fed7aa] bg-[#fff7ed] text-[#ea580c]",
 };
 
 const actionToneClasses = {
@@ -43,6 +44,8 @@ function renderStatusBadge(status, statusTone) {
     dotClass += "bg-[#c4551d] animate-pulse";
   } else if (status === "Delivered") {
     dotClass += "bg-[#156e10]";
+  } else if (status === "Modified") {
+    dotClass += "bg-[#ea580c] animate-pulse";
   } else {
     dotClass += "bg-[#dc2626]";
   }
