@@ -1,4 +1,4 @@
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Copy, Pencil, Trash2 } from "lucide-react";
 
 const toneClasses = {
   active: "bg-[#2fca52] text-white",
@@ -6,7 +6,16 @@ const toneClasses = {
   draft: "bg-[#dbe7ff] text-[#6d84d6]",
 };
 
-export default function MenuOfferingCard({ item, onDelete, onEdit, onView }) {
+export default function MenuOfferingCard({
+  item,
+  onDelete,
+  onEdit,
+  onView,
+  onDuplicate,
+  onToggleStatus,
+}) {
+  const isActive = item.status === "Active";
+
   return (
     <article className="overflow-hidden rounded-[14px] border border-[#ddd4cb] bg-white shadow-[0_2px_10px_rgba(43,30,20,0.03)]">
       <div className="relative h-[126px] bg-[#ece7e2]">
@@ -34,46 +43,58 @@ export default function MenuOfferingCard({ item, onDelete, onEdit, onView }) {
               {item.meta}
             </span>
           </div>
-
-          <span
-            className={`rounded-full px-2.5 py-1 text-[12px] font-bold ${
-              toneClasses[item.tone]
-            }`}
-          >
-            {item.status}
-          </span>
         </div>
 
-        <div className="mt-3.5 flex items-center justify-between border-t border-[#eee6df] pt-2.5">
-          <div className="flex items-center gap-3.5">
-            {!item.isAddOn && (
-              <>
-                <button
-                  className="cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-90 transition"
-                  onClick={() => onView(item)}
-                  type="button"
-                >
-                  <Eye size={19} />
-                </button>
-                <button
-                  className="cursor-pointer text-[#d96e39] hover:text-[#c75e2c] active:scale-90 transition"
-                  onClick={() => onEdit(item)}
-                  type="button"
-                >
-                  <Pencil size={19} />
-                </button>
-              </>
-            )}
-            {(!item.isAddOn || (item.isAddOn && typeof item.id === "string" && item.id.startsWith("addon-"))) && (
-              <button
-                className="cursor-pointer text-[#8d8075] hover:text-[#ff2918] active:scale-90 transition"
-                onClick={() => onDelete(item)}
-                type="button"
-              >
-                <Trash2 size={19} />
-              </button>
-            )}
+        <div className="mt-3.5 flex items-center justify-between border-t border-[#eee6df] pt-3">
+          <div className="flex items-center gap-5">
+            <button
+              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-95 transition"
+              onClick={() => onEdit(item)}
+              type="button"
+            >
+              <Pencil size={18} />
+              <span className="text-[11px] font-bold">Edit</span>
+            </button>
+
+            <button
+              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-95 transition"
+              onClick={() => onDuplicate(item)}
+              type="button"
+            >
+              <Copy size={18} />
+              <span className="text-[11px] font-bold">Duplicate</span>
+            </button>
+
+            <button
+              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] hover:text-[#ff2918] active:scale-95 transition"
+              onClick={() => onDelete(item)}
+              type="button"
+            >
+              <Trash2 size={18} />
+              <span className="text-[11px] font-bold">Delete</span>
+            </button>
           </div>
+
+          <button
+            onClick={() => onToggleStatus(item)}
+            type="button"
+            className={`relative flex items-center h-[28px] w-[76px] rounded-full transition-colors duration-200 focus:outline-none ${
+              isActive ? "bg-[#00c82a]" : "bg-[#a89e95]"
+            }`}
+          >
+            <span
+              className={`absolute top-[2px] h-[24px] w-[24px] rounded-full bg-white transition-all duration-200 shadow-sm ${
+                isActive ? "left-[50px]" : "left-[2px]"
+              }`}
+            />
+            <span
+              className={`w-full text-[11px] font-bold text-white select-none transition-all duration-200 ${
+                isActive ? "text-left pl-3" : "text-right pr-3"
+              }`}
+            >
+              {isActive ? "Active" : "Paused"}
+            </span>
+          </button>
         </div>
       </div>
     </article>

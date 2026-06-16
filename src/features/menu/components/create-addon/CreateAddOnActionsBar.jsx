@@ -3,19 +3,22 @@ export default function CreateAddOnActionsBar({
   onCancel,
   onSave,
   stagedCount,
+  isEditMode,
 }) {
   return (
     <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-      <button
-        className="min-h-[40px] flex-1 cursor-pointer rounded-[10px] border border-[#d7cec4] bg-white px-5 text-[14px] font-bold text-[#4c4038] transition hover:border-[#cf6e38] hover:text-[#cf6e38]"
-        onClick={onAddAnother}
-        type="button"
-      >
-        + Add Another Item
-      </button>
+      {!isEditMode && (
+        <button
+          className="min-h-[40px] flex-1 cursor-pointer rounded-[10px] border border-[#d7cec4] bg-white px-5 text-[14px] font-bold text-[#4c4038] transition hover:border-[#cf6e38] hover:text-[#cf6e38]"
+          onClick={onAddAnother}
+          type="button"
+        >
+          + Add Another Item
+        </button>
+      )}
 
-      <div className="flex items-center gap-3">
-        {stagedCount ? (
+      <div className={`flex items-center gap-3 ${isEditMode ? "w-full justify-end" : ""}`}>
+        {!isEditMode && stagedCount ? (
           <span className="text-[13px] font-semibold text-[#8d8176]">
             {stagedCount} add-on{stagedCount > 1 ? "s" : ""} ready to save
           </span>
@@ -33,7 +36,7 @@ export default function CreateAddOnActionsBar({
           onClick={onSave}
           type="button"
         >
-          Save Add-ons
+          {isEditMode ? "Save Changes" : "Save Add-ons"}
         </button>
       </div>
     </div>

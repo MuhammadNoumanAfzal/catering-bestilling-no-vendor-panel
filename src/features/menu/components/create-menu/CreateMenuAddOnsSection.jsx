@@ -44,12 +44,12 @@ export default function CreateMenuAddOnsSection({
                 type="checkbox"
               />
               <img
-                alt={item.name}
+                alt={item.addOnName || item.name}
                 className="h-9 w-9 rounded-[8px] object-cover"
                 src={item.image}
               />
               <span className="min-w-0 flex-1 text-[13px] font-semibold text-[#201914]">
-                {item.name}
+                {item.addOnName || item.name}
               </span>
               <span className="text-[13px] font-bold text-[#201914]">{item.price}</span>
             </label>

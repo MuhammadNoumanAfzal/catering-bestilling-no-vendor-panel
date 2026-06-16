@@ -1,6 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import CreateAddOnActionsBar from "../components/create-addon/CreateAddOnActionsBar";
 import CreateAddOnAvailabilitySection from "../components/create-addon/CreateAddOnAvailabilitySection";
@@ -40,6 +40,7 @@ function fileToDataUrl(file) {
 
 export default function CreateAddOnPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [addOnName, setAddOnName] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
@@ -49,25 +50,50 @@ export default function CreateAddOnPage() {
   const [availableImmediately, setAvailableImmediately] = useState(true);
   const [stagedItems, setStagedItems] = useState([]);
 
-  useEffect(() => {
-    const savedDraftRaw = window.localStorage.getItem(ADD_ON_DRAFT_STORAGE_KEY);
+  const mode = searchParams.get("mode") || "create";
+  const editId = searchParams.get("id");
+  const isEditMode = mode === "edit";
 
-    if (!savedDraftRaw) {
+  useEffect(() => {
+    if (isEditMode && editId) {
+      const savedAddOnsRaw = window.localStorage.getItem(ADD_ON_ITEMS_STORAGE_KEY);
+      const savedAddOns = savedAddOnsRaw ? JSON.parse(savedAddOnsRaw) : [];
+      const itemToEdit = savedAddOns.find(
+        (entry) => entry.id.toString() === editId.toString()
+      );
+
+      if (itemToEdit) {
+        setAddOnName(itemToEdit.addOnName || itemToEdit.name || "");
+        setPrice(itemToEdit.price?.toString().replace(/[^0-9.]/g, "") || "");
+        setCategory(itemToEdit.category || "");
+        setCustomCategory(itemToEdit.customCategory || "");
+        setImage(itemToEdit.image || "");
+        setSelectedDietary(itemToEdit.selectedDietary || []);
+        setAvailableImmediately(itemToEdit.availableImmediately ?? true);
+      }
+    } else {
+      const savedDraftRaw = window.localStorage.getItem(ADD_ON_DRAFT_STORAGE_KEY);
+
+      if (!savedDraftRaw) {
+        return;
+      }
+
+      const savedDraft = JSON.parse(savedDraftRaw);
+      setAddOnName(savedDraft.addOnName || "");
+      setPrice(savedDraft.price || "");
+      setCategory(savedDraft.category || "");
+      setCustomCategory(savedDraft.customCategory || "");
+      setImage(savedDraft.image || "");
+      setSelectedDietary(savedDraft.selectedDietary || []);
+      setAvailableImmediately(savedDraft.availableImmediately ?? true);
+      setStagedItems(savedDraft.stagedItems || []);
+    }
+  }, [isEditMode, editId]);
+
+  useEffect(() => {
+    if (isEditMode) {
       return;
     }
-
-    const savedDraft = JSON.parse(savedDraftRaw);
-    setAddOnName(savedDraft.addOnName || "");
-    setPrice(savedDraft.price || "");
-    setCategory(savedDraft.category || "");
-    setCustomCategory(savedDraft.customCategory || "");
-    setImage(savedDraft.image || "");
-    setSelectedDietary(savedDraft.selectedDietary || []);
-    setAvailableImmediately(savedDraft.availableImmediately ?? true);
-    setStagedItems(savedDraft.stagedItems || []);
-  }, []);
-
-  useEffect(() => {
     window.localStorage.setItem(
       ADD_ON_DRAFT_STORAGE_KEY,
       JSON.stringify({
@@ -90,6 +116,7 @@ export default function CreateAddOnPage() {
     price,
     selectedDietary,
     stagedItems,
+    isEditMode,
   ]);
 
   const resolvedCategory = useMemo(
@@ -142,7 +169,7 @@ export default function CreateAddOnPage() {
       return false;
     }
 
-    if (!price.trim()) {
+    if (!price.toString().trim()) {
       await showVendorErrorAlert("Please enter a price for this add-on.");
       return false;
     }
@@ -159,7 +186,7 @@ export default function CreateAddOnPage() {
     return {
       id: `addon-${Date.now()}`,
       addOnName: addOnName.trim(),
-      price: price.trim(),
+      price: price.toString().trim(),
       category: resolvedCategory,
       image,
       selectedDietary,
@@ -180,9 +207,39 @@ export default function CreateAddOnPage() {
   }
 
   async function handleSave() {
+    if (isEditMode) {
+      const isValid = await validateAddOn();
+      if (!isValid) {
+        return;
+      }
+
+      const savedItemsRaw = window.localStorage.getItem(ADD_ON_ITEMS_STORAGE_KEY);
+      let savedItems = savedItemsRaw ? JSON.parse(savedItemsRaw) : [];
+
+      savedItems = savedItems.map((item) => {
+        if (item.id.toString() === editId.toString()) {
+          return {
+            ...item,
+            addOnName: addOnName.trim(),
+            price: price.toString().trim(),
+            category: resolvedCategory,
+            image,
+            selectedDietary,
+            availableImmediately,
+          };
+        }
+        return item;
+      });
+
+      window.localStorage.setItem(ADD_ON_ITEMS_STORAGE_KEY, JSON.stringify(savedItems));
+      await showVendorSuccessToast("Add-on updated successfully.");
+      navigate("/menu");
+      return;
+    }
+
     const hasCurrentValues = Boolean(
       addOnName.trim() ||
-        price.trim() ||
+        price.toString().trim() ||
         category.trim() ||
         customCategory.trim() ||
         image ||
@@ -236,9 +293,13 @@ export default function CreateAddOnPage() {
           <ChevronLeft size={14} />
           Menu management
         </button>
-        <h1 className="type-h2 m-0 text-[#15110f]">Add New Add-on</h1>
+        <h1 className="type-h2 m-0 text-[#15110f]">
+          {isEditMode ? "Edit Add-on" : "Add New Add-on"}
+        </h1>
         <p className="mt-1 text-[15px] font-medium text-[#746a62]">
-          Create a new extra item for your customers to customize their meals.
+          {isEditMode
+            ? "Update the details and configuration of your add-on item."
+            : "Create a new extra item for your customers to customize their meals."}
         </p>
       </header>
 
@@ -280,6 +341,7 @@ export default function CreateAddOnPage() {
         onCancel={handleCancel}
         onSave={handleSave}
         stagedCount={stagedItems.length}
+        isEditMode={isEditMode}
       />
     </section>
   );
