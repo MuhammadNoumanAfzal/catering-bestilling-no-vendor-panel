@@ -33,7 +33,7 @@ function getInitialMenuState() {
     menuTitle: "",
     description: "",
     category: "",
-    menuType: "",
+    menuType: "Per Person",
     coverImage: "",
     galleryImages: [],
     selectedDays: [],

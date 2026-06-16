@@ -17,7 +17,10 @@ export default function CreateMenuPricingSection({
       title="Pricing & Capacity"
     >
       <div className="rounded-[10px] bg-[#f1efed] p-1">
-        <div className="grid grid-cols-3 gap-1">
+        <div
+          className="grid gap-1"
+          style={{ gridTemplateColumns: `repeat(${pricingModes.length}, minmax(0, 1fr))` }}
+        >
           {pricingModes.map((mode) => {
             const isActive = pricingMode === mode;
 
