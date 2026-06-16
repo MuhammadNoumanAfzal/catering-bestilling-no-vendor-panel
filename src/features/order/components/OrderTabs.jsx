@@ -1,13 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
-const filterOptions = [
-  "Last Month",
-  "Last 3 Months",
-  "Last 6 Months",
-  "This Year",
-  "Custom Date",
-];
+const filterOptions = ["Last 7 Days", "Last 14 Days", "Last Month", "Custom Date"];
 
 function formatCustomDate(value) {
   if (!value) {
@@ -18,15 +12,22 @@ function formatCustomDate(value) {
   return `${month}-${day}-${year}`;
 }
 
-export default function OrderTabs({ tabs, activeTab, onTabChange }) {
+export default function OrderTabs({
+  tabs,
+  activeTab,
+  onTabChange,
+  selectedFilter,
+  onFilterSelect,
+  fromDate,
+  onFromDateChange,
+  toDate,
+  onToDateChange,
+}) {
   const orderedTabs = [
     ...tabs.filter((tab) => tab.label === "All"),
     ...tabs.filter((tab) => tab.label !== "All"),
   ];
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Last Month");
-  const [fromDate, setFromDate] = useState("2024-05-02");
-  const [toDate, setToDate] = useState("2024-05-03");
 
   const formattedRange = useMemo(() => {
     if (selectedFilter !== "Custom Date" || !fromDate || !toDate) {
@@ -37,7 +38,7 @@ export default function OrderTabs({ tabs, activeTab, onTabChange }) {
   }, [fromDate, selectedFilter, toDate]);
 
   function handleFilterSelect(option) {
-    setSelectedFilter(option);
+    onFilterSelect(option);
     if (option !== "Custom Date") {
       setIsFilterOpen(false);
     }
@@ -108,7 +109,7 @@ export default function OrderTabs({ tabs, activeTab, onTabChange }) {
                     </label>
                     <input
                       className="mb-2 h-8 w-full cursor-pointer rounded-[6px] border border-[#d8cfc6] bg-white px-2 text-[11px] text-[#2d261f] outline-none"
-                      onChange={(event) => setFromDate(event.target.value)}
+                      onChange={(event) => onFromDateChange(event.target.value)}
                       type="date"
                       value={fromDate}
                     />
@@ -117,7 +118,7 @@ export default function OrderTabs({ tabs, activeTab, onTabChange }) {
                     </label>
                     <input
                       className="h-8 w-full cursor-pointer rounded-[6px] border border-[#d8cfc6] bg-white px-2 text-[11px] text-[#2d261f] outline-none"
-                      onChange={(event) => setToDate(event.target.value)}
+                      onChange={(event) => onToDateChange(event.target.value)}
                       type="date"
                       value={toDate}
                     />

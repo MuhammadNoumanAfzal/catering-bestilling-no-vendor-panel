@@ -8,7 +8,6 @@ import OrderTabs from "../components/OrderTabs";
 import OrderDetailModal from "../components/OrderDetailModal";
 import {
   orderFilterChips,
-  orderMetrics,
   ordersTableRows,
   orderTabs,
 } from "../data/orderData";
@@ -68,6 +67,44 @@ function getToneForStatus(status) {
   return "is-new";
 }
 
+function shiftOrderDates(orders) {
+  if (!orders || orders.length === 0) return [];
+
+  let maxDate = new Date("2026-04-01");
+  orders.forEach((order) => {
+    const d = new Date(order.date);
+    if (!isNaN(d.getTime()) && d > maxDate) {
+      maxDate = d;
+    }
+  });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  maxDate.setHours(0, 0, 0, 0);
+
+  const diffMs = today.getTime() - maxDate.getTime();
+  if (diffMs <= 0) {
+    return orders;
+  }
+
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  return orders.map((order) => {
+    const d = new Date(order.date);
+    if (isNaN(d.getTime())) return order;
+
+    const shiftedDate = new Date(d.getTime() + diffMs);
+    const dateStr = `${shiftedDate.getDate()} ${months[shiftedDate.getMonth()]} ${shiftedDate.getFullYear()}`;
+    return {
+      ...order,
+      date: dateStr,
+    };
+  });
+}
+
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -75,21 +112,66 @@ export default function OrdersPage() {
   const [activeFilter, setActiveFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrderIdForModal, setSelectedOrderIdForModal] = useState(null);
+
+  const [selectedFilter, setSelectedFilter] = useState("Last Month");
+  const [fromDate, setFromDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().split("T")[0];
+  });
+  const [toDate, setToDate] = useState(() => {
+    return new Date().toISOString().split("T")[0];
+  });
+
   const [orderRows, setOrderRows] = useState(() => {
     const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-    if (savedOrdersRaw) {
-      return JSON.parse(savedOrdersRaw);
-    } else {
-      window.localStorage.setItem("vendor-orders", JSON.stringify(ordersTableRows));
-      return ordersTableRows;
-    }
+    let initialOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
+    initialOrders = shiftOrderDates(initialOrders);
+    window.localStorage.setItem("vendor-orders", JSON.stringify(initialOrders));
+    return initialOrders;
   });
+
+  const dateFilteredRows = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return orderRows.filter((row) => {
+      const rowDate = new Date(row.date);
+      if (isNaN(rowDate.getTime())) return true;
+      rowDate.setHours(0, 0, 0, 0);
+
+      if (selectedFilter === "Last 7 Days") {
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        return rowDate >= sevenDaysAgo && rowDate <= today;
+      }
+      if (selectedFilter === "Last 14 Days") {
+        const fourteenDaysAgo = new Date(today);
+        fourteenDaysAgo.setDate(today.getDate() - 14);
+        return rowDate >= fourteenDaysAgo && rowDate <= today;
+      }
+      if (selectedFilter === "Last Month") {
+        const oneMonthAgo = new Date(today);
+        oneMonthAgo.setMonth(today.getMonth() - 1);
+        return rowDate >= oneMonthAgo && rowDate <= today;
+      }
+      if (selectedFilter === "Custom Date") {
+        if (!fromDate || !toDate) return true;
+        const start = new Date(fromDate);
+        const end = new Date(toDate);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+        return rowDate >= start && rowDate <= end;
+      }
+      return true;
+    });
+  }, [orderRows, selectedFilter, fromDate, toDate]);
 
   const filteredRows = useMemo(() => {
     const baseRows =
       activeTab === "All"
-        ? orderRows
-        : orderRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeTab));
+        ? dateFilteredRows
+        : dateFilteredRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeTab));
 
     const chipFilteredRows = activeFilter
       ? baseRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeFilter))
@@ -98,7 +180,63 @@ export default function OrdersPage() {
     return [...chipFilteredRows].sort((firstRow, secondRow) =>
       secondRow.customer.localeCompare(firstRow.customer),
     );
-  }, [activeFilter, activeTab, orderRows]);
+  }, [activeFilter, activeTab, dateFilteredRows]);
+
+  const dynamicMetrics = useMemo(() => {
+    const total = dateFilteredRows.length;
+    const newCount = dateFilteredRows.filter((r) => r.status === "New").length;
+    const acceptedCount = dateFilteredRows.filter((r) => r.status === "Accepted").length;
+    const preparingCount = dateFilteredRows.filter((r) => r.status === "Preparing").length;
+    const readyCount = dateFilteredRows.filter((r) => r.status === "Ready").length;
+    const deliveryCount = dateFilteredRows.filter((r) => r.status === "Out for delivery" || r.status === "Out for Delivery").length;
+    const deliveredCount = dateFilteredRows.filter((r) => r.status === "Delivered").length;
+
+    return [
+      {
+        label: "Total Orders",
+        value: String(total),
+        helper: "Active in range",
+        helperTone: "is-positive",
+        icon: "clipboard",
+      },
+      {
+        label: "New Orders",
+        value: String(newCount),
+        helper: `${Math.round(newCount * 0.2)} urgent`,
+        icon: "cart",
+      },
+      {
+        label: "Accepted",
+        value: String(acceptedCount),
+        helper: `${Math.round(acceptedCount * 0.4)} prepare`,
+        icon: "check",
+      },
+      {
+        label: "Preparing",
+        value: String(preparingCount),
+        helper: `${Math.round(preparingCount * 0.2)} delayed`,
+        icon: "chef",
+      },
+      {
+        label: "Ready",
+        value: String(readyCount),
+        helper: "0 waiting",
+        icon: "package",
+      },
+      {
+        label: "Out for Delivery",
+        value: String(deliveryCount),
+        helper: "On the way",
+        icon: "truck",
+      },
+      {
+        label: "Delivered",
+        value: String(deliveredCount),
+        helper: "Completed",
+        icon: "badge",
+      },
+    ];
+  }, [dateFilteredRows]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
@@ -147,7 +285,7 @@ export default function OrdersPage() {
 
     if (action.fromDropdown) {
       const nextStatus = getStatusFromActionLabel(action.label);
-      
+
       const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
       const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
       const nextOrders = currentOrders.map((order) => {
@@ -352,7 +490,7 @@ export default function OrdersPage() {
       </header>
 
       <div className="grid grid-cols-7 gap-2 max-[1180px]:grid-cols-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-2">
-        {orderMetrics.map((metric) => (
+        {dynamicMetrics.map((metric) => (
           <OrderMetricCard key={metric.label} {...metric} />
         ))}
       </div>
@@ -361,10 +499,16 @@ export default function OrdersPage() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         tabs={orderTabs}
+        selectedFilter={selectedFilter}
+        onFilterSelect={setSelectedFilter}
+        fromDate={fromDate}
+        onFromDateChange={setFromDate}
+        toDate={toDate}
+        onToDateChange={setToDate}
       />
 
       <div className="bg-transparent px-0 pb-0 pt-0">
-        <OrdersTable onActionClick={handleActionClick} rows={paginatedRows} />
+        <OrdersTable onActionClick={handleActionClick} rows={paginatedRows} onRowClick={(row) => navigate(`/orders/${row.id.replace("#", "")}`)} />
         <OrderFilters
           activeFilter={activeFilter}
           filters={orderFilterChips}

@@ -129,6 +129,7 @@ export default function OrderDetailPage() {
 
     return {
       ...detail,
+      date: mainOrder ? mainOrder.date : detail.date,
       status: currentStatus,
       isAcceptedView: isAccepted,
       lifecycleActions,
@@ -258,6 +259,8 @@ export default function OrderDetailPage() {
               statusSubtitle={orderDetail.confirmedStatus.subtitle}
               statusTitle={orderDetail.confirmedStatus.title}
               onOrderAdjustmentClick={() => navigate(`/orders/${orderId}/adjust`)}
+              currentStatus={orderDetail.status}
+              onStatusSelect={updateOrderStatus}
             />
           ) : (
             <LifecyclePanel
