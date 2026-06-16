@@ -62,26 +62,28 @@ export default function CreateMenuItemsSection({
                 />
               </div>
 
-              <button
-                className="mt-3 h-[40px] cursor-pointer rounded-[8px] bg-[#cf6e38] px-4 text-[13px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={disabled}
-                onClick={onAddFromOtherPackage}
-                type="button"
-              >
-                Add item from other package
-              </button>
             </div>
           </div>
         ))}
 
-        <button
-          className="h-[38px] w-full cursor-pointer rounded-[8px] border border-[#d6cdc4] bg-white text-[13px] font-bold text-[#332922] disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={disabled}
-          onClick={addMenuItem}
-          type="button"
-        >
-          + Add Another Item
-        </button>
+        <div className="flex gap-3 max-[480px]:flex-col">
+          <button
+            className="flex-1 h-[38px] cursor-pointer rounded-[8px] border border-[#d6cdc4] bg-white text-[13px] font-bold text-[#332922] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#faf7f5] transition active:scale-95"
+            disabled={disabled}
+            onClick={addMenuItem}
+            type="button"
+          >
+            + Add Another Item
+          </button>
+          <button
+            className="flex-1 h-[38px] cursor-pointer rounded-[8px] bg-[#cf6e38] text-[13px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#bf622f] transition active:scale-95"
+            disabled={disabled}
+            onClick={onAddFromOtherPackage}
+            type="button"
+          >
+            Add item from other package
+          </button>
+        </div>
       </div>
     </CreateMenuSectionCard>
   );
