@@ -8,6 +8,7 @@ import CreateMenuAvailabilitySection from "../components/create-menu/CreateMenuA
 import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasicInfoSection";
 import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSection";
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
+import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
 import {
   allergenOptions,
   availabilityDays,
@@ -80,7 +81,24 @@ export default function CreateMenuPage() {
   const [menuItems, setMenuItems] = useState(initialCreateMenuItems);
   const [addOnSearch, setAddOnSearch] = useState("");
   const [selectedAddOnIds, setSelectedAddOnIds] = useState([]);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const mode = searchParams.get("mode") || "create";
+
+  function handleAddImportedItems(selectedItemsList) {
+    setMenuItems((current) => {
+      const newItems = selectedItemsList.map((item) => ({
+        id: Date.now() + Math.random(),
+        title: item.title || "",
+        allergen: item.allergen || "",
+        image: item.image || "",
+      }));
+      const isSingleEmpty = current.length === 1 && !current[0].title && !current[0].allergen && !current[0].image;
+      if (isSingleEmpty) {
+        return newItems;
+      }
+      return [...current, ...newItems];
+    });
+  }
   const isViewMode = mode === "view";
   const isEditMode = mode === "edit";
 
@@ -404,7 +422,7 @@ export default function CreateMenuPage() {
               handleImageUpload(file, (imageData) => updateMenuItem(id, "image", imageData))
             }
             menuItems={menuItems}
-            onAddFromOtherPackage={() => toggleAddOn(allAddOns[0]?.id || 1)}
+            onAddFromOtherPackage={() => setIsImportModalOpen(true)}
             removeMenuItem={removeMenuItem}
             updateMenuItem={updateMenuItem}
           />
@@ -445,6 +463,12 @@ export default function CreateMenuPage() {
         onPublish={handlePublish}
         onSaveDraft={isViewMode ? () => navigate("/menu") : handleSaveDraft}
         saveLabel={isViewMode ? "Back to Menus" : isEditMode ? "Save Changes" : "Save as Draft"}
+      />
+
+      <ImportMenuItemsModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onAdd={handleAddImportedItems}
       />
     </section>
   );
