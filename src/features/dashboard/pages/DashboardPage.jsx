@@ -168,6 +168,53 @@ export default function DashboardPage() {
     return chartValues;
   }, [dateFilter, startDate, endDate]);
 
+  const activeUrgentOrders = useMemo(() => {
+    if (dateFilter === "Last 2 Days") {
+      return [urgentOrders[0]];
+    } else if (dateFilter === "Custom Date") {
+      if (startDate && endDate) {
+        const diffDays = Math.ceil(Math.abs(new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+        if (diffDays <= 3) {
+          return [urgentOrders[0]];
+        } else {
+          return urgentOrders;
+        }
+      } else {
+        return [];
+      }
+    }
+    return urgentOrders;
+  }, [dateFilter, startDate, endDate]);
+
+  const activeKitchenStatus = useMemo(() => {
+    let prepVal = "3";
+    let readyVal = "2";
+    let deliveryVal = "4";
+
+    if (dateFilter === "Last 2 Days") {
+      prepVal = "1";
+      readyVal = "1";
+      deliveryVal = "2";
+    } else if (dateFilter === "Custom Date") {
+      if (startDate && endDate) {
+        const diffDays = Math.ceil(Math.abs(new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+        prepVal = String(Math.max(0, Math.round(diffDays * 0.4)));
+        readyVal = String(Math.max(0, Math.round(diffDays * 0.3)));
+        deliveryVal = String(Math.max(0, Math.round(diffDays * 0.5)));
+      } else {
+        prepVal = "0";
+        readyVal = "0";
+        deliveryVal = "0";
+      }
+    }
+
+    return [
+      { ...kitchenStatus[0], value: prepVal },
+      { ...kitchenStatus[1], value: readyVal },
+      { ...kitchenStatus[2], value: deliveryVal },
+    ];
+  }, [dateFilter, startDate, endDate]);
+
   const dashboardQuickActions = quickActions.map((action) => ({
     ...action,
     onClick:
@@ -182,7 +229,7 @@ export default function DashboardPage() {
           : () => navigate("/delivery"),
   }));
 
-  const dashboardKitchenStatus = kitchenStatus.map((item) => ({
+  const dashboardKitchenStatus = activeKitchenStatus.map((item) => ({
     ...item,
     onClick: () => navigate(`/orders?filter=${encodeURIComponent(item.label)}`),
     goToOrders: () => navigate("/orders"),
@@ -229,12 +276,12 @@ export default function DashboardPage() {
 
       <SectionCard
         title="Urgent Orders"
-        badgeCount={urgentOrders.length}
+        badgeCount={activeUrgentOrders.length}
         actionLabel="View all"
         onActionClick={() => navigate("/orders?filter=New")}
       >
         <div className="flex flex-col gap-2.5">
-          {urgentOrders.map((order) => (
+          {activeUrgentOrders.map((order) => (
             <OrderCard
               key={order.id}
               onPrimaryAction={handleUrgentOrderPrimaryAction}
