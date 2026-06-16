@@ -7,6 +7,8 @@ export default function ConfirmedLifecyclePanel({
   actions,
   onActionClick,
   onOrderAdjustmentClick,
+  currentStatus,
+  onStatusSelect,
 }) {
   return (
     <DetailPanel title="Order Lifecycle">
@@ -22,10 +24,10 @@ export default function ConfirmedLifecyclePanel({
         {actions.map((action) => (
           <button
             key={action.label}
-            className={`min-h-[30px] rounded border text-[11px] font-bold ${
+            className={`min-h-[30px] rounded border text-[11px] font-bold cursor-pointer transition ${
               action.primary
-                ? "border-[#cf6e38] bg-[#cf6e38] text-white"
-                : "border-[#d8cec4] bg-white text-[#2b231e]"
+                ? "border-[#cf6e38] bg-[#cf6e38] text-white hover:bg-[#cf6e38]/90"
+                : "border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4]"
             }`}
             onClick={() => onActionClick?.(action)}
             type="button"
@@ -34,12 +36,34 @@ export default function ConfirmedLifecyclePanel({
           </button>
         ))}
         <button
-          className="min-h-[30px] rounded border text-[11px] font-bold border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4] transition"
+          className="min-h-[30px] rounded border text-[11px] font-bold border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4] transition cursor-pointer"
           onClick={onOrderAdjustmentClick}
           type="button"
         >
           Order Adjustment
         </button>
+
+        {onStatusSelect && (
+          <div className="mt-4 pt-3.5 border-t border-[#e6ddd4] flex flex-col gap-1.5 text-left">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#8f7f73]">
+              Update Status Manually
+            </label>
+            <div className="relative">
+              <select
+                className="w-full min-h-[34px] rounded-lg border border-[#d8cec4] bg-white px-2.5 py-1 text-[12px] font-semibold text-[#2b231e] outline-none shadow-[0_1px_3px_rgba(38,23,14,0.02)] transition duration-150 focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer"
+                value={currentStatus || ""}
+                onChange={(e) => onStatusSelect(e.target.value)}
+              >
+                <option value="Accepted">Accepted</option>
+                <option value="Preparing">Preparing</option>
+                <option value="Ready">Ready</option>
+                <option value="Out for delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Canceled">Canceled (Reject)</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
     </DetailPanel>
   );

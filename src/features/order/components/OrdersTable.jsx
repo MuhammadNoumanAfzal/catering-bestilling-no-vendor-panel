@@ -2,14 +2,14 @@ import { ChevronDown, Users } from "lucide-react";
 import { useState } from "react";
 
 const statusToneClasses = {
-  "is-new": "border border-[#9fd8f6] bg-[#d4efff] text-[#1877b9]",
-  "is-ready": "bg-[#2fc35b] text-white",
-  "is-preparing": "bg-[#d9b8ff] text-[#6f2bbd]",
-  "is-accepted": "bg-[#5f88ff] text-white",
-  "is-delivery": "bg-[#d56f3c] text-white",
-  "is-reject": "bg-[#f7c9ec] text-[#a33980]",
-  "is-canceled": "bg-[#dc1010] text-white",
-  "is-delivered": "bg-[#5fd84f] text-[#103d0e]",
+  "is-new": "border border-[#bde3f9] bg-[#e3f4ff] text-[#1d70a2]",
+  "is-ready": "border border-[#b6f0c6] bg-[#e6fcf0] text-[#1c873b]",
+  "is-preparing": "border border-[#e7d4ff] bg-[#f5ecff] text-[#6322ad]",
+  "is-accepted": "border border-[#cbdcff] bg-[#ecf2ff] text-[#245ce6]",
+  "is-delivery": "border border-[#fcd5c0] bg-[#fff2eb] text-[#c4551d]",
+  "is-reject": "border border-[#ffd0cc] bg-[#fff2f1] text-[#dc2626]",
+  "is-canceled": "border border-[#ffd0cc] bg-[#fff2f1] text-[#dc2626]",
+  "is-delivered": "border border-[#c1f5b6] bg-[#edfcf2] text-[#156e10]",
 };
 
 const actionToneClasses = {
@@ -26,7 +26,7 @@ const actionMenuItems = [
   "Canceled",
 ];
 
-export default function OrdersTable({ rows, onActionClick }) {
+export default function OrdersTable({ rows, onActionClick, onRowClick }) {
   const [openMenuKey, setOpenMenuKey] = useState(null);
 
   function handleMenuToggle(menuKey) {
@@ -43,13 +43,20 @@ export default function OrdersTable({ rows, onActionClick }) {
       <table className="w-full border-collapse bg-white">
         <thead>
           <tr>
-            <th className="w-7 border-b border-[#eee7df] px-[10px] py-3 text-left text-[13px] font-extrabold text-[#17120e]">
-              <input className="h-3 w-3 accent-[#cf6e38]" type="checkbox" />
+            <th 
+              className="w-7 border-b border-[#eee7df] px-3 py-3.5 text-left text-[14px] font-extrabold text-[#17120e]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input 
+                className="h-3.5 w-3.5 accent-[#cf6e38]" 
+                type="checkbox" 
+                onClick={(e) => e.stopPropagation()}
+              />
             </th>
             {["OrderID", "Customer", "Event", "Guests", "Delivery date", "Status", "Actions"].map((heading) => (
               <th
                 key={heading}
-                className="border-b border-[#eee7df] px-[10px] py-3 text-left text-[13px] font-extrabold text-[#17120e]"
+                className="border-b border-[#eee7df] px-3 py-3.5 text-left text-[14px] font-extrabold text-[#17120e]"
               >
                 {heading}
               </th>
@@ -60,68 +67,91 @@ export default function OrdersTable({ rows, onActionClick }) {
           {rows.map((row, index) => (
             <tr
               key={`${row.id}-${row.customer}-${index}`}
-              className={row.statusTone === "is-new" ? "bg-[#eef8ff]" : "bg-white"}
+              className={`transition duration-150 cursor-pointer border-b border-[#eee7df] last:border-b-0 hover:bg-[#fff7f2] ${
+                row.statusTone === "is-new" ? "bg-[#eef8ff]" : "bg-white"
+              }`}
+              onClick={() => onRowClick?.(row)}
             >
-              <td className="w-7 border-b border-[#eee7df] px-[10px] py-3 last:border-b-0">
-                <input className="h-3 w-3 accent-[#cf6e38]" type="checkbox" />
+              <td 
+                className="w-7 px-3 py-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input 
+                  className="h-3.5 w-3.5 accent-[#cf6e38]" 
+                  type="checkbox" 
+                  onClick={(e) => e.stopPropagation()}
+                />
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 text-[14px] font-extrabold text-[#1c1510] last:border-b-0">
+              <td className="px-3 py-4 text-[15px] font-extrabold text-[#1c1510]">
                 {row.id}
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e] last:border-b-0">
+              <td className="px-3 py-4 text-[14px] font-semibold text-[#17120e]">
                 {row.customer}
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e] last:border-b-0">
+              <td className="px-3 py-4 text-[14px] font-medium text-[#5e544d]">
                 {row.event}
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 text-[13px] font-extrabold text-[#17120e] last:border-b-0">
-                <span className="inline-flex items-center gap-1">
-                  <Users size={11} strokeWidth={2} />
+              <td className="px-3 py-4 text-[14px] font-semibold text-[#17120e]">
+                <span className="inline-flex items-center gap-1.5">
+                  <Users size={13} strokeWidth={2.2} className="text-[#8f7f73]" />
                   {row.guests}
                 </span>
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 last:border-b-0">
-                <div className="flex flex-col gap-0.5 text-[11px] font-bold leading-[1.2] text-[#75695f]">
+              <td className="px-3 py-4">
+                <div className="flex flex-col gap-0.5 text-[13px] font-medium leading-[1.25] text-[#5e544d]">
                   <span>{row.date}</span>
-                  <span>{row.time}</span>
+                  <span className="text-[11px] text-[#8f7f73]">{row.time}</span>
                 </div>
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 last:border-b-0">
+              <td className="px-3 py-4">
                 <span
-                  className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-[11px] text-[11px] font-bold ${statusToneClasses[row.statusTone]}`}
+                  className={`inline-flex min-h-[24px] items-center justify-center rounded-full border px-3 py-0.5 text-[12px] font-semibold ${
+                    statusToneClasses[row.statusTone] ?? statusToneClasses["is-new"]
+                  }`}
                 >
                   {row.status}
                 </span>
               </td>
-              <td className="border-b border-[#eee7df] px-[10px] py-3 last:border-b-0">
-                <div className="flex flex-wrap gap-1.5">
+              <td 
+                className="px-3 py-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
                   {row.actions.map((action) => {
                     const menuKey = `${row.id}-${action.label}`;
                     const isMenuOpen = openMenuKey === menuKey;
                     const hasDropdown = Boolean(action.hasDropdown);
 
                     return (
-                      <div key={action.label} className="relative">
+                      <div key={action.label} className="relative" onClick={(e) => e.stopPropagation()}>
                         <button
-                          className={`inline-flex min-h-[24px] cursor-pointer items-center gap-1 rounded-full border px-[10px] text-[11px] font-semibold leading-none ${actionToneClasses[action.tone] ?? actionToneClasses["is-muted"]} ${
-                            hasDropdown ? "pr-2" : ""
-                          }`}
-                          onClick={() =>
-                            hasDropdown ? handleMenuToggle(menuKey) : onActionClick(row, action)
-                          }
+                          className={`inline-flex min-h-[26px] cursor-pointer items-center gap-1 rounded-full border px-3 text-[12px] font-bold leading-none ${
+                            actionToneClasses[action.tone] ?? actionToneClasses["is-muted"]
+                          } ${hasDropdown ? "pr-2" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (hasDropdown) {
+                              handleMenuToggle(menuKey);
+                            } else {
+                              onActionClick(row, action);
+                            }
+                          }}
                           type="button"
                         >
                           <span>{action.label}</span>
-                          {hasDropdown ? <ChevronDown size={10} strokeWidth={2.4} /> : null}
+                          {hasDropdown ? <ChevronDown size={12} strokeWidth={2.5} /> : null}
                         </button>
 
                         {hasDropdown && isMenuOpen ? (
-                          <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[132px] rounded-[6px] border border-[#ddd4cb] bg-white p-1 shadow-[0_10px_24px_rgba(25,18,12,0.16)]">
+                          <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[140px] rounded-[8px] border border-[#ddd4cb] bg-white p-1 shadow-[0_10px_24px_rgba(25,18,12,0.16)]">
                             {actionMenuItems.map((item) => (
                               <button
                                 key={item}
-                                className="block w-full cursor-pointer whitespace-nowrap rounded-[4px] px-2 py-1 text-left text-[10px] font-medium text-[#5e554d] transition hover:bg-[#f6f1eb]"
-                                onClick={() => handleMenuAction(row, action, item)}
+                                className="block w-full cursor-pointer whitespace-nowrap rounded-[5px] px-2.5 py-1.5 text-left text-[11px] font-semibold text-[#5e554d] transition hover:bg-[#f6f1eb]"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMenuAction(row, action, item);
+                                }}
                                 type="button"
                               >
                                 {item}
