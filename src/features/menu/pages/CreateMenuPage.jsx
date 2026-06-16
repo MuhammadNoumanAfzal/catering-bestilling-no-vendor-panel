@@ -35,7 +35,7 @@ function getInitialMenuState() {
     category: "",
     menuType: "",
     coverImage: "",
-    galleryImage: "",
+    galleryImages: [],
     selectedDays: [],
     leadTime: "24",
     blackoutDate: "",
@@ -68,7 +68,7 @@ export default function CreateMenuPage() {
   const [category, setCategory] = useState("");
   const [menuType, setMenuType] = useState("");
   const [coverImage, setCoverImage] = useState("");
-  const [galleryImage, setGalleryImage] = useState("");
+  const [galleryImages, setGalleryImages] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
   const [leadTime, setLeadTime] = useState("24");
   const [blackoutDate, setBlackoutDate] = useState("");
@@ -96,7 +96,9 @@ export default function CreateMenuPage() {
             category: selectedItem.category || "",
             menuType: selectedItem.menuType || "",
             coverImage: selectedItem.coverImage || selectedItem.image || "",
-            galleryImage: selectedItem.galleryImage || "",
+            galleryImages: selectedItem.galleryImages && Array.isArray(selectedItem.galleryImages)
+              ? selectedItem.galleryImages
+              : (selectedItem.galleryImage ? [selectedItem.galleryImage] : []),
             selectedDays: selectedItem.selectedDays || [],
             leadTime: selectedItem.leadTime || "24",
             blackoutDate: selectedItem.blackoutDate || "",
@@ -117,7 +119,7 @@ export default function CreateMenuPage() {
     setCategory(initialState.category);
     setMenuType(initialState.menuType);
     setCoverImage(initialState.coverImage || "");
-    setGalleryImage(initialState.galleryImage || "");
+    setGalleryImages(initialState.galleryImages || []);
     setSelectedDays(initialState.selectedDays || []);
     setLeadTime(initialState.leadTime || "24");
     setBlackoutDate(initialState.blackoutDate || "");
@@ -220,7 +222,7 @@ export default function CreateMenuPage() {
     setCategory(nextState.category);
     setMenuType(nextState.menuType);
     setCoverImage(nextState.coverImage);
-    setGalleryImage(nextState.galleryImage);
+    setGalleryImages(nextState.galleryImages);
     setSelectedDays(nextState.selectedDays);
     setLeadTime(nextState.leadTime);
     setBlackoutDate(nextState.blackoutDate);
@@ -241,7 +243,7 @@ export default function CreateMenuPage() {
       category,
       menuType,
       coverImage,
-      galleryImage,
+      galleryImages,
       selectedDays,
       leadTime,
       blackoutDate,
@@ -286,7 +288,8 @@ export default function CreateMenuPage() {
       category: payload.category,
       menuType: payload.menuType,
       coverImage: payload.coverImage,
-      galleryImage: payload.galleryImage,
+      galleryImage: payload.galleryImages[0] || "",
+      galleryImages: payload.galleryImages,
       selectedDays: payload.selectedDays,
       leadTime: payload.leadTime,
       blackoutDate: payload.blackoutDate,
@@ -369,14 +372,15 @@ export default function CreateMenuPage() {
             coverImage={coverImage}
             description={description}
             disabled={isViewMode}
-            galleryImage={galleryImage}
+            galleryImages={galleryImages}
             menuTitle={menuTitle}
             menuType={menuType}
             menuTypeOptions={menuTypeOptions}
             onCategoryChange={(event) => setCategory(event.target.value)}
             onCoverImageSelect={(file) => handleImageUpload(file, setCoverImage)}
             onDescriptionChange={(event) => setDescription(event.target.value)}
-            onGalleryImageSelect={(file) => handleImageUpload(file, setGalleryImage)}
+            onGalleryImageSelect={(file) => handleImageUpload(file, (newImg) => setGalleryImages(prev => [...prev, newImg]))}
+            onRemoveGalleryImage={(index) => setGalleryImages(prev => prev.filter((_, idx) => idx !== index))}
             onMenuTitleChange={(event) => setMenuTitle(event.target.value)}
             onMenuTypeChange={(event) => setMenuType(event.target.value)}
           />
