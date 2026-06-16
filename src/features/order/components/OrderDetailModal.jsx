@@ -144,7 +144,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
     const clean = allergen.trim();
     if (clean.toLowerCase() === "none") {
       return (
-        <span key={clean} className="rounded-[4px] bg-[#f2ece6] px-2 py-0.5 text-[11px] font-extrabold text-[#7a6d63]">
+        <span key={clean} className="rounded-[4px] bg-[#f2ece6] px-2 py-0.5 text-[12px] font-extrabold text-[#7a6d63]">
           None
         </span>
       );
@@ -152,7 +152,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
     const isSafe = clean.toLowerCase().includes("free") || clean.toLowerCase().includes("vegan") || clean.toLowerCase().includes("vegetarian");
     const bg = isSafe ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#fff2ec] text-[#d96e39] border border-[#ffe2cc]";
     return (
-      <span key={clean} className={`rounded-[4px] px-2 py-0.5 text-[11px] font-extrabold ${bg}`}>
+      <span key={clean} className={`rounded-[4px] px-2 py-0.5 text-[12px] font-extrabold ${bg}`}>
         {clean}
       </span>
     );
@@ -194,10 +194,10 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
             {/* Overlay Details */}
             <div className="absolute bottom-3 left-3 text-white flex flex-col gap-0.5">
-              <span className="text-[12px] font-bold tracking-wider text-amber-200 uppercase">
+              <span className="text-[13px] font-bold tracking-wider text-amber-200 uppercase">
                 {orderData.id}
               </span>
-              <strong className="text-[18px] font-black leading-tight drop-shadow-sm">
+              <strong className="text-[16px] font-black leading-tight drop-shadow-sm">
                 {orderData.customer}
               </strong>
             </div>
@@ -205,19 +205,19 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
           {/* Logistics Section */}
           <div className="p-3.5 rounded-[12px] border border-[#f2ece6] bg-[#faf9f6] flex flex-col gap-2.5">
-            <div className="flex items-center gap-2.5 text-[13px] text-[#5c5046]">
+            <div className="flex items-center gap-2.5 text-[14px] text-[#5c5046]">
               <Calendar size={15} className="text-[#cf6e38] shrink-0" />
               <span>Event Date: <strong className="font-bold text-[#2b231e]">{orderData.date}</strong></span>
             </div>
-            <div className="flex items-center gap-2.5 text-[13px] text-[#5c5046]">
+            <div className="flex items-center gap-2.5 text-[14px] text-[#5c5046]">
               <Clock size={15} className="text-[#cf6e38] shrink-0" />
               <span>Delivery Window: <strong className="font-bold text-[#2b231e]">{orderData.time}</strong></span>
             </div>
-            <div className="flex items-center gap-2.5 text-[13px] text-[#5c5046]">
+            <div className="flex items-center gap-2.5 text-[14px] text-[#5c5046]">
               <Users size={15} className="text-[#cf6e38] shrink-0" />
               <span>Guest Count: <strong className="font-bold text-[#2b231e]">{orderData.qty} persons</strong></span>
             </div>
-            <div className="flex items-start gap-2.5 text-[13px] text-[#5c5046] leading-[1.35]">
+            <div className="flex items-start gap-2.5 text-[14px] text-[#5c5046] leading-[1.35]">
               <MapPin size={15} className="text-[#cf6e38] shrink-0 mt-[1px]" />
               <span>Delivery Address: <strong className="font-bold text-[#2b231e]">{orderData.address}</strong></span>
             </div>
@@ -225,10 +225,10 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
           {/* Customer Special Note Banner */}
           {orderData.note && (
-            <div className="flex items-start gap-3 rounded-[10px] bg-[#fffbf0] border border-[#fef08a] p-3 text-[13px] font-semibold text-[#854d0e] leading-[1.4]">
+            <div className="flex items-start gap-3 rounded-[10px] bg-[#fffbf0] border border-[#fef08a] p-3 text-[14px] font-semibold text-[#854d0e] leading-[1.4]">
               <AlertTriangle size={16} strokeWidth={2.4} className="shrink-0 mt-[2px] text-[#a16207]" />
               <div className="flex flex-col gap-0.5">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#a16207]/75">Customer Note & Allergy Alert</span>
+                <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#a16207]/75">Customer Note & Allergy Alert</span>
                 <span className="font-bold">{orderData.note}</span>
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
             
             {/* Main Package Summary Card */}
             <div className="flex items-center justify-between gap-3 p-3 rounded-[10px] border border-[#efe6de] bg-gradient-to-r from-amber-50/20 to-orange-50/20">
-              <span className="text-[14px] font-extrabold text-[#2b231e] capitalize flex-1">
+              <span className="text-[15px] font-extrabold text-[#2b231e] capitalize flex-1">
                 {orderData.name}
               </span>
               <span className="text-[15px] font-black text-[#cf6e38] shrink-0">
@@ -272,7 +272,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
                           className="h-9 w-[56px] shrink-0 rounded-[6px] object-cover border border-[#efe6de]"
                           src={item.image}
                         />
-                        <span className="text-[13px] font-bold text-[#3a312a]">{item.name}</span>
+                        <span className="text-[14px] font-bold text-[#3a312a]">{item.name}</span>
                       </div>
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#ece6e0] text-[#7a6d63] transition-transform duration-200 ${
@@ -285,10 +285,10 @@ export default function OrderDetailModal({ orderId, onClose }) {
 
                     {/* Collapsible Body */}
                     {isExpanded && (
-                      <div className="border-t border-[#f2ece6] bg-white px-3 py-2.5 text-[13px] leading-[1.45] text-[#5c5046] animate-[fadeIn_150ms_ease]">
+                      <div className="border-t border-[#f2ece6] bg-white px-3 py-2.5 text-[14px] leading-[1.45] text-[#5c5046] animate-[fadeIn_150ms_ease]">
                         <p className="font-semibold m-0">{item.desc}</p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
+                          <span className="text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
                             Allergens:
                           </span>
                           {item.allergens.split(",").map(renderAllergenPill)}
@@ -307,7 +307,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
         {/* Footer actions */}
         <div className="mt-4 border-t border-[#efe6de] pt-3 flex justify-end shrink-0">
           <button
-            className="h-9 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[13px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition"
+            className="h-9 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[14px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition"
             onClick={onClose}
             type="button"
           >

@@ -96,7 +96,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
         <thead>
           <tr className="bg-[#fffdfb]">
             <th 
-              className="w-7 border-b border-[#eee7df] px-4 py-4 text-left text-[14px] font-extrabold text-[#17120e]"
+              className="w-7 border-b border-[#eee7df] px-4 py-4 text-left text-[15px] font-extrabold text-[#17120e]"
               onClick={(e) => e.stopPropagation()}
             >
               <input 
@@ -108,7 +108,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
             {["OrderID", "Customer", "Event", "Guests", "Delivery date", "Status", "Actions"].map((heading) => (
               <th
                 key={heading}
-                className="border-b border-[#eee7df] px-4 py-4 text-left text-[14px] font-extrabold text-[#17120e]"
+                className="border-b border-[#eee7df] px-4 py-4 text-left text-[15px] font-extrabold text-[#17120e]"
               >
                 {heading}
               </th>
@@ -134,25 +134,25 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                   onClick={(e) => e.stopPropagation()}
                 />
               </td>
-              <td className="px-4 py-4 text-[15px] font-extrabold text-[#1c1510]">
+              <td className="px-4 py-4 text-[16px] font-extrabold text-[#1c1510]">
                 {row.id}
               </td>
-              <td className="px-4 py-4 text-[14px] font-bold text-[#17120e]">
+              <td className="px-4 py-4 text-[15px] font-bold text-[#17120e]">
                 {row.customer}
               </td>
-              <td className="px-4 py-4 text-[14px] font-semibold text-[#5e544d]">
+              <td className="px-4 py-4 text-[15px] font-semibold text-[#5e544d]">
                 {row.event}
               </td>
-              <td className="px-4 py-4 text-[14px] font-semibold text-[#17120e]">
+              <td className="px-4 py-4 text-[15px] font-semibold text-[#17120e]">
                 <span className="inline-flex items-center gap-1.5">
                   <Users size={13} strokeWidth={2.2} className="text-[#8f7f73]" />
                   {row.guests}
                 </span>
               </td>
               <td className="px-4 py-4">
-                <div className="flex flex-col gap-0.5 text-[13px] font-semibold leading-[1.25] text-[#5e544d]">
+                <div className="flex flex-col gap-0.5 text-[14px] font-semibold leading-[1.25] text-[#5e544d]">
                   <span>{row.date}</span>
-                  <span className="text-[11px] text-[#8f7f73] font-medium">{row.time}</span>
+                  <span className="text-[12px] text-[#8f7f73] font-medium">{row.time}</span>
                 </div>
               </td>
               <td className="px-4 py-4">
@@ -167,7 +167,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                     const menuKey = `${row.id}-${action.label}`;
                     const isMenuOpen = openMenuKey === menuKey;
                     const hasDropdown = Boolean(action.hasDropdown);
-
+ 
                     // Add special custom styling for Accept vs Reject
                     let buttonToneClass = actionToneClasses[action.tone] ?? actionToneClasses["is-muted"];
                     if (action.label === "Accept") {
@@ -175,11 +175,11 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                     } else if (action.label === "Reject") {
                       buttonToneClass = "border-[#e4d9cf] bg-white text-[#dc2626] hover:bg-[#fff2f1] hover:border-[#ffd0cc]";
                     }
-
+ 
                     return (
                       <div key={action.label} className="relative" onClick={(e) => e.stopPropagation()}>
                         <button
-                          className={`inline-flex min-h-[28px] cursor-pointer items-center gap-1 rounded-full border px-3.5 text-[12px] font-extrabold leading-none transition duration-150 ${buttonToneClass} ${hasDropdown ? "pr-2" : ""}`}
+                          className={`inline-flex min-h-[28px] cursor-pointer items-center gap-1 rounded-full border px-3.5 text-[13px] font-extrabold leading-none transition duration-150 ${buttonToneClass} ${hasDropdown ? "pr-2" : ""}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (hasDropdown) {
@@ -194,13 +194,13 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                           <span>{action.label}</span>
                           {hasDropdown ? <ChevronDown size={12} strokeWidth={2.8} className="opacity-90" /> : null}
                         </button>
-
+ 
                         {hasDropdown && isMenuOpen ? (
                           <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-[10px] border border-[#e3d6ca] bg-white/95 p-1 shadow-[0_12px_28px_rgba(38,23,14,0.12)] backdrop-blur-sm">
                             {actionMenuItems.map((item) => (
                               <button
                                 key={item}
-                                className="flex w-full items-center gap-1.5 cursor-pointer whitespace-nowrap rounded-[6px] px-3 py-2 text-left text-[11px] font-bold text-[#5e554d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
+                                className="flex w-full items-center gap-1.5 cursor-pointer whitespace-nowrap rounded-[6px] px-3 py-2 text-left text-[12px] font-bold text-[#5e554d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMenuAction(row, action, item);

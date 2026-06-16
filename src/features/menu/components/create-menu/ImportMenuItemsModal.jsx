@@ -99,7 +99,7 @@ export default function ImportMenuItemsModal({ isOpen, onClose, onAdd }) {
       <div className="relative w-full max-w-[540px] max-h-[85vh] flex flex-col rounded-[20px] border border-[#e4dbd2] bg-white p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#f2ece6]">
-          <h2 className="text-[17px] font-extrabold text-[#211913] m-0">
+          <h2 className="text-[18px] font-extrabold text-[#211913] m-0">
             Import from Previous Menu
           </h2>
           <button
@@ -151,10 +151,10 @@ export default function ImportMenuItemsModal({ isOpen, onClose, onAdd }) {
                         className="w-[54px] h-[54px] object-cover rounded-lg mr-3 bg-[#f2ece6]"
                       />
                       <div className="min-w-0 pr-2">
-                        <h3 className="m-0 text-[14px] font-extrabold text-[#211913] truncate">
+                        <h3 className="m-0 text-[15px] font-extrabold text-[#211913] truncate">
                           {menu.title}
                         </h3>
-                        <p className="m-0 mt-0.5 text-[11px] text-[#746a62] line-clamp-2 leading-relaxed">
+                        <p className="m-0 mt-0.5 text-[12px] text-[#746a62] line-clamp-2 leading-relaxed">
                           {menu.description}
                         </p>
                       </div>
@@ -166,7 +166,7 @@ export default function ImportMenuItemsModal({ isOpen, onClose, onAdd }) {
                           e.stopPropagation();
                           handleToggleSelectAll(menu);
                         }}
-                        className={`text-[11px] font-bold px-2 py-1 rounded transition border cursor-pointer ${
+                        className={`text-[12px] font-bold px-2 py-1 rounded transition border cursor-pointer ${
                           allSelected
                             ? "bg-[#edf9ef] border-[#c7ebd0] text-[#237a39]"
                             : "bg-white border-[#d6cdc4] text-[#746a62] hover:bg-[#fcfaf7]"
@@ -210,7 +210,7 @@ export default function ImportMenuItemsModal({ isOpen, onClose, onAdd }) {
                                   alt={item.title}
                                   className="w-10 h-10 object-cover rounded-md ml-3 mr-3.5 bg-[#f2ece6]"
                                 />
-                                <span className="text-[13px] font-extrabold text-[#211913]">
+                                <span className="text-[14px] font-extrabold text-[#211913]">
                                   {item.title}
                                 </span>
                               </div>
@@ -247,7 +247,7 @@ export default function ImportMenuItemsModal({ isOpen, onClose, onAdd }) {
               onClose();
             }}
             type="button"
-            className="h-[38px] px-4 rounded-lg border border-[#d6cdc4] bg-white text-[12px] font-extrabold text-[#3a2e25] hover:bg-[#faf8f6] active:scale-95 transition cursor-pointer"
+            className="h-[38px] px-4 rounded-lg border border-[#d6cdc4] bg-white text-[13px] font-extrabold text-[#3a2e25] hover:bg-[#faf8f6] active:scale-95 transition cursor-pointer"
           >
             Cancel
           </button>
@@ -255,7 +255,7 @@ export default function ImportMenuItemsModal({ isOpen, onClose, onAdd }) {
             onClick={handleAddSelected}
             disabled={selectedItems.length === 0}
             type="button"
-            className="h-[38px] px-5 rounded-lg bg-[#cf6e38] text-[12px] font-extrabold text-white hover:bg-[#bf622f] active:scale-95 transition disabled:opacity-45 disabled:pointer-events-none cursor-pointer"
+            className="h-[38px] px-5 rounded-lg bg-[#cf6e38] text-[13px] font-extrabold text-white hover:bg-[#bf622f] active:scale-95 transition disabled:opacity-45 disabled:pointer-events-none cursor-pointer"
           >
             Add Selected ({selectedItems.length})
           </button>
