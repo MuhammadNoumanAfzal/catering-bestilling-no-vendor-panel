@@ -20,8 +20,16 @@ export default function MenuOfferingCard({
     <article className="overflow-hidden rounded-[14px] border border-[#ddd4cb] bg-white shadow-[0_2px_10px_rgba(43,30,20,0.03)]">
       <div className="relative h-[126px] bg-[#ece7e2]">
         <img alt={item.title} className="h-full w-full object-cover" src={item.image} />
-        <span className="absolute left-2 top-2 rounded-full bg-white px-2.5 py-1 text-[12px] font-bold text-[#2a211b]">
-          {item.status}
+        <span
+          className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[12px] font-bold ${
+            isActive
+              ? "bg-white text-[#2a211b]"
+              : item.status === "Paused" || item.status === "Pause"
+                ? "bg-[#ffa800] text-white"
+                : "bg-white text-[#2a211b]"
+          }`}
+        >
+          {item.status === "Paused" ? "Pause" : item.status}
         </span>
         <span className="absolute right-2 top-2 rounded-full bg-white px-2.5 py-1 text-[12px] font-bold text-[#2a211b]">
           {item.badge}
@@ -79,7 +87,7 @@ export default function MenuOfferingCard({
             onClick={() => onToggleStatus(item)}
             type="button"
             className={`relative flex items-center h-[28px] w-[76px] rounded-full transition-colors duration-200 focus:outline-none ${
-              isActive ? "bg-[#00c82a]" : "bg-[#a89e95]"
+              isActive ? "bg-[#00c82a]" : "bg-[#ffa800]"
             }`}
           >
             <span
@@ -89,10 +97,10 @@ export default function MenuOfferingCard({
             />
             <span
               className={`w-full text-[11px] font-bold text-white select-none transition-all duration-200 ${
-                isActive ? "text-left pl-3" : "text-right pr-3"
+                isActive ? "text-left pl-3.5" : "text-right pr-3.5"
               }`}
             >
-              {isActive ? "Active" : "Paused"}
+              {isActive ? "Active" : "Pause"}
             </span>
           </button>
         </div>
