@@ -3,10 +3,10 @@ export const menuManagementTabs = ["All", "Active", "Draft", "Paused", "Add-ons"
 export const menuSortOptions = ["Latest", "Oldest", "Highest Price", "Lowest Price"];
 
 export const menuCategoryOptions = ["Breakfast", "Lunch", "Dinner", "Dessert", "Corporate"];
-export const menuTypeOptions = ["Per Person", "Fixed Package", "Tray Based"];
+export const menuTypeOptions = ["Per Person"];
 export const leadTimeOptions = ["24", "48", "72"];
 export const allergenOptions = ["Eggs", "Dairy", "Nuts", "Soy", "Gluten"];
-export const pricingModes = ["Per Person", "Fixed Package", "Tray Based"];
+export const pricingModes = ["Per Person"];
 export const dietaryOptions = ["Vegetarian", "Halal", "Gluten-Free", "Vegan"];
 export const availabilityDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 export const addOnCategoryOptions = [
