@@ -95,6 +95,7 @@ export default function CreateMenuBasicInfoSection({
   onRemoveGalleryImage,
   onMenuTitleChange,
   onMenuTypeChange,
+  onAddNewCategoryClick,
 }) {
   return (
     <CreateMenuSectionCard
@@ -124,7 +125,18 @@ export default function CreateMenuBasicInfoSection({
 
         <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
           <div>
-            <Label>Category</Label>
+            <div className="flex items-center justify-between">
+              <Label>Category</Label>
+              {!disabled && (
+                <button
+                  type="button"
+                  onClick={onAddNewCategoryClick}
+                  className="text-[12px] font-extrabold text-[#cf6e38] hover:text-[#bf622f] transition cursor-pointer"
+                >
+                  + Add New
+                </button>
+              )}
+            </div>
             <SelectInput
               disabled={disabled}
               onChange={onCategoryChange}

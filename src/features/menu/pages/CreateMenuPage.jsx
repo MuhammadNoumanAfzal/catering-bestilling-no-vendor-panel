@@ -9,6 +9,7 @@ import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasi
 import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSection";
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
 import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
+import AddCategoryModal from "../components/create-menu/AddCategoryModal";
 import {
   allergenOptions,
   availabilityDays,
@@ -82,7 +83,28 @@ export default function CreateMenuPage() {
   const [addOnSearch, setAddOnSearch] = useState("");
   const [selectedAddOnIds, setSelectedAddOnIds] = useState([]);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState(() => {
+    const savedCategoriesRaw = window.localStorage.getItem("vendor-menu-categories");
+    if (savedCategoriesRaw) {
+      return JSON.parse(savedCategoriesRaw);
+    } else {
+      const defaultCategories = ["Breakfast", "Lunch", "Dinner", "Dessert", "Corporate"];
+      window.localStorage.setItem("vendor-menu-categories", JSON.stringify(defaultCategories));
+      return defaultCategories;
+    }
+  });
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const mode = searchParams.get("mode") || "create";
+
+  function handleAddCategory(newCategoryName) {
+    setCategoryOptions((current) => {
+      if (current.includes(newCategoryName)) return current;
+      const updated = [...current, newCategoryName];
+      window.localStorage.setItem("vendor-menu-categories", JSON.stringify(updated));
+      return updated;
+    });
+    setCategory(newCategoryName);
+  }
 
   function handleAddImportedItems(selectedItemsList) {
     setMenuItems((current) => {
@@ -386,7 +408,7 @@ export default function CreateMenuPage() {
         <div className="flex flex-col gap-4">
           <CreateMenuBasicInfoSection
             category={category}
-            categoryOptions={menuCategoryOptions}
+            categoryOptions={categoryOptions}
             coverImage={coverImage}
             description={description}
             disabled={isViewMode}
@@ -401,6 +423,7 @@ export default function CreateMenuPage() {
             onRemoveGalleryImage={(index) => setGalleryImages(prev => prev.filter((_, idx) => idx !== index))}
             onMenuTitleChange={(event) => setMenuTitle(event.target.value)}
             onMenuTypeChange={(event) => setMenuType(event.target.value)}
+            onAddNewCategoryClick={() => setIsCategoryModalOpen(true)}
           />
 
           <CreateMenuPricingSection
@@ -469,6 +492,13 @@ export default function CreateMenuPage() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onAdd={handleAddImportedItems}
+      />
+
+      <AddCategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onAdd={handleAddCategory}
+        existingCategories={categoryOptions}
       />
     </section>
   );
