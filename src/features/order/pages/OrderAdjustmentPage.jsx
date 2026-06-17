@@ -215,19 +215,8 @@ export default function OrderAdjustmentPage() {
       console.error(e);
     }
 
-    // Format time, e.g. "02:30 PM"
+    // Format time (keep 24-hour style, e.g. "14:30")
     let formattedTime = time;
-    try {
-      const [hourStr, minStr] = time.split(":");
-      const hour = parseInt(hourStr, 10);
-      if (!isNaN(hour)) {
-        const ampm = hour >= 12 ? "PM" : "AM";
-        const hour12 = hour % 12 || 12;
-        formattedTime = `${hour12}:${minStr} ${ampm}`;
-      }
-    } catch (e) {
-      console.error(e);
-    }
 
     // Create the updated financialSummary array
     const originalSummary = existingDetail.financialSummary || [];
@@ -707,7 +696,7 @@ export default function OrderAdjustmentPage() {
                 <div className="flex items-start justify-between">
                   <span className="text-[#8a7a6d] font-bold">Order Date</span>
                   <span className="text-[#1c1510] font-extrabold text-right">
-                    {orderDetail?.date || "15 May, 2026"} - {orderDetail?.time || "10:30 AM"}
+                    {orderDetail?.date || "15 May, 2026"} - {orderDetail?.time || "10:30"}
                   </span>
                 </div>
 

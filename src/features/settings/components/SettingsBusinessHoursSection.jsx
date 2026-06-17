@@ -2,9 +2,9 @@ import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 
 const timeOptions = [
-  { value: "08:00-12:00", label: "08:00 AM - 12:00 PM" },
-  { value: "09:00-05:00", label: "09:00 AM - 05:00 PM" },
-  { value: "10:00-06:00", label: "10:00 AM - 06:00 PM" },
+  { value: "08:00-12:00", label: "08:00 - 12:00" },
+  { value: "09:00-17:00", label: "09:00 - 17:00" },
+  { value: "10:00-18:00", label: "10:00 - 18:00" },
   { value: "Closed", label: "Closed" },
 ];
 

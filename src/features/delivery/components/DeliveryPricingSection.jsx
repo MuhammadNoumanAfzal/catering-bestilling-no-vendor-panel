@@ -15,7 +15,7 @@ function formatCurrencyValue(value) {
     return trimmedValue;
   }
 
-  return `$${Number(digitsOnly).toLocaleString("en-US")}`;
+  return `kr ${Number(digitsOnly).toLocaleString("en-US")}`;
 }
 
 export default function DeliveryPricingSection({
@@ -48,7 +48,7 @@ export default function DeliveryPricingSection({
             disabled={disabled}
             label="Base Delivery Fee"
             onChange={onBaseFeeChange}
-            placeholder="$ 5"
+            placeholder="kr 5"
             value={baseFee}
           />
           <p className="type-subpara mt-1">Applied to standard orders.</p>
@@ -58,7 +58,7 @@ export default function DeliveryPricingSection({
             disabled={disabled}
             label="Free Delivery over (optional)"
             onChange={onFreeDeliveryChange}
-            placeholder="$ 3,000"
+            placeholder="kr 3,000"
             value={freeDelivery}
           />
           <p className="type-subpara mt-1">Large order only mode</p>
