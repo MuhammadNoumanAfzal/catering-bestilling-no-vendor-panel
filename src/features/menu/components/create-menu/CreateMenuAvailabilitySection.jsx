@@ -3,14 +3,10 @@ import { Label, SelectInput, TextInput } from "./CreateMenuFields";
 
 export default function CreateMenuAvailabilitySection({
   availabilityDays,
-  blackoutDate,
-  customDietary,
   disabled = false,
   dietaryOptions,
   leadTime,
   leadTimeOptions,
-  onBlackoutDateChange,
-  onCustomDietaryChange,
   onLeadTimeChange,
   selectedDays,
   selectedDietary,
@@ -45,7 +41,7 @@ export default function CreateMenuAvailabilitySection({
           })}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4">
           <div>
             <Label>Min. Lead Time (Days)</Label>
             <SelectInput
@@ -54,16 +50,6 @@ export default function CreateMenuAvailabilitySection({
               options={leadTimeOptions}
               placeholder="24"
               value={leadTime}
-            />
-          </div>
-          <div>
-            <Label>Blackout date</Label>
-            <TextInput
-              disabled={disabled}
-              onChange={onBlackoutDateChange}
-              placeholder="Select date to exclude..."
-              type="date"
-              value={blackoutDate}
             />
           </div>
         </div>
@@ -91,16 +77,6 @@ export default function CreateMenuAvailabilitySection({
               </button>
             );
           })}
-        </div>
-
-        <div className="mt-3">
-          <Label>Custom Dietary</Label>
-          <TextInput
-            disabled={disabled}
-            onChange={onCustomDietaryChange}
-            placeholder="Type and enter..."
-            value={customDietary}
-          />
         </div>
       </div>
     </CreateMenuSectionCard>

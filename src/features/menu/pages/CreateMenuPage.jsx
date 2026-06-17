@@ -463,14 +463,10 @@ export default function CreateMenuPage() {
         <div className="flex flex-col gap-4">
           <CreateMenuAvailabilitySection
             availabilityDays={availabilityDays}
-            blackoutDate={blackoutDate}
-            customDietary={customDietary}
             disabled={isViewMode}
             dietaryOptions={dietaryOptions}
             leadTime={leadTime}
             leadTimeOptions={leadTimeOptions}
-            onBlackoutDateChange={(event) => setBlackoutDate(event.target.value)}
-            onCustomDietaryChange={(event) => setCustomDietary(event.target.value)}
             onLeadTimeChange={(event) => setLeadTime(event.target.value)}
             selectedDays={selectedDays}
             selectedDietary={selectedDietary}
