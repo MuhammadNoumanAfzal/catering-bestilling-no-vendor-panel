@@ -32,6 +32,8 @@ export default function FinancePage() {
     pageSize,
     paginatedOrders,
     totalPages,
+    selectedDateOption,
+    handleClearDateFilter,
   } = useFinancePageState();
 
   const dynamicSummaryCards = useMemo(() => {
@@ -111,6 +113,8 @@ export default function FinancePage() {
           onSelectDateOption={handleSelectDateOption}
           onStatusChange={handleStatusChange}
           onToggleDateMenu={handleToggleDateMenu}
+          selectedDateOption={selectedDateOption}
+          onClearDateFilter={handleClearDateFilter}
         />
       </div>
 

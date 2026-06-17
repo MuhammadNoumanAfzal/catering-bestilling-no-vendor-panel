@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronDown } from "lucide-react";
+import { CalendarDays, ChevronDown, X } from "lucide-react";
 
 function formatDateLabel(dateValue) {
   if (!dateValue) {
@@ -31,7 +31,19 @@ export default function NotificationFilterDropdown({
       >
         <CalendarDays size={14} />
         <span>{filterLabel}</span>
-        <ChevronDown size={14} />
+        {selectedFilter !== "Last Month" ? (
+          <span
+            className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#ffd0bb] text-[#d86f39] hover:text-[#9e3f14] transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectFilter("Last Month");
+            }}
+          >
+            <X size={12} />
+          </span>
+        ) : (
+          <ChevronDown size={14} />
+        )}
       </button>
 
       {isOpen ? (

@@ -38,6 +38,7 @@ export default function ReviewsPage() {
     replyDrafts,
     selectedReview,
     totalPages,
+    selectedDateOption,
   } = useReviewsPageState();
 
   return (
@@ -62,6 +63,7 @@ export default function ReviewsPage() {
           onFilterChange={handleFilterChange}
           onSelectDateOption={handleSelectDateOption}
           onToggleDateMenu={handleToggleDateMenu}
+          selectedDateOption={selectedDateOption}
         />
       </div>
 
