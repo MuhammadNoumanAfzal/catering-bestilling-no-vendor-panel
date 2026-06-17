@@ -96,7 +96,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
     const customer = mainOrder ? mainOrder.customer : (detail?.customer?.name || "Thomas");
     const idVal = orderId.startsWith("#") ? orderId : `#${orderId}`;
 
-    const priceVal = detail?.orderItem?.modalDetails?.price || "$435.00";
+    const priceVal = detail?.orderItem?.modalDetails?.price || "kr 435.00";
     const qtyVal = detail?.guests || 15;
     const nameVal = detail?.orderItem?.modalDetails?.title || "Tasty Super Star Package";
 

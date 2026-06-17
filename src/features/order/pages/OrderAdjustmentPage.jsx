@@ -10,7 +10,7 @@ const MOCK_SUGGESTIONS = [
     name: "Lemon tea",
     serves: "Serves 10 persons",
     price: 1200,
-    priceStr: "NOK 1,200",
+    priceStr: "kr 120.00",
     image: "/heroBg.webp",
   },
   {
@@ -18,7 +18,7 @@ const MOCK_SUGGESTIONS = [
     name: "Apple juice",
     serves: "Serves 10 persons",
     price: 1000,
-    priceStr: "NOK 1,000",
+    priceStr: "kr 100.00",
     image: "/heroBg.webp",
   },
   {
@@ -26,7 +26,7 @@ const MOCK_SUGGESTIONS = [
     name: "Berry smoothie",
     serves: "Serves 10 persons",
     price: 1500,
-    priceStr: "NOK 1,500",
+    priceStr: "kr 150.00",
     image: "/heroBg.webp",
   },
   {
@@ -34,7 +34,7 @@ const MOCK_SUGGESTIONS = [
     name: "Soft drink pack",
     serves: "Serves 12 persons",
     price: 800,
-    priceStr: "NOK 800",
+    priceStr: "kr 80.00",
     image: "/heroBg.webp",
   },
 ];
@@ -58,11 +58,11 @@ const CHECKBOX_ITEMS = [
 ];
 
 const ORIGINAL_ITEM_PRICES = {
-  "Grilled chicken": 2500, // NOK 2,500 / $250.00
-  "Fresh salad": 800,     // NOK 800 / $80.00
-  "Bread": 300,           // NOK 300 / $30.00
-  "Sauces": 200,          // NOK 200 / $20.00
-  "Dessert": 1200,        // NOK 1,200 / $120.00
+  "Grilled chicken": 2500, // kr 2,500 / kr 250.00
+  "Fresh salad": 800,     // kr 800 / kr 80.00
+  "Bread": 300,           // kr 300 / kr 30.00
+  "Sauces": 200,          // kr 200 / kr 20.00
+  "Dessert": 1200,        // kr 1,200 / kr 120.00
 };
 
 const parseCurrencyValue = (valStr) => {
@@ -155,20 +155,16 @@ export default function OrderAdjustmentPage() {
 
   // Prices calculation
   const isUSD = useMemo(() => {
-    const rawTotal = orderDetail?.financialSummary?.find(f => f.label.toLowerCase() === "total")?.value || "NOK 4,250";
-    return rawTotal.includes("$");
+    const rawTotal = orderDetail?.financialSummary?.find(f => f.label.toLowerCase() === "total")?.value || "kr 4,250";
+    return rawTotal.includes("$") || rawTotal.includes("kr");
   }, [orderDetail]);
 
   const formatCurrency = (amount) => {
-    if (isUSD) {
-      return `$${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    } else {
-      return `NOK ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    }
+    return `kr ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const oldTotal = useMemo(() => {
-    const rawTotal = orderDetail?.financialSummary?.find(f => f.label.toLowerCase() === "total")?.value || "NOK 4,250";
+    const rawTotal = orderDetail?.financialSummary?.find(f => f.label.toLowerCase() === "total")?.value || "kr 4,250";
     const cleanNum = parseCurrencyValue(rawTotal);
     return isNaN(cleanNum) ? (isUSD ? 425.00 : 4250) : cleanNum;
   }, [orderDetail, isUSD]);

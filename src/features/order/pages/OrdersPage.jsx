@@ -148,7 +148,7 @@ function updateOrderDetailsStatus(orderId, nextStatus, rowInfo) {
             id: "ORD-1120",
             title: rowInfo.event || "Lunch buffet",
             date: "10 Jan, 2026",
-            amount: `$${(rowInfo.guests * 42).toFixed(2)}`,
+            amount: `kr ${(rowInfo.guests * 42).toFixed(2)}`,
             guests: `${rowInfo.guests} GUESTS`,
             status: "DELIVERED",
             statusTone: "delivered",
@@ -166,7 +166,7 @@ function updateOrderDetailsStatus(orderId, nextStatus, rowInfo) {
         ],
         modalDetails: {
           title: rowInfo.event || "Standard Catering Buffet",
-          price: `$${(rowInfo.guests * 42).toFixed(2)}`,
+          price: `kr ${(rowInfo.guests * 42).toFixed(2)}`,
           facts: [
             "Cuisine: Buffet",
             `Serves: ${rowInfo.guests} guests`,
@@ -189,10 +189,10 @@ function updateOrderDetailsStatus(orderId, nextStatus, rowInfo) {
       },
       status: nextStatus,
       financialSummary: [
-        { label: "Subtotal", value: `$${(rowInfo.guests * 42).toFixed(2)}` },
-        { label: "Delivery Fee", value: "$30.00" },
-        { label: "Platform Fee (2%)", value: `-$${(rowInfo.guests * 0.84).toFixed(2)}` },
-        { label: "Total", value: `$${(rowInfo.guests * 42 + 30 - rowInfo.guests * 0.84).toFixed(2)}` },
+        { label: "Subtotal", value: `kr ${(rowInfo.guests * 42).toFixed(2)}` },
+        { label: "Delivery Fee", value: "kr 30.00" },
+        { label: "Platform Fee (2%)", value: `-kr ${(rowInfo.guests * 0.84).toFixed(2)}` },
+        { label: "Total", value: `kr ${(rowInfo.guests * 42 + 30 - rowInfo.guests * 0.84).toFixed(2)}` },
       ],
     };
   } else if (detail) {

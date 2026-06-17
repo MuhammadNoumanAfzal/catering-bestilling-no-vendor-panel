@@ -22,13 +22,13 @@ export const initialCreateMenuItems = [
 ];
 
 export const optionalAddOns = [
-  { id: 1, name: "Spicy Muhammara Dip", price: "$10", image: "/heroBg.webp" },
-  { id: 2, name: "Grilled Arayas", price: "$10", image: "/heroBg.webp" },
-  { id: 3, name: "Fresh Fattoush Salad", price: "$10", image: "/heroBg.webp" },
-  { id: 4, name: "Garlic Sauce", price: "$20", image: "/heroBg.webp" },
-  { id: 5, name: "Mixed Grill Kebab", price: "$8", image: "/heroBg.webp" },
-  { id: 6, name: "Spicy Muhammara Dip", price: "$5", image: "/heroBg.webp" },
-  { id: 7, name: "Spicy Muhammara Dip", price: "$10", image: "/heroBg.webp" },
+  { id: 1, name: "Spicy Muhammara Dip", price: "10 kr", image: "/heroBg.webp" },
+  { id: 2, name: "Grilled Arayas", price: "10 kr", image: "/heroBg.webp" },
+  { id: 3, name: "Fresh Fattoush Salad", price: "10 kr", image: "/heroBg.webp" },
+  { id: 4, name: "Garlic Sauce", price: "20 kr", image: "/heroBg.webp" },
+  { id: 5, name: "Mixed Grill Kebab", price: "8 kr", image: "/heroBg.webp" },
+  { id: 6, name: "Spicy Muhammara Dip", price: "5 kr", image: "/heroBg.webp" },
+  { id: 7, name: "Spicy Muhammara Dip", price: "10 kr", image: "/heroBg.webp" },
 ];
 
 export const menuManagementItems = [
@@ -37,7 +37,7 @@ export const menuManagementItems = [
     title: "Grand Wedding Banquet",
     description:
       "A luxurious 5-course dining experience featuring premium starters, slow-roast lamb, and a custom dessert bar.",
-    price: "$85 per person",
+    price: "85 kr per person",
     meta: "12 menu included",
     image: "/heroBg.webp",
     status: "Active",
@@ -64,7 +64,7 @@ export const menuManagementItems = [
     title: "Corporate Power Lunch",
     description:
       "Fresh artisanal sandwiches, organic grain bowls, and seasonal fruit platters designed for office teams.",
-    price: "$50 per person",
+    price: "50 kr per person",
     meta: "12 menu included",
     image: "/heroBg.webp",
     status: "Active",
@@ -90,7 +90,7 @@ export const menuManagementItems = [
     title: "Backyard Summer BBQ",
     description:
       "Slow-smoked brisket, peri peri corn, and charred vegetables ideal for relaxed outdoor gatherings.",
-    price: "$250 per person",
+    price: "250 kr per person",
     meta: "15 menu included",
     image: "/heroBg.webp",
     status: "Paused",
@@ -116,7 +116,7 @@ export const menuManagementItems = [
     title: "Grand Wedding Banquet",
     description:
       "A luxurious 5-course dining experience featuring premium starters, slow-roast lamb, and a custom dessert bar.",
-    price: "$85 per person",
+    price: "85 kr per person",
     meta: "12 menu included",
     image: "/heroBg.webp",
     status: "Active",
@@ -142,7 +142,7 @@ export const menuManagementItems = [
     title: "Corporate Power Lunch",
     description:
       "Fresh artisanal sandwiches, organic grain bowls, and seasonal fruit platters designed for office teams.",
-    price: "$80 per person",
+    price: "80 kr per person",
     meta: "11 menu included",
     image: "/heroBg.webp",
     status: "Draft",

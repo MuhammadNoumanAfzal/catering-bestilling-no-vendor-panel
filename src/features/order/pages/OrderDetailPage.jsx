@@ -101,7 +101,7 @@ export default function OrderDetailPage() {
                 id: "ORD-1120",
                 title: mainOrder.event || "Lunch buffet",
                 date: "10 Jan, 2026",
-                amount: `$${(mainOrder.guests * 42).toFixed(2)}`,
+                amount: `kr ${(mainOrder.guests * 42).toFixed(2)}`,
                 guests: `${mainOrder.guests} GUESTS`,
                 status: "DELIVERED",
                 statusTone: "delivered",
@@ -119,7 +119,7 @@ export default function OrderDetailPage() {
             ],
             modalDetails: {
               title: mainOrder.event || "Standard Catering Buffet",
-              price: `$${(mainOrder.guests * 42).toFixed(2)}`,
+              price: `kr ${(mainOrder.guests * 42).toFixed(2)}`,
               facts: [
                 "Cuisine: Buffet",
                 `Serves: ${mainOrder.guests} guests`,
@@ -142,10 +142,10 @@ export default function OrderDetailPage() {
           },
           status: mainOrder.status || "New",
           financialSummary: [
-            { label: "Subtotal", value: `$${(mainOrder.guests * 42).toFixed(2)}` },
-            { label: "Delivery Fee", value: "$30.00" },
-            { label: "Platform Fee (2%)", value: `-$${(mainOrder.guests * 0.84).toFixed(2)}` },
-            { label: "Total", value: `$${(mainOrder.guests * 42 + 30 - mainOrder.guests * 0.84).toFixed(2)}` },
+            { label: "Subtotal", value: `kr ${(mainOrder.guests * 42).toFixed(2)}` },
+            { label: "Delivery Fee", value: "kr 30.00" },
+            { label: "Platform Fee (2%)", value: `-kr ${(mainOrder.guests * 0.84).toFixed(2)}` },
+            { label: "Total", value: `kr ${(mainOrder.guests * 42 + 30 - mainOrder.guests * 0.84).toFixed(2)}` },
           ],
         };
 

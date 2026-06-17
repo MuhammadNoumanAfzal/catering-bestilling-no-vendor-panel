@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const chartLabels = ["Oct 1", "Oct 10", "Oct 20", "Oct 30"];
-const earningAxisLabels = ["$0", "$250", "$500", "$750", "$1000"];
+const earningAxisLabels = ["kr 0", "kr 250", "kr 500", "kr 750", "kr 1000"];
 const ordersAxisLabels = ["0", "10", "20", "30", "40"];
 
 function buildChartPoints(points, mode) {

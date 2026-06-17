@@ -52,7 +52,7 @@ export default function OrderNotificationDetail({ notification, onClose }) {
     : "#12549";
 
   const amountRow = notification.detailRows.find((r) => r.label === "Amount");
-  const price = amountRow ? amountRow.value : "$435.00";
+  const price = amountRow ? amountRow.value : "kr 435.00";
 
   const itemsRow = notification.detailRows.find((r) => r.label === "Items");
   const itemsVal = itemsRow ? itemsRow.value : "15 Tasty Super Star Package";
