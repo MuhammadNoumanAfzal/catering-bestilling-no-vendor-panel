@@ -50,6 +50,9 @@ function getInitialMenuState() {
     addOnSearch: "",
     selectedAddOnIds: [],
     status: "draft",
+    hasAvailabilityWindow: false,
+    availabilityStart: "",
+    availabilityEnd: "",
   };
 }
 
@@ -79,6 +82,9 @@ export default function CreateMenuPage() {
   const [pricingMode, setPricingMode] = useState("Per Person");
   const [basePrice, setBasePrice] = useState("");
   const [minimumGuests, setMinimumGuests] = useState("");
+  const [hasAvailabilityWindow, setHasAvailabilityWindow] = useState(false);
+  const [availabilityStart, setAvailabilityStart] = useState("");
+  const [availabilityEnd, setAvailabilityEnd] = useState("");
   const [menuItems, setMenuItems] = useState(initialCreateMenuItems);
   const [addOnSearch, setAddOnSearch] = useState("");
   const [selectedAddOnIds, setSelectedAddOnIds] = useState([]);
@@ -152,6 +158,9 @@ export default function CreateMenuPage() {
               : initialCreateMenuItems,
             selectedAddOnIds: selectedItem.selectedAddOnIds || [],
             status: selectedItem.status?.toLowerCase() || "draft",
+            hasAvailabilityWindow: selectedItem.hasAvailabilityWindow || false,
+            availabilityStart: selectedItem.availabilityStart || "",
+            availabilityEnd: selectedItem.availabilityEnd || "",
           }
         : getInitialMenuState();
     setMenuTitle(initialState.menuTitle);
@@ -166,6 +175,9 @@ export default function CreateMenuPage() {
     setSelectedDietary(initialState.selectedDietary || []);
     setCustomDietary(initialState.customDietary || "");
     setPricingMode(initialState.pricingMode || "Per Person");
+    setHasAvailabilityWindow(initialState.hasAvailabilityWindow || false);
+    setAvailabilityStart(initialState.availabilityStart || "");
+    setAvailabilityEnd(initialState.availabilityEnd || "");
     setBasePrice(initialState.basePrice || "");
     setMinimumGuests(initialState.minimumGuests || "");
     setMenuItems(
@@ -274,6 +286,9 @@ export default function CreateMenuPage() {
     setMenuItems(nextState.menuItems);
     setAddOnSearch(nextState.addOnSearch);
     setSelectedAddOnIds(nextState.selectedAddOnIds);
+    setHasAvailabilityWindow(nextState.hasAvailabilityWindow);
+    setAvailabilityStart(nextState.availabilityStart);
+    setAvailabilityEnd(nextState.availabilityEnd);
   }
 
   function buildMenuPayload(status) {
@@ -296,6 +311,9 @@ export default function CreateMenuPage() {
       addOnSearch: "",
       selectedAddOnIds,
       status,
+      hasAvailabilityWindow,
+      availabilityStart,
+      availabilityEnd,
     };
   }
 
@@ -338,6 +356,9 @@ export default function CreateMenuPage() {
       minimumGuests: payload.minimumGuests,
       menuItems: payload.menuItems,
       selectedAddOnIds: payload.selectedAddOnIds,
+      hasAvailabilityWindow: payload.hasAvailabilityWindow,
+      availabilityStart: payload.availabilityStart,
+      availabilityEnd: payload.availabilityEnd,
     };
 
     if (isEditMode || isViewMode) {
@@ -472,6 +493,12 @@ export default function CreateMenuPage() {
             selectedDietary={selectedDietary}
             toggleDay={toggleDay}
             toggleDietary={toggleDietary}
+            hasAvailabilityWindow={hasAvailabilityWindow}
+            onHasAvailabilityWindowChange={setHasAvailabilityWindow}
+            availabilityStart={availabilityStart}
+            onAvailabilityStartChange={(event) => setAvailabilityStart(event.target.value)}
+            availabilityEnd={availabilityEnd}
+            onAvailabilityEndChange={(event) => setAvailabilityEnd(event.target.value)}
           />
         </div>
       </div>
