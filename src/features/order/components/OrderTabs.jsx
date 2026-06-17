@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const filterOptions = ["Last 7 Days", "Last 14 Days", "Last Month", "Custom Date"];
@@ -70,8 +70,15 @@ export default function OrderTabs({
 
         <div className="flex items-center gap-3 max-[720px]:w-full max-[720px]:flex-wrap">
           {formattedRange ? (
-            <div className="type-subpara rounded-full bg-[#ffd8c9] px-4 py-[7px] text-[#c56e4b]">
-              {formattedRange}
+            <div className="type-subpara flex items-center gap-1.5 rounded-full bg-[#ffd8c9] px-4 py-[7px] text-[#c56e4b]">
+              <span>{formattedRange}</span>
+              <button
+                className="inline-flex cursor-pointer items-center justify-center rounded-full p-0.5 hover:bg-[#ffc8b3] text-[#c56e4b] hover:text-[#9c4d2d] transition-colors border-0 bg-transparent"
+                onClick={() => onFilterSelect("")}
+                type="button"
+              >
+                <X size={12} />
+              </button>
             </div>
           ) : null}
 
@@ -81,8 +88,20 @@ export default function OrderTabs({
               onClick={() => setIsFilterOpen((currentState) => !currentState)}
               type="button"
             >
-              {selectedFilter}
-              <ChevronDown size={14} />
+              {selectedFilter || "Filter Date"}
+              {selectedFilter ? (
+                <span
+                  className="ml-1.5 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFilterSelect("");
+                  }}
+                >
+                  <X size={14} />
+                </span>
+              ) : (
+                <ChevronDown size={14} />
+              )}
             </button>
 
             {isFilterOpen ? (
