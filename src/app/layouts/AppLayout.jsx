@@ -11,7 +11,8 @@ import {
   Truck,
   Utensils,
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { confirmVendorLogout } from "../../utils/vendorAlerts";
@@ -33,6 +34,33 @@ const sidebarItems = [
 export default function AppLayout() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [localSearch, setLocalSearch] = useState(searchParams.get("search") || "");
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    setLocalSearch(searchParams.get("search") || "");
+  }, [searchParams]);
+
+  function handleSearchChange(e) {
+    const val = e.target.value;
+    setLocalSearch(val);
+
+    const isSearchablePage = pathname === "/orders" || pathname === "/menu";
+    if (isSearchablePage) {
+      if (val) {
+        setSearchParams({ ...Object.fromEntries(searchParams.entries()), search: val });
+      } else {
+        const nextParams = Object.fromEntries(searchParams.entries());
+        delete nextParams.search;
+        setSearchParams(nextParams);
+      }
+    } else {
+      if (val) {
+        navigate(`/orders?search=${encodeURIComponent(val)}`);
+      }
+    }
+  }
 
   async function handleLogout() {
     const result = await confirmVendorLogout();
@@ -95,6 +123,8 @@ export default function AppLayout() {
               className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
               placeholder="Search order, menu item or customer"
               type="text"
+              value={localSearch}
+              onChange={handleSearchChange}
             />
           </div>
 
@@ -172,6 +202,8 @@ export default function AppLayout() {
               className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
               placeholder="Search order, menu item or customer"
               type="text"
+              value={localSearch}
+              onChange={handleSearchChange}
             />
           </div>
         </header>
