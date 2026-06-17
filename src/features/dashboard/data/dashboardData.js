@@ -9,7 +9,7 @@ export const overviewStats = [
   {
     label: "Upcoming (Next 4 hrs)",
     value: "5",
-    helper: "Next at 10:30 AM",
+    helper: "Next at 10:30",
     icon: "clipboard",
   },
   {
@@ -35,7 +35,7 @@ export const urgentOrders = [
     amount: "kr 1,840.00",
     statusLabel: "Delivery in 1h 20m",
     guests: "48 guests",
-    timing: "10:30 PM - 11:30 PM",
+    timing: "22:30 - 23:30",
     address: "1221 Avenue of the Americas, New York, NY 10020",
     tone: "is-danger",
   },
@@ -45,7 +45,7 @@ export const urgentOrders = [
     amount: "kr 969.00",
     statusLabel: "Delayed by 15 min",
     guests: "48 guests",
-    timing: "10:30 PM - 11:30 PM",
+    timing: "22:30 - 23:30",
     address: "1221 Avenue of the Americas, New York, NY 10020",
     tone: "is-warning",
   },

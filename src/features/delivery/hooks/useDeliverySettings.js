@@ -8,9 +8,9 @@ const defaultDeliverySettings = {
   selectedModes: ["delivery"],
   postalCodes: servicePostalCodes,
   baseFee: "5",
-  freeDelivery: "$ 3,000",
+  freeDelivery: "kr 3,000",
   activeDays: ["Mo", "Tu", "We", "Th", "Fr"],
-  timeSlots: ["08:00 AM - 12:00 PM", "01:00 PM - 05:00 PM"],
+  timeSlots: ["08:00 - 12:00", "13:00 - 17:00"],
   maxDistance: "150",
   maxOrders: "25",
 };
@@ -137,7 +137,7 @@ export default function useDeliverySettings() {
   }
 
   function handleOpenAddSlotModal() {
-    setCustomSlotDraft("06:00 PM - 09:00 PM");
+    setCustomSlotDraft("18:00 - 21:00");
     setIsAddSlotModalOpen(true);
   }
 

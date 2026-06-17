@@ -45,12 +45,12 @@ const defaultSettings = {
     accountId: "VCP-58231",
   },
   hours: [
-    { day: "Monday", enabled: true, open: "08:00-12:00", close: "09:00-05:00" },
-    { day: "Tuesday", enabled: true, open: "08:00-12:00", close: "09:00-05:00" },
-    { day: "Wednesday", enabled: true, open: "08:00-12:00", close: "09:00-05:00" },
-    { day: "Thursday", enabled: true, open: "08:00-12:00", close: "09:00-05:00" },
-    { day: "Friday", enabled: true, open: "08:00-12:00", close: "09:00-05:00" },
-    { day: "Saturday", enabled: true, open: "08:00-12:00", close: "09:00-05:00" },
+    { day: "Monday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
+    { day: "Tuesday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
+    { day: "Wednesday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
+    { day: "Thursday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
+    { day: "Friday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
+    { day: "Saturday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
     { day: "Sunday", enabled: false, open: "Closed", close: "Closed" },
   ],
 };

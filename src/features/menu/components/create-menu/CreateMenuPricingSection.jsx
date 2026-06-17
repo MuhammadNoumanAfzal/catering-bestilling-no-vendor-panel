@@ -49,7 +49,7 @@ export default function CreateMenuPricingSection({
           <TextInput
             disabled={disabled}
             onChange={onBasePriceChange}
-            placeholder="$ 120"
+            placeholder="kr 120"
             value={basePrice}
           />
         </div>
