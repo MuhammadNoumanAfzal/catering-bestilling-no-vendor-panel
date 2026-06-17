@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Upload } from "lucide-react";
 
 export function Label({ children }) {
@@ -61,6 +62,91 @@ export function SelectInput({
         className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
         size={14}
       />
+    </div>
+  );
+}
+
+export function MultiSelectInput({
+  disabled = false,
+  options = [],
+  value = "",
+  onChange,
+  placeholder,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!containerRef.current?.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const selectedList = value
+    ? value.split(",").map((item) => item.trim()).filter(Boolean)
+    : [];
+
+  function handleToggle(option) {
+    let nextList;
+    if (selectedList.includes(option)) {
+      nextList = selectedList.filter((item) => item !== option);
+    } else {
+      nextList = [...selectedList, option];
+    }
+    const nextValue = nextList.join(", ");
+    onChange({ target: { value: nextValue } });
+  }
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex h-[42px] w-full cursor-pointer items-center justify-between rounded-[8px] border border-[#d7cec4] bg-white px-3 pr-8 text-left text-[14px] text-[#1f1814] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
+      >
+        <span className={selectedList.length ? "text-[#1f1814] truncate pr-2" : "text-[#aea39a]"}>
+          {selectedList.length ? selectedList.join(", ") : placeholder}
+        </span>
+        <ChevronDown
+          className={`shrink-0 text-[#7d7064] transition ${isOpen ? "rotate-180" : ""}`}
+          size={14}
+        />
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="absolute left-0 top-[calc(100%+4px)] z-30 max-h-[200px] w-full overflow-y-auto rounded-[8px] border border-[#d7cec4] bg-white p-1 shadow-lg">
+          {options.length ? (
+            options.map((option) => {
+              const isChecked = selectedList.includes(option);
+              return (
+                <label
+                  key={option}
+                  className="flex cursor-pointer items-center gap-2.5 rounded-[6px] px-3 py-2 text-[14px] text-[#1f1814] transition hover:bg-[#faf5f1]"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleToggle(option)}
+                    className="h-4 w-4 cursor-pointer accent-[#cf6e38]"
+                  />
+                  <span>{option}</span>
+                </label>
+              );
+            })
+          ) : (
+            <div className="px-3 py-2 text-[12px] font-semibold text-[#8a7c70] text-center">
+              No options available
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
