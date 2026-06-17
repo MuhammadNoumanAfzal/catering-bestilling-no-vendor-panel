@@ -8,7 +8,7 @@ const MOCK_SUGGESTIONS = [
     name: "Lemon tea",
     serves: "Serves 10 persons",
     price: 1200,
-    priceStr: "NOK 1,200",
+    priceStr: "kr 120.00",
     image: "/heroBg.webp",
   },
   {
@@ -16,7 +16,7 @@ const MOCK_SUGGESTIONS = [
     name: "Apple juice",
     serves: "Serves 10 persons",
     price: 1000,
-    priceStr: "NOK 1,000",
+    priceStr: "kr 100.00",
     image: "/heroBg.webp",
   },
   {
@@ -24,7 +24,7 @@ const MOCK_SUGGESTIONS = [
     name: "Berry smoothie",
     serves: "Serves 10 persons",
     price: 1500,
-    priceStr: "NOK 1,500",
+    priceStr: "kr 150.00",
     image: "/heroBg.webp",
   },
   {
@@ -32,7 +32,7 @@ const MOCK_SUGGESTIONS = [
     name: "Soft drink pack",
     serves: "Serves 12 persons",
     price: 800,
-    priceStr: "NOK 800",
+    priceStr: "kr 80.00",
     image: "/heroBg.webp",
   },
 ];
@@ -107,16 +107,23 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
     setSuggestedList(prev => prev.filter(s => s.id !== itemId));
   };
 
+  // Remove currency symbols/text like $, kr, NOK, and commas
+  const parseCurrencyValue = (valStr) => {
+    if (!valStr) return 0;
+    const cleaned = valStr.replace(/[$,\s]/g, "").replace(/NOK|kr/i, "").trim();
+    const val = parseFloat(cleaned);
+    return isNaN(val) ? 0 : val;
+  };
+
   // Prices calculation
   const oldTotal = useMemo(() => {
-    const rawTotal = orderDetail?.financialSummary?.find(f => f.label.toLowerCase() === "total")?.value || "NOK 4,250";
-    // Convert to number if possible, or default to 4250
-    const cleanNum = parseInt(rawTotal.replace(/[^0-9]/g, ""), 10);
+    const rawTotal = orderDetail?.financialSummary?.find(f => f.label.toLowerCase() === "total")?.value || "kr 4,250.00";
+    const cleanNum = parseCurrencyValue(rawTotal);
     return isNaN(cleanNum) ? 4250 : cleanNum;
   }, [orderDetail]);
 
   const newTotal = useMemo(() => {
-    const suggestionsCost = suggestedList.reduce((sum, item) => sum + item.price, 0);
+    const suggestionsCost = suggestedList.reduce((sum, item) => sum + item.price / 10, 0);
     return oldTotal + suggestionsCost;
   }, [oldTotal, suggestedList]);
 
@@ -497,14 +504,14 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
                   <span className="text-[#8a7a6d] font-bold">Old Total Amount</span>
                   <span className="text-[#1c1510] font-extrabold text-right">
-                    NOK {oldTotal.toLocaleString()}
+                    kr {oldTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
                   <span className="text-[#8a7a6d] font-bold">Updated Total Amount</span>
                   <span className="text-[#d96e39] font-black text-right text-[14px]">
-                    NOK {newTotal.toLocaleString()}
+                    kr {newTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

@@ -37,34 +37,34 @@ export default function FinancePage() {
   const dynamicSummaryCards = useMemo(() => {
     if (headerFilter === "Last 30 days") {
       return [
-        { label: "Total Earnings", value: "$48,930.00", accent: "#ffefe7", icon: "camera" },
-        { label: "Net Income", value: "$44,037.00", accent: "#fff2ec", icon: "wallet" },
-        { label: "Platform Commission", value: "$4,893.00", accent: "#fff2ec", icon: "close" },
-        { label: "Pending Payouts", value: "$2,150.00", accent: "#fff2ec", icon: "clock" },
+        { label: "Total Earnings", value: "kr 48,930.00", accent: "#ffefe7", icon: "camera" },
+        { label: "Net Income", value: "kr 44,037.00", accent: "#fff2ec", icon: "wallet" },
+        { label: "Platform Commission", value: "kr 4,893.00", accent: "#fff2ec", icon: "close" },
+        { label: "Pending Payouts", value: "kr 2,150.00", accent: "#fff2ec", icon: "clock" },
       ];
     }
     if (headerFilter === "This Month") {
       return [
-        { label: "Total Earnings", value: "$8,340.00", accent: "#ffefe7", icon: "camera" },
-        { label: "Net Income", value: "$7,506.00", accent: "#fff2ec", icon: "wallet" },
-        { label: "Platform Commission", value: "$834.00", accent: "#fff2ec", icon: "close" },
-        { label: "Pending Payouts", value: "$450.00", accent: "#fff2ec", icon: "clock" },
+        { label: "Total Earnings", value: "kr 8,340.00", accent: "#ffefe7", icon: "camera" },
+        { label: "Net Income", value: "kr 7,506.00", accent: "#fff2ec", icon: "wallet" },
+        { label: "Platform Commission", value: "kr 834.00", accent: "#fff2ec", icon: "close" },
+        { label: "Pending Payouts", value: "kr 450.00", accent: "#fff2ec", icon: "clock" },
       ];
     }
     if (headerFilter === "Last Month") {
       return [
-        { label: "Total Earnings", value: "$38,120.00", accent: "#ffefe7", icon: "camera" },
-        { label: "Net Income", value: "$34,308.00", accent: "#fff2ec", icon: "wallet" },
-        { label: "Platform Commission", value: "$3,812.00", accent: "#fff2ec", icon: "close" },
-        { label: "Pending Payouts", value: "$0.00", accent: "#fff2ec", icon: "clock" },
+        { label: "Total Earnings", value: "kr 38,120.00", accent: "#ffefe7", icon: "camera" },
+        { label: "Net Income", value: "kr 34,308.00", accent: "#fff2ec", icon: "wallet" },
+        { label: "Platform Commission", value: "kr 3,812.00", accent: "#fff2ec", icon: "close" },
+        { label: "Pending Payouts", value: "kr 0.00", accent: "#fff2ec", icon: "clock" },
       ];
     }
     if (headerFilter === "This Year") {
       return [
-        { label: "Total Earnings", value: "$184,200.00", accent: "#ffefe7", icon: "camera" },
-        { label: "Net Income", value: "$165,780.00", accent: "#fff2ec", icon: "wallet" },
-        { label: "Platform Commission", value: "$18,420.00", accent: "#fff2ec", icon: "close" },
-        { label: "Pending Payouts", value: "$1,284.10", accent: "#fff2ec", icon: "clock" },
+        { label: "Total Earnings", value: "kr 184,200.00", accent: "#ffefe7", icon: "camera" },
+        { label: "Net Income", value: "kr 165,780.00", accent: "#fff2ec", icon: "wallet" },
+        { label: "Platform Commission", value: "kr 18,420.00", accent: "#fff2ec", icon: "close" },
+        { label: "Pending Payouts", value: "kr 1,284.10", accent: "#fff2ec", icon: "clock" },
       ];
     }
     return financeSummaryCards;

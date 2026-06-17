@@ -14,11 +14,11 @@ export default function EarningChart({ values, subtitle }) {
       <div className="mt-[40px] grid grid-cols-[48px_minmax(0,1fr)] gap-[10px] items-start max-[720px]:grid-cols-1 max-[720px]:mt-8">
         {/* Y-axis Labels */}
         <div className="flex h-[182px] flex-col justify-between text-[#4e433a] max-[720px]:hidden">
-          <span className="type-subpara leading-none">$10000</span>
-          <span className="type-subpara leading-none">$7500</span>
-          <span className="type-subpara leading-none">$5000</span>
-          <span className="type-subpara leading-none">$2500</span>
-          <span className="type-subpara leading-none">$0</span>
+          <span className="type-subpara leading-none">kr 10000</span>
+          <span className="type-subpara leading-none">kr 7500</span>
+          <span className="type-subpara leading-none">kr 5000</span>
+          <span className="type-subpara leading-none">kr 2500</span>
+          <span className="type-subpara leading-none">kr 0</span>
         </div>
 
         {/* Chart Body */}

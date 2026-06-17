@@ -32,7 +32,7 @@ export const urgentOrders = [
   {
     id: "#12549",
     title: "Corporate Lunch",
-    amount: "$1,840.00",
+    amount: "kr 1,840.00",
     statusLabel: "Delivery in 1h 20m",
     guests: "48 guests",
     timing: "10:30 PM - 11:30 PM",
@@ -42,7 +42,7 @@ export const urgentOrders = [
   {
     id: "#12550",
     title: "Office event",
-    amount: "$969.00",
+    amount: "kr 969.00",
     statusLabel: "Delayed by 15 min",
     guests: "48 guests",
     timing: "10:30 PM - 11:30 PM",
