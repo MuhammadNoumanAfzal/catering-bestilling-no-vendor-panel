@@ -27,6 +27,8 @@ export default function SettingsPage() {
     saveMessage,
     setActiveTab,
     settings,
+    handleSaveClosure,
+    handleDeleteClosure,
   } = useSettingsPageState();
 
   const pageContent =
@@ -73,6 +75,8 @@ export default function SettingsPage() {
           handleResetAllSettings={handleResetAllSettings}
           handleToggleBusinessDay={handleToggleBusinessDay}
           settings={settings}
+          handleSaveClosure={handleSaveClosure}
+          handleDeleteClosure={handleDeleteClosure}
         />
       )}
 

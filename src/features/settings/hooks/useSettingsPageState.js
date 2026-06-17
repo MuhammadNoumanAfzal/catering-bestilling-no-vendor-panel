@@ -45,13 +45,17 @@ const defaultSettings = {
     accountId: "VCP-58231",
   },
   hours: [
-    { day: "Monday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
-    { day: "Tuesday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
-    { day: "Wednesday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
-    { day: "Thursday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
-    { day: "Friday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
-    { day: "Saturday", enabled: true, open: "08:00-12:00", close: "09:00-17:00" },
+    { day: "Monday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
+    { day: "Tuesday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
+    { day: "Wednesday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
+    { day: "Thursday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
+    { day: "Friday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
+    { day: "Saturday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
     { day: "Sunday", enabled: false, open: "Closed", close: "Closed" },
+  ],
+  closures: [
+    { id: "1", type: "Holiday", start: "2026-08-20", end: "2026-09-15", reason: "Christmas Break", status: "Active" },
+    { id: "2", type: "Holiday", start: "2026-08-20", end: "2026-09-15", reason: "Summer Vacation", status: "Scheduled" },
   ],
 };
 
@@ -346,5 +350,54 @@ export default function useSettingsPageState() {
     saveMessage,
     setActiveTab,
     settings,
+    handleSaveClosure: async (type, start, end, reason, id) => {
+      setSettings((current) => {
+        let nextClosures;
+        if (id) {
+          nextClosures = (current.closures || []).map((c) =>
+            c.id === id
+              ? {
+                  ...c,
+                  type,
+                  start,
+                  end,
+                  reason: reason || type,
+                  status: new Date(start) <= new Date() ? "Active" : "Scheduled",
+                }
+              : c,
+          );
+        } else {
+          const newClosure = {
+            id: `closure-${Date.now()}`,
+            type,
+            start,
+            end,
+            reason: reason || type,
+            status: new Date(start) <= new Date() ? "Active" : "Scheduled",
+          };
+          nextClosures = [...(current.closures || []), newClosure];
+        }
+        const nextSettings = { ...current, closures: nextClosures };
+        window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+        setSavedSettings(nextSettings);
+        return nextSettings;
+      });
+
+      if (id) {
+        await showVendorSuccessToast("Special closure updated successfully.");
+      } else {
+        await showVendorSuccessToast("Special closure added successfully.");
+      }
+    },
+    handleDeleteClosure: async (id) => {
+      setSettings((current) => {
+        const nextClosures = (current.closures || []).filter((c) => c.id !== id);
+        const nextSettings = { ...current, closures: nextClosures };
+        window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+        setSavedSettings(nextSettings);
+        return nextSettings;
+      });
+      await showVendorSuccessToast("Special closure deleted successfully.");
+    },
   };
 }

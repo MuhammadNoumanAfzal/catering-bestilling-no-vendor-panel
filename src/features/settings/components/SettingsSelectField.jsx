@@ -35,7 +35,7 @@ export default function SettingsSelectField({
 
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[13px] font-bold text-[#2a211b]">{label}</span>
+      {label ? <span className="text-[13px] font-bold text-[#2a211b]">{label}</span> : null}
       <div className="relative" ref={containerRef}>
         <button
           className="type-subpara flex h-[38px] w-full cursor-pointer items-center justify-between rounded-[7px] border border-[#cec5bd] bg-white px-3 text-left text-[#201712] outline-none transition hover:border-[#cf6e38] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:pointer-events-none disabled:opacity-45 disabled:bg-[#f6f2ee] disabled:text-[#8d7f73]"
