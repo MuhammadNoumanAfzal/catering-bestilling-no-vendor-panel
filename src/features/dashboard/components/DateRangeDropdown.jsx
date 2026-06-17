@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 
 export default function DateRangeDropdown({
   onChange,
@@ -53,7 +53,20 @@ export default function DateRangeDropdown({
         type="button"
       >
         <span>{activeOption}</span>
-        {isOpen ? (
+        {activeOption !== "Last 7 Days" ? (
+          <span
+            className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#7d7064] hover:text-[#2a211b] transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveOption("Last 7 Days");
+              setStartDate("");
+              setEndDate("");
+              onChange?.("Last 7 Days", "", "");
+            }}
+          >
+            <X size={12} strokeWidth={2.4} />
+          </span>
+        ) : isOpen ? (
           <ChevronUp className="text-[#7d7064]" size={13} strokeWidth={2.4} />
         ) : (
           <ChevronDown className="text-[#7d7064]" size={13} strokeWidth={2.4} />

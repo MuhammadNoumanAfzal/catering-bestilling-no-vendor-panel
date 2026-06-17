@@ -223,5 +223,6 @@ export default function useReviewsPageState() {
     replyDrafts,
     selectedReview,
     totalPages,
+    selectedDateOption,
   };
 }

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 
 const dateOptions = [
   { id: "lastMonth", label: "Last Month" },
@@ -23,6 +23,7 @@ export default function ReviewsFiltersBar({
   onFilterChange,
   onSelectDateOption,
   onToggleDateMenu,
+  selectedDateOption,
 }) {
   return (
     <div className="rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-2.5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
@@ -52,7 +53,21 @@ export default function ReviewsFiltersBar({
               type="button"
             >
               <span className="truncate">{dateButtonLabel}</span>
-              {isDateMenuOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              {selectedDateOption !== "lastMonth" ? (
+                <span
+                  className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectDateOption("lastMonth");
+                  }}
+                >
+                  <X size={12} />
+                </span>
+              ) : isDateMenuOpen ? (
+                <ChevronUp size={14} />
+              ) : (
+                <ChevronDown size={14} />
+              )}
             </button>
 
             {isDateMenuOpen ? (

@@ -161,5 +161,15 @@ export default function useFinancePageState() {
     pageSize: PAGE_SIZE,
     totalPages,
     currentPage,
+    selectedDateOption,
+    handleClearDateFilter: () => {
+      setSelectedDateOption("latest");
+      setAppliedCustomRange(null);
+      setCustomFrom("");
+      setCustomTo("");
+      setIsCustomDateOpen(false);
+      setIsDateMenuOpen(false);
+      setCurrentPage(1);
+    },
   };
 }
