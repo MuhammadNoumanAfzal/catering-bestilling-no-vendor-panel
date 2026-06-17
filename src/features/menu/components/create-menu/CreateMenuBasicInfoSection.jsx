@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
-import { Label, SelectInput, TextArea, TextInput, UploadBox } from "./CreateMenuFields";
+import { Label, MultiSelectInput, SelectInput, TextArea, TextInput, UploadBox } from "./CreateMenuFields";
 
 function ImageSlider({ images }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -137,11 +137,11 @@ export default function CreateMenuBasicInfoSection({
                 </button>
               )}
             </div>
-            <SelectInput
+            <MultiSelectInput
               disabled={disabled}
               onChange={onCategoryChange}
               options={categoryOptions}
-              placeholder="Select event type"
+              placeholder="Select category"
               value={category}
             />
           </div>

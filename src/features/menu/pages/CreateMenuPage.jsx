@@ -109,7 +109,14 @@ export default function CreateMenuPage() {
       window.localStorage.setItem("vendor-menu-categories", JSON.stringify(updated));
       return updated;
     });
-    setCategory(newCategoryName);
+    setCategory((current) => {
+      const selectedList = current
+        ? current.split(",").map((c) => c.trim()).filter(Boolean)
+        : [];
+      if (selectedList.includes(newCategoryName)) return current;
+      const nextList = [...selectedList, newCategoryName];
+      return nextList.join(", ");
+    });
   }
 
   function handleAddImportedItems(selectedItemsList) {
