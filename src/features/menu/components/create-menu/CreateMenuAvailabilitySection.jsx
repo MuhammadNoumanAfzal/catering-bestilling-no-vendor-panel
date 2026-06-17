@@ -1,5 +1,5 @@
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
-import { Label, SelectInput, TextInput } from "./CreateMenuFields";
+import { Label, SelectInput, TextInput, ToggleSwitch } from "./CreateMenuFields";
 
 export default function CreateMenuAvailabilitySection({
   availabilityDays,
@@ -12,6 +12,12 @@ export default function CreateMenuAvailabilitySection({
   selectedDietary,
   toggleDay,
   toggleDietary,
+  hasAvailabilityWindow,
+  onHasAvailabilityWindowChange,
+  availabilityStart,
+  onAvailabilityStartChange,
+  availabilityEnd,
+  onAvailabilityEndChange,
 }) {
   return (
     <CreateMenuSectionCard
@@ -77,6 +83,52 @@ export default function CreateMenuAvailabilitySection({
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className="mt-4 border-t border-[#e7ded6] pt-4">
+        <span className="mb-1 block text-[14px] font-bold text-[#211913]">
+          Delivery Availability Window (Optional)
+        </span>
+        <p className="mb-3 text-[12px] font-medium text-[#746a62] leading-tight">
+          Choose the date range when customers can order this menu for delivery.
+        </p>
+
+        <div className="mb-4">
+          <ToggleSwitch
+            checked={hasAvailabilityWindow}
+            disabled={disabled}
+            onChange={onHasAvailabilityWindowChange}
+            label="Enable Availability Window"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <span className="mb-1 block text-[11px] font-bold text-[#7b6d62] uppercase tracking-wide">
+              Available From
+            </span>
+            <TextInput
+              disabled={disabled || !hasAvailabilityWindow}
+              onChange={onAvailabilityStartChange}
+              placeholder="Select start date..."
+              type="date"
+              value={availabilityStart}
+            />
+          </div>
+          <span className="mt-5 text-[#9a8e85] font-bold">—</span>
+          <div className="flex-1">
+            <span className="mb-1 block text-[11px] font-bold text-[#7b6d62] uppercase tracking-wide">
+              Available Until
+            </span>
+            <TextInput
+              disabled={disabled || !hasAvailabilityWindow}
+              onChange={onAvailabilityEndChange}
+              placeholder="Select end date..."
+              type="date"
+              value={availabilityEnd}
+            />
+          </div>
         </div>
       </div>
     </CreateMenuSectionCard>
