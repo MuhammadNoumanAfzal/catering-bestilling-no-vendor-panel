@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import MenuCreateNewCard from "../components/management/MenuCreateNewCard";
 import MenuManagementHeader from "../components/management/MenuManagementHeader";
@@ -25,6 +25,7 @@ function normalizeStatus(value) {
 
 export default function MenuPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
   const [sortBy, setSortBy] = useState("Latest");
   
@@ -78,7 +79,17 @@ export default function MenuPage() {
           ? addOnsList
           : items.filter((item) => normalizeStatus(item.status) === normalizeStatus(activeTab));
 
-    const nextItems = [...baseItems];
+    const searchQuery = searchParams.get("search")?.toLowerCase().trim() || "";
+    const searchedItems = searchQuery
+      ? baseItems.filter(
+          (item) =>
+            item.title.toLowerCase().includes(searchQuery) ||
+            (item.description && item.description.toLowerCase().includes(searchQuery)) ||
+            (item.badge && item.badge.toLowerCase().includes(searchQuery)),
+        )
+      : baseItems;
+
+    const nextItems = [...searchedItems];
 
     if (sortBy === "Oldest") {
       nextItems.reverse();
@@ -101,7 +112,7 @@ export default function MenuPage() {
     }
 
     return nextItems;
-  }, [activeTab, items, sortBy, addOnsList]);
+  }, [activeTab, items, sortBy, addOnsList, searchParams]);
 
   async function handleDelete(item) {
     if (item.isAddOn) {

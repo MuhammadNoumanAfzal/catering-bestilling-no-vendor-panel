@@ -280,10 +280,20 @@ export default function OrdersPage() {
       ? baseRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeFilter))
       : baseRows;
 
-    return [...chipFilteredRows].sort((firstRow, secondRow) =>
+    const searchQuery = searchParams.get("search")?.toLowerCase().trim() || "";
+    const searchedRows = searchQuery
+      ? chipFilteredRows.filter(
+          (row) =>
+            row.id.toLowerCase().includes(searchQuery) ||
+            row.customer.toLowerCase().includes(searchQuery) ||
+            (row.event && row.event.toLowerCase().includes(searchQuery)),
+        )
+      : chipFilteredRows;
+
+    return [...searchedRows].sort((firstRow, secondRow) =>
       secondRow.customer.localeCompare(firstRow.customer),
     );
-  }, [activeFilter, activeTab, dateFilteredRows]);
+  }, [activeFilter, activeTab, dateFilteredRows, searchParams]);
 
   const dynamicMetrics = useMemo(() => {
     const total = dateFilteredRows.length;
