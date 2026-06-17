@@ -3,8 +3,11 @@ import SettingsSelectField from "./SettingsSelectField";
 
 const timeOptions = [
   { value: "08:00-12:00", label: "08:00 - 12:00" },
+  { value: "13:00-17:00", label: "13:00 - 17:00" },
   { value: "09:00-17:00", label: "09:00 - 17:00" },
   { value: "10:00-18:00", label: "10:00 - 18:00" },
+  { value: "08:00-16:00", label: "08:00 - 16:00" },
+  { value: "12:00-20:00", label: "12:00 - 20:00" },
   { value: "Closed", label: "Closed" },
 ];
 
@@ -17,47 +20,73 @@ export default function SettingsBusinessHoursSection({
     <SettingsSectionCard
       description="Set your general business hours. These will show to customers."
       title="Business Hours"
+      headerRight={
+        <button
+          type="button"
+          onClick={() => {
+            const el = document.getElementById("special-closures-section");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="cursor-pointer rounded-[6px] bg-[#cf6e38] px-4 py-1.5 text-[11px] font-extrabold tracking-wider text-white hover:bg-[#bf622f] uppercase transition active:scale-95"
+        >
+          Holidays
+        </button>
+      }
     >
-      <div className="space-y-2">
+      <div className="divide-y divide-[#eee7df]">
         {hours.map((item) => (
           <div
             key={item.day}
-            className="flex items-center gap-3 rounded-[8px] border border-[#e8dfd7] bg-[#fffdfb] px-3 py-2 max-[760px]:flex-col max-[760px]:items-stretch"
+            className="flex items-center justify-between py-3 gap-4 max-[760px]:flex-col max-[760px]:items-stretch"
           >
-            <button
-              className="flex min-w-[110px] cursor-pointer items-center gap-2 text-left text-[14px] font-semibold text-[#2b221d]"
-              onClick={() => onToggleDay(item.day)}
-              type="button"
-            >
-              <span
-                className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border ${
-                  item.enabled ? "border-[#d96e39]" : "border-[#bdb2a9]"
+            <div className="flex items-center gap-3.5">
+              <button
+                type="button"
+                onClick={() => onToggleDay(item.day)}
+                className={`relative inline-flex h-5 w-[38px] shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+                  item.enabled ? "bg-[#cf6e38]" : "bg-[#bdb2a9]"
                 }`}
               >
-                {item.enabled ? (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#d96e39]" />
-                ) : null}
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    item.enabled ? "translate-x-[18px]" : "translate-x-[2px]"
+                  }`}
+                />
+              </button>
+              <span className={`text-[14px] font-bold ${item.enabled ? "text-[#2b221d]" : "text-[#8a7c70]"}`}>
+                {item.day}
               </span>
-              {item.day}
-            </button>
+            </div>
 
-            <div className="grid flex-1 grid-cols-2 gap-3 max-[760px]:grid-cols-1">
-              <SettingsSelectField
+            <div className="flex items-center gap-2 max-[760px]:justify-between">
+              <div className="w-[160px]">
+                <SettingsSelectField
+                  disabled={!item.enabled}
+                  label=""
+                  onChange={(event) => onChangeTime(item.day, "open", event.target.value)}
+                  options={timeOptions}
+                  placeholder="Select hours"
+                  value={item.open}
+                />
+              </div>
+              <span className="text-[#8a7c70] font-semibold px-1">—</span>
+              <div className="w-[160px]">
+                <SettingsSelectField
+                  disabled={!item.enabled}
+                  label=""
+                  onChange={(event) => onChangeTime(item.day, "close", event.target.value)}
+                  options={timeOptions}
+                  placeholder="Select hours"
+                  value={item.close}
+                />
+              </div>
+              <button
+                type="button"
                 disabled={!item.enabled}
-                label=""
-                onChange={(event) => onChangeTime(item.day, "open", event.target.value)}
-                options={timeOptions}
-                placeholder="Opening hours"
-                value={item.open}
-              />
-              <SettingsSelectField
-                disabled={!item.enabled}
-                label=""
-                onChange={(event) => onChangeTime(item.day, "close", event.target.value)}
-                options={timeOptions}
-                placeholder="Closing hours"
-                value={item.close}
-              />
+                className="flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-[6px] border border-[#cec5bd] bg-white text-[16px] font-bold text-[#524740] transition hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:pointer-events-none disabled:opacity-45 disabled:bg-[#f6f2ee] disabled:text-[#8d7f73]"
+              >
+                +
+              </button>
             </div>
           </div>
         ))}

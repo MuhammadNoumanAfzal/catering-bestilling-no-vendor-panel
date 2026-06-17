@@ -1,4 +1,5 @@
 import SettingsBusinessHoursSection from "./SettingsBusinessHoursSection";
+import SettingsSpecialClosuresSection from "./SettingsSpecialClosuresSection";
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
@@ -20,6 +21,8 @@ export default function SettingsBusinessProfilePanel({
   handleResetAllSettings,
   handleToggleBusinessDay,
   settings,
+  handleSaveClosure,
+  handleDeleteClosure,
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(260px,0.78fr)] gap-4 max-[1120px]:grid-cols-1">
@@ -125,6 +128,14 @@ export default function SettingsBusinessProfilePanel({
           onChangeTime={handleBusinessHourChange}
           onToggleDay={handleToggleBusinessDay}
         />
+
+        <div id="special-closures-section">
+          <SettingsSpecialClosuresSection
+            closures={settings.closures}
+            onAddOrUpdateClosure={handleSaveClosure}
+            onDeleteClosure={handleDeleteClosure}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
