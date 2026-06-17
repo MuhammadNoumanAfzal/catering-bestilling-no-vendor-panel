@@ -20,18 +20,6 @@ export default function SettingsBusinessHoursSection({
     <SettingsSectionCard
       description="Set your general business hours. These will show to customers."
       title="Business Hours"
-      headerRight={
-        <button
-          type="button"
-          onClick={() => {
-            const el = document.getElementById("special-closures-section");
-            if (el) el.scrollIntoView({ behavior: "smooth" });
-          }}
-          className="cursor-pointer rounded-[6px] bg-[#cf6e38] px-4 py-1.5 text-[11px] font-extrabold tracking-wider text-white hover:bg-[#bf622f] uppercase transition active:scale-95"
-        >
-          Holidays
-        </button>
-      }
     >
       <div className="divide-y divide-[#eee7df]">
         {hours.map((item) => (
@@ -80,13 +68,6 @@ export default function SettingsBusinessHoursSection({
                   value={item.close}
                 />
               </div>
-              <button
-                type="button"
-                disabled={!item.enabled}
-                className="flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-[6px] border border-[#cec5bd] bg-white text-[16px] font-bold text-[#524740] transition hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:pointer-events-none disabled:opacity-45 disabled:bg-[#f6f2ee] disabled:text-[#8d7f73]"
-              >
-                +
-              </button>
             </div>
           </div>
         ))}

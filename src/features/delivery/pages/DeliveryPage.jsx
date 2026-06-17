@@ -75,15 +75,6 @@ export default function DeliveryPage() {
             onFreeDeliveryChange={(event) => setFreeDelivery(event.target.value)}
           />
 
-          <DeliveryScheduleSection
-            activeDays={activeDays}
-            days={deliveryDays}
-            disabled={isPickupOnly}
-            onAddCustomSlot={handleOpenAddSlotModal}
-            onRemoveTimeSlot={handleRemoveTimeSlot}
-            onToggleDay={handleToggleDay}
-            timeSlots={timeSlots}
-          />
 
           <DeliveryLimitsSection
             disabled={isPickupOnly}
