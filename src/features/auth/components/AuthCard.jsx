@@ -45,14 +45,27 @@ export default function AuthCard({
   otpValues,
   note,
   rememberMeLabel,
+  rememberMeChecked,
+  onRememberMeChange,
   passwordRules,
   actionDisabled = false,
   actionNote,
+  errorMessage,
+  formClassName = "",
+  maxWidthClassName = "sm:max-w-[362px]",
+  fieldsColumnsClassName = "flex flex-col gap-3",
   onAction,
 }) {
+  function handleSubmit(event) {
+    event.preventDefault();
+    onAction?.();
+  }
+
   return (
-    <div className="w-full rounded-[14px] border border-[#e9dfd6] bg-white/95 shadow-[0_18px_44px_rgba(61,44,30,0.12)] sm:max-w-[362px]">
-      <div className="px-[22px] pb-5 pt-6">
+    <div
+      className={`w-full rounded-[14px] border border-[#e9dfd6] bg-white/95 shadow-[0_18px_44px_rgba(61,44,30,0.12)] ${maxWidthClassName}`}
+    >
+      <form className={`px-[22px] pb-5 pt-6 ${formClassName}`.trim()} onSubmit={handleSubmit}>
         <h1 className="type-h3 m-0 text-center text-[#16110d]">{title}</h1>
         <p className="type-para mb-[18px] mt-2 text-center text-[#6d6259]">{subtitle}</p>
 
@@ -65,7 +78,7 @@ export default function AuthCard({
         ) : null}
 
         {fields.length > 0 ? (
-          <div className="flex flex-col gap-3">
+          <div className={fieldsColumnsClassName}>
             {fields.map((field) => (
               <Field key={field.label} {...field} />
             ))}
@@ -94,7 +107,12 @@ export default function AuthCard({
           <div className="mt-2.5 flex items-center justify-between gap-3">
             {rememberMeLabel ? (
               <label className="type-para inline-flex cursor-pointer items-center gap-1.5 text-[#786d64]">
-                <input className="accent-[#cf6e38]" type="checkbox" />
+                <input
+                  checked={Boolean(rememberMeChecked)}
+                  className="accent-[#cf6e38]"
+                  onChange={onRememberMeChange}
+                  type="checkbox"
+                />
                 <span>{rememberMeLabel}</span>
               </label>
             ) : (
@@ -110,13 +128,18 @@ export default function AuthCard({
               </Link>
             ) : null}
           </div>
+          ) : null}
+
+        {errorMessage ? (
+          <p className="type-para mt-3 rounded-lg border border-[#f0d0c2] bg-[#fff5f1] px-3 py-2 text-center text-[#b84c23]">
+            {errorMessage}
+          </p>
         ) : null}
 
         <button
           className="type-para mt-[14px] min-h-[42px] w-full cursor-pointer rounded-lg bg-[#cf6e38] font-bold text-white transition duration-150 hover:bg-[#bf622f] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55"
           disabled={actionDisabled}
-          onClick={onAction}
-          type="button"
+          type="submit"
         >
           {actionLabel}
         </button>
@@ -126,20 +149,7 @@ export default function AuthCard({
         ) : null}
 
         {note ? (
-          note.includes("admin@vendorpanel.com") ? (
-            <div className="mt-[18px] rounded-lg bg-[#faf6f0] border border-[#eee4db] p-2.5 text-center">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-[#9f9185]">
-                Demo Access
-              </span>
-              <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5 text-[12px] font-bold text-[#5a4d41]">
-                <span className="bg-[#f0e5da] px-2 py-0.5 rounded text-[#bf5d30] select-all">admin@vendorpanel.com</span>
-                <span className="text-[#ccc2b8] font-normal">/</span>
-                <span className="bg-[#f0e5da] px-2 py-0.5 rounded text-[#bf5d30] select-all">admin123</span>
-              </div>
-            </div>
-          ) : (
-            <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p>
-          )
+          <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p>
         ) : null}
 
         {backLinkLabel && backLinkTo ? (
@@ -161,7 +171,7 @@ export default function AuthCard({
             ) : null}
           </p>
         ) : null}
-      </div>
+      </form>
     </div>
   );
 }

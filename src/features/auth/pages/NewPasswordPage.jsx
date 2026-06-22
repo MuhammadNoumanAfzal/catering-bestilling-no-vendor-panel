@@ -1,15 +1,12 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
 import {
-  showPasswordResetSuccess,
   showVendorErrorAlert,
 } from "../../../utils/vendorAlerts";
 
 export default function NewPasswordPage() {
-  const navigate = useNavigate();
   const [formState, setFormState] = useState({
     newPassword: "",
     confirmPassword: "",
@@ -44,8 +41,10 @@ export default function NewPasswordPage() {
       return;
     }
 
-    await showPasswordResetSuccess();
-    navigate("/auth/login");
+    await showVendorErrorAlert(
+      "Password reset is not connected yet. Hook this page to your reset mutation.",
+      "Reset not configured",
+    );
   }
 
   return (
@@ -77,6 +76,7 @@ export default function NewPasswordPage() {
         onAction={handleSubmit}
         backLinkLabel="Back to login"
         backLinkTo="/auth/login"
+        note="This page is ready for wiring once your reset-password API is available."
       />
     </AuthLayout>
   );
