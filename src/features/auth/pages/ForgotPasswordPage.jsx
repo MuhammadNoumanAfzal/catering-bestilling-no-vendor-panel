@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
-import { showResetLinkSentSuccess } from "../../../utils/vendorAlerts";
+import { showVendorErrorAlert } from "../../../utils/vendorAlerts";
 
 export default function ForgotPasswordPage() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
 
   async function handleSubmit() {
@@ -14,8 +12,10 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    await showResetLinkSentSuccess();
-    navigate("/auth/verification");
+    await showVendorErrorAlert(
+      "Password recovery is not connected yet. Wire this page to your reset-password mutation.",
+      "Reset flow not configured",
+    );
   }
 
   return (
@@ -33,10 +33,11 @@ export default function ForgotPasswordPage() {
           },
         ]}
         actionDisabled={!email.trim()}
-        actionLabel="Send Reset Link"
+        actionLabel="Request Reset"
         onAction={handleSubmit}
         backLinkLabel="< Back to login"
         backLinkTo="/auth/login"
+        note="Connect this screen to your backend reset-password flow when the API is ready."
       />
     </AuthLayout>
   );

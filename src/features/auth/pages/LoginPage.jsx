@@ -1,27 +1,27 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useState } from "react";
 
 import AuthCard from "../components/AuthCard";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
 import { showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
+  const { clearAuthError, isAuthenticated, isLoggingIn, login } = useAuth();
   const [formState, setFormState] = useState({
     identifier: "",
     password: "",
   });
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   function handleFieldChange(field) {
     return (event) => {
+      clearAuthError();
       setFormState((current) => ({
         ...current,
         [field]: event.target.value,
@@ -30,16 +30,14 @@ export default function LoginPage() {
   }
 
   async function handleLogin() {
-    const result = login(formState);
-
-    if (!result.ok) {
-      await showVendorErrorAlert(result.message, "Login failed");
-      return;
+    try {
+      await login(formState);
+      await showVendorSuccessToast("Logged in successfully.");
+      const nextPath = location.state?.from?.pathname || "/dashboard";
+      navigate(nextPath, { replace: true });
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Login failed.", "Login failed");
     }
-
-    await showVendorSuccessToast("Logged in successfully.");
-    const nextPath = location.state?.from?.pathname || "/dashboard";
-    navigate(nextPath, { replace: true });
   }
 
   return (
@@ -67,13 +65,15 @@ export default function LoginPage() {
         rememberMeLabel="Remember me"
         auxiliaryLinkLabel="Forgot Password?"
         auxiliaryLinkTo="/auth/forgot-password"
-        actionDisabled={!formState.identifier.trim() || !formState.password.trim()}
-        actionLabel="Login"
+        actionDisabled={
+          isLoggingIn || !formState.identifier.trim() || !formState.password.trim()
+        }
+        actionLabel={isLoggingIn ? "Signing in..." : "Login"}
         onAction={handleLogin}
-        footerText="Don't have an account?"
-        footerLinkLabel="Contact Admin"
-        footerLinkTo="/contact-admin"
-        note="Demo login: admin@vendorpanel.com / admin123"
+        footerText="Need a vendor account?"
+        footerLinkLabel="Register now"
+        footerLinkTo="/auth/register"
+        note="Use your registered vendor email or phone number with your password."
       />
     </AuthLayout>
   );

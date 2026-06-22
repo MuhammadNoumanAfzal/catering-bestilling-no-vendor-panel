@@ -11,10 +11,10 @@ import {
   Truck,
   Utensils,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { useAuth } from "../../features/auth/hooks/useAuth";
 import { confirmVendorLogout } from "../../utils/vendorAlerts";
 
 const sidebarItems = [
@@ -35,18 +35,19 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [localSearch, setLocalSearch] = useState(searchParams.get("search") || "");
+  const [headerSearch, setHeaderSearch] = useState("");
   const { pathname } = useLocation();
-
-  useEffect(() => {
-    setLocalSearch(searchParams.get("search") || "");
-  }, [searchParams]);
+  const searchParamValue = searchParams.get("search") || "";
+  const isSearchablePage = pathname === "/orders" || pathname === "/menu";
+  const localSearch = isSearchablePage ? searchParamValue : headerSearch;
+  const displayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Vendor User";
+  const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
 
   function handleSearchChange(e) {
     const val = e.target.value;
-    setLocalSearch(val);
+    setHeaderSearch(val);
 
-    const isSearchablePage = pathname === "/orders" || pathname === "/menu";
     if (isSearchablePage) {
       if (val) {
         setSearchParams({ ...Object.fromEntries(searchParams.entries()), search: val });
@@ -146,11 +147,11 @@ export default function AppLayout() {
               <img
                 className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
                 src="/heroBg.webp"
-                alt="Raj Holder"
+                alt={displayName}
               />
               <span className="flex flex-col items-start leading-[1.15]">
-                <strong className="type-subpara">{user?.name || "Raj Holder"}</strong>
-                <span className="type-subpara text-[#8f7f73]">{user?.role || "Admin"}</span>
+                <strong className="type-subpara">{displayName}</strong>
+                <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
               </span>
               <ChevronDown size={14} />
             </button>
@@ -187,11 +188,11 @@ export default function AppLayout() {
                   <img
                     className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
                     src="/heroBg.webp"
-                    alt="Raj Holder"
+                    alt={displayName}
                   />
                   <span className="flex flex-col items-start leading-[1.15]">
-                    <strong className="type-subpara">{user?.name || "Raj Holder"}</strong>
-                    <span className="type-subpara text-[#8f7f73]">{user?.role || "Admin"}</span>
+                    <strong className="type-subpara">{displayName}</strong>
+                    <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
                   </span>
                   <ChevronDown size={14} />
                 </button>

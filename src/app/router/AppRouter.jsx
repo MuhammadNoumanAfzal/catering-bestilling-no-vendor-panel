@@ -4,6 +4,7 @@ import ForgotPasswordPage from "../../features/auth/pages/ForgotPasswordPage";
 import LoginPage from "../../features/auth/pages/LoginPage";
 import NewPasswordPage from "../../features/auth/pages/NewPasswordPage";
 import ProtectedRoute from "../../features/auth/components/ProtectedRoute";
+import RegisterPage from "../../features/auth/pages/RegisterPage";
 import VerificationPage from "../../features/auth/pages/VerificationPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
@@ -24,6 +25,7 @@ export default function AppRouter() {
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/register" element={<RegisterPage />} />
       <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/verification" element={<VerificationPage />} />
       <Route path="/auth/new-password" element={<NewPasswordPage />} />
