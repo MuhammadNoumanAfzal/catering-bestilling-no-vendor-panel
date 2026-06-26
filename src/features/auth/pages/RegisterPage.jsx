@@ -46,6 +46,10 @@ function isStrongPassword(password) {
   );
 }
 
+function normalizePhoneNumber(phone) {
+  return phone.replace(/\s+/g, "").trim();
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { clearRegisterError, isAuthenticated, isRegistering, register } = useAuth();
@@ -90,6 +94,24 @@ export default function RegisterPage() {
       return;
     }
 
+    const normalizedPhone = normalizePhoneNumber(formState.phone);
+
+    if (!/^\+?\d+$/.test(normalizedPhone)) {
+      await showVendorErrorAlert(
+        "Phone number can only include digits and an optional leading +.",
+        "Invalid phone number",
+      );
+      return;
+    }
+
+    if (normalizedPhone.length > 15) {
+      await showVendorErrorAlert(
+        "Phone number must be 15 characters or fewer.",
+        "Invalid phone number",
+      );
+      return;
+    }
+
     if (!isStrongPassword(formState.password)) {
       await showVendorErrorAlert(
         "Use at least 8 characters with uppercase, lowercase, number, and symbol.",
@@ -112,7 +134,7 @@ export default function RegisterPage() {
         firstName: formState.firstName,
         lastName: formState.lastName,
         password: formState.password,
-        phone: formState.phone,
+        phone: normalizedPhone,
         postCode: formState.postCode,
       });
     } catch (error) {
@@ -160,10 +182,12 @@ export default function RegisterPage() {
           },
           {
             label: "Phone Number",
+            maxLength: 15,
             name: "phone",
             onChange: handleFieldChange("phone"),
             placeholder: "+4798765432",
             type: "tel",
+            autoComplete: "tel",
             value: formState.phone,
           },
           {
@@ -182,6 +206,7 @@ export default function RegisterPage() {
           },
           {
             label: "Password",
+            autoComplete: "new-password",
             name: "password",
             onChange: handleFieldChange("password"),
             placeholder: "Create a strong password",
@@ -190,6 +215,7 @@ export default function RegisterPage() {
           },
           {
             label: "Confirm Password",
+            autoComplete: "new-password",
             name: "confirmPassword",
             onChange: handleFieldChange("confirmPassword"),
             placeholder: "Confirm your password",

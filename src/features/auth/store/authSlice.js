@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { loginUserRequest, registerVendorRequest } from "../api/authApi";
+import { loginUserRequest, logoutUserRequest, registerVendorRequest } from "../api/authApi";
 import {
   clearStoredAuthSession,
   loadStoredAuthSession,
@@ -41,6 +41,29 @@ export const registerVendor = createAsyncThunk(
   },
 );
 
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { getState, rejectWithValue }) => {
+    const accessToken = getState().auth.accessToken;
+
+    if (!accessToken) {
+      clearStoredAuthSession();
+      return {
+        message: "Logged out locally.",
+      };
+    }
+
+    try {
+      const result = await logoutUserRequest(accessToken);
+      clearStoredAuthSession();
+      return result;
+    } catch (error) {
+      clearStoredAuthSession();
+      return rejectWithValue(error.message || "Logout failed.");
+    }
+  },
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -55,7 +78,7 @@ const authSlice = createSlice({
       state.registerStatus = "idle";
       state.registerError = null;
     },
-    logoutCompleted(state) {
+    sessionInvalidated(state) {
       state.accessToken = null;
       state.user = null;
       state.loginStatus = "idle";
@@ -87,6 +110,22 @@ const authSlice = createSlice({
       .addCase(registerVendor.rejected, (state, action) => {
         state.registerStatus = "failed";
         state.registerError = action.payload || "Registration failed.";
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.loginStatus = "logging-out";
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.accessToken = null;
+        state.user = null;
+        state.loginStatus = "idle";
+        state.error = null;
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        state.accessToken = null;
+        state.user = null;
+        state.loginStatus = "idle";
+        state.error = null;
       });
   },
 });
@@ -95,12 +134,7 @@ export const {
   clearAuthError,
   clearRegisterError,
   clearRegisterState,
-  logoutCompleted,
+  sessionInvalidated,
 } = authSlice.actions;
-
-export const logoutUser = () => (dispatch) => {
-  clearStoredAuthSession();
-  dispatch(logoutCompleted());
-};
 
 export default authSlice.reducer;
