@@ -1,16 +1,12 @@
 import { Link } from "react-router-dom";
 
-function Field({ label, type = "text", placeholder, helperText, name, onChange, value }) {
+function Field({ label, helperText, ...inputProps }) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="type-para text-[#4c4037]">{label}</span>
       <input
         className="type-subpara min-h-[42px] rounded-lg border border-[#ddd4cb] bg-white px-3 text-[#1d1713] outline-none transition duration-150 placeholder:text-[#baaea0] placeholder:font-normal focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-        name={name}
-        onChange={onChange}
-        type={type}
-        placeholder={placeholder}
-        value={value}
+        {...inputProps}
       />
       {helperText ? (
         <span className="type-subpara text-[#aaa094]">{helperText}</span>
@@ -34,6 +30,7 @@ export default function AuthCard({
   title,
   subtitle,
   fields = [],
+  extraContent,
   actionLabel,
   footerText,
   footerLinkLabel,
@@ -147,6 +144,8 @@ export default function AuthCard({
         {actionNote ? (
           <p className="type-para mt-2 text-center text-[#cf6e38]">{actionNote}</p>
         ) : null}
+
+        {extraContent ? <div className="mt-4">{extraContent}</div> : null}
 
         {note ? (
           <p className="type-para mt-[14px] block text-center text-[#8b8077]">{note}</p>

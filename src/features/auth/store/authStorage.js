@@ -1,3 +1,5 @@
+import { isAllowedAuthRole } from "../authConfig";
+
 const AUTH_STORAGE_KEY = "vendor-panel-auth";
 
 export function loadStoredAuthSession() {
@@ -19,10 +21,20 @@ export function loadStoredAuthSession() {
     }
 
     const parsedSession = JSON.parse(rawSession);
+    const accessToken = parsedSession.accessToken || null;
+    const user = parsedSession.user || null;
+
+    if (!accessToken || !user?.id || !user?.email || !isAllowedAuthRole(user?.role) || !user?.isActive) {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      return {
+        accessToken: null,
+        user: null,
+      };
+    }
 
     return {
-      accessToken: parsedSession.accessToken || null,
-      user: parsedSession.user || null,
+      accessToken,
+      user,
     };
   } catch {
     return {
@@ -34,6 +46,10 @@ export function loadStoredAuthSession() {
 
 export function persistAuthSession(session) {
   if (typeof window === "undefined") {
+    return;
+  }
+
+  if (!session?.accessToken || !session?.user || !isAllowedAuthRole(session.user.role)) {
     return;
   }
 
