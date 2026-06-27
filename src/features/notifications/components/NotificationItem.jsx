@@ -3,10 +3,10 @@ export default function NotificationItem({
   onOpenDetail,
   onOpenReceipt,
 }) {
-  const isHighlighted = notification.tone === "highlight";
+  const isHighlighted = notification.highlighted;
 
   function handleActionClick() {
-    if (notification.type === "receipt") {
+    if (notification.type === "PAYOUT") {
       onOpenReceipt(notification);
       return;
     }
@@ -32,8 +32,8 @@ export default function NotificationItem({
             <h3 className="type-h5 m-0 text-[#1e1712]">{notification.title}</h3>
             {!notification.isRead ? (
               <span
-                className="h-2 w-2 shrink-0 rounded-full bg-[#d96f39]"
                 aria-hidden="true"
+                className="h-2 w-2 shrink-0 rounded-full bg-[#d96f39]"
               />
             ) : null}
           </div>
