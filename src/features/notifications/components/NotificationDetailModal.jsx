@@ -1,14 +1,24 @@
 import OrderNotificationDetail from "./OrderNotificationDetail";
 import GenericNotificationDetail from "./GenericNotificationDetail";
 
-export default function NotificationDetailModal({ notification, onClose }) {
+export default function NotificationDetailModal({
+  notification,
+  onClose,
+  isLoading = false,
+}) {
   if (!notification) {
     return null;
   }
 
-  if (notification.type === "order") {
+  if (notification.type === "ORDER") {
     return <OrderNotificationDetail notification={notification} onClose={onClose} />;
   }
 
-  return <GenericNotificationDetail notification={notification} onClose={onClose} />;
+  return (
+    <GenericNotificationDetail
+      isLoading={isLoading}
+      notification={notification}
+      onClose={onClose}
+    />
+  );
 }

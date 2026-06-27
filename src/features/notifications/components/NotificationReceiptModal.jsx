@@ -1,10 +1,23 @@
 import { Fragment } from "react";
 import { Download, X } from "lucide-react";
+import {
+  deriveReceiptAmount,
+  deriveReceiptStatus,
+  deriveReceiptUrl,
+} from "../api/notificationsMappers";
 
-export default function NotificationReceiptModal({ notification, onClose }) {
+export default function NotificationReceiptModal({
+  notification,
+  onClose,
+  isLoading = false,
+}) {
   if (!notification) {
     return null;
   }
+
+  const receiptUrl = deriveReceiptUrl(notification);
+  const amount = deriveReceiptAmount(notification);
+  const status = deriveReceiptStatus(notification);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6">
@@ -23,10 +36,12 @@ export default function NotificationReceiptModal({ notification, onClose }) {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="type-subpara m-0 text-[#8e7f73]">Amount Received</p>
-              <p className="type-h3 mt-1 text-[#1d1611]">AED 4,200</p>
+              <p className="type-h3 mt-1 text-[#1d1611]">
+                {amount || (isLoading ? "Loading..." : "--")}
+              </p>
             </div>
             <span className="type-subpara rounded-full bg-white px-3 py-[6px] text-[#2f8a4b]">
-              Successful
+              {status}
             </span>
           </div>
         </div>
@@ -42,7 +57,13 @@ export default function NotificationReceiptModal({ notification, onClose }) {
 
         <div className="mt-5 flex items-center justify-between gap-2 max-[520px]:flex-col max-[520px]:items-stretch">
           <button
-            className="type-subpara inline-flex items-center justify-center gap-2 rounded-[8px] border border-[#d8ccc3] bg-white px-4 py-[9px] text-[#241c16]"
+            className="type-subpara inline-flex items-center justify-center gap-2 rounded-[8px] border border-[#d8ccc3] bg-white px-4 py-[9px] text-[#241c16] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!receiptUrl}
+            onClick={() => {
+              if (receiptUrl) {
+                window.open(receiptUrl, "_blank", "noopener,noreferrer");
+              }
+            }}
             type="button"
           >
             <Download size={14} />

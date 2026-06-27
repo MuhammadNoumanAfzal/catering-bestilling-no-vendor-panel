@@ -6,8 +6,11 @@ export default function NotificationsToolbar({
   filterLabel,
   filterOptions,
   isFilterOpen,
+  isMarkingAllRead = false,
+  unreadCount = 0,
   onCustomRangeChange,
   onFilterToggle,
+  onMarkAllRead,
   onSelectFilter,
   onTabChange,
   selectedFilter,
@@ -37,17 +40,28 @@ export default function NotificationsToolbar({
         })}
       </div>
 
-      <NotificationFilterDropdown
-        customRange={customRange}
-        filterLabel={filterLabel}
-        isOpen={isFilterOpen}
-        onCustomRangeChange={onCustomRangeChange}
-        onSelectFilter={onSelectFilter}
-        onToggle={onFilterToggle}
-        options={filterOptions}
-        selectedFilter={selectedFilter}
-        setIsOpen={setIsFilterOpen}
-      />
+      <div className="flex items-center gap-2 max-[640px]:justify-between">
+        <NotificationFilterDropdown
+          customRange={customRange}
+          filterLabel={filterLabel}
+          isOpen={isFilterOpen}
+          onCustomRangeChange={onCustomRangeChange}
+          onSelectFilter={onSelectFilter}
+          onToggle={onFilterToggle}
+          options={filterOptions}
+          selectedFilter={selectedFilter}
+          setIsOpen={setIsFilterOpen}
+        />
+
+        <button
+          className="type-subpara rounded-[9px] border border-[#e2d8d0] bg-white px-3 py-[9px] text-[#453930] disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={isMarkingAllRead || !unreadCount}
+          onClick={onMarkAllRead}
+          type="button"
+        >
+          {isMarkingAllRead ? "Marking..." : "Mark All Read"}
+        </button>
+      </div>
     </div>
   );
 }
