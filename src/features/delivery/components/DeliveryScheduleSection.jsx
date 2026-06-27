@@ -10,6 +10,7 @@ export default function DeliveryScheduleSection({
   onRemoveTimeSlot,
   onAddCustomSlot,
   disabled = false,
+  errors = {},
 }) {
   return (
     <DeliverySectionCard
@@ -26,6 +27,9 @@ export default function DeliveryScheduleSection({
             disabled={disabled}
             onToggleDay={onToggleDay}
           />
+          {errors.deliveryDays ? (
+            <p className="type-subpara mt-2 text-[#d25545]">{errors.deliveryDays}</p>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -61,6 +65,9 @@ export default function DeliveryScheduleSection({
           </button>
         </div>
       </div>
+      {errors.deliveryTimeSlots ? (
+        <p className="type-subpara mt-3 text-[#d25545]">{errors.deliveryTimeSlots}</p>
+      ) : null}
 
       <DeliveryInfoNote>
         Orders will be accepted only in the time slots you define.

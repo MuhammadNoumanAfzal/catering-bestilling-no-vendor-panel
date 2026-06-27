@@ -4,10 +4,11 @@ import { useState } from "react";
 export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCategories }) {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmed = newCategoryName.trim();
     if (!trimmed) {
@@ -24,10 +25,16 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
       return;
     }
 
-    onAdd(trimmed);
-    setNewCategoryName("");
-    setError("");
-    onClose();
+    try {
+      setIsSubmitting(true);
+      await onAdd(trimmed);
+      setNewCategoryName("");
+      setError("");
+    } catch (submitError) {
+      setError(submitError?.message || "Unable to create the category.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,6 +47,9 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
           </h2>
           <button
             onClick={() => {
+              if (isSubmitting) {
+                return;
+              }
               setNewCategoryName("");
               setError("");
               onClose();
@@ -67,6 +77,7 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
                 setNewCategoryName(e.target.value);
                 if (error) setError("");
               }}
+              disabled={isSubmitting}
             />
             {error && (
               <span className="text-[12px] font-semibold text-red-500 mt-1 block">
@@ -79,20 +90,25 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
           <div className="pt-2 flex justify-end gap-2">
             <button
               onClick={() => {
+                if (isSubmitting) {
+                  return;
+                }
                 setNewCategoryName("");
                 setError("");
                 onClose();
               }}
               type="button"
+              disabled={isSubmitting}
               className="h-[36px] px-3.5 rounded-lg border border-[#d6cdc4] bg-white text-[13px] font-extrabold text-[#3a2e25] hover:bg-[#faf8f6] active:scale-95 transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
               className="h-[36px] px-4.5 rounded-lg bg-[#cf6e38] text-[13px] font-extrabold text-white hover:bg-[#bf622f] active:scale-95 transition cursor-pointer"
             >
-              Add Category
+              {isSubmitting ? "Adding..." : "Add Category"}
             </button>
           </div>
         </form>

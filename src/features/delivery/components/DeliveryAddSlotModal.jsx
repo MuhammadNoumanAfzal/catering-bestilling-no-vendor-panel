@@ -5,8 +5,9 @@ export default function DeliveryAddSlotModal({
   onClose,
   onDraftChange,
   onSave,
+  error = "",
 }) {
-  const isReadyToSave = draftSlot.trim().length > 0;
+  const isReadyToSave = draftSlot.start && draftSlot.end;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6">
@@ -35,14 +36,34 @@ export default function DeliveryAddSlotModal({
 
         <label className="mt-4 flex flex-col gap-1">
           <span className="type-para text-[#1a1410]">Delivery time slot</span>
-          <input
-            autoFocus
-            className="type-para h-[42px] rounded-[8px] border border-[#cec5bd] bg-white px-3 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
-            onChange={(event) => onDraftChange(event.target.value)}
-            placeholder="18:00 - 21:00"
-            type="text"
-            value={draftSlot}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              autoFocus
+              className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
+                error ? "border-[#d25545]" : "border-[#cec5bd]"
+              }`}
+              onChange={(event) => onDraftChange({
+                ...draftSlot,
+                start: event.target.value,
+              })}
+              type="time"
+              value={draftSlot.start}
+            />
+            <input
+              className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
+                error ? "border-[#d25545]" : "border-[#cec5bd]"
+              }`}
+              onChange={(event) => onDraftChange({
+                ...draftSlot,
+                end: event.target.value,
+              })}
+              type="time"
+              value={draftSlot.end}
+            />
+          </div>
+          {error ? (
+            <span className="type-subpara text-[#d25545]">{error}</span>
+          ) : null}
         </label>
 
         <div className="mt-4 flex items-center justify-end gap-2">

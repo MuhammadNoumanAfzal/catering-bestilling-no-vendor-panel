@@ -1,5 +1,6 @@
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
+  CREATE_VENDOR_CATEGORY_MUTATION,
   DELETE_VENDOR_MENU_MUTATION,
   GET_VENDOR_MENU_DETAIL_QUERY,
   GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY,
@@ -36,6 +37,18 @@ export function getVendorMenus(variables = {}) {
 export async function saveVendorMenu(variables) {
   const result = await executeProtectedGraphqlRequest(SAVE_VENDOR_MENU_MUTATION, variables);
   return unwrapSuccessfulResult(result, "vendorMenuMutation", "Unable to save the menu.");
+}
+
+export async function createVendorCategory(name) {
+  const result = await executeProtectedGraphqlRequest(CREATE_VENDOR_CATEGORY_MUTATION, {
+    input: { name },
+  });
+
+  return unwrapSuccessfulResult(
+    result,
+    "vendorCategoryMutation",
+    "Unable to create the category.",
+  );
 }
 
 export async function updateVendorMenuStatus(id, menuStatus) {

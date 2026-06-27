@@ -3,6 +3,11 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
     productTypeChoices
     menuStatusChoices
     pricingTypeChoices
+    foodTypes {
+      id
+      name
+      slug
+    }
 
     categories {
       edges {
@@ -47,6 +52,11 @@ export const GET_VENDOR_MENU_DETAIL_QUERY = `
         name
       }
       menuType
+      foodTypes {
+        id
+        name
+        slug
+      }
       menuStatus
       pricingType
       priceWithTax
@@ -203,6 +213,19 @@ export const SAVE_VENDOR_MENU_MUTATION = `
           fileId
           order
         }
+      }
+    }
+  }
+`;
+
+export const CREATE_VENDOR_CATEGORY_MUTATION = `
+  mutation CreateVendorCategory($input: VendorCategoryInput!) {
+    vendorCategoryMutation(input: $input) {
+      success
+      message
+      instance {
+        id
+        name
       }
     }
   }

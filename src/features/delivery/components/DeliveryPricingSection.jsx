@@ -1,6 +1,7 @@
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
+import DeliveryToggleRow from "./DeliveryToggleRow";
 
 function formatCurrencyValue(value) {
   const trimmedValue = value.trim();
@@ -23,7 +24,10 @@ export default function DeliveryPricingSection({
   freeDelivery,
   onBaseFeeChange,
   onFreeDeliveryChange,
+  sameFeeAllDistances,
+  onSameFeeAllDistancesChange,
   disabled = false,
+  errors = {},
 }) {
   const formattedBaseFee = formatCurrencyValue(baseFee);
   const formattedFreeDelivery = formatCurrencyValue(freeDelivery);
@@ -46,9 +50,10 @@ export default function DeliveryPricingSection({
         <div>
           <DeliveryTextInput
             disabled={disabled}
+            error={errors.baseDeliveryFee}
             label="Base Delivery Fee"
             onChange={onBaseFeeChange}
-            placeholder="kr 5"
+            placeholder="150.00"
             value={baseFee}
           />
           <p className="type-subpara mt-1">Applied to standard orders.</p>
@@ -56,13 +61,23 @@ export default function DeliveryPricingSection({
         <div>
           <DeliveryTextInput
             disabled={disabled}
+            error={errors.freeDeliveryOver}
             label="Free Delivery over (optional)"
             onChange={onFreeDeliveryChange}
-            placeholder="kr 3,000"
+            placeholder="5000.00"
             value={freeDelivery}
           />
           <p className="type-subpara mt-1">Large order only mode</p>
         </div>
+      </div>
+      <div className="mt-3">
+        <DeliveryToggleRow
+          checked={sameFeeAllDistances}
+          description="Keep the same delivery fee for every distance band."
+          disabled={disabled}
+          label="Same fee across all distances"
+          onChange={onSameFeeAllDistancesChange}
+        />
       </div>
       <DeliveryInfoNote>{pricingNote}</DeliveryInfoNote>
     </DeliverySectionCard>
