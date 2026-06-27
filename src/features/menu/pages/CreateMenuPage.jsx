@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import CreateMenuActionsBar from "../components/create-menu/CreateMenuActionsBar";
+import AddCategoryModal from "../components/create-menu/AddCategoryModal";
 import CreateMenuAddOnsSection from "../components/create-menu/CreateMenuAddOnsSection";
 import CreateMenuAvailabilitySection from "../components/create-menu/CreateMenuAvailabilitySection";
 import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasicInfoSection";
@@ -10,6 +11,7 @@ import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSec
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
 import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
 import {
+  createVendorCategory,
   getVendorMenuDetail,
   getVendorMenuFormBootstrap,
   getVendorMenus,
@@ -19,6 +21,7 @@ import {
   buildSaveVendorMenuVariables,
   mapCategoriesToOptions,
   mapChoiceOptions,
+  mapFoodTypesToOptions,
   mapMenuListResponse,
   mapVendorMenuDetailToForm,
   resolveMediaUrl,
@@ -28,7 +31,6 @@ import {
   allergenOptions,
   availabilityDays,
   dietaryOptions,
-  formatChoiceLabel,
   initialCreateMenuItems,
   leadTimeOptions,
 } from "../menuConstants";
@@ -52,6 +54,7 @@ function getInitialMenuState() {
     menuTitle: "",
     description: "",
     category: "",
+    productType: "",
     menuType: "",
     coverImage: null,
     galleryImages: [],
@@ -71,6 +74,7 @@ function getInitialMenuState() {
     availabilityStart: "",
     availabilityEnd: "",
     isImportModalOpen: false,
+    isAddCategoryModalOpen: false,
   };
 }
 
@@ -132,7 +136,8 @@ export default function CreateMenuPage() {
         }
 
         const nextCategoryOptions = mapCategoriesToOptions(bootstrapResult.categories);
-        const nextMenuTypeOptions = mapChoiceOptions(bootstrapResult.productTypeChoices);
+        const nextProductTypeOptions = mapChoiceOptions(bootstrapResult.productTypeChoices);
+        const nextMenuTypeOptions = mapFoodTypesToOptions(bootstrapResult.foodTypes);
         const nextPricingModes = mapChoiceOptions(bootstrapResult.pricingTypeChoices);
         const nextAddOns = (bootstrapResult.vendorAddOns?.edges || [])
           .map((edge) => edge?.node)
@@ -150,7 +155,13 @@ export default function CreateMenuPage() {
 
           if (mappedDetail) {
             setFormState({
+              ...getInitialMenuState(),
               ...mappedDetail,
+              productType:
+                mappedDetail.productType ||
+                nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
+                nextProductTypeOptions[0]?.value ||
+                "",
               id: isDuplicateMode ? "" : mappedDetail.id,
               menuTitle: isDuplicateMode
                 ? `${mappedDetail.menuTitle} Copy`
@@ -163,6 +174,11 @@ export default function CreateMenuPage() {
 
         setFormState((current) => ({
           ...current,
+          productType:
+            current.productType ||
+            nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
+            nextProductTypeOptions[0]?.value ||
+            "",
           menuType:
             current.menuType ||
             nextMenuTypeOptions[0]?.value ||
@@ -332,7 +348,7 @@ export default function CreateMenuPage() {
     }
 
     if (!formState.menuType) {
-      return "Please choose a menu type.";
+      return "Please choose a meal type.";
     }
 
     if (!formState.pricingMode) {
@@ -389,10 +405,23 @@ export default function CreateMenuPage() {
   }
 
   async function handleAddNewCategoryClick() {
-    await showVendorErrorAlert(
-      "Category creation is not connected yet. To keep this fully API-based, I need the create-category API or mutation contract.",
-      "Category API required",
-    );
+    setField("isAddCategoryModalOpen", true);
+  }
+
+  async function handleCreateCategory(categoryName) {
+    const result = await createVendorCategory(categoryName);
+    const nextOption = {
+      label: result.instance?.name || categoryName,
+      value: result.instance?.id || categoryName,
+    };
+
+    setCategoryOptions((currentOptions) => [...currentOptions, nextOption]);
+    setFormState((current) => ({
+      ...current,
+      category: nextOption.value,
+      isAddCategoryModalOpen: false,
+    }));
+    await showVendorSuccessToast(result.message || "Category created.");
   }
 
   if (isLoading) {
@@ -536,7 +565,7 @@ export default function CreateMenuPage() {
                 API Ready
               </p>
               <p className="mt-2 text-[13px] font-medium leading-[1.55] text-[#6e6259]">
-                Categories, menu types, pricing modes, add-ons, menu details, and saves are now loaded from the vendor menu API.
+                Categories, meal types, pricing modes, add-ons, menu details, and saves are now loaded from the vendor menu API.
               </p>
             </div>
           ) : null}
@@ -565,6 +594,13 @@ export default function CreateMenuPage() {
         onAdd={handleAddImportedItems}
         onClose={() => setField("isImportModalOpen", false)}
         onRequestMenuItems={handleImportMenuItemsRequest}
+      />
+
+      <AddCategoryModal
+        existingCategories={categoryOptions.map((option) => option.label)}
+        isOpen={Boolean(formState.isAddCategoryModalOpen)}
+        onAdd={handleCreateCategory}
+        onClose={() => setField("isAddCategoryModalOpen", false)}
       />
     </section>
   );

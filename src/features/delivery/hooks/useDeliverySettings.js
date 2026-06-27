@@ -1,93 +1,77 @@
-import { useEffect, useState } from "react";
-import { servicePostalCodes } from "../data/deliveryData";
-import { showVendorSuccessToast } from "../../../utils/vendorAlerts";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getVendorDeliverySettings,
+  updateVendorDeliverySettings,
+  validateVendorDeliverySettings,
+} from "../api/deliveryApi";
+import {
+  buildDeliverySettingsInput,
+  defaultDeliverySettings,
+  getComparableDeliverySettings,
+  mapFieldErrors,
+  mapVendorDeliverySettingsToForm,
+  parseTimeSlotLabel,
+} from "../api/deliveryMappers";
+import {
+  showVendorErrorAlert,
+  showVendorSuccessToast,
+} from "../../../utils/vendorAlerts";
 
-const DELIVERY_SETTINGS_STORAGE_KEY = "delivery-settings";
-
-const defaultDeliverySettings = {
-  selectedModes: ["delivery"],
-  postalCodes: servicePostalCodes,
-  baseFee: "5",
-  freeDelivery: "kr 3,000",
-  activeDays: ["Mo", "Tu", "We", "Th", "Fr"],
-  timeSlots: ["08:00 - 12:00", "13:00 - 17:00"],
-  maxDistance: "150",
-  maxOrders: "25",
+const defaultValidationState = {
+  isValid: true,
+  issues: [],
+  errors: [],
 };
-
-function normalizeSelectedModes(value) {
-  if (Array.isArray(value)) {
-    const filteredModes = value.filter((mode) =>
-      ["delivery", "pickup"].includes(mode),
-    );
-
-    return filteredModes.length ? filteredModes : ["delivery"];
-  }
-
-  if (value === "pickup") {
-    return ["pickup"];
-  }
-
-  return ["delivery"];
-}
-
-function getStoredDeliverySettings() {
-  if (typeof window === "undefined") {
-    return defaultDeliverySettings;
-  }
-
-  try {
-    const storedSettings = window.localStorage.getItem(
-      DELIVERY_SETTINGS_STORAGE_KEY,
-    );
-
-    if (!storedSettings) {
-      return defaultDeliverySettings;
-    }
-
-    const parsedSettings = JSON.parse(storedSettings);
-
-    return {
-      ...defaultDeliverySettings,
-      ...parsedSettings,
-      selectedModes: normalizeSelectedModes(
-        parsedSettings.selectedModes ?? parsedSettings.selectedMode,
-      ),
-    };
-  } catch {
-    return defaultDeliverySettings;
-  }
-}
 
 export default function useDeliverySettings() {
   const [savedSettings, setSavedSettings] = useState(defaultDeliverySettings);
-  const [selectedModes, setSelectedModes] = useState(
-    defaultDeliverySettings.selectedModes,
-  );
-  const [postalCode, setPostalCode] = useState("");
-  const [postalCodes, setPostalCodes] = useState(defaultDeliverySettings.postalCodes);
-  const [baseFee, setBaseFee] = useState(defaultDeliverySettings.baseFee);
-  const [freeDelivery, setFreeDelivery] = useState(defaultDeliverySettings.freeDelivery);
-  const [activeDays, setActiveDays] = useState(defaultDeliverySettings.activeDays);
-  const [timeSlots, setTimeSlots] = useState(defaultDeliverySettings.timeSlots);
-  const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
-  const [customSlotDraft, setCustomSlotDraft] = useState("");
-  const [maxDistance, setMaxDistance] = useState(defaultDeliverySettings.maxDistance);
-  const [maxOrders, setMaxOrders] = useState(defaultDeliverySettings.maxOrders);
+  const [formState, setFormState] = useState(defaultDeliverySettings);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [validationState, setValidationState] = useState(defaultValidationState);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
+  const [customSlotDraft, setCustomSlotDraft] = useState({ start: "18:00", end: "21:00" });
+  const [slotDraftError, setSlotDraftError] = useState("");
 
   useEffect(() => {
-    const initialSettings = getStoredDeliverySettings();
+    let isCancelled = false;
 
-    setSavedSettings(initialSettings);
-    setSelectedModes(initialSettings.selectedModes);
-    setPostalCodes(initialSettings.postalCodes);
-    setBaseFee(initialSettings.baseFee);
-    setFreeDelivery(initialSettings.freeDelivery);
-    setActiveDays(initialSettings.activeDays);
-    setTimeSlots(initialSettings.timeSlots);
-    setMaxDistance(initialSettings.maxDistance);
-    setMaxOrders(initialSettings.maxOrders);
+    async function loadDeliverySettings() {
+      setIsLoading(true);
+
+      try {
+        const result = await getVendorDeliverySettings();
+
+        if (isCancelled) {
+          return;
+        }
+
+        const nextSettings = mapVendorDeliverySettingsToForm(result?.vendorDeliverySettings);
+        setSavedSettings(nextSettings);
+        setFormState(nextSettings);
+        setValidationState(nextSettings.liveValidation || defaultValidationState);
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load delivery settings right now.",
+            "Delivery settings unavailable",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadDeliverySettings();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -102,148 +86,234 @@ export default function useDeliverySettings() {
     return () => window.clearTimeout(timeoutId);
   }, [saveMessage]);
 
-  function handleToggleMode(modeId) {
-    setSelectedModes((currentModes) => {
-      const hasMode = currentModes.includes(modeId);
+  useEffect(() => {
+    if (isLoading) {
+      return undefined;
+    }
 
-      if (hasMode) {
-        const nextModes = currentModes.filter((mode) => mode !== modeId);
+    const timeoutId = window.setTimeout(async () => {
+      setIsValidating(true);
 
-        return nextModes.length ? nextModes : currentModes;
+      try {
+        const result = await validateVendorDeliverySettings(
+          buildDeliverySettingsInput(formState),
+        );
+        setValidationState({
+          isValid: result?.isValid ?? false,
+          issues: Array.isArray(result?.issues) ? result.issues : [],
+          errors: Array.isArray(result?.errors) ? result.errors : [],
+        });
+        setFieldErrors(mapFieldErrors(result?.errors || []));
+      } catch {
+        setValidationState(defaultValidationState);
+      } finally {
+        setIsValidating(false);
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [formState, isLoading]);
+
+  const currentComparable = useMemo(
+    () => getComparableDeliverySettings(formState),
+    [formState],
+  );
+  const savedComparable = useMemo(
+    () => getComparableDeliverySettings(savedSettings),
+    [savedSettings],
+  );
+
+  function setField(field, value) {
+    setFormState((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setFieldErrors((current) => {
+      if (!current[field]) {
+        return current;
       }
 
-      return [...currentModes, modeId];
+      const nextErrors = { ...current };
+      delete nextErrors[field];
+      return nextErrors;
     });
   }
 
-  function handleToggleDay(day) {
-    setActiveDays((currentDays) =>
-      currentDays.includes(day)
-        ? currentDays.filter((currentDay) => currentDay !== day)
-        : [...currentDays, day],
-    );
+  function handleToggleMode(modeId) {
+    setFormState((current) => {
+      const hasMode = current.selectedModes.includes(modeId);
+
+      if (hasMode) {
+        const nextModes = current.selectedModes.filter((mode) => mode !== modeId);
+
+        return {
+          ...current,
+          selectedModes: nextModes.length ? nextModes : current.selectedModes,
+        };
+      }
+
+      return {
+        ...current,
+        selectedModes: [...current.selectedModes, modeId],
+      };
+    });
+    setFieldErrors((current) => {
+      if (!current.deliveryAvailable && !current.pickupAvailable && !current.deliveryMode) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors.deliveryAvailable;
+      delete nextErrors.pickupAvailable;
+      delete nextErrors.deliveryMode;
+      return nextErrors;
+    });
   }
 
-  function handleRemovePostalCode(codeToRemove) {
-    setPostalCodes((currentCodes) =>
-      currentCodes.filter((code) => code !== codeToRemove),
-    );
+  function handleToggleDay(dayValue) {
+    setFormState((current) => ({
+      ...current,
+      activeDays: current.activeDays.includes(dayValue)
+        ? current.activeDays.filter((day) => day !== dayValue)
+        : [...current.activeDays, dayValue],
+    }));
   }
 
   function handleRemoveTimeSlot(slotToRemove) {
-    setTimeSlots((currentSlots) =>
-      currentSlots.filter((slot) => slot !== slotToRemove),
-    );
+    setFormState((current) => ({
+      ...current,
+      timeSlots: current.timeSlots.filter((slot) => slot !== slotToRemove),
+    }));
   }
 
   function handleOpenAddSlotModal() {
-    setCustomSlotDraft("18:00 - 21:00");
+    setCustomSlotDraft({ start: "18:00", end: "21:00" });
+    setSlotDraftError("");
     setIsAddSlotModalOpen(true);
   }
 
   function handleCloseAddSlotModal() {
     setIsAddSlotModalOpen(false);
-    setCustomSlotDraft("");
+    setCustomSlotDraft({ start: "18:00", end: "21:00" });
+    setSlotDraftError("");
   }
 
   function handleSaveCustomSlot() {
-    const trimmedSlot = customSlotDraft.trim();
+    const nextSlot = `${customSlotDraft.start} - ${customSlotDraft.end}`;
+    const parsedSlot = parseTimeSlotLabel(nextSlot);
 
-    if (!trimmedSlot) {
+    if (!parsedSlot) {
+      setSlotDraftError("Enter both a start time and an end time.");
       return;
     }
 
-    setTimeSlots((currentSlots) =>
-      currentSlots.includes(trimmedSlot)
-        ? currentSlots
-        : [...currentSlots, trimmedSlot],
-    );
+    if (parsedSlot.start >= parsedSlot.end) {
+      setSlotDraftError("Start time must be earlier than end time.");
+      return;
+    }
+
+    setFormState((current) => ({
+      ...current,
+      timeSlots: current.timeSlots.includes(nextSlot)
+        ? current.timeSlots
+        : [...current.timeSlots, nextSlot],
+    }));
     handleCloseAddSlotModal();
   }
 
   async function handleCancelChanges() {
-    setSelectedModes(savedSettings.selectedModes);
-    setPostalCode("");
-    setPostalCodes(savedSettings.postalCodes);
-    setBaseFee(savedSettings.baseFee);
-    setFreeDelivery(savedSettings.freeDelivery);
-    setActiveDays(savedSettings.activeDays);
-    setTimeSlots(savedSettings.timeSlots);
-    setMaxDistance(savedSettings.maxDistance);
-    setMaxOrders(savedSettings.maxOrders);
+    setFormState(savedSettings);
+    setFieldErrors({});
+    setValidationState(savedSettings.liveValidation || defaultValidationState);
     setIsAddSlotModalOpen(false);
-    setCustomSlotDraft("");
+    setCustomSlotDraft({ start: "18:00", end: "21:00" });
+    setSlotDraftError("");
     setSaveMessage("Changes discarded.");
     await showVendorSuccessToast("Delivery changes discarded.");
   }
 
   async function handleSaveChanges() {
-    const nextSavedSettings = {
-      selectedModes,
-      postalCodes,
-      baseFee,
-      freeDelivery,
-      activeDays,
-      timeSlots,
-      maxDistance,
-      maxOrders,
-    };
+    setIsSaving(true);
 
-    setSavedSettings(nextSavedSettings);
-    window.localStorage.setItem(
-      DELIVERY_SETTINGS_STORAGE_KEY,
-      JSON.stringify(nextSavedSettings),
-    );
-    setSaveMessage("Changes saved.");
-    await showVendorSuccessToast("Delivery settings saved.");
+    try {
+      const result = await updateVendorDeliverySettings(
+        buildDeliverySettingsInput(formState),
+      );
+
+      if (!result?.success) {
+        const nextErrors = mapFieldErrors(result?.errors || []);
+        setFieldErrors(nextErrors);
+        setValidationState({
+          isValid: false,
+          issues: [],
+          errors: result?.errors || [],
+        });
+        setSaveMessage(result?.message || "Fix validation errors before saving.");
+        return;
+      }
+
+      const nextSavedSettings = mapVendorDeliverySettingsToForm(
+        result.vendorDeliverySettings,
+      );
+      setSavedSettings(nextSavedSettings);
+      setFormState(nextSavedSettings);
+      setFieldErrors({});
+      setValidationState(nextSavedSettings.liveValidation || defaultValidationState);
+      setSaveMessage("Changes saved.");
+      await showVendorSuccessToast(result.message || "Delivery settings saved.");
+    } catch (error) {
+      await showVendorErrorAlert(
+        error.message || "Unable to save delivery settings right now.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  const filteredPostalCodes = postalCodes.filter((code) =>
-    code.toLowerCase().includes(postalCode.trim().toLowerCase()),
-  );
   const isPickupOnly =
-    selectedModes.includes("pickup") && !selectedModes.includes("delivery");
-  const currentSettings = {
-    selectedModes,
-    postalCodes,
-    baseFee,
-    freeDelivery,
-    activeDays,
-    timeSlots,
-    maxDistance,
-    maxOrders,
-  };
+    formState.selectedModes.includes("pickup") &&
+    !formState.selectedModes.includes("delivery");
+  const isDeliveryDisabled = isPickupOnly;
 
   return {
-    activeDays,
-    baseFee,
+    activeDays: formState.activeDays,
+    baseFee: formState.baseFee,
     customSlotDraft,
-    filteredPostalCodes,
-    freeDelivery,
+    fieldErrors,
+    freeDelivery: formState.freeDelivery,
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
-    handleRemovePostalCode,
     handleRemoveTimeSlot,
     handleSaveChanges,
     handleSaveCustomSlot,
     handleToggleDay,
     handleToggleMode,
     hasUnsavedChanges:
-      JSON.stringify(currentSettings) !== JSON.stringify(savedSettings),
+      JSON.stringify(currentComparable) !== JSON.stringify(savedComparable),
     isAddSlotModalOpen,
+    isDeliveryDisabled,
+    isLoading,
     isPickupOnly,
-    maxDistance,
-    maxOrders,
-    postalCode,
+    isSaving,
+    isValidating,
+    maxDeliveriesPerDay: formState.maxDeliveriesPerDay,
+    maxOrdersPerTimeSlot: formState.maxOrdersPerTimeSlot,
+    pickupAddress: formState.pickupAddress,
+    pickupInstructions: formState.pickupInstructions,
+    sameFeeAllDistances: formState.sameFeeAllDistances,
     saveMessage,
-    selectedModes,
-    setBaseFee,
+    selectedModes: formState.selectedModes,
+    setBaseFee: (value) => setField("baseFee", value),
     setCustomSlotDraft,
-    setFreeDelivery,
-    setMaxDistance,
-    setMaxOrders,
-    setPostalCode,
-    timeSlots,
+    setFreeDelivery: (value) => setField("freeDelivery", value),
+    setMaxDeliveriesPerDay: (value) => setField("maxDeliveriesPerDay", value),
+    setMaxOrdersPerTimeSlot: (value) => setField("maxOrdersPerTimeSlot", value),
+    setPickupAddress: (value) => setField("pickupAddress", value),
+    setPickupInstructions: (value) => setField("pickupInstructions", value),
+    setSameFeeAllDistances: (value) => setField("sameFeeAllDistances", value),
+    slotDraftError,
+    timeSlots: formState.timeSlots,
+    validationState,
   };
 }

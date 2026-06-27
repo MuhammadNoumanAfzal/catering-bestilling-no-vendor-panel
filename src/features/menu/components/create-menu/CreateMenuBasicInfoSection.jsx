@@ -146,12 +146,12 @@ export default function CreateMenuBasicInfoSection({
             />
           </div>
           <div>
-            <Label>Menu Type</Label>
+            <Label>Meal Type</Label>
             <SelectInput
               disabled={disabled}
               onChange={onMenuTypeChange}
               options={menuTypeOptions}
-              placeholder="Write menu type"
+              placeholder="Select meal type"
               value={menuType}
             />
           </div>

@@ -42,6 +42,13 @@ export function mapChoiceOptions(choices = []) {
   }));
 }
 
+export function mapFoodTypesToOptions(foodTypes = []) {
+  return safeArray(foodTypes).map((foodType) => ({
+    label: foodType.name || formatChoiceLabel(foodType.slug || ""),
+    value: foodType.id || foodType.slug,
+  }));
+}
+
 export function mapCategoriesToOptions(categoriesConnection) {
   return getEdgeNodes(categoriesConnection)
     .map((category) => ({
@@ -147,7 +154,8 @@ export function mapVendorMenuDetailToForm(menu) {
     menuTitle: menu.title || menu.name || "",
     description: menu.description || "",
     category: menu.category?.id || "",
-    menuType: menu.menuType || "",
+    productType: menu.menuType || "",
+    menuType: menu.foodTypes?.[0]?.id || menu.foodTypes?.[0]?.slug || "",
     coverImage,
     galleryImages,
     selectedDays: safeArray(menu.availableDays),
@@ -187,7 +195,8 @@ export function buildSaveVendorMenuVariables(formState, statusOverride) {
     title: formState.menuTitle.trim(),
     description: formState.description.trim(),
     category: formState.category,
-    menuType: formState.menuType,
+    menuType: formState.productType,
+    foodTypes: formState.menuType ? [formState.menuType] : [],
     priceWithTax: String(formState.basePrice).trim(),
     pricingType: formState.pricingMode,
     minimumGuests: Number(formState.minimumGuests || 0),

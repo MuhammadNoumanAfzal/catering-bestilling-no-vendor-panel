@@ -3,11 +3,12 @@ import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
 
 export default function DeliveryLimitsSection({
-  maxDistance,
-  maxOrders,
-  onMaxDistanceChange,
-  onMaxOrdersChange,
+  maxDeliveriesPerDay,
+  maxOrdersPerTimeSlot,
+  onMaxDeliveriesPerDayChange,
+  onMaxOrdersPerTimeSlotChange,
   disabled = false,
+  errors = {},
 }) {
   return (
     <DeliverySectionCard
@@ -19,10 +20,11 @@ export default function DeliveryLimitsSection({
         <div>
           <DeliveryTextInput
             disabled={disabled}
+            error={errors.maxDeliveriesPerDay}
             label="Max Deliveries Per Day"
-            onChange={onMaxDistanceChange}
-            placeholder="150"
-            value={maxDistance}
+            onChange={onMaxDeliveriesPerDayChange}
+            placeholder="100"
+            value={maxDeliveriesPerDay}
           />
           <p className="type-subpara mt-1 text-[#a09084]">
             Based on store size and driver count.
@@ -31,10 +33,11 @@ export default function DeliveryLimitsSection({
         <div>
           <DeliveryTextInput
             disabled={disabled}
+            error={errors.maxOrdersPerTimeSlot}
             label="Max Orders Per Time Slot"
-            onChange={onMaxOrdersChange}
-            placeholder="25"
-            value={maxOrders}
+            onChange={onMaxOrdersPerTimeSlotChange}
+            placeholder="40"
+            value={maxOrdersPerTimeSlot}
           />
           <p className="type-subpara mt-1 text-[#a09084]">
             Maximum customers in a single time slot.

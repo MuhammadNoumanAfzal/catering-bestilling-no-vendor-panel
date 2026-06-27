@@ -2,7 +2,7 @@ import DeliveryActionsBar from "../components/DeliveryActionsBar";
 import DeliveryAddSlotModal from "../components/DeliveryAddSlotModal";
 import DeliveryLimitsSection from "../components/DeliveryLimitsSection";
 import DeliveryModeSection from "../components/DeliveryModeSection";
-import DeliveryPostalCodesSection from "../components/DeliveryPostalCodesSection";
+import DeliveryPickupSection from "../components/DeliveryPickupSection";
 import DeliveryPricingSection from "../components/DeliveryPricingSection";
 import DeliveryScheduleSection from "../components/DeliveryScheduleSection";
 import DeliveryValidationAside from "../components/DeliveryValidationAside";
@@ -14,12 +14,11 @@ export default function DeliveryPage() {
     activeDays,
     baseFee,
     customSlotDraft,
-    filteredPostalCodes,
+    fieldErrors,
     freeDelivery,
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
-    handleRemovePostalCode,
     handleRemoveTimeSlot,
     handleSaveChanges,
     handleSaveCustomSlot,
@@ -27,19 +26,29 @@ export default function DeliveryPage() {
     handleToggleMode,
     hasUnsavedChanges,
     isAddSlotModalOpen,
+    isDeliveryDisabled,
+    isLoading,
     isPickupOnly,
-    maxDistance,
-    maxOrders,
-    postalCode,
+    isSaving,
+    isValidating,
+    maxDeliveriesPerDay,
+    maxOrdersPerTimeSlot,
+    pickupAddress,
+    pickupInstructions,
+    sameFeeAllDistances,
     saveMessage,
     selectedModes,
     setBaseFee,
     setCustomSlotDraft,
     setFreeDelivery,
-    setMaxDistance,
-    setMaxOrders,
-    setPostalCode,
+    setMaxDeliveriesPerDay,
+    setMaxOrdersPerTimeSlot,
+    setPickupAddress,
+    setPickupInstructions,
+    setSameFeeAllDistances,
+    slotDraftError,
     timeSlots,
+    validationState,
   } = useDeliverySettings();
 
   return (
@@ -54,42 +63,65 @@ export default function DeliveryPage() {
       <div className="grid grid-cols-[minmax(0,1.65fr)_minmax(128px,0.82fr)] gap-4 max-[1120px]:grid-cols-1">
         <div className="flex flex-col gap-3">
           <DeliveryModeSection
+            errors={fieldErrors}
             modes={deliveryModes}
             onToggleMode={handleToggleMode}
             selectedModes={selectedModes}
           />
 
-          <DeliveryPostalCodesSection
-            disabled={isPickupOnly}
-            filteredPostalCodes={filteredPostalCodes}
-            onPostalCodeChange={(event) => setPostalCode(event.target.value)}
-            onRemovePostalCode={handleRemovePostalCode}
-            postalCode={postalCode}
+          <DeliveryPickupSection
+            disabled={!selectedModes.includes("pickup")}
+            errors={fieldErrors}
+            onPickupAddressChange={(event) => setPickupAddress(event.target.value)}
+            onPickupInstructionsChange={(event) => setPickupInstructions(event.target.value)}
+            pickupAddress={pickupAddress}
+            pickupInstructions={pickupInstructions}
           />
 
           <DeliveryPricingSection
             baseFee={baseFee}
-            disabled={isPickupOnly}
+            disabled={isDeliveryDisabled}
+            errors={fieldErrors}
             freeDelivery={freeDelivery}
             onBaseFeeChange={(event) => setBaseFee(event.target.value)}
             onFreeDeliveryChange={(event) => setFreeDelivery(event.target.value)}
+            onSameFeeAllDistancesChange={setSameFeeAllDistances}
+            sameFeeAllDistances={sameFeeAllDistances}
           />
 
+          <DeliveryScheduleSection
+            activeDays={activeDays}
+            days={deliveryDays}
+            disabled={isDeliveryDisabled}
+            errors={fieldErrors}
+            onAddCustomSlot={handleOpenAddSlotModal}
+            onRemoveTimeSlot={handleRemoveTimeSlot}
+            onToggleDay={handleToggleDay}
+            timeSlots={timeSlots}
+          />
 
           <DeliveryLimitsSection
-            disabled={isPickupOnly}
-            maxDistance={maxDistance}
-            maxOrders={maxOrders}
-            onMaxDistanceChange={(event) => setMaxDistance(event.target.value)}
-            onMaxOrdersChange={(event) => setMaxOrders(event.target.value)}
+            disabled={isDeliveryDisabled}
+            errors={fieldErrors}
+            maxDeliveriesPerDay={maxDeliveriesPerDay}
+            maxOrdersPerTimeSlot={maxOrdersPerTimeSlot}
+            onMaxDeliveriesPerDayChange={(event) => setMaxDeliveriesPerDay(event.target.value)}
+            onMaxOrdersPerTimeSlotChange={(event) => setMaxOrdersPerTimeSlot(event.target.value)}
           />
         </div>
 
-        <DeliveryValidationAside pickupOnly={isPickupOnly} />
+        <DeliveryValidationAside
+          fieldErrors={fieldErrors}
+          isValidating={isValidating}
+          pickupOnly={isPickupOnly}
+          validation={validationState}
+        />
       </div>
 
       <DeliveryActionsBar
         hasUnsavedChanges={hasUnsavedChanges}
+        isLoading={isLoading}
+        isSaving={isSaving}
         onCancel={handleCancelChanges}
         onSave={handleSaveChanges}
         saveMessage={saveMessage}
@@ -98,6 +130,7 @@ export default function DeliveryPage() {
       {isAddSlotModalOpen ? (
         <DeliveryAddSlotModal
           draftSlot={customSlotDraft}
+          error={slotDraftError}
           onClose={handleCloseAddSlotModal}
           onDraftChange={setCustomSlotDraft}
           onSave={handleSaveCustomSlot}
