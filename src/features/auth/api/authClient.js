@@ -27,9 +27,12 @@ export function isAuthenticationError(payload) {
   const message = firstError?.message?.toLowerCase?.() || "";
 
   return (
+    code === "unauthorized" ||
     code === "invalid_token" ||
     code === "permission_denied" ||
     code === "authentication_failed" ||
+    message.includes("unauthorized") ||
+    message.includes("not authorized") ||
     message.includes("authorization") ||
     message.includes("authentication") ||
     message.includes("token") ||
