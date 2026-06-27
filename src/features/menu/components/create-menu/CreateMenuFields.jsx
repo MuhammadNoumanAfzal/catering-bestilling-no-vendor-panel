@@ -43,6 +43,14 @@ export function SelectInput({
   onChange,
   placeholder,
 }) {
+  function getOptionValue(option) {
+    return typeof option === "string" ? option : option.value;
+  }
+
+  function getOptionLabel(option) {
+    return typeof option === "string" ? option : option.label;
+  }
+
   return (
     <div className="relative">
       <select
@@ -53,8 +61,8 @@ export function SelectInput({
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
+          <option key={getOptionValue(option)} value={getOptionValue(option)}>
+            {getOptionLabel(option)}
           </option>
         ))}
       </select>
@@ -73,6 +81,14 @@ export function MultiSelectInput({
   onChange,
   placeholder,
 }) {
+  function getOptionValue(option) {
+    return typeof option === "string" ? option : option.value;
+  }
+
+  function getOptionLabel(option) {
+    return typeof option === "string" ? option : option.label;
+  }
+
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -92,12 +108,12 @@ export function MultiSelectInput({
     ? value.split(",").map((item) => item.trim()).filter(Boolean)
     : [];
 
-  function handleToggle(option) {
+  function handleToggle(optionValue) {
     let nextList;
-    if (selectedList.includes(option)) {
-      nextList = selectedList.filter((item) => item !== option);
+    if (selectedList.includes(optionValue)) {
+      nextList = selectedList.filter((item) => item !== optionValue);
     } else {
-      nextList = [...selectedList, option];
+      nextList = [...selectedList, optionValue];
     }
     const nextValue = nextList.join(", ");
     onChange({ target: { value: nextValue } });
@@ -124,19 +140,21 @@ export function MultiSelectInput({
         <div className="absolute left-0 top-[calc(100%+4px)] z-30 max-h-[200px] w-full overflow-y-auto rounded-[8px] border border-[#d7cec4] bg-white p-1 shadow-lg">
           {options.length ? (
             options.map((option) => {
-              const isChecked = selectedList.includes(option);
+              const optionValue = getOptionValue(option);
+              const optionLabel = getOptionLabel(option);
+              const isChecked = selectedList.includes(optionValue);
               return (
                 <label
-                  key={option}
+                  key={optionValue}
                   className="flex cursor-pointer items-center gap-2.5 rounded-[6px] px-3 py-2 text-[14px] text-[#1f1814] transition hover:bg-[#faf5f1]"
                 >
                   <input
                     type="checkbox"
                     checked={isChecked}
-                    onChange={() => handleToggle(option)}
+                    onChange={() => handleToggle(optionValue)}
                     className="h-4 w-4 cursor-pointer accent-[#cf6e38]"
                   />
-                  <span>{option}</span>
+                  <span>{optionLabel}</span>
                 </label>
               );
             })

@@ -9,230 +9,285 @@ import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasi
 import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSection";
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
 import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
-import AddCategoryModal from "../components/create-menu/AddCategoryModal";
+import {
+  getVendorMenuDetail,
+  getVendorMenuFormBootstrap,
+  getVendorMenus,
+  saveVendorMenu,
+} from "../api/menuApi";
+import {
+  buildSaveVendorMenuVariables,
+  mapCategoriesToOptions,
+  mapChoiceOptions,
+  mapMenuListResponse,
+  mapVendorMenuDetailToForm,
+  resolveMediaUrl,
+} from "../api/menuMappers";
+import { uploadMenuImage } from "../api/menuUploadApi";
 import {
   allergenOptions,
   availabilityDays,
-  menuCategoryOptions,
   dietaryOptions,
+  formatChoiceLabel,
   initialCreateMenuItems,
   leadTimeOptions,
-  menuTypeOptions,
-  optionalAddOns,
-  pricingModes,
-} from "../data/menuData";
+} from "../menuConstants";
 import {
-  showMenuSavedSuccess,
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
-const MENU_DRAFT_STORAGE_KEY = "vendor-menu-builder-state";
-const MENU_SELECTED_ITEM_STORAGE_KEY = "vendor-menu-selected-item";
+function createEmptyMenuItem() {
+  return {
+    id: `draft-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    title: "",
+    allergen: "",
+    image: null,
+  };
+}
 
 function getInitialMenuState() {
   return {
+    id: "",
     menuTitle: "",
     description: "",
     category: "",
-    menuType: "Per Person",
-    coverImage: "",
+    menuType: "",
+    coverImage: null,
     galleryImages: [],
     selectedDays: [],
     leadTime: "24",
     blackoutDate: "",
     selectedDietary: [],
     customDietary: "",
-    pricingMode: "Per Person",
+    pricingMode: "",
     basePrice: "",
     minimumGuests: "",
-    menuItems: initialCreateMenuItems,
+    menuItems: initialCreateMenuItems.map((item) => ({ ...item })),
     addOnSearch: "",
     selectedAddOnIds: [],
     status: "draft",
     hasAvailabilityWindow: false,
     availabilityStart: "",
     availabilityEnd: "",
+    isImportModalOpen: false,
   };
 }
 
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Unable to read file."));
-    reader.readAsDataURL(file);
-  });
+function toAddOnDisplay(addOn) {
+  return {
+    ...addOn,
+    image: addOn.coverImage?.fileUrl || addOn.image || "/heroBg.webp",
+    price: addOn.priceWithTax || addOn.price || "",
+  };
+}
+
+function toImportedMenuItem(item, index) {
+  return {
+    id: `imported-item-${Date.now()}-${index}`,
+    title: item.title || "",
+    allergen: Array.isArray(item.allergens) ? item.allergens[0] || "" : "",
+    image: item.imageUrl
+      ? {
+          fileId: item.fileId || "",
+          fileUrl: item.imageUrl,
+        }
+      : null,
+  };
 }
 
 export default function CreateMenuPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [menuTitle, setMenuTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [menuType, setMenuType] = useState("");
-  const [coverImage, setCoverImage] = useState("");
-  const [galleryImages, setGalleryImages] = useState([]);
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [leadTime, setLeadTime] = useState("24");
-  const [blackoutDate, setBlackoutDate] = useState("");
-  const [selectedDietary, setSelectedDietary] = useState([]);
-  const [customDietary, setCustomDietary] = useState("");
-  const [pricingMode, setPricingMode] = useState("Per Person");
-  const [basePrice, setBasePrice] = useState("");
-  const [minimumGuests, setMinimumGuests] = useState("");
-  const [hasAvailabilityWindow, setHasAvailabilityWindow] = useState(false);
-  const [availabilityStart, setAvailabilityStart] = useState("");
-  const [availabilityEnd, setAvailabilityEnd] = useState("");
-  const [menuItems, setMenuItems] = useState(initialCreateMenuItems);
-  const [addOnSearch, setAddOnSearch] = useState("");
-  const [selectedAddOnIds, setSelectedAddOnIds] = useState([]);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [categoryOptions, setCategoryOptions] = useState(() => {
-    const savedCategoriesRaw = window.localStorage.getItem("vendor-menu-categories");
-    if (savedCategoriesRaw) {
-      return JSON.parse(savedCategoriesRaw);
-    } else {
-      const defaultCategories = ["Breakfast", "Lunch", "Dinner", "Dessert", "Corporate"];
-      window.localStorage.setItem("vendor-menu-categories", JSON.stringify(defaultCategories));
-      return defaultCategories;
-    }
-  });
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const mode = searchParams.get("mode") || "create";
-
-  function handleAddCategory(newCategoryName) {
-    setCategoryOptions((current) => {
-      if (current.includes(newCategoryName)) return current;
-      const updated = [...current, newCategoryName];
-      window.localStorage.setItem("vendor-menu-categories", JSON.stringify(updated));
-      return updated;
-    });
-    setCategory((current) => {
-      const selectedList = current
-        ? current.split(",").map((c) => c.trim()).filter(Boolean)
-        : [];
-      if (selectedList.includes(newCategoryName)) return current;
-      const nextList = [...selectedList, newCategoryName];
-      return nextList.join(", ");
-    });
-  }
-
-  function handleAddImportedItems(selectedItemsList) {
-    setMenuItems((current) => {
-      const newItems = selectedItemsList.map((item) => ({
-        id: Date.now() + Math.random(),
-        title: item.title || "",
-        allergen: item.allergen || "",
-        image: item.image || "",
-      }));
-      const isSingleEmpty = current.length === 1 && !current[0].title && !current[0].allergen && !current[0].image;
-      if (isSingleEmpty) {
-        return newItems;
-      }
-      return [...current, ...newItems];
-    });
-  }
+  const menuId = searchParams.get("id") || "";
   const isViewMode = mode === "view";
   const isEditMode = mode === "edit";
+  const isDuplicateMode = mode === "duplicate";
+
+  const [formState, setFormState] = useState(getInitialMenuState);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [menuTypeOptions, setMenuTypeOptions] = useState([]);
+  const [pricingModes, setPricingModes] = useState([]);
+  const [availableAddOns, setAvailableAddOns] = useState([]);
+  const [existingMenus, setExistingMenus] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const selectedItemRaw = window.localStorage.getItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-    const selectedItem = selectedItemRaw ? JSON.parse(selectedItemRaw) : null;
-    const initialState =
-      (isViewMode || isEditMode) && selectedItem
-        ? {
-            ...getInitialMenuState(),
-            menuTitle: selectedItem.title || "",
-            description: selectedItem.description || "",
-            category: selectedItem.category || "",
-            menuType: selectedItem.menuType || "",
-            coverImage: selectedItem.coverImage || selectedItem.image || "",
-            galleryImages: selectedItem.galleryImages && Array.isArray(selectedItem.galleryImages)
-              ? selectedItem.galleryImages
-              : (selectedItem.galleryImage ? [selectedItem.galleryImage] : []),
-            selectedDays: selectedItem.selectedDays || [],
-            leadTime: selectedItem.leadTime || "24",
-            blackoutDate: selectedItem.blackoutDate || "",
-            selectedDietary: selectedItem.selectedDietary || [],
-            customDietary: selectedItem.customDietary || "",
-            pricingMode: selectedItem.menuType || "Per Person",
-            basePrice: selectedItem.price?.replace(/[^0-9.]/g, "") || "",
-            minimumGuests: selectedItem.minimumGuests || "",
-            menuItems: selectedItem.menuItems?.length
-              ? selectedItem.menuItems
-              : initialCreateMenuItems,
-            selectedAddOnIds: selectedItem.selectedAddOnIds || [],
-            status: selectedItem.status?.toLowerCase() || "draft",
-            hasAvailabilityWindow: selectedItem.hasAvailabilityWindow || false,
-            availabilityStart: selectedItem.availabilityStart || "",
-            availabilityEnd: selectedItem.availabilityEnd || "",
+    let isCancelled = false;
+
+    async function loadPageData() {
+      setIsLoading(true);
+
+      try {
+        const [bootstrapResult, menusResult, detailResult] = await Promise.all([
+          getVendorMenuFormBootstrap(),
+          getVendorMenus(),
+          menuId ? getVendorMenuDetail(menuId) : Promise.resolve(null),
+        ]);
+
+        if (isCancelled) {
+          return;
+        }
+
+        const nextCategoryOptions = mapCategoriesToOptions(bootstrapResult.categories);
+        const nextMenuTypeOptions = mapChoiceOptions(bootstrapResult.productTypeChoices);
+        const nextPricingModes = mapChoiceOptions(bootstrapResult.pricingTypeChoices);
+        const nextAddOns = (bootstrapResult.vendorAddOns?.edges || [])
+          .map((edge) => edge?.node)
+          .filter(Boolean)
+          .map(toAddOnDisplay);
+
+        setCategoryOptions(nextCategoryOptions);
+        setMenuTypeOptions(nextMenuTypeOptions);
+        setPricingModes(nextPricingModes);
+        setAvailableAddOns(nextAddOns);
+        setExistingMenus(mapMenuListResponse(menusResult));
+
+        if (detailResult?.vendorMenu) {
+          const mappedDetail = mapVendorMenuDetailToForm(detailResult.vendorMenu);
+
+          if (mappedDetail) {
+            setFormState({
+              ...mappedDetail,
+              id: isDuplicateMode ? "" : mappedDetail.id,
+              menuTitle: isDuplicateMode
+                ? `${mappedDetail.menuTitle} Copy`
+                : mappedDetail.menuTitle,
+              status: isDuplicateMode ? "draft" : mappedDetail.status,
+            });
+            return;
           }
-        : getInitialMenuState();
-    setMenuTitle(initialState.menuTitle);
-    setDescription(initialState.description);
-    setCategory(initialState.category);
-    setMenuType(initialState.menuType);
-    setCoverImage(initialState.coverImage || "");
-    setGalleryImages(initialState.galleryImages || []);
-    setSelectedDays(initialState.selectedDays || []);
-    setLeadTime(initialState.leadTime || "24");
-    setBlackoutDate(initialState.blackoutDate || "");
-    setSelectedDietary(initialState.selectedDietary || []);
-    setCustomDietary(initialState.customDietary || "");
-    setPricingMode(initialState.pricingMode || "Per Person");
-    setHasAvailabilityWindow(initialState.hasAvailabilityWindow || false);
-    setAvailabilityStart(initialState.availabilityStart || "");
-    setAvailabilityEnd(initialState.availabilityEnd || "");
-    setBasePrice(initialState.basePrice || "");
-    setMinimumGuests(initialState.minimumGuests || "");
-    setMenuItems(
-      initialState.menuItems?.length ? initialState.menuItems : initialCreateMenuItems,
-    );
-    setAddOnSearch(initialState.addOnSearch || "");
-    setSelectedAddOnIds(initialState.selectedAddOnIds || []);
-  }, [isEditMode, isViewMode]);
+        }
 
-  const allAddOns = useMemo(() => {
-    const savedAddOnsRaw = window.localStorage.getItem("vendor-addon-items");
-    if (savedAddOnsRaw) {
-      return JSON.parse(savedAddOnsRaw);
-    } else {
-      window.localStorage.setItem("vendor-addon-items", JSON.stringify(optionalAddOns));
-      return optionalAddOns;
+        setFormState((current) => ({
+          ...current,
+          menuType:
+            current.menuType ||
+            nextMenuTypeOptions[0]?.value ||
+            "",
+          pricingMode:
+            current.pricingMode ||
+            nextPricingModes[0]?.value ||
+            "",
+        }));
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load the menu editor right now.",
+            "Menu data unavailable",
+          );
+          navigate("/menu", { replace: true });
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
     }
-  }, []);
 
-  const filteredAddOns = useMemo(
-    () =>
-      allAddOns.filter((item) => {
-        const title = item.addOnName || item.name || "";
-        return title.toLowerCase().includes(addOnSearch.trim().toLowerCase());
-      }),
-    [allAddOns, addOnSearch],
-  );
+    loadPageData();
 
-  function toggleDay(day) {
-    setSelectedDays((current) =>
-      current.includes(day)
-        ? current.filter((item) => item !== day)
-        : [...current, day],
-    );
+    return () => {
+      isCancelled = true;
+    };
+  }, [isDuplicateMode, menuId, navigate]);
+
+  const filteredAddOns = useMemo(() => {
+    const searchValue = formState.addOnSearch.trim().toLowerCase();
+
+    if (!searchValue) {
+      return availableAddOns;
+    }
+
+    return availableAddOns.filter((item) => {
+      const title = item.name || "";
+      const categoryName = item.category?.name || "";
+      return (
+        title.toLowerCase().includes(searchValue) ||
+        categoryName.toLowerCase().includes(searchValue)
+      );
+    });
+  }, [availableAddOns, formState.addOnSearch]);
+
+  function setField(field, value) {
+    setFormState((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  function toggleDay(dayValue) {
+    setFormState((current) => ({
+      ...current,
+      selectedDays: current.selectedDays.includes(dayValue)
+        ? current.selectedDays.filter((item) => item !== dayValue)
+        : [...current.selectedDays, dayValue],
+    }));
   }
 
   function toggleDietary(tag) {
-    setSelectedDietary((current) =>
-      current.includes(tag)
-        ? current.filter((item) => item !== tag)
-        : [...current, tag],
-    );
+    setFormState((current) => ({
+      ...current,
+      selectedDietary: current.selectedDietary.includes(tag)
+        ? current.selectedDietary.filter((item) => item !== tag)
+        : [...current.selectedDietary, tag],
+    }));
   }
 
   function updateMenuItem(id, field, value) {
-    setMenuItems((current) =>
-      current.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-    );
+    setFormState((current) => ({
+      ...current,
+      menuItems: current.menuItems.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item,
+      ),
+    }));
+  }
+
+  function addMenuItem() {
+    setFormState((current) => ({
+      ...current,
+      menuItems: [...current.menuItems, createEmptyMenuItem()],
+    }));
+  }
+
+  function removeMenuItem(id) {
+    setFormState((current) => ({
+      ...current,
+      menuItems:
+        current.menuItems.length === 1
+          ? current.menuItems
+          : current.menuItems.filter((item) => item.id !== id),
+    }));
+  }
+
+  function toggleAddOn(id) {
+    setFormState((current) => ({
+      ...current,
+      selectedAddOnIds: current.selectedAddOnIds.includes(id)
+        ? current.selectedAddOnIds.filter((item) => item !== id)
+        : [...current.selectedAddOnIds, id],
+    }));
+  }
+
+  function handleAddImportedItems(selectedItemsList) {
+    const normalizedItems = selectedItemsList.map(toImportedMenuItem);
+
+    setFormState((current) => {
+      const isSingleEmpty =
+        current.menuItems.length === 1 &&
+        !current.menuItems[0].title &&
+        !current.menuItems[0].allergen &&
+        !current.menuItems[0].image;
+
+      return {
+        ...current,
+        menuItems: isSingleEmpty
+          ? normalizedItems
+          : [...current.menuItems, ...normalizedItems],
+      };
+    });
   }
 
   async function handleImageUpload(file, onSuccess) {
@@ -247,168 +302,114 @@ export default function CreateMenuPage() {
     }
 
     try {
-      const imageData = await fileToDataUrl(file);
-      onSuccess(imageData);
+      const uploadedAsset = await uploadMenuImage(file);
+      onSuccess(uploadedAsset);
       await showVendorSuccessToast("Image uploaded.");
-    } catch {
-      await showVendorErrorAlert("Unable to process the selected image.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to upload the selected image.");
     }
   }
 
-  function addMenuItem() {
-    setMenuItems((current) => [
-      ...current,
-      { id: Date.now(), title: "", allergen: "", image: "" },
-    ]);
+  async function handleImportMenuItemsRequest(targetMenuId) {
+    const result = await getVendorMenuDetail(targetMenuId);
+    const menuItems = result?.vendorMenu?.menuItems || [];
+
+    return menuItems.map((item) => ({
+      id: item.id,
+      title: item.title || "",
+      image: item.imageUrl || "",
+      allergens: item.allergens || [],
+    }));
   }
 
-  function removeMenuItem(id) {
-    setMenuItems((current) =>
-      current.length === 1 ? current : current.filter((item) => item.id !== id),
-    );
-  }
-
-  function toggleAddOn(id) {
-    setSelectedAddOnIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    );
-  }
-
-  function resetForm() {
-    const nextState = getInitialMenuState();
-    setMenuTitle(nextState.menuTitle);
-    setDescription(nextState.description);
-    setCategory(nextState.category);
-    setMenuType(nextState.menuType);
-    setCoverImage(nextState.coverImage);
-    setGalleryImages(nextState.galleryImages);
-    setSelectedDays(nextState.selectedDays);
-    setLeadTime(nextState.leadTime);
-    setBlackoutDate(nextState.blackoutDate);
-    setSelectedDietary(nextState.selectedDietary);
-    setCustomDietary(nextState.customDietary);
-    setPricingMode(nextState.pricingMode);
-    setBasePrice(nextState.basePrice);
-    setMinimumGuests(nextState.minimumGuests);
-    setMenuItems(nextState.menuItems);
-    setAddOnSearch(nextState.addOnSearch);
-    setSelectedAddOnIds(nextState.selectedAddOnIds);
-    setHasAvailabilityWindow(nextState.hasAvailabilityWindow);
-    setAvailabilityStart(nextState.availabilityStart);
-    setAvailabilityEnd(nextState.availabilityEnd);
-  }
-
-  function buildMenuPayload(status) {
-    return {
-      menuTitle,
-      description,
-      category,
-      menuType,
-      coverImage,
-      galleryImages,
-      selectedDays,
-      leadTime,
-      blackoutDate,
-      selectedDietary,
-      customDietary,
-      pricingMode,
-      basePrice,
-      minimumGuests,
-      menuItems,
-      addOnSearch: "",
-      selectedAddOnIds,
-      status,
-      hasAvailabilityWindow,
-      availabilityStart,
-      availabilityEnd,
-    };
-  }
-
-  function saveMenuToList(status) {
-    const payload = buildMenuPayload(status);
-
-    const savedMenusRaw = window.localStorage.getItem("vendor-menu-items");
-    let currentMenus = savedMenusRaw ? JSON.parse(savedMenusRaw) : [];
-
-    const selectedItemRaw = window.localStorage.getItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-    const selectedItem = selectedItemRaw ? JSON.parse(selectedItemRaw) : null;
-
-    const menuId = (isEditMode || isViewMode) && selectedItem ? selectedItem.id : `menu-${Date.now()}`;
-
-    const displayPrice = payload.basePrice.toString().startsWith("$")
-      ? payload.basePrice
-      : `$${payload.basePrice} per person`;
-
-    const normalizedItem = {
-      id: menuId,
-      title: payload.menuTitle,
-      description: payload.description,
-      price: displayPrice,
-      meta: `${payload.menuItems.length} menu items included`,
-      image: payload.coverImage || "/heroBg.webp",
-      status: status === "published" ? "Active" : "Draft",
-      badge: payload.category || "Catering",
-      tone: status === "published" ? "active" : "draft",
-
-      category: payload.category,
-      menuType: payload.menuType,
-      coverImage: payload.coverImage,
-      galleryImage: payload.galleryImages[0] || "",
-      galleryImages: payload.galleryImages,
-      selectedDays: payload.selectedDays,
-      leadTime: payload.leadTime,
-      blackoutDate: payload.blackoutDate,
-      selectedDietary: payload.selectedDietary,
-      customDietary: payload.customDietary,
-      minimumGuests: payload.minimumGuests,
-      menuItems: payload.menuItems,
-      selectedAddOnIds: payload.selectedAddOnIds,
-      hasAvailabilityWindow: payload.hasAvailabilityWindow,
-      availabilityStart: payload.availabilityStart,
-      availabilityEnd: payload.availabilityEnd,
-    };
-
-    if (isEditMode || isViewMode) {
-      currentMenus = currentMenus.map((item) => (item.id === menuId ? normalizedItem : item));
-    } else {
-      currentMenus = [normalizedItem, ...currentMenus];
+  function validateBeforeSave() {
+    if (!formState.menuTitle.trim()) {
+      return "Please enter a menu title before saving.";
     }
 
-    window.localStorage.setItem("vendor-menu-items", JSON.stringify(currentMenus));
+    if (!formState.category) {
+      return "Please select a category for this menu.";
+    }
+
+    if (!formState.menuType) {
+      return "Please choose a menu type.";
+    }
+
+    if (!formState.pricingMode) {
+      return "Please choose a pricing type.";
+    }
+
+    if (!String(formState.basePrice).trim()) {
+      return "Please enter a base price.";
+    }
+
+    if (!String(formState.minimumGuests).trim()) {
+      return "Please enter the minimum guest count.";
+    }
+
+    if (!formState.menuItems.some((item) => item.title.trim())) {
+      return "Please add at least one menu item.";
+    }
+
+    return "";
   }
 
-  async function handleCancel() {
-    window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-    window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
-    navigate("/menu");
+  async function handleSave(statusOverride) {
+    const validationMessage = validateBeforeSave();
+
+    if (validationMessage) {
+      await showVendorErrorAlert(validationMessage);
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const variables = buildSaveVendorMenuVariables(formState, statusOverride);
+      const result = await saveVendorMenu(variables);
+      await showVendorSuccessToast(result.message || "Menu saved successfully.");
+      navigate("/menu", { replace: true });
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to save the menu right now.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleSaveDraft() {
-    if (!menuTitle.trim()) {
-      await showVendorErrorAlert("Please enter a menu title before saving the draft.");
-      return;
-    }
-
-    saveMenuToList("draft");
-    window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-    window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
-    await showVendorSuccessToast("Menu saved as draft.");
-    navigate("/menu");
+    const draftStatus = isEditMode && formState.status ? formState.status : "draft";
+    await handleSave(draftStatus);
   }
 
   async function handlePublish() {
-    if (!menuTitle.trim() || !category || !menuType || !basePrice.trim()) {
-      await showVendorErrorAlert(
-        "Please complete the required menu details before publishing.",
-      );
-      return;
-    }
+    await handleSave("active");
+  }
 
-    saveMenuToList("published");
-    await showVendorSuccessToast("Menu published successfully.");
-    window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-    window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
+  async function handleCancel() {
     navigate("/menu");
+  }
+
+  async function handleAddNewCategoryClick() {
+    await showVendorErrorAlert(
+      "Category creation is not connected yet. To keep this fully API-based, I need the create-category API or mutation contract.",
+      "Category API required",
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-[calc(100vh-124px)] flex-col gap-4">
+        <div className="h-8 w-40 animate-pulse rounded bg-[#e8ded4]" />
+        <div className="h-16 animate-pulse rounded-[18px] bg-[#efe5dc]" />
+        <div className="grid grid-cols-[minmax(0,1.48fr)_minmax(280px,0.96fr)] gap-4 max-[1120px]:grid-cols-1">
+          <div className="space-y-4">
+            <div className="h-72 animate-pulse rounded-[18px] bg-[#f3ece5]" />
+            <div className="h-48 animate-pulse rounded-[18px] bg-[#f3ece5]" />
+            <div className="h-64 animate-pulse rounded-[18px] bg-[#f3ece5]" />
+          </div>
+          <div className="h-72 animate-pulse rounded-[18px] bg-[#f3ece5]" />
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -423,7 +424,13 @@ export default function CreateMenuPage() {
           Menu management
         </button>
         <h1 className="type-h2 m-0 text-[#15110f]">
-          {isViewMode ? "View Menu" : isEditMode ? "Edit Menu" : "Create New Menu"}
+          {isViewMode
+            ? "View Menu"
+            : isEditMode
+              ? "Edit Menu"
+              : isDuplicateMode
+                ? "Duplicate Menu"
+                : "Create New Menu"}
         </h1>
         <p className="mt-1 text-[15px] font-medium text-[#746a62]">
           {isViewMode
@@ -435,55 +442,70 @@ export default function CreateMenuPage() {
       <div className="grid grid-cols-[minmax(0,1.48fr)_minmax(280px,0.96fr)] gap-4 max-[1120px]:grid-cols-1">
         <div className="flex flex-col gap-4">
           <CreateMenuBasicInfoSection
-            category={category}
+            category={formState.category}
             categoryOptions={categoryOptions}
-            coverImage={coverImage}
-            description={description}
-            disabled={isViewMode}
-            galleryImages={galleryImages}
-            menuTitle={menuTitle}
-            menuType={menuType}
+            coverImage={resolveMediaUrl(formState.coverImage)}
+            description={formState.description}
+            disabled={isViewMode || isSaving}
+            galleryImages={formState.galleryImages.map(resolveMediaUrl)}
+            menuTitle={formState.menuTitle}
+            menuType={formState.menuType}
             menuTypeOptions={menuTypeOptions}
-            onCategoryChange={(event) => setCategory(event.target.value)}
-            onCoverImageSelect={(file) => handleImageUpload(file, setCoverImage)}
-            onDescriptionChange={(event) => setDescription(event.target.value)}
-            onGalleryImageSelect={(file) => handleImageUpload(file, (newImg) => setGalleryImages(prev => [...prev, newImg]))}
-            onRemoveGalleryImage={(index) => setGalleryImages(prev => prev.filter((_, idx) => idx !== index))}
-            onMenuTitleChange={(event) => setMenuTitle(event.target.value)}
-            onMenuTypeChange={(event) => setMenuType(event.target.value)}
-            onAddNewCategoryClick={() => setIsCategoryModalOpen(true)}
+            onCategoryChange={(event) => setField("category", event.target.value)}
+            onCoverImageSelect={(file) => handleImageUpload(file, (asset) => setField("coverImage", asset))}
+            onDescriptionChange={(event) => setField("description", event.target.value)}
+            onGalleryImageSelect={(file) =>
+              handleImageUpload(file, (asset) =>
+                setFormState((current) => ({
+                  ...current,
+                  galleryImages: [...current.galleryImages, asset],
+                })),
+              )
+            }
+            onRemoveGalleryImage={(index) =>
+              setFormState((current) => ({
+                ...current,
+                galleryImages: current.galleryImages.filter((_, idx) => idx !== index),
+              }))
+            }
+            onMenuTitleChange={(event) => setField("menuTitle", event.target.value)}
+            onMenuTypeChange={(event) => setField("menuType", event.target.value)}
+            onAddNewCategoryClick={handleAddNewCategoryClick}
           />
 
           <CreateMenuPricingSection
-            basePrice={basePrice}
-            disabled={isViewMode}
-            minimumGuests={minimumGuests}
-            onBasePriceChange={(event) => setBasePrice(event.target.value)}
-            onMinimumGuestsChange={(event) => setMinimumGuests(event.target.value)}
-            pricingMode={pricingMode}
+            basePrice={formState.basePrice}
+            disabled={isViewMode || isSaving}
+            minimumGuests={formState.minimumGuests}
+            onBasePriceChange={(event) => setField("basePrice", event.target.value)}
+            onMinimumGuestsChange={(event) => setField("minimumGuests", event.target.value)}
+            pricingMode={formState.pricingMode}
             pricingModes={pricingModes}
-            setPricingMode={setPricingMode}
+            setPricingMode={(value) => setField("pricingMode", value)}
           />
 
           <CreateMenuItemsSection
             addMenuItem={addMenuItem}
             allergenOptions={allergenOptions}
-            disabled={isViewMode}
+            disabled={isViewMode || isSaving}
             handleItemImageSelect={(id, file) =>
-              handleImageUpload(file, (imageData) => updateMenuItem(id, "image", imageData))
+              handleImageUpload(file, (asset) => updateMenuItem(id, "image", asset))
             }
-            menuItems={menuItems}
-            onAddFromOtherPackage={() => setIsImportModalOpen(true)}
+            menuItems={formState.menuItems.map((item) => ({
+              ...item,
+              image: resolveMediaUrl(item.image),
+            }))}
+            onAddFromOtherPackage={() => setField("isImportModalOpen", true)}
             removeMenuItem={removeMenuItem}
             updateMenuItem={updateMenuItem}
           />
 
           <CreateMenuAddOnsSection
-            addOnSearch={addOnSearch}
-            disabled={isViewMode}
+            addOnSearch={formState.addOnSearch}
+            disabled={isViewMode || isSaving}
             filteredAddOns={filteredAddOns}
-            onSearchChange={(event) => setAddOnSearch(event.target.value)}
-            selectedAddOnIds={selectedAddOnIds}
+            onSearchChange={(event) => setField("addOnSearch", event.target.value)}
+            selectedAddOnIds={formState.selectedAddOnIds}
             toggleAddOn={toggleAddOn}
           />
         </div>
@@ -491,22 +513,33 @@ export default function CreateMenuPage() {
         <div className="flex flex-col gap-4">
           <CreateMenuAvailabilitySection
             availabilityDays={availabilityDays}
-            disabled={isViewMode}
+            disabled={isViewMode || isSaving}
             dietaryOptions={dietaryOptions}
-            leadTime={leadTime}
+            leadTime={formState.leadTime}
             leadTimeOptions={leadTimeOptions}
-            onLeadTimeChange={(event) => setLeadTime(event.target.value)}
-            selectedDays={selectedDays}
-            selectedDietary={selectedDietary}
+            onLeadTimeChange={(event) => setField("leadTime", event.target.value)}
+            selectedDays={formState.selectedDays}
+            selectedDietary={formState.selectedDietary}
             toggleDay={toggleDay}
             toggleDietary={toggleDietary}
-            hasAvailabilityWindow={hasAvailabilityWindow}
-            onHasAvailabilityWindowChange={setHasAvailabilityWindow}
-            availabilityStart={availabilityStart}
-            onAvailabilityStartChange={(event) => setAvailabilityStart(event.target.value)}
-            availabilityEnd={availabilityEnd}
-            onAvailabilityEndChange={(event) => setAvailabilityEnd(event.target.value)}
+            hasAvailabilityWindow={formState.hasAvailabilityWindow}
+            onHasAvailabilityWindowChange={(value) => setField("hasAvailabilityWindow", value)}
+            availabilityStart={formState.availabilityStart}
+            onAvailabilityStartChange={(event) => setField("availabilityStart", event.target.value)}
+            availabilityEnd={formState.availabilityEnd}
+            onAvailabilityEndChange={(event) => setField("availabilityEnd", event.target.value)}
           />
+
+          {!isViewMode ? (
+            <div className="rounded-[18px] border border-[#e7dbd1] bg-[#fffaf6] px-4 py-4 shadow-[0_10px_24px_rgba(67,40,22,0.05)]">
+              <p className="m-0 text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#a06d4e]">
+                API Ready
+              </p>
+              <p className="mt-2 text-[13px] font-medium leading-[1.55] text-[#6e6259]">
+                Categories, menu types, pricing modes, add-ons, menu details, and saves are now loaded from the vendor menu API.
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -515,20 +548,23 @@ export default function CreateMenuPage() {
         onCancel={handleCancel}
         onPublish={handlePublish}
         onSaveDraft={isViewMode ? () => navigate("/menu") : handleSaveDraft}
-        saveLabel={isViewMode ? "Back to Menus" : isEditMode ? "Save Changes" : "Save as Draft"}
+        saveLabel={
+          isViewMode
+            ? "Back to Menus"
+            : isEditMode
+              ? "Save Changes"
+              : isDuplicateMode
+                ? "Save Copy as Draft"
+                : "Save as Draft"
+        }
       />
 
       <ImportMenuItemsModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
+        existingMenus={existingMenus.filter((menu) => menu.id !== formState.id)}
+        isOpen={Boolean(formState.isImportModalOpen)}
         onAdd={handleAddImportedItems}
-      />
-
-      <AddCategoryModal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        onAdd={handleAddCategory}
-        existingCategories={categoryOptions}
+        onClose={() => setField("isImportModalOpen", false)}
+        onRequestMenuItems={handleImportMenuItemsRequest}
       />
     </section>
   );

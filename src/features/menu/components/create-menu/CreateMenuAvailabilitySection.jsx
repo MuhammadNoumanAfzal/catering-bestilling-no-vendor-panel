@@ -27,21 +27,23 @@ export default function CreateMenuAvailabilitySection({
       <div>
         <div className="flex flex-wrap gap-3">
           {availabilityDays.map((day) => {
-            const isActive = selectedDays.includes(day);
+            const dayValue = day.value || day;
+            const dayLabel = day.label || day;
+            const isActive = selectedDays.includes(dayValue);
 
             return (
               <button
-                key={day}
+                key={dayValue}
               className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border text-[13px] font-bold transition ${
                   isActive
                     ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
                     : "border-[#bdb2a9] bg-white text-[#29211d]"
                 } ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                 disabled={disabled}
-                onClick={() => toggleDay(day)}
+                onClick={() => toggleDay(dayValue)}
                 type="button"
               >
-                {day}
+                {dayLabel}
               </button>
             );
           })}

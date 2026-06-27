@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import MenuCreateNewCard from "../components/management/MenuCreateNewCard";
@@ -6,21 +6,31 @@ import MenuManagementHeader from "../components/management/MenuManagementHeader"
 import MenuManagementToolbar from "../components/management/MenuManagementToolbar";
 import MenuOfferingCard from "../components/management/MenuOfferingCard";
 import {
-  menuManagementItems,
+  deleteVendorMenu,
+  getVendorMenuFormBootstrap,
+  getVendorMenus,
+  updateVendorMenuStatus,
+} from "../api/menuApi";
+import {
+  mapMenuListResponse,
+  mapVendorAddOnNodeToCard,
+} from "../api/menuMappers";
+import {
   menuManagementTabs,
   menuSortOptions,
-  optionalAddOns,
-} from "../data/menuData";
+} from "../menuConstants";
 import {
   confirmVendorAction,
+  showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
-const MENU_SELECTED_ITEM_STORAGE_KEY = "vendor-menu-selected-item";
-const MENU_DRAFT_STORAGE_KEY = "vendor-menu-builder-state";
-
 function normalizeStatus(value) {
-  return value.toLowerCase();
+  return String(value || "").toLowerCase();
+}
+
+function parseMenuPrice(value) {
+  return Number(String(value || "").replace(/[^0-9.]/g, "")) || 0;
 }
 
 export default function MenuPage() {
@@ -28,56 +38,61 @@ export default function MenuPage() {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
   const [sortBy, setSortBy] = useState("Latest");
-  
-  const [items, setItems] = useState(() => {
-    const savedMenusRaw = window.localStorage.getItem("vendor-menu-items");
-    if (savedMenusRaw) {
-      return JSON.parse(savedMenusRaw);
-    } else {
-      window.localStorage.setItem("vendor-menu-items", JSON.stringify(menuManagementItems));
-      return menuManagementItems;
+  const [menuCards, setMenuCards] = useState([]);
+  const [addOnCards, setAddOnCards] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadMenuManagementData() {
+      setIsLoading(true);
+
+      try {
+        const [menusResult, bootstrapResult] = await Promise.all([
+          getVendorMenus(),
+          getVendorMenuFormBootstrap(),
+        ]);
+
+        if (isCancelled) {
+          return;
+        }
+
+        setMenuCards(mapMenuListResponse(menusResult));
+        setAddOnCards(
+          (bootstrapResult.vendorAddOns?.edges || [])
+            .map((edge) => edge?.node)
+            .filter(Boolean)
+            .map(mapVendorAddOnNodeToCard),
+        );
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load menu management right now.",
+            "Menu data unavailable",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
     }
-  });
 
-  const [addOns, setAddOns] = useState(() => {
-    const savedAddOnsRaw = window.localStorage.getItem("vendor-addon-items");
-    if (savedAddOnsRaw) {
-      return JSON.parse(savedAddOnsRaw);
-    } else {
-      window.localStorage.setItem("vendor-addon-items", JSON.stringify(optionalAddOns));
-      return optionalAddOns;
-    }
-  });
+    loadMenuManagementData();
 
-  function openFreshCreateMenu() {
-    window.localStorage.removeItem(MENU_SELECTED_ITEM_STORAGE_KEY);
-    window.localStorage.removeItem(MENU_DRAFT_STORAGE_KEY);
-    navigate("/menu/create");
-  }
-
-  const addOnsList = useMemo(() => {
-    return addOns.map((addon) => ({
-      id: addon.id,
-      title: addon.addOnName || addon.name,
-      description: addon.category || "Optional Add-on",
-      price: addon.price.toString().startsWith("$") ? addon.price : `$${addon.price}`,
-      meta: addon.availableImmediately ?? true ? "Available immediately" : "Scheduled",
-      image: addon.image || "/heroBg.webp",
-      status: addon.availableImmediately ?? true ? "Active" : "Paused",
-      badge: addon.category || "Add-on",
-      tone: addon.availableImmediately ?? true ? "active" : "paused",
-      isAddOn: true,
-      rawAddon: addon,
-    }));
-  }, [addOns]);
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const filteredItems = useMemo(() => {
     const baseItems =
       activeTab === "All"
-        ? items
+        ? menuCards
         : activeTab === "Add-ons"
-          ? addOnsList
-          : items.filter((item) => normalizeStatus(item.status) === normalizeStatus(activeTab));
+          ? addOnCards
+          : menuCards.filter((item) => normalizeStatus(item.status) === normalizeStatus(activeTab));
 
     const searchQuery = searchParams.get("search")?.toLowerCase().trim() || "";
     const searchedItems = searchQuery
@@ -92,49 +107,70 @@ export default function MenuPage() {
     const nextItems = [...searchedItems];
 
     if (sortBy === "Oldest") {
-      nextItems.reverse();
+      nextItems.sort((firstItem, secondItem) =>
+        String(firstItem.createdOn || firstItem.updatedOn || "").localeCompare(
+          String(secondItem.createdOn || secondItem.updatedOn || ""),
+        ),
+      );
+    }
+
+    if (sortBy === "Latest") {
+      nextItems.sort((firstItem, secondItem) =>
+        String(secondItem.updatedOn || secondItem.createdOn || "").localeCompare(
+          String(firstItem.updatedOn || firstItem.createdOn || ""),
+        ),
+      );
     }
 
     if (sortBy === "Highest Price") {
-      nextItems.sort(
-        (first, second) =>
-          Number(second.price.replace(/[^0-9.]/g, "")) -
-          Number(first.price.replace(/[^0-9.]/g, "")),
-      );
+      nextItems.sort((firstItem, secondItem) => parseMenuPrice(secondItem.price) - parseMenuPrice(firstItem.price));
     }
 
     if (sortBy === "Lowest Price") {
-      nextItems.sort(
-        (first, second) =>
-          Number(first.price.replace(/[^0-9.]/g, "")) -
-          Number(second.price.replace(/[^0-9.]/g, "")),
-      );
+      nextItems.sort((firstItem, secondItem) => parseMenuPrice(firstItem.price) - parseMenuPrice(secondItem.price));
     }
 
     return nextItems;
-  }, [activeTab, items, sortBy, addOnsList, searchParams]);
+  }, [activeTab, addOnCards, menuCards, searchParams, sortBy]);
+
+  function openFreshCreateMenu() {
+    navigate("/menu/create");
+  }
+
+  function handleCreateAddOn() {
+    navigate("/menu/add-ons/create");
+  }
+
+  function handleView(item) {
+    if (item.isAddOn) {
+      return;
+    }
+
+    navigate(`/menu/create?mode=view&id=${encodeURIComponent(item.id)}`);
+  }
+
+  function handleEdit(item) {
+    if (item.isAddOn) {
+      return;
+    }
+
+    navigate(`/menu/create?mode=edit&id=${encodeURIComponent(item.id)}`);
+  }
+
+  function handleDuplicate(item) {
+    if (item.isAddOn) {
+      return;
+    }
+
+    navigate(`/menu/create?mode=duplicate&id=${encodeURIComponent(item.id)}`);
+  }
 
   async function handleDelete(item) {
     if (item.isAddOn) {
-      const result = await confirmVendorAction({
-        title: "Delete add-on?",
-        text: `Remove "${item.title}" from add-ons?`,
-        confirmButtonText: "Delete",
-        cancelButtonText: "Keep it",
-        icon: "warning",
-        confirmButtonColor: "#ff2918",
-      });
-
-      if (!result.isConfirmed) {
-        return;
-      }
-
-      const savedAddOnsRaw = window.localStorage.getItem("vendor-addon-items");
-      const savedAddOns = savedAddOnsRaw ? JSON.parse(savedAddOnsRaw) : [];
-      const updatedAddOns = savedAddOns.filter((entry) => entry.id !== item.id);
-      window.localStorage.setItem("vendor-addon-items", JSON.stringify(updatedAddOns));
-      setAddOns(updatedAddOns);
-      await showVendorSuccessToast("Add-on removed successfully.");
+      await showVendorErrorAlert(
+        "Add-on management APIs are not connected yet in this module.",
+        "Add-on actions unavailable",
+      );
       return;
     }
 
@@ -151,105 +187,45 @@ export default function MenuPage() {
       return;
     }
 
-    setItems((current) => {
-      const nextList = current.filter((entry) => entry.id !== item.id);
-      window.localStorage.setItem("vendor-menu-items", JSON.stringify(nextList));
-      return nextList;
-    });
-    await showVendorSuccessToast("Menu removed successfully.");
-  }
-
-  async function handleView(item) {
-    window.localStorage.setItem(MENU_SELECTED_ITEM_STORAGE_KEY, JSON.stringify(item));
-    navigate(`/menu/create?mode=view&id=${item.id}`);
-  }
-
-  function handleEdit(item) {
-    if (item.isAddOn) {
-      navigate(`/menu/add-ons/create?mode=edit&id=${item.id}`);
-      return;
+    try {
+      await deleteVendorMenu(item.id);
+      setMenuCards((current) => current.filter((entry) => entry.id !== item.id));
+      await showVendorSuccessToast("Menu removed successfully.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to delete the menu.");
     }
-    window.localStorage.setItem(MENU_SELECTED_ITEM_STORAGE_KEY, JSON.stringify(item));
-    navigate(`/menu/create?mode=edit&id=${item.id}`);
   }
 
   async function handleToggleStatus(item) {
     if (item.isAddOn) {
-      const updatedAddOns = addOns.map((addon) => {
-        if (addon.id === item.id) {
-          const currentAvailable = addon.availableImmediately ?? true;
-          return {
-            ...addon,
-            availableImmediately: !currentAvailable,
-          };
-        }
-        return addon;
-      });
-      window.localStorage.setItem("vendor-addon-items", JSON.stringify(updatedAddOns));
-      setAddOns(updatedAddOns);
-      await showVendorSuccessToast(
-        `Add-on status set to ${
-          !(item.rawAddon.availableImmediately ?? true) ? "Active" : "Paused"
-        }.`
+      await showVendorErrorAlert(
+        "Add-on status APIs are not connected yet in this module.",
+        "Add-on actions unavailable",
       );
       return;
     }
 
-    const updatedMenus = items.map((menu) => {
-      if (menu.id === item.id) {
-        const isCurrentlyActive = menu.status === "Active";
-        const nextStatus = isCurrentlyActive ? "Paused" : "Active";
-        return {
-          ...menu,
-          status: nextStatus,
-          tone: nextStatus.toLowerCase(),
-        };
-      }
-      return menu;
-    });
-    window.localStorage.setItem("vendor-menu-items", JSON.stringify(updatedMenus));
-    setItems(updatedMenus);
-    await showVendorSuccessToast(
-      `Menu status set to ${item.status === "Active" ? "Paused" : "Active"}.`
-    );
-  }
+    const nextStatus = item.status === "Active" ? "paused" : "active";
 
-  async function handleDuplicate(item) {
-    if (item.isAddOn) {
-      const sourceAddon = item.rawAddon;
-      const newAddon = {
-        ...sourceAddon,
-        id: `addon-${Date.now()}`,
-        addOnName: `${sourceAddon.addOnName || sourceAddon.name} - Copy`,
-        availableImmediately: sourceAddon.availableImmediately ?? true,
-      };
-
-      const updatedAddOns = [newAddon, ...addOns];
-      window.localStorage.setItem("vendor-addon-items", JSON.stringify(updatedAddOns));
-      setAddOns(updatedAddOns);
-      await showVendorSuccessToast(`Add-on "${newAddon.addOnName}" duplicated successfully.`);
-      return;
+    try {
+      const result = await updateVendorMenuStatus(item.id, nextStatus);
+      setMenuCards((current) =>
+        current.map((menu) =>
+          menu.id === item.id
+            ? {
+                ...menu,
+                status: nextStatus === "active" ? "Active" : "Paused",
+                tone: result.instance?.menuStatus || nextStatus,
+              }
+            : menu,
+        ),
+      );
+      await showVendorSuccessToast(
+        `Menu status set to ${nextStatus === "active" ? "Active" : "Paused"}.`,
+      );
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to update the menu status.");
     }
-
-    const newMenu = {
-      ...item,
-      id: `menu-${Date.now()}`,
-      title: `${item.title} - Copy`,
-      menuTitle: item.menuTitle ? `${item.menuTitle} - Copy` : `${item.title} - Copy`,
-      status: item.status || "Active",
-      tone: item.tone || "active",
-    };
-    delete newMenu.isAddOn;
-    delete newMenu.rawAddon;
-
-    const updatedMenus = [newMenu, ...items];
-    window.localStorage.setItem("vendor-menu-items", JSON.stringify(updatedMenus));
-    setItems(updatedMenus);
-    await showVendorSuccessToast(`Menu "${newMenu.title}" duplicated successfully.`);
-  }
-
-  function handleCreateAddOn() {
-    navigate("/menu/add-ons/create");
   }
 
   return (
@@ -268,21 +244,35 @@ export default function MenuPage() {
         valueSort={sortBy}
       />
 
-      <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
-        {filteredItems.map((item) => (
-          <MenuOfferingCard
-            key={item.id}
-            item={item}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-            onView={handleView}
-            onDuplicate={handleDuplicate}
-            onToggleStatus={handleToggleStatus}
-          />
-        ))}
+      {isLoading ? (
+        <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={`menu-skeleton-${index}`}
+              className="min-h-[312px] animate-pulse rounded-[14px] border border-[#ddd4cb] bg-[#f3ece5]"
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
+          {filteredItems.map((item) => (
+            <MenuOfferingCard
+              key={item.id}
+              actionsDisabled={Boolean(item.isAddOn)}
+              item={item}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+              onView={handleView}
+              onDuplicate={handleDuplicate}
+              onToggleStatus={handleToggleStatus}
+            />
+          ))}
 
-        <MenuCreateNewCard onClick={activeTab === "Add-ons" ? handleCreateAddOn : openFreshCreateMenu} />
-      </div>
+          <MenuCreateNewCard
+            onClick={activeTab === "Add-ons" ? handleCreateAddOn : openFreshCreateMenu}
+          />
+        </div>
+      )}
     </section>
   );
 }

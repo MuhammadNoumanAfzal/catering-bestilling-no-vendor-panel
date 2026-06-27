@@ -7,6 +7,7 @@ const toneClasses = {
 };
 
 export default function MenuOfferingCard({
+  actionsDisabled = false,
   item,
   onDelete,
   onEdit,
@@ -56,7 +57,8 @@ export default function MenuOfferingCard({
         <div className="mt-3.5 flex items-center justify-between border-t border-[#eee6df] pt-3">
           <div className="flex items-center gap-5">
             <button
-              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-95 transition"
+              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] transition hover:text-[#17120e] active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={actionsDisabled}
               onClick={() => onEdit(item)}
               type="button"
             >
@@ -65,7 +67,8 @@ export default function MenuOfferingCard({
             </button>
 
             <button
-              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] hover:text-[#17120e] active:scale-95 transition"
+              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] transition hover:text-[#17120e] active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={actionsDisabled}
               onClick={() => onDuplicate(item)}
               type="button"
             >
@@ -74,7 +77,8 @@ export default function MenuOfferingCard({
             </button>
 
             <button
-              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] hover:text-[#ff2918] active:scale-95 transition"
+              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] transition hover:text-[#ff2918] active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={actionsDisabled}
               onClick={() => onDelete(item)}
               type="button"
             >
@@ -86,9 +90,10 @@ export default function MenuOfferingCard({
           <button
             onClick={() => onToggleStatus(item)}
             type="button"
+            disabled={actionsDisabled}
             className={`relative flex items-center h-[28px] w-[76px] rounded-full transition-colors duration-200 focus:outline-none ${
               isActive ? "bg-[#00c82a]" : "bg-[#ffa800]"
-            }`}
+            } ${actionsDisabled ? "cursor-not-allowed opacity-45" : ""}`}
           >
             <span
               className={`absolute top-[2px] h-[24px] w-[24px] rounded-full bg-white transition-all duration-200 shadow-sm ${

@@ -11,6 +11,14 @@ export default function CreateMenuPricingSection({
   pricingModes,
   setPricingMode,
 }) {
+  function getModeValue(mode) {
+    return typeof mode === "string" ? mode : mode.value;
+  }
+
+  function getModeLabel(mode) {
+    return typeof mode === "string" ? mode : mode.label;
+  }
+
   return (
     <CreateMenuSectionCard
       description="Set how you want to charge for this menu."
@@ -22,21 +30,22 @@ export default function CreateMenuPricingSection({
           style={{ gridTemplateColumns: `repeat(${pricingModes.length}, minmax(0, 1fr))` }}
         >
           {pricingModes.map((mode) => {
-            const isActive = pricingMode === mode;
+            const modeValue = getModeValue(mode);
+            const isActive = pricingMode === modeValue;
 
             return (
               <button
-                key={mode}
+                key={modeValue}
               className={`h-[34px] cursor-pointer rounded-[8px] text-[13px] font-bold transition ${
                   isActive
                     ? "bg-white text-[#17120e] shadow-[0_2px_4px_rgba(0,0,0,0.06)]"
                     : "text-[#6f645b]"
                 } ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                 disabled={disabled}
-                onClick={() => setPricingMode(mode)}
+                onClick={() => setPricingMode(modeValue)}
                 type="button"
               >
-                {mode}
+                {getModeLabel(mode)}
               </button>
             );
           })}
