@@ -3,8 +3,12 @@ import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
 
 export default function DeliveryLimitsSection({
+  minDeliveryTime,
+  maxDeliveryTime,
   maxDeliveriesPerDay,
   maxOrdersPerTimeSlot,
+  onMinDeliveryTimeChange,
+  onMaxDeliveryTimeChange,
   onMaxDeliveriesPerDayChange,
   onMaxOrdersPerTimeSlotChange,
   disabled = false,
@@ -12,11 +16,37 @@ export default function DeliveryLimitsSection({
 }) {
   return (
     <DeliverySectionCard
-      description="Set limits to manage your daily delivery capacity."
+      description="Set operational limits and expected delivery window timings."
       disabled={disabled}
-      title="Limits (Optional)"
+      title="Limits & Delivery Window"
     >
       <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
+        <div>
+          <DeliveryTextInput
+            disabled={disabled}
+            error={errors.minDeliveryTime}
+            label="Minimum Delivery Time (minutes)"
+            onChange={onMinDeliveryTimeChange}
+            placeholder="30"
+            value={minDeliveryTime}
+          />
+          <p className="type-subpara mt-1 text-[#a09084]">
+            Earliest estimated delivery time for customers.
+          </p>
+        </div>
+        <div>
+          <DeliveryTextInput
+            disabled={disabled}
+            error={errors.maxDeliveryTime}
+            label="Maximum Delivery Time (minutes)"
+            onChange={onMaxDeliveryTimeChange}
+            placeholder="120"
+            value={maxDeliveryTime}
+          />
+          <p className="type-subpara mt-1 text-[#a09084]">
+            Upper delivery estimate shown during busy periods.
+          </p>
+        </div>
         <div>
           <DeliveryTextInput
             disabled={disabled}
@@ -45,7 +75,7 @@ export default function DeliveryLimitsSection({
         </div>
       </div>
       <DeliveryInfoNote>
-        These limits help avoid overbooking and manage operational workloads.
+        These limits help avoid overbooking and set realistic delivery expectations.
       </DeliveryInfoNote>
     </DeliverySectionCard>
   );

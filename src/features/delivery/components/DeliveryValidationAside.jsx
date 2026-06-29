@@ -7,6 +7,7 @@ export default function DeliveryValidationAside({
   const issues = validation?.issues || [];
   const fieldErrorMessages = Object.values(fieldErrors).filter(Boolean);
   const isValid = validation?.isValid ?? true;
+  const hasProblems = issues.length > 0 || fieldErrorMessages.length > 0 || !isValid;
 
   return (
     <aside className="h-fit rounded-[12px] bg-[#ffb596] px-4 py-4">
@@ -16,7 +17,7 @@ export default function DeliveryValidationAside({
           ? "Checking your current configuration against backend validation rules..."
           : pickupOnly
             ? "Pickup only is enabled, so delivery pricing, schedule, and capacity rules are currently disabled."
-            : isValid
+            : !hasProblems
               ? "Your delivery configuration currently passes backend validation."
               : "Fix the validation issues below before saving."}
       </p>

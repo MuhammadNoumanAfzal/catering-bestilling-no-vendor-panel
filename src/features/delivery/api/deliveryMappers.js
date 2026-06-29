@@ -14,6 +14,8 @@ export const defaultDeliverySettings = {
   timeSlots: DEFAULT_TIME_SLOTS,
   maxDeliveriesPerDay: "0",
   maxOrdersPerTimeSlot: "0",
+  minDeliveryTime: "",
+  maxDeliveryTime: "",
   liveValidation: {
     isValid: true,
     issues: [],
@@ -111,6 +113,8 @@ export function mapVendorDeliverySettingsToForm(settingsPayload) {
         : DEFAULT_TIME_SLOTS,
     maxDeliveriesPerDay: normalizeString(settings.maxDeliveriesPerDay ?? "0"),
     maxOrdersPerTimeSlot: normalizeString(settings.maxOrdersPerTimeSlot ?? "0"),
+    minDeliveryTime: normalizeNullableString(settings.minDeliveryTime),
+    maxDeliveryTime: normalizeNullableString(settings.maxDeliveryTime),
     liveValidation: {
       isValid: settings.liveValidation?.isValid ?? true,
       issues: Array.isArray(settings.liveValidation?.issues)
@@ -180,6 +184,8 @@ export function buildDeliverySettingsInput(formState) {
     deliveryTimeSlots,
     maxDeliveriesPerDay: parseIntegerOrNull(formState.maxDeliveriesPerDay),
     maxOrdersPerTimeSlot: parseIntegerOrNull(formState.maxOrdersPerTimeSlot),
+    minDeliveryTime: parseIntegerOrNull(formState.minDeliveryTime),
+    maxDeliveryTime: parseIntegerOrNull(formState.maxDeliveryTime),
   };
 }
 
@@ -199,6 +205,8 @@ export function getComparableDeliverySettings(formState) {
     timeSlots: [...(formState.timeSlots || [])],
     maxDeliveriesPerDay: normalizeNullableString(formState.maxDeliveriesPerDay),
     maxOrdersPerTimeSlot: normalizeNullableString(formState.maxOrdersPerTimeSlot),
+    minDeliveryTime: normalizeNullableString(formState.minDeliveryTime),
+    maxDeliveryTime: normalizeNullableString(formState.maxDeliveryTime),
   };
 }
 
