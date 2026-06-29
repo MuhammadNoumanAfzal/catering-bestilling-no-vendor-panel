@@ -95,6 +95,8 @@ export default function CreateMenuBasicInfoSection({
   menuTitle,
   menuTypes,
   menuTypeOptions,
+  occasionOptions,
+  selectedOccasions,
   onCategoryChange,
   onCoverImageSelect,
   onDescriptionChange,
@@ -102,8 +104,10 @@ export default function CreateMenuBasicInfoSection({
   onRemoveGalleryImage,
   onMenuTitleChange,
   onMenuTypesChange,
+  onOccasionsChange,
   onAddNewCategoryClick,
   onAddNewMealTypeClick,
+  onAddNewOccasionClick,
 }) {
   return (
     <CreateMenuSectionCard
@@ -155,7 +159,7 @@ export default function CreateMenuBasicInfoSection({
           </div>
           <div>
             <div className="flex items-center justify-between">
-              <Label>Meal Type</Label>
+              <Label>Food Type</Label>
               {!disabled && (
                 <button
                   type="button"
@@ -170,10 +174,35 @@ export default function CreateMenuBasicInfoSection({
               disabled={disabled}
               onChange={onMenuTypesChange}
               options={menuTypeOptions}
-              placeholder="Select one or more meal types"
+              placeholder="Select one or more food types"
               value={menuTypes}
             />
           </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <Label>Occasions</Label>
+            {!disabled && (
+              <button
+                type="button"
+                onClick={onAddNewOccasionClick}
+                className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
+              >
+                + Add New
+              </button>
+            )}
+          </div>
+          <MultiSelectInput
+            disabled={disabled}
+            onChange={onOccasionsChange}
+            options={occasionOptions}
+            placeholder="Select one or more occasions"
+            value={selectedOccasions}
+          />
+          <p className="mt-2 text-[12px] font-medium leading-[1.5] text-[#8a776a]">
+            Rule: Select at least one Food Type to show this menu under Browse by Food Type. Occasion is optional and only controls where the menu appears under Browse by Occasion.
+          </p>
         </div>
 
         {disabled ? (

@@ -27,6 +27,7 @@ export default function CreateMenuPage() {
     isViewMode,
     menuItemsForDisplay,
     menuTypeOptions,
+    occasionOptions,
     pricingModes,
     resolveMediaUrl,
     actions,
@@ -88,6 +89,8 @@ export default function CreateMenuPage() {
             menuTitle={formState.menuTitle}
             menuTypes={formState.menuTypes}
             menuTypeOptions={menuTypeOptions}
+            occasionOptions={occasionOptions}
+            selectedOccasions={formState.selectedOccasions}
             onCategoryChange={(event) => actions.setField("category", event.target.value)}
             onCoverImageSelect={(file) =>
               actions.handleImageUpload(file, (asset) => actions.setField("coverImage", asset))
@@ -109,8 +112,10 @@ export default function CreateMenuPage() {
             }
             onMenuTitleChange={(event) => actions.setField("menuTitle", event.target.value)}
             onMenuTypesChange={(value) => actions.setField("menuTypes", value)}
+            onOccasionsChange={(value) => actions.setField("selectedOccasions", value)}
             onAddNewCategoryClick={actions.handleAddNewCategoryClick}
             onAddNewMealTypeClick={actions.handleAddMealTypeClick}
+            onAddNewOccasionClick={actions.handleAddOccasionClick}
           />
 
           <CreateMenuPricingSection
@@ -182,7 +187,7 @@ export default function CreateMenuPage() {
                 API Ready
               </p>
               <p className="mt-2 text-[13px] font-medium leading-[1.55] text-[#6e6259]">
-                Categories, meal types, pricing modes, add-ons, menu details, and saves are now loaded from the vendor menu API.
+                Categories, food types, occasions, pricing modes, add-ons, menu details, and saves are now loaded from the vendor menu API.
               </p>
             </div>
           ) : null}
@@ -224,17 +229,31 @@ export default function CreateMenuPage() {
       />
 
       <AddCategoryModal
-        duplicateErrorMessage="This meal type already exists."
-        emptyErrorMessage="Meal type name cannot be empty."
+        duplicateErrorMessage="This food type already exists."
+        emptyErrorMessage="Food type name cannot be empty."
         existingCategories={menuTypeOptions.map((option) => option.label)}
-        fieldLabel="Meal Type Name"
+        fieldLabel="Food Type Name"
         isOpen={Boolean(formState.isAddMealTypeModalOpen)}
         onAdd={actions.handleCreateMealType}
         onClose={() => actions.setField("isAddMealTypeModalOpen", false)}
-        placeholder="e.g. Desi Food, Fast Food"
-        submitLabel="Add Meal Type"
+        placeholder="e.g. Hot Meal, Desi Food"
+        submitLabel="Add Food Type"
         submittingLabel="Adding..."
-        title="Add New Meal Type"
+        title="Add New Food Type"
+      />
+
+      <AddCategoryModal
+        duplicateErrorMessage="This occasion already exists."
+        emptyErrorMessage="Occasion name cannot be empty."
+        existingCategories={occasionOptions.map((option) => option.label)}
+        fieldLabel="Occasion Name"
+        isOpen={Boolean(formState.isAddOccasionModalOpen)}
+        onAdd={actions.handleCreateOccasion}
+        onClose={() => actions.setField("isAddOccasionModalOpen", false)}
+        placeholder="e.g. Office Lunch, Birthday Party"
+        submitLabel="Add Occasion"
+        submittingLabel="Adding..."
+        title="Add New Occasion"
       />
 
       <AddCategoryModal

@@ -8,6 +8,11 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       name
       slug
     }
+    occasions {
+      id
+      name
+      slug
+    }
     allergens {
       id
       name
@@ -58,6 +63,11 @@ export const GET_VENDOR_MENU_DETAIL_QUERY = `
       }
       menuType
       foodTypes {
+        id
+        name
+        slug
+      }
+      occasions {
         id
         name
         slug
@@ -193,6 +203,11 @@ export const SAVE_VENDOR_MENU_MUTATION = `
           name
         }
         menuType
+        occasions {
+          id
+          name
+          slug
+        }
         menuStatus
         pricingType
         priceWithTax
@@ -234,6 +249,25 @@ export const SAVE_VENDOR_MENU_MUTATION = `
 export const CREATE_FOOD_TYPE_MUTATION = `
   mutation CreateFoodType($input: FoodTypeInput!) {
     foodTypeMutation(input: $input) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      instance {
+        id
+        name
+        slug
+      }
+    }
+  }
+`;
+
+export const CREATE_OCCASION_MUTATION = `
+  mutation CreateOccasion($name: String!) {
+    occasionMutation(name: $name) {
       success
       message
       errors {

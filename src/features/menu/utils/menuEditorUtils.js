@@ -17,6 +17,7 @@ export function getInitialMenuState() {
     category: "",
     productType: "",
     menuTypes: [],
+    selectedOccasions: [],
     coverImage: null,
     galleryImages: [],
     selectedDays: [],
@@ -37,6 +38,7 @@ export function getInitialMenuState() {
     isImportModalOpen: false,
     isAddCategoryModalOpen: false,
     isAddMealTypeModalOpen: false,
+    isAddOccasionModalOpen: false,
     isAddAllergenModalOpen: false,
   };
 }
