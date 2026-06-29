@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
-import { Label, SelectInput, TextArea, TextInput, UploadBox } from "./CreateMenuFields";
+import {
+  Label,
+  MultiSelectInput,
+  SelectInput,
+  TextArea,
+  TextInput,
+  UploadBox,
+} from "./CreateMenuFields";
 
 function ImageSlider({ images }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -86,7 +93,7 @@ export default function CreateMenuBasicInfoSection({
   disabled = false,
   galleryImages = [],
   menuTitle,
-  menuType,
+  menuTypes,
   menuTypeOptions,
   onCategoryChange,
   onCoverImageSelect,
@@ -94,8 +101,9 @@ export default function CreateMenuBasicInfoSection({
   onGalleryImageSelect,
   onRemoveGalleryImage,
   onMenuTitleChange,
-  onMenuTypeChange,
+  onMenuTypesChange,
   onAddNewCategoryClick,
+  onAddNewMealTypeClick,
 }) {
   return (
     <CreateMenuSectionCard
@@ -146,13 +154,24 @@ export default function CreateMenuBasicInfoSection({
             />
           </div>
           <div>
-            <Label>Meal Type</Label>
-            <SelectInput
+            <div className="flex items-center justify-between">
+              <Label>Meal Type</Label>
+              {!disabled && (
+                <button
+                  type="button"
+                  onClick={onAddNewMealTypeClick}
+                  className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
+                >
+                  + Add New
+                </button>
+              )}
+            </div>
+            <MultiSelectInput
               disabled={disabled}
-              onChange={onMenuTypeChange}
+              onChange={onMenuTypesChange}
               options={menuTypeOptions}
-              placeholder="Select meal type"
-              value={menuType}
+              placeholder="Select one or more meal types"
+              value={menuTypes}
             />
           </div>
         </div>

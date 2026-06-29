@@ -4,6 +4,7 @@ import { Label, TextInput } from "../create-menu/CreateMenuFields";
 export default function CreateAddOnAvailabilitySection({
   availableImmediately,
   customCategory,
+  disabled = false,
   dietaryOptions,
   onAvailabilityToggle,
   selectedDietary,
@@ -28,6 +29,7 @@ export default function CreateAddOnAvailabilitySection({
                   <input
                     checked={isChecked}
                     className="h-4 w-4 cursor-pointer accent-[#cf6e38]"
+                    disabled={disabled}
                     onChange={() => onAvailabilityToggle(option)}
                     type="checkbox"
                   />
@@ -53,7 +55,8 @@ export default function CreateAddOnAvailabilitySection({
               aria-pressed={availableImmediately}
               className={`relative mt-1 h-[20px] w-[36px] cursor-pointer rounded-full transition ${
                 availableImmediately ? "bg-[#df7b45]" : "bg-[#d8cec6]"
-              }`}
+              } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+              disabled={disabled}
               onClick={onAvailabilityToggle}
               type="button"
             >

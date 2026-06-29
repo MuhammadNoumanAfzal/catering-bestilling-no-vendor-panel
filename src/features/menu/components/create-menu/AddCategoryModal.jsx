@@ -1,7 +1,19 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCategories }) {
+export default function AddCategoryModal({
+  isOpen,
+  onClose,
+  onAdd,
+  existingCategories,
+  title = "Add New Category",
+  fieldLabel = "Category Name",
+  placeholder = "e.g. Cocktail Party, Brunch",
+  emptyErrorMessage = "Value cannot be empty.",
+  duplicateErrorMessage = "This value already exists.",
+  submitLabel = "Add",
+  submittingLabel = "Adding...",
+}) {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -12,16 +24,15 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
     e.preventDefault();
     const trimmed = newCategoryName.trim();
     if (!trimmed) {
-      setError("Category name cannot be empty.");
+      setError(emptyErrorMessage);
       return;
     }
 
-    // Check if duplicate case-insensitive
     const exists = existingCategories.some(
       (cat) => cat.toLowerCase() === trimmed.toLowerCase()
     );
     if (exists) {
-      setError("This category already exists.");
+      setError(duplicateErrorMessage);
       return;
     }
 
@@ -43,7 +54,7 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#f2ece6]">
           <h2 className="text-[18px] font-extrabold text-[#211913] m-0">
-            Add New Category
+            {title}
           </h2>
           <button
             onClick={() => {
@@ -65,13 +76,13 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label className="mb-1.5 block text-[13px] font-bold text-[#211913] uppercase tracking-wide">
-              Category Name
+              {fieldLabel}
             </label>
             <input
               type="text"
               autoFocus
               className="h-[42px] w-full rounded-lg border border-[#d7cec4] bg-white px-3 text-[14px] text-[#1f1814] outline-none transition placeholder:text-[#aea39a] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
-              placeholder="e.g. Cocktail Party, Brunch"
+              placeholder={placeholder}
               value={newCategoryName}
               onChange={(e) => {
                 setNewCategoryName(e.target.value);
@@ -108,7 +119,7 @@ export default function AddCategoryModal({ isOpen, onClose, onAdd, existingCateg
               disabled={isSubmitting}
               className="h-[36px] px-4.5 rounded-lg bg-[#cf6e38] text-[13px] font-extrabold text-white hover:bg-[#bf622f] active:scale-95 transition cursor-pointer"
             >
-              {isSubmitting ? "Adding..." : "Add Category"}
+              {isSubmitting ? submittingLabel : submitLabel}
             </button>
           </div>
         </form>

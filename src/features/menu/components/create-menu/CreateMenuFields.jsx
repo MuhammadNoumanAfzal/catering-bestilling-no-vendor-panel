@@ -77,7 +77,7 @@ export function SelectInput({
 export function MultiSelectInput({
   disabled = false,
   options = [],
-  value = "",
+  value = [],
   onChange,
   placeholder,
 }) {
@@ -104,9 +104,16 @@ export function MultiSelectInput({
     };
   }, []);
 
-  const selectedList = value
-    ? value.split(",").map((item) => item.trim()).filter(Boolean)
-    : [];
+  const selectedList = Array.isArray(value)
+    ? value.filter(Boolean)
+    : String(value || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+  const selectedLabels = selectedList.map((selectedValue) => {
+    const matchingOption = options.find((option) => getOptionValue(option) === selectedValue);
+    return matchingOption ? getOptionLabel(matchingOption) : selectedValue;
+  });
 
   function handleToggle(optionValue) {
     let nextList;
@@ -115,8 +122,7 @@ export function MultiSelectInput({
     } else {
       nextList = [...selectedList, optionValue];
     }
-    const nextValue = nextList.join(", ");
-    onChange({ target: { value: nextValue } });
+    onChange(nextList);
   }
 
   return (
@@ -127,8 +133,8 @@ export function MultiSelectInput({
         onClick={() => setIsOpen((prev) => !prev)}
         className="flex h-[42px] w-full cursor-pointer items-center justify-between rounded-[8px] border border-[#d7cec4] bg-white px-3 pr-8 text-left text-[14px] text-[#1f1814] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
       >
-        <span className={selectedList.length ? "text-[#1f1814] truncate pr-2" : "text-[#aea39a]"}>
-          {selectedList.length ? selectedList.join(", ") : placeholder}
+        <span className={selectedLabels.length ? "text-[#1f1814] truncate pr-2" : "text-[#aea39a]"}>
+          {selectedLabels.length ? selectedLabels.join(", ") : placeholder}
         </span>
         <ChevronDown
           className={`shrink-0 text-[#7d7064] transition ${isOpen ? "rotate-180" : ""}`}

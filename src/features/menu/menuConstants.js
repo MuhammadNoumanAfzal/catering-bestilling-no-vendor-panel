@@ -2,7 +2,7 @@ export const menuManagementTabs = ["All", "Active", "Draft", "Paused", "Add-ons"
 
 export const menuSortOptions = ["Latest", "Oldest", "Highest Price", "Lowest Price"];
 
-export const allergenOptions = ["Eggs", "Dairy", "Nuts", "Soy", "Gluten"];
+export const allergenOptions = [];
 
 export const dietaryOptions = ["Vegetarian", "Halal", "Gluten-Free", "Vegan"];
 
@@ -23,7 +23,7 @@ export const availabilityDays = [
 ];
 
 export const initialCreateMenuItems = [
-  { id: "draft-item-1", title: "", allergen: "", image: null },
+  { id: "draft-item-1", title: "", allergens: [], image: null },
 ];
 
 export const statusLabelMap = {
