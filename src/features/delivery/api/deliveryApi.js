@@ -1,12 +1,22 @@
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
   GET_VENDOR_DELIVERY_SETTINGS_QUERY,
+  SEARCH_AVAILABLE_AREAS_QUERY,
   UPDATE_VENDOR_DELIVERY_SETTINGS_MUTATION,
   VALIDATE_VENDOR_DELIVERY_SETTINGS_MUTATION,
 } from "./deliveryQueries";
 
 export function getVendorDeliverySettings() {
   return executeProtectedGraphqlRequest(GET_VENDOR_DELIVERY_SETTINGS_QUERY, {});
+}
+
+export async function searchAvailableAreas({ term, first = 10 }) {
+  const result = await executeProtectedGraphqlRequest(
+    SEARCH_AVAILABLE_AREAS_QUERY,
+    { term: term || null, first },
+  );
+
+  return Array.isArray(result?.validAreasSearch) ? result.validAreasSearch : [];
 }
 
 export async function updateVendorDeliverySettings(input) {

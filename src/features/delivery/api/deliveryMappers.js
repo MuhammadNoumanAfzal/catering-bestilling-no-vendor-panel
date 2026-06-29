@@ -4,6 +4,7 @@ const DEFAULT_DELIVERY_DAYS = ["mo", "tu", "we", "th", "fr", "sa", "su"];
 export const defaultDeliverySettings = {
   id: "",
   selectedModes: ["delivery", "pickup"],
+  serviceAreas: [],
   pickupAddress: "",
   pickupInstructions: "",
   baseFee: "0.00",
@@ -72,7 +73,19 @@ export function deriveDeliveryMode(selectedModes) {
   return "delivery";
 }
 
-export function mapVendorDeliverySettingsToForm(settings) {
+function normalizeServiceArea(area) {
+  return {
+    id: area?.id || "",
+    name: normalizeString(area?.name),
+    postCode: normalizeString(area?.postCode),
+    isActive: area?.isActive !== false,
+  };
+}
+
+export function mapVendorDeliverySettingsToForm(settingsPayload) {
+  const settings = settingsPayload?.deliverySettings || settingsPayload;
+  const serviceAreas = settingsPayload?.serviceAreas || [];
+
   if (!settings) {
     return defaultDeliverySettings;
   }
@@ -80,6 +93,9 @@ export function mapVendorDeliverySettingsToForm(settings) {
   return {
     id: settings.id || "",
     selectedModes: deriveSelectedModes(settings),
+    serviceAreas: Array.isArray(serviceAreas)
+      ? serviceAreas.map(normalizeServiceArea).filter((area) => area.id)
+      : [],
     pickupAddress: normalizeString(settings.pickupAddress),
     pickupInstructions: normalizeString(settings.pickupInstructions),
     baseFee: normalizeString(settings.baseDeliveryFee || "0.00"),
@@ -152,6 +168,9 @@ export function buildDeliverySettingsInput(formState) {
     deliveryMode: deriveDeliveryMode(selectedModes),
     deliveryAvailable: selectedModes.includes("delivery"),
     pickupAvailable: selectedModes.includes("pickup"),
+    validAreaIds: Array.isArray(formState.serviceAreas)
+      ? formState.serviceAreas.map((area) => area.id).filter(Boolean)
+      : [],
     pickupAddress: normalizeNullableString(formState.pickupAddress),
     pickupInstructions: normalizeNullableString(formState.pickupInstructions) || null,
     baseDeliveryFee: parseDecimalOrNull(formState.baseFee),
@@ -167,6 +186,10 @@ export function buildDeliverySettingsInput(formState) {
 export function getComparableDeliverySettings(formState) {
   return {
     selectedModes: [...(formState.selectedModes || [])].sort(),
+    serviceAreaIds: [...(formState.serviceAreas || [])]
+      .map((area) => area.id)
+      .filter(Boolean)
+      .sort(),
     pickupAddress: normalizeNullableString(formState.pickupAddress),
     pickupInstructions: normalizeNullableString(formState.pickupInstructions),
     baseFee: normalizeNullableString(formState.baseFee),
