@@ -4,15 +4,13 @@ import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
 import SettingsToggleRow from "./SettingsToggleRow";
-import {
-  cuisineOptions,
-  businessTypeOptions,
-  languageOptions,
-  currencyOptions,
-  timeZoneOptions,
-} from "../data/settingsData";
 
 export default function SettingsBusinessProfilePanel({
+  businessTypeOptions,
+  closureTypeOptions,
+  cuisineOptions,
+  currencyOptions,
+  disabled = false,
   handleBusinessHourChange,
   handleDeactivateStore,
   handleDeleteStore,
@@ -20,9 +18,11 @@ export default function SettingsBusinessProfilePanel({
   handleNotificationToggle,
   handleResetAllSettings,
   handleToggleBusinessDay,
+  languageOptions,
   settings,
   handleSaveClosure,
   handleDeleteClosure,
+  timeZoneOptions,
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(260px,0.78fr)] gap-4 max-[1120px]:grid-cols-1">
@@ -33,24 +33,28 @@ export default function SettingsBusinessProfilePanel({
         >
           <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
             <SettingsTextField
+              disabled={disabled}
               label="Business Name"
               onChange={handleFieldChange("businessName")}
               placeholder="Enter business name"
               value={settings.businessName}
             />
             <SettingsTextField
+              disabled={disabled}
               label="Business Email"
               onChange={handleFieldChange("businessEmail")}
               placeholder="Enter business email"
               value={settings.businessEmail}
             />
             <SettingsTextField
+              disabled={disabled}
               label="Phone Number"
               onChange={handleFieldChange("phoneNumber")}
               placeholder="Enter phone number"
               value={settings.phoneNumber}
             />
             <SettingsTextField
+              disabled={disabled}
               label="Business Address"
               onChange={handleFieldChange("businessAddress")}
               placeholder="Enter business address"
@@ -60,6 +64,7 @@ export default function SettingsBusinessProfilePanel({
 
           <div className="mt-3">
             <SettingsTextField
+              disabled={disabled}
               label="Business Description"
               multiline
               onChange={handleFieldChange("businessDescription")}
@@ -76,45 +81,51 @@ export default function SettingsBusinessProfilePanel({
           <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
             <div className="flex flex-col gap-3">
               <SettingsSelectField
+                disabled={disabled}
                 label="Cuisine Type"
                 onChange={handleFieldChange("cuisineType")}
                 options={cuisineOptions}
                 placeholder="Select cuisine"
                 value={settings.cuisineType}
               />
-              {settings.cuisineType === "Custom" && (
+              {settings.customCuisineType || settings.cuisineType === "Custom" ? (
                 <SettingsTextField
+                  disabled={disabled}
                   label="Custom Cuisine"
                   onChange={handleFieldChange("customCuisineType")}
                   placeholder="Enter custom cuisine"
                   value={settings.customCuisineType || ""}
                 />
-              )}
+              ) : null}
             </div>
             <div className="flex flex-col gap-3">
               <SettingsSelectField
+                disabled={disabled}
                 label="Business Type"
                 onChange={handleFieldChange("businessType")}
                 options={businessTypeOptions}
                 placeholder="Select business type"
                 value={settings.businessType}
               />
-              {settings.businessType === "Custom" && (
+              {settings.customBusinessType || settings.businessType === "Custom" ? (
                 <SettingsTextField
+                  disabled={disabled}
                   label="Custom Business Type"
                   onChange={handleFieldChange("customBusinessType")}
                   placeholder="Enter custom business type"
                   value={settings.customBusinessType || ""}
                 />
-              )}
+              ) : null}
             </div>
             <SettingsTextField
+              disabled={disabled}
               label="Established Year (Optional)"
               onChange={handleFieldChange("establishedYear")}
               placeholder="Enter year"
               value={settings.establishedYear}
             />
             <SettingsTextField
+              disabled={disabled}
               label="Tax / Organization Number (Optional)"
               onChange={handleFieldChange("taxId")}
               placeholder="Enter number"
@@ -124,6 +135,7 @@ export default function SettingsBusinessProfilePanel({
         </SettingsSectionCard>
 
         <SettingsBusinessHoursSection
+          disabled={disabled}
           hours={settings.hours}
           onChangeTime={handleBusinessHourChange}
           onToggleDay={handleToggleBusinessDay}
@@ -131,7 +143,9 @@ export default function SettingsBusinessProfilePanel({
 
         <div id="special-closures-section">
           <SettingsSpecialClosuresSection
+            closureTypeOptions={closureTypeOptions}
             closures={settings.closures}
+            disabled={disabled}
             onAddOrUpdateClosure={handleSaveClosure}
             onDeleteClosure={handleDeleteClosure}
           />
@@ -145,39 +159,59 @@ export default function SettingsBusinessProfilePanel({
         >
           <SettingsToggleRow
             checked={settings.notifications.newOrder}
+            disabled={disabled}
             helper="Receive instant alerts when a new order comes in."
             label="New Order"
             onToggle={() => handleNotificationToggle("newOrder")}
           />
           <SettingsToggleRow
             checked={settings.notifications.orderUpdates}
+            disabled={disabled}
             helper="Know when the status of orders changes."
             label="Order Updates"
             onToggle={() => handleNotificationToggle("orderUpdates")}
           />
           <SettingsToggleRow
             checked={settings.notifications.reviewsRatings}
+            disabled={disabled}
             helper="Get notified when a customer leaves feedback."
             label="Reviews & Ratings"
             onToggle={() => handleNotificationToggle("reviewsRatings")}
           />
           <SettingsToggleRow
-            checked={settings.notifications.promosTips}
+            checked={settings.notifications.promos_tips}
+            disabled={disabled}
             helper="Receive business insights and platform tips."
             label="Promotions & Tips"
-            onToggle={() => handleNotificationToggle("promosTips")}
+            onToggle={() => handleNotificationToggle("promos_tips")}
           />
           <SettingsToggleRow
             checked={settings.notifications.emailNotifications}
+            disabled={disabled}
             helper="Receive important updates in your email inbox."
             label="Email Notifications"
             onToggle={() => handleNotificationToggle("emailNotifications")}
+          />
+          <SettingsToggleRow
+            checked={settings.notifications.pushNotifications}
+            disabled={disabled}
+            helper="Receive push alerts on supported devices."
+            label="Push Notifications"
+            onToggle={() => handleNotificationToggle("pushNotifications")}
+          />
+          <SettingsToggleRow
+            checked={settings.notifications.smsNotifications}
+            disabled={disabled}
+            helper="Receive important alerts by SMS."
+            label="SMS Notifications"
+            onToggle={() => handleNotificationToggle("smsNotifications")}
           />
         </SettingsSectionCard>
 
         <SettingsSectionCard description="" title="Language & Region">
           <div className="space-y-3">
             <SettingsSelectField
+              disabled={disabled}
               label="Language"
               onChange={handleFieldChange("language")}
               options={languageOptions}
@@ -185,6 +219,7 @@ export default function SettingsBusinessProfilePanel({
               value={settings.language}
             />
             <SettingsSelectField
+              disabled={disabled}
               label="Region / Currency"
               onChange={handleFieldChange("currency")}
               options={currencyOptions}
@@ -192,6 +227,7 @@ export default function SettingsBusinessProfilePanel({
               value={settings.currency}
             />
             <SettingsSelectField
+              disabled={disabled}
               label="Time Zone"
               onChange={handleFieldChange("timeZone")}
               options={timeZoneOptions}
@@ -215,7 +251,8 @@ export default function SettingsBusinessProfilePanel({
                 </p>
               </div>
               <button
-                className="cursor-pointer rounded-[6px] border border-[#d7cfc7] bg-white px-3 py-1.5 text-[10px] font-bold text-[#2b221d]"
+                className="cursor-pointer rounded-[6px] border border-[#d7cfc7] bg-white px-3 py-1.5 text-[10px] font-bold text-[#2b221d] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={disabled}
                 onClick={handleResetAllSettings}
                 type="button"
               >
@@ -230,7 +267,8 @@ export default function SettingsBusinessProfilePanel({
                 </p>
               </div>
               <button
-                className="cursor-pointer rounded-[6px] border border-[#f0c8bf] bg-[#fff3ef] px-3 py-1.5 text-[10px] font-bold text-[#d96e39]"
+                className="cursor-pointer rounded-[6px] border border-[#f0c8bf] bg-[#fff3ef] px-3 py-1.5 text-[10px] font-bold text-[#d96e39] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={disabled}
                 onClick={handleDeactivateStore}
                 type="button"
               >
@@ -245,7 +283,8 @@ export default function SettingsBusinessProfilePanel({
                 </p>
               </div>
               <button
-                className="cursor-pointer rounded-[6px] border border-[#f1c2b6] bg-[#fff1ee] px-3 py-1.5 text-[10px] font-bold text-[#d2542f]"
+                className="cursor-pointer rounded-[6px] border border-[#f1c2b6] bg-[#fff1ee] px-3 py-1.5 text-[10px] font-bold text-[#d2542f] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={disabled}
                 onClick={handleDeleteStore}
                 type="button"
               >

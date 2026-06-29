@@ -4,6 +4,7 @@ export default function SettingsToggleRow({
   checked,
   onToggle,
   tone = "default",
+  disabled = false,
 }) {
   const activeClasses =
     tone === "danger"
@@ -21,7 +22,8 @@ export default function SettingsToggleRow({
       <button
         className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full transition ${
           checked ? activeClasses : "bg-[#e7ddd5]"
-        }`}
+        } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+        disabled={disabled}
         onClick={onToggle}
         type="button"
       >

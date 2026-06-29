@@ -1,29 +1,30 @@
 import { useState } from "react";
-import { Pencil, Trash2, Calendar } from "lucide-react";
+import { Calendar, Pencil, Trash2 } from "lucide-react";
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
 
-const closureTypeOptions = [
-  { value: "Holiday", label: "Holiday" },
-  { value: "Maintenance", label: "Maintenance" },
-  { value: "Staff Training", label: "Staff Training" },
-  { value: "Event", label: "Event" },
-  { value: "Other", label: "Other" },
-];
-
 function formatDate(dateStr) {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    return "";
+  }
+
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  const date = new Date(dateStr);
+
+  if (Number.isNaN(date.getTime())) {
+    return dateStr;
+  }
+
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 export default function SettingsSpecialClosuresSection({
   closures = [],
   onAddOrUpdateClosure,
   onDeleteClosure,
+  closureTypeOptions = [],
+  disabled = false,
 }) {
   const [closureType, setClosureType] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -35,6 +36,7 @@ export default function SettingsSpecialClosuresSection({
     if (!closureType || !startDate || !endDate) {
       return;
     }
+
     onAddOrUpdateClosure(closureType, startDate, endDate, reason, editingId);
     setClosureType("");
     setStartDate("");
@@ -49,9 +51,10 @@ export default function SettingsSpecialClosuresSection({
     setEndDate(item.end);
     setReason(item.reason);
     setEditingId(item.id);
-    const el = document.getElementById("special-closures-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+
+    const element = document.getElementById("special-closures-section");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
     }
   }
 
@@ -62,6 +65,7 @@ export default function SettingsSpecialClosuresSection({
     >
       <div className="grid grid-cols-4 gap-3 max-[960px]:grid-cols-2 max-[480px]:grid-cols-1">
         <SettingsSelectField
+          disabled={disabled}
           label="Closure type"
           onChange={(event) => setClosureType(event.target.value)}
           options={closureTypeOptions}
@@ -73,13 +77,14 @@ export default function SettingsSpecialClosuresSection({
           <span className="text-[13px] font-bold text-[#2a211b]">Start date</span>
           <div className="relative">
             <input
-              className="type-subpara h-[38px] w-full rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+              className="type-subpara h-[38px] w-full rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
+              disabled={disabled}
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(event) => setStartDate(event.target.value)}
             />
             <Calendar
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064] pointer-events-none"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
               size={16}
             />
           </div>
@@ -89,19 +94,21 @@ export default function SettingsSpecialClosuresSection({
           <span className="text-[13px] font-bold text-[#2a211b]">End date</span>
           <div className="relative">
             <input
-              className="type-subpara h-[38px] w-full rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+              className="type-subpara h-[38px] w-full rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
+              disabled={disabled}
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(event) => setEndDate(event.target.value)}
             />
             <Calendar
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064] pointer-events-none"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
               size={16}
             />
           </div>
         </label>
 
         <SettingsTextField
+          disabled={disabled}
           label="Reason (optional)"
           onChange={(event) => setReason(event.target.value)}
           placeholder="e.g. Christmas holidays"
@@ -111,16 +118,19 @@ export default function SettingsSpecialClosuresSection({
 
       <div className="mt-3 flex justify-end">
         <button
-          className="cursor-pointer rounded-lg bg-[#cf6e38] px-5 py-2 text-[13px] font-bold text-white hover:bg-[#bf622f] active:scale-95 transition"
+          className={`rounded-lg bg-[#cf6e38] px-5 py-2 text-[13px] font-bold text-white transition ${
+            disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-[#bf622f] active:scale-95"
+          }`}
+          disabled={disabled}
           onClick={handleAddOrUpdate}
           type="button"
         >
-          {editingId ? "Update Closure" : "AddClosure"}
+          {editingId ? "Update Closure" : "Add Closure"}
         </button>
       </div>
 
       <div className="mt-6 border-t border-[#f2ece6] pt-4">
-        <h3 className="text-[14px] font-bold text-[#201914] mb-3">Upcoming Closure Dates</h3>
+        <h3 className="mb-3 text-[14px] font-bold text-[#201914]">Upcoming Closure Dates</h3>
 
         {closures.length ? (
           <div className="overflow-x-auto">
@@ -153,15 +163,21 @@ export default function SettingsSpecialClosuresSection({
                       <div className="flex justify-end gap-2.5">
                         <button
                           type="button"
+                          disabled={disabled}
                           onClick={() => handleEditClick(item)}
-                          className="cursor-pointer text-[#7a6d63] hover:text-[#cf6e38] transition active:scale-90"
+                          className={`text-[#7a6d63] transition active:scale-90 ${
+                            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:text-[#cf6e38]"
+                          }`}
                         >
                           <Pencil size={15} />
                         </button>
                         <button
                           type="button"
+                          disabled={disabled}
                           onClick={() => onDeleteClosure(item.id)}
-                          className="cursor-pointer text-[#de5f5f] hover:text-[#b23b3b] transition active:scale-90"
+                          className={`text-[#de5f5f] transition active:scale-90 ${
+                            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:text-[#b23b3b]"
+                          }`}
                         >
                           <Trash2 size={15} />
                         </button>
@@ -173,7 +189,7 @@ export default function SettingsSpecialClosuresSection({
             </table>
           </div>
         ) : (
-          <p className="text-[12px] font-semibold text-[#8a7c70] py-4 text-center">
+          <p className="py-4 text-center text-[12px] font-semibold text-[#8a7c70]">
             No upcoming closures configured.
           </p>
         )}

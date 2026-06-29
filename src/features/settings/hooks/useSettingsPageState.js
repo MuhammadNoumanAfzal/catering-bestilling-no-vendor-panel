@@ -1,13 +1,38 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  confirmVendorDeactivateStore,
+  changeVendorPassword,
+  deactivateVendorStore,
+  deleteVendorSpecialClosure,
+  deleteVendorStore,
+  getVendorSettingsPage,
+  resetVendorSettingsToDefault,
+  updateVendorAccountProfile,
+  updateVendorBusinessHours,
+  updateVendorBusinessProfile,
+  updateVendorNotificationPreferences,
+  updateVendorRegionalPreferences,
+  upsertVendorSpecialClosure,
+} from "../api/settingsApi";
+import {
+  buildAccountProfileInput,
+  buildBusinessHoursInput,
+  buildBusinessProfileInput,
+  buildNotificationPreferencesInput,
+  buildPasswordChangeInput,
+  buildRegionalPreferencesInput,
+  buildSpecialClosureInput,
+  buildStorePasswordInput,
+  defaultSettingsOptions,
+  defaultSettingsState,
+  getComparablePasswordState,
+  getComparableSettingsState,
+  mapVendorSettingsPage,
+} from "../api/settingsMappers";
+import {
   confirmVendorDeleteStore,
-  confirmVendorResetSettings,
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
-
-const SETTINGS_STORAGE_KEY = "settings-page-state";
 
 const emptyPasswordForm = {
   currentPassword: "",
@@ -15,75 +40,55 @@ const emptyPasswordForm = {
   confirmPassword: "",
 };
 
-const defaultSettings = {
-  businessName: "Fint's Grill",
-  businessEmail: "fints@cateringmail.com",
-  phoneNumber: "+47 92 00 18 00",
-  businessAddress: "500 Oslo city avenue, Norway",
-  businessDescription:
-    "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  cuisineType: "Italiensk",
-  businessType: "Cateringfirma",
-  establishedYear: "2001",
-  taxId: "NO 0221",
-  notifications: {
-    newOrder: true,
-    orderUpdates: true,
-    reviewsRatings: true,
-    promosTips: false,
-    emailNotifications: true,
-  },
-  language: "English",
-  currency: "Norway (NOK)",
-  timeZone: "GMT +01:00",
-  account: {
-    fullName: "Raja Haider",
-    emailAddress: "fint00@kitchenmail.com",
-    phoneNumber: "+47 912 95 832",
-    role: "Kitchen Manager",
-    username: "raja.kitchen",
-    accountId: "VCP-58231",
-  },
-  hours: [
-    { day: "Monday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
-    { day: "Tuesday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
-    { day: "Wednesday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
-    { day: "Thursday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
-    { day: "Friday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
-    { day: "Saturday", enabled: true, open: "08:00-12:00", close: "13:00-17:00" },
-    { day: "Sunday", enabled: false, open: "Closed", close: "Closed" },
-  ],
-  closures: [
-    { id: "1", type: "Holiday", start: "2026-08-20", end: "2026-09-15", reason: "Christmas Break", status: "Active" },
-    { id: "2", type: "Holiday", start: "2026-08-20", end: "2026-09-15", reason: "Summer Vacation", status: "Scheduled" },
-  ],
-};
+function hasPasswordChanges(passwordForm) {
+  return (
+    passwordForm.currentPassword ||
+    passwordForm.newPassword ||
+    passwordForm.confirmPassword
+  );
+}
 
-function getStoredSettings() {
-  if (typeof window === "undefined") {
-    return defaultSettings;
+async function promptPasswordConfirmation(actionLabel) {
+  const result = await window.Swal.fire({
+    title: `${actionLabel}?`,
+    text: "Please enter your password to continue.",
+    input: "password",
+    inputPlaceholder: "Enter password",
+    showCancelButton: true,
+    confirmButtonText: actionLabel,
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#cf6e38",
+    inputValidator: (value) => {
+      if (!String(value || "").trim()) {
+        return "Password is required.";
+      }
+
+      return undefined;
+    },
+  });
+
+  if (!result.isConfirmed) {
+    return "";
   }
 
-  try {
-    const stored = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+  return String(result.value || "").trim();
+}
 
-    if (!stored) {
-      return defaultSettings;
-    }
-
-    return {
-      ...defaultSettings,
-      ...JSON.parse(stored),
-    };
-  } catch {
-    return defaultSettings;
-  }
+function mapApiHoursToState(hours = []) {
+  return hours.map((item) => ({
+    id: item.id || "",
+    day: item.day,
+    enabled: Boolean(item.enabled),
+    open: item.enabled ? item.openTime : "Closed",
+    close: item.enabled ? item.closeTime : "Closed",
+  }));
 }
 
 export default function useSettingsPageState() {
   const [activeTab, setActiveTab] = useState("business");
-  const [savedSettings, setSavedSettings] = useState(defaultSettings);
-  const [settings, setSettings] = useState(defaultSettings);
+  const [savedSettings, setSavedSettings] = useState(defaultSettingsState);
+  const [settings, setSettings] = useState(defaultSettingsState);
+  const [settingsOptions, setSettingsOptions] = useState(defaultSettingsOptions);
   const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
   const [passwordVisibility, setPasswordVisibility] = useState({
     currentPassword: false,
@@ -91,11 +96,45 @@ export default function useSettingsPageState() {
     confirmPassword: false,
   });
   const [saveMessage, setSaveMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const initialSettings = getStoredSettings();
-    setSavedSettings(initialSettings);
-    setSettings(initialSettings);
+    let isCancelled = false;
+
+    async function loadSettingsPage() {
+      setIsLoading(true);
+
+      try {
+        const result = await getVendorSettingsPage();
+
+        if (isCancelled) {
+          return;
+        }
+
+        const mappedPage = mapVendorSettingsPage(result);
+        setSavedSettings(mappedPage.settings);
+        setSettings(mappedPage.settings);
+        setSettingsOptions(mappedPage.options);
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load settings right now.",
+            "Settings unavailable",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadSettingsPage();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -145,7 +184,14 @@ export default function useSettingsPageState() {
     setSettings((current) => ({
       ...current,
       hours: current.hours.map((item) =>
-        item.day === day ? { ...item, enabled: !item.enabled } : item,
+        item.day === day
+          ? {
+              ...item,
+              enabled: !item.enabled,
+              open: !item.enabled ? "08:00-12:00" : "Closed",
+              close: !item.enabled ? "13:00-17:00" : "Closed",
+            }
+          : item,
       ),
     }));
   }
@@ -183,7 +229,7 @@ export default function useSettingsPageState() {
   }
 
   async function handleSave() {
-    if (passwordForm.currentPassword || passwordForm.newPassword || passwordForm.confirmPassword) {
+    if (hasPasswordChanges(passwordForm)) {
       if (passwordForm.newPassword.length < 8) {
         await showVendorErrorAlert(
           "Use at least 8 characters for the new password.",
@@ -203,65 +249,296 @@ export default function useSettingsPageState() {
       }
     }
 
-    setSavedSettings(settings);
-    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-    setPasswordForm(emptyPasswordForm);
-    setSaveMessage("Changes saved.");
-    await showVendorSuccessToast("Settings saved successfully.");
+    setIsSaving(true);
+
+    try {
+      const comparableSaved = getComparableSettingsState(savedSettings);
+      const comparableCurrent = getComparableSettingsState(settings);
+      let nextSettings = settings;
+      const confirmations = [];
+
+      if (
+        JSON.stringify(comparableSaved.businessProfile) !==
+        JSON.stringify(comparableCurrent.businessProfile)
+      ) {
+        const result = await updateVendorBusinessProfile(
+          buildBusinessProfileInput(settings),
+        );
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to save business profile.");
+          return;
+        }
+
+        confirmations.push(result.message || "Business profile saved.");
+      }
+
+      if (
+        JSON.stringify(comparableSaved.account) !==
+        JSON.stringify(comparableCurrent.account)
+      ) {
+        const result = await updateVendorAccountProfile(buildAccountProfileInput(settings));
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to save account profile.");
+          return;
+        }
+
+        confirmations.push(result.message || "Account profile saved.");
+      }
+
+      if (
+        JSON.stringify(comparableSaved.notifications) !==
+        JSON.stringify(comparableCurrent.notifications)
+      ) {
+        const result = await updateVendorNotificationPreferences(
+          buildNotificationPreferencesInput(settings),
+        );
+
+        if (!result.success) {
+          await showVendorErrorAlert(
+            result.message || "Unable to save notification preferences.",
+          );
+          return;
+        }
+
+        confirmations.push(result.message || "Notification preferences saved.");
+      }
+
+      if (
+        JSON.stringify(comparableSaved.regionalPreferences) !==
+        JSON.stringify(comparableCurrent.regionalPreferences)
+      ) {
+        const result = await updateVendorRegionalPreferences(
+          buildRegionalPreferencesInput(settings),
+        );
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to save regional preferences.");
+          return;
+        }
+
+        confirmations.push(result.message || "Regional preferences saved.");
+      }
+
+      if (
+        JSON.stringify(comparableSaved.hours) !==
+        JSON.stringify(comparableCurrent.hours)
+      ) {
+        const result = await updateVendorBusinessHours(buildBusinessHoursInput(settings));
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to save business hours.");
+          return;
+        }
+
+        nextSettings = {
+          ...nextSettings,
+          hours: mapApiHoursToState(result.businessHours || []),
+        };
+        confirmations.push(result.message || "Business hours saved.");
+      }
+
+      if (hasPasswordChanges(passwordForm)) {
+        const result = await changeVendorPassword(buildPasswordChangeInput(passwordForm));
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to change password.");
+          return;
+        }
+
+        confirmations.push(result.message || "Password updated.");
+      }
+
+      setSavedSettings(nextSettings);
+      setSettings(nextSettings);
+      setPasswordForm(emptyPasswordForm);
+      setSaveMessage("Changes saved.");
+      await showVendorSuccessToast(
+        confirmations[confirmations.length - 1] || "Settings saved successfully.",
+      );
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to save settings right now.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleResetAllSettings() {
-    const result = await confirmVendorResetSettings();
+    setIsSaving(true);
 
-    if (!result.isConfirmed) {
-      return;
+    try {
+      const result = await resetVendorSettingsToDefault();
+
+      if (!result.success) {
+        await showVendorErrorAlert(result.message || "Unable to reset settings.");
+        return;
+      }
+
+      const refreshedResult = await getVendorSettingsPage();
+      const mappedPage = mapVendorSettingsPage(refreshedResult);
+      setSavedSettings(mappedPage.settings);
+      setSettings(mappedPage.settings);
+      setSettingsOptions(mappedPage.options);
+      setPasswordForm(emptyPasswordForm);
+      setSaveMessage("Settings reset to default.");
+      await showVendorSuccessToast(result.message || "Settings reset to default.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to reset settings.");
+    } finally {
+      setIsSaving(false);
     }
-
-    setSettings(defaultSettings);
-    setSavedSettings(defaultSettings);
-    setPasswordForm(emptyPasswordForm);
-    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(defaultSettings));
-    setSaveMessage("Settings reset to default.");
-    await showVendorSuccessToast("Settings reset to default.");
   }
 
   async function handleDeactivateStore() {
-    const result = await confirmVendorDeactivateStore();
+    const password = await promptPasswordConfirmation("Deactivate Store");
 
-    if (!result.isConfirmed) {
+    if (!password) {
       return;
     }
 
-    const deactivatedSettings = {
-      ...settings,
-      hours: settings.hours.map((item) => ({
-        ...item,
-        enabled: false,
-        open: "Closed",
-        close: "Closed",
-      })),
-    };
+    setIsSaving(true);
 
-    setSettings(deactivatedSettings);
-    setSavedSettings(deactivatedSettings);
-    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(deactivatedSettings));
-    setSaveMessage("Store deactivated.");
-    await showVendorSuccessToast("Store deactivated.");
+    try {
+      const result = await deactivateVendorStore(buildStorePasswordInput(password));
+
+      if (!result.success) {
+        await showVendorErrorAlert(result.message || "Unable to deactivate store.");
+        return;
+      }
+
+      setSettings((current) => ({
+        ...current,
+        storeStatus: result.storeStatus || "inactive",
+      }));
+      setSavedSettings((current) => ({
+        ...current,
+        storeStatus: result.storeStatus || "inactive",
+      }));
+      setSaveMessage("Store deactivated.");
+      await showVendorSuccessToast(result.message || "Store deactivated.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to deactivate store.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleDeleteStore() {
-    const result = await confirmVendorDeleteStore();
+    const confirmation = await confirmVendorDeleteStore();
 
-    if (!result.isConfirmed) {
+    if (!confirmation.isConfirmed) {
       return;
     }
 
-    window.localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    setSettings(defaultSettings);
-    setSavedSettings(defaultSettings);
-    setPasswordForm(emptyPasswordForm);
-    setSaveMessage("Store deleted permanently.");
-    await showVendorSuccessToast("Store deleted permanently.");
+    const password = await promptPasswordConfirmation("Delete Store");
+
+    if (!password) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const result = await deleteVendorStore(buildStorePasswordInput(password));
+
+      if (!result.success) {
+        await showVendorErrorAlert(result.message || "Unable to delete store.");
+        return;
+      }
+
+      setSavedSettings(defaultSettingsState);
+      setSettings(defaultSettingsState);
+      setPasswordForm(emptyPasswordForm);
+      setSaveMessage("Store deleted permanently.");
+      await showVendorSuccessToast(result.message || "Store deleted permanently.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to delete store.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleSaveClosure(type, start, end, reason, id) {
+    setIsSaving(true);
+
+    try {
+      const result = await upsertVendorSpecialClosure(
+        buildSpecialClosureInput(type, start, end, reason, id),
+      );
+
+      if (!result.success) {
+        await showVendorErrorAlert(result.message || "Unable to save special closure.");
+        return;
+      }
+
+      const nextClosure = {
+        id: result.closure?.id || id || `closure-${Date.now()}`,
+        type: result.closure?.type?.id || type,
+        typeLabel: result.closure?.type?.name || "",
+        start: result.closure?.startDate || start,
+        end: result.closure?.endDate || end,
+        reason: result.closure?.reason || reason || "",
+        status: result.closure?.status || "Scheduled",
+      };
+
+      setSettings((current) => {
+        const nextClosures = id
+          ? current.closures.map((item) => (item.id === id ? nextClosure : item))
+          : [...current.closures, nextClosure];
+        return {
+          ...current,
+          closures: nextClosures,
+        };
+      });
+      setSavedSettings((current) => {
+        const nextClosures = id
+          ? current.closures.map((item) => (item.id === id ? nextClosure : item))
+          : [...current.closures, nextClosure];
+        return {
+          ...current,
+          closures: nextClosures,
+        };
+      });
+
+      await showVendorSuccessToast(
+        result.message ||
+          (id
+            ? "Special closure updated successfully."
+            : "Special closure added successfully."),
+      );
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to save special closure.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDeleteClosure(id) {
+    setIsSaving(true);
+
+    try {
+      const result = await deleteVendorSpecialClosure(id);
+
+      if (!result.success) {
+        await showVendorErrorAlert(result.message || "Unable to delete special closure.");
+        return;
+      }
+
+      setSettings((current) => ({
+        ...current,
+        closures: current.closures.filter((item) => item.id !== id),
+      }));
+      setSavedSettings((current) => ({
+        ...current,
+        closures: current.closures.filter((item) => item.id !== id),
+      }));
+      await showVendorSuccessToast(result.message || "Special closure deleted successfully.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to delete special closure.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const passwordStrength = useMemo(() => {
@@ -323,26 +600,32 @@ export default function useSettingsPageState() {
 
   const hasUnsavedChanges = useMemo(
     () =>
-      JSON.stringify(settings) !== JSON.stringify(savedSettings) ||
-      JSON.stringify(passwordForm) !== JSON.stringify(emptyPasswordForm),
+      JSON.stringify(getComparableSettingsState(settings)) !==
+        JSON.stringify(getComparableSettingsState(savedSettings)) ||
+      JSON.stringify(getComparablePasswordState(passwordForm)) !==
+        JSON.stringify(getComparablePasswordState(emptyPasswordForm)),
     [passwordForm, savedSettings, settings],
   );
 
   return {
     activeTab,
-    handleBusinessHourChange,
     handleAccountFieldChange,
+    handleBusinessHourChange,
     handleCancel,
     handleDeactivateStore,
+    handleDeleteClosure,
     handleDeleteStore,
     handleFieldChange,
     handleNotificationToggle,
     handlePasswordChange,
     handleResetAllSettings,
     handleSave,
+    handleSaveClosure,
     handleToggleBusinessDay,
     handleTogglePasswordVisibility,
     hasUnsavedChanges,
+    isLoading,
+    isSaving,
     passwordForm,
     passwordStrength,
     passwordsMatch,
@@ -350,54 +633,6 @@ export default function useSettingsPageState() {
     saveMessage,
     setActiveTab,
     settings,
-    handleSaveClosure: async (type, start, end, reason, id) => {
-      setSettings((current) => {
-        let nextClosures;
-        if (id) {
-          nextClosures = (current.closures || []).map((c) =>
-            c.id === id
-              ? {
-                  ...c,
-                  type,
-                  start,
-                  end,
-                  reason: reason || type,
-                  status: new Date(start) <= new Date() ? "Active" : "Scheduled",
-                }
-              : c,
-          );
-        } else {
-          const newClosure = {
-            id: `closure-${Date.now()}`,
-            type,
-            start,
-            end,
-            reason: reason || type,
-            status: new Date(start) <= new Date() ? "Active" : "Scheduled",
-          };
-          nextClosures = [...(current.closures || []), newClosure];
-        }
-        const nextSettings = { ...current, closures: nextClosures };
-        window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
-        setSavedSettings(nextSettings);
-        return nextSettings;
-      });
-
-      if (id) {
-        await showVendorSuccessToast("Special closure updated successfully.");
-      } else {
-        await showVendorSuccessToast("Special closure added successfully.");
-      }
-    },
-    handleDeleteClosure: async (id) => {
-      setSettings((current) => {
-        const nextClosures = (current.closures || []).filter((c) => c.id !== id);
-        const nextSettings = { ...current, closures: nextClosures };
-        window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
-        setSavedSettings(nextSettings);
-        return nextSettings;
-      });
-      await showVendorSuccessToast("Special closure deleted successfully.");
-    },
+    settingsOptions,
   };
 }
