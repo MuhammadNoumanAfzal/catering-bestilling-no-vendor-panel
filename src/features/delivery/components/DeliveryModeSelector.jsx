@@ -9,6 +9,7 @@ export default function DeliveryModeSelector({
   modes,
   selectedModes,
   onToggleMode,
+  disabled = false,
 }) {
   return (
     <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
@@ -23,7 +24,8 @@ export default function DeliveryModeSelector({
               isActive
                 ? "border-[#ef8b5d] bg-[#fff5f0] text-[#ce6f3f]"
                 : "border-[#cec6bf] bg-[#f3f3f3] text-[#8a7d72]"
-            }`}
+            } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+            disabled={disabled}
             onClick={() => onToggleMode(mode.id)}
             type="button"
           >

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getVendorDeliverySettings,
   updateVendorDeliverySettings,
@@ -35,44 +35,45 @@ export default function useDeliverySettings() {
   const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
   const [customSlotDraft, setCustomSlotDraft] = useState({ start: "18:00", end: "21:00" });
   const [slotDraftError, setSlotDraftError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const hasLoadedSettingsRef = useRef(false);
+  const validationRequestIdRef = useRef(0);
+
+  async function loadDeliverySettings() {
+    setIsLoading(true);
+    setLoadError("");
+
+    try {
+      const result = await getVendorDeliverySettings();
+      const nextSettings = mapVendorDeliverySettingsToForm(result?.vendorDeliverySettings);
+
+      setSavedSettings(nextSettings);
+      setFormState(nextSettings);
+      setValidationState(nextSettings.liveValidation || defaultValidationState);
+      setFieldErrors({});
+      hasLoadedSettingsRef.current = true;
+    } catch (error) {
+      const nextError = error.message || "Unable to load delivery settings right now.";
+      setLoadError(nextError);
+      setFieldErrors({});
+      setValidationState(defaultValidationState);
+      hasLoadedSettingsRef.current = false;
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    let isCancelled = false;
+    loadDeliverySettings();
+  }, []);
 
-    async function loadDeliverySettings() {
-      setIsLoading(true);
-
-      try {
-        const result = await getVendorDeliverySettings();
-
-        if (isCancelled) {
-          return;
-        }
-
-        const nextSettings = mapVendorDeliverySettingsToForm(result?.vendorDeliverySettings);
-        setSavedSettings(nextSettings);
-        setFormState(nextSettings);
-        setValidationState(nextSettings.liveValidation || defaultValidationState);
-      } catch (error) {
-        if (!isCancelled) {
-          await showVendorErrorAlert(
-            error.message || "Unable to load delivery settings right now.",
-            "Delivery settings unavailable",
-          );
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
+  useEffect(() => {
+    if (!loadError) {
+      return;
     }
 
-    loadDeliverySettings();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
+    showVendorErrorAlert(loadError, "Delivery settings unavailable");
+  }, [loadError]);
 
   useEffect(() => {
     if (!saveMessage) {
@@ -87,9 +88,12 @@ export default function useDeliverySettings() {
   }, [saveMessage]);
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading || loadError || !hasLoadedSettingsRef.current) {
       return undefined;
     }
+
+    const requestId = validationRequestIdRef.current + 1;
+    validationRequestIdRef.current = requestId;
 
     const timeoutId = window.setTimeout(async () => {
       setIsValidating(true);
@@ -98,6 +102,11 @@ export default function useDeliverySettings() {
         const result = await validateVendorDeliverySettings(
           buildDeliverySettingsInput(formState),
         );
+
+        if (validationRequestIdRef.current !== requestId) {
+          return;
+        }
+
         setValidationState({
           isValid: result?.isValid ?? false,
           issues: Array.isArray(result?.issues) ? result.issues : [],
@@ -105,14 +114,20 @@ export default function useDeliverySettings() {
         });
         setFieldErrors(mapFieldErrors(result?.errors || []));
       } catch {
+        if (validationRequestIdRef.current !== requestId) {
+          return;
+        }
+
         setValidationState(defaultValidationState);
       } finally {
-        setIsValidating(false);
+        if (validationRequestIdRef.current === requestId) {
+          setIsValidating(false);
+        }
       }
     }, 500);
 
     return () => window.clearTimeout(timeoutId);
-  }, [formState, isLoading]);
+  }, [formState, isLoading, loadError]);
 
   const currentComparable = useMemo(
     () => getComparableDeliverySettings(formState),
@@ -158,7 +173,11 @@ export default function useDeliverySettings() {
       };
     });
     setFieldErrors((current) => {
-      if (!current.deliveryAvailable && !current.pickupAvailable && !current.deliveryMode) {
+      if (
+        !current.deliveryAvailable &&
+        !current.pickupAvailable &&
+        !current.deliveryMode
+      ) {
         return current;
       }
 
@@ -233,6 +252,14 @@ export default function useDeliverySettings() {
   }
 
   async function handleSaveChanges() {
+    if (loadError || !hasLoadedSettingsRef.current) {
+      await showVendorErrorAlert(
+        "Reload delivery settings before saving changes.",
+        "Delivery settings unavailable",
+      );
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -292,6 +319,7 @@ export default function useDeliverySettings() {
     hasUnsavedChanges:
       JSON.stringify(currentComparable) !== JSON.stringify(savedComparable),
     isAddSlotModalOpen,
+    loadError,
     isDeliveryDisabled,
     isLoading,
     isPickupOnly,
@@ -304,6 +332,7 @@ export default function useDeliverySettings() {
     sameFeeAllDistances: formState.sameFeeAllDistances,
     saveMessage,
     selectedModes: formState.selectedModes,
+    retryLoad: loadDeliverySettings,
     setBaseFee: (value) => setField("baseFee", value),
     setCustomSlotDraft,
     setFreeDelivery: (value) => setField("freeDelivery", value),

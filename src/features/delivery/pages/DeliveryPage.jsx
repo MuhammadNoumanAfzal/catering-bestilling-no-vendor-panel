@@ -20,6 +20,7 @@ export default function DeliveryPage() {
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
     handleRemoveTimeSlot,
+    loadError,
     handleSaveChanges,
     handleSaveCustomSlot,
     handleToggleDay,
@@ -38,6 +39,7 @@ export default function DeliveryPage() {
     sameFeeAllDistances,
     saveMessage,
     selectedModes,
+    retryLoad,
     setBaseFee,
     setCustomSlotDraft,
     setFreeDelivery,
@@ -51,6 +53,8 @@ export default function DeliveryPage() {
     validationState,
   } = useDeliverySettings();
 
+  const isPageDisabled = Boolean(loadError);
+
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col max-[720px]:px-4 max-[720px]:py-4">
       <header className="mb-5">
@@ -62,7 +66,26 @@ export default function DeliveryPage() {
 
       <div className="grid grid-cols-[minmax(0,1.65fr)_minmax(128px,0.82fr)] gap-4 max-[1120px]:grid-cols-1">
         <div className="flex flex-col gap-3">
+          {loadError ? (
+            <div className="rounded-[12px] border border-[#f0c8bf] bg-[#fff4ef] px-4 py-4 text-[#6f3d2d]">
+              <h2 className="m-0 text-[15px] font-bold text-[#4a2418]">
+                Delivery settings unavailable
+              </h2>
+              <p className="mt-2 text-[13px] font-medium leading-[1.5]">
+                {loadError}
+              </p>
+              <button
+                className="mt-3 rounded-[8px] bg-[#d96e39] px-4 py-2 text-[12px] font-bold text-white"
+                onClick={retryLoad}
+                type="button"
+              >
+                Retry loading
+              </button>
+            </div>
+          ) : null}
+
           <DeliveryModeSection
+            disabled={isPageDisabled}
             errors={fieldErrors}
             modes={deliveryModes}
             onToggleMode={handleToggleMode}
@@ -70,7 +93,7 @@ export default function DeliveryPage() {
           />
 
           <DeliveryPickupSection
-            disabled={!selectedModes.includes("pickup")}
+            disabled={isPageDisabled || !selectedModes.includes("pickup")}
             errors={fieldErrors}
             onPickupAddressChange={(event) => setPickupAddress(event.target.value)}
             onPickupInstructionsChange={(event) => setPickupInstructions(event.target.value)}
@@ -80,7 +103,7 @@ export default function DeliveryPage() {
 
           <DeliveryPricingSection
             baseFee={baseFee}
-            disabled={isDeliveryDisabled}
+            disabled={isPageDisabled || isDeliveryDisabled}
             errors={fieldErrors}
             freeDelivery={freeDelivery}
             onBaseFeeChange={(event) => setBaseFee(event.target.value)}
@@ -92,7 +115,7 @@ export default function DeliveryPage() {
           <DeliveryScheduleSection
             activeDays={activeDays}
             days={deliveryDays}
-            disabled={isDeliveryDisabled}
+            disabled={isPageDisabled || isDeliveryDisabled}
             errors={fieldErrors}
             onAddCustomSlot={handleOpenAddSlotModal}
             onRemoveTimeSlot={handleRemoveTimeSlot}
@@ -101,7 +124,7 @@ export default function DeliveryPage() {
           />
 
           <DeliveryLimitsSection
-            disabled={isDeliveryDisabled}
+            disabled={isPageDisabled || isDeliveryDisabled}
             errors={fieldErrors}
             maxDeliveriesPerDay={maxDeliveriesPerDay}
             maxOrdersPerTimeSlot={maxOrdersPerTimeSlot}
@@ -119,12 +142,12 @@ export default function DeliveryPage() {
       </div>
 
       <DeliveryActionsBar
-        hasUnsavedChanges={hasUnsavedChanges}
+        hasUnsavedChanges={!loadError && hasUnsavedChanges}
         isLoading={isLoading}
         isSaving={isSaving}
         onCancel={handleCancelChanges}
         onSave={handleSaveChanges}
-        saveMessage={saveMessage}
+        saveMessage={loadError ? "Fix the loading issue before editing or saving." : saveMessage}
       />
 
       {isAddSlotModalOpen ? (
