@@ -3,12 +3,13 @@ import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import SettingsSectionCard from "./SettingsSectionCard";
 import { strengthToneClasses } from "../data/settingsData";
 
-function AccountField({ label, onChange, value }) {
+function AccountField({ label, onChange, value, disabled = false }) {
   return (
     <div className="grid grid-cols-[100px_minmax(0,1fr)] items-center gap-3 max-[640px]:grid-cols-1 max-[640px]:gap-1.5">
       <span className="text-[13px] font-bold text-[#1f1814]">{label}</span>
       <input
-        className="h-[34px] rounded-[7px] border border-[#d9d9d9] bg-[#f2f2f2] px-3 text-[12px] text-[#4d433d] outline-none transition placeholder:text-[#9d9187] focus:border-[#cf6e38] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
+        className="h-[34px] rounded-[7px] border border-[#d9d9d9] bg-[#f2f2f2] px-3 text-[12px] text-[#4d433d] outline-none transition placeholder:text-[#9d9187] focus:border-[#cf6e38] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={disabled}
         onChange={onChange}
         type="text"
         value={value}
@@ -25,13 +26,15 @@ function PasswordField({
   placeholder,
   value,
   visible,
+  disabled = false,
 }) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-[13px] font-bold text-[#1f1814]">{label}</span>
       <div className="relative">
         <input
-          className="type-subpara h-[38px] w-full rounded-[8px] border border-[#d5cbc3] bg-white px-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
+          className="type-subpara h-[38px] w-full rounded-[8px] border border-[#d5cbc3] bg-white px-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
+          disabled={disabled}
           name={name}
           onChange={onChange}
           placeholder={placeholder}
@@ -39,7 +42,8 @@ function PasswordField({
           value={value}
         />
         <button
-          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-[#84776c]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-[#84776c] disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={disabled}
           onClick={onToggleVisibility}
           type="button"
         >
@@ -60,9 +64,8 @@ export default function SettingsAccountSecurityPanel({
   passwordStrength,
   passwordsMatch,
   passwordVisibility,
+  disabled = false,
 }) {
-
-
   return (
     <div className="grid grid-cols-2 gap-4 max-[1120px]:grid-cols-1">
       <SettingsSectionCard
@@ -71,47 +74,54 @@ export default function SettingsAccountSecurityPanel({
       >
         <div className="mb-4 flex items-center gap-3 rounded-[10px] bg-[#fffaf4] p-3">
           <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[10px] border border-[#f0d5b7] bg-[#fff1d8]">
-            <img alt={businessName} className="max-h-[42px] w-auto" src="/logo.png" />
+            <img alt={businessName || "Business"} className="max-h-[42px] w-auto" src="/logo.png" />
           </div>
           <div className="min-w-0">
             <button
-              className="mb-1 rounded-[6px] border border-[#d9cec7] bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#6d625a]"
+              className="mb-1 rounded-[6px] border border-[#d9cec7] bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#6d625a] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled
               type="button"
             >
               Change Profile
             </button>
-            <p className="text-[12px] font-bold text-[#211915]">{businessName}</p>
+            <p className="text-[12px] font-bold text-[#211915]">{businessName || "Business profile"}</p>
             <p className="text-[10px] text-[#8c8075]">PNG, JPG up to 5 MB</p>
           </div>
         </div>
 
         <div className="space-y-3">
           <AccountField
+            disabled={disabled}
             label="Full Name"
             onChange={handleAccountFieldChange("fullName")}
             value={account.fullName}
           />
           <AccountField
+            disabled={disabled}
             label="Email Address"
             onChange={handleAccountFieldChange("emailAddress")}
             value={account.emailAddress}
           />
           <AccountField
+            disabled={disabled}
             label="Phone Number"
             onChange={handleAccountFieldChange("phoneNumber")}
             value={account.phoneNumber}
           />
           <AccountField
+            disabled={disabled}
             label="Role"
             onChange={handleAccountFieldChange("role")}
             value={account.role}
           />
           <AccountField
+            disabled={disabled}
             label="Username"
             onChange={handleAccountFieldChange("username")}
             value={account.username}
           />
           <AccountField
+            disabled
             label="Account ID"
             onChange={handleAccountFieldChange("accountId")}
             value={account.accountId}
@@ -125,6 +135,7 @@ export default function SettingsAccountSecurityPanel({
       >
         <div className="space-y-3">
           <PasswordField
+            disabled={disabled}
             label="Current Password"
             name="currentPassword"
             onChange={handlePasswordChange("currentPassword")}
@@ -134,6 +145,7 @@ export default function SettingsAccountSecurityPanel({
             visible={passwordVisibility.currentPassword}
           />
           <PasswordField
+            disabled={disabled}
             label="New Password"
             name="newPassword"
             onChange={handlePasswordChange("newPassword")}
@@ -177,6 +189,7 @@ export default function SettingsAccountSecurityPanel({
           </div>
 
           <PasswordField
+            disabled={disabled}
             label="Confirm Password"
             name="confirmPassword"
             onChange={handlePasswordChange("confirmPassword")}

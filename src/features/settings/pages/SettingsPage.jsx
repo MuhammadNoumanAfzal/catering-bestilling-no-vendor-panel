@@ -11,15 +11,19 @@ export default function SettingsPage() {
     handleBusinessHourChange,
     handleCancel,
     handleDeactivateStore,
+    handleDeleteClosure,
     handleDeleteStore,
     handleFieldChange,
     handleNotificationToggle,
     handlePasswordChange,
     handleResetAllSettings,
     handleSave,
+    handleSaveClosure,
     handleToggleBusinessDay,
     handleTogglePasswordVisibility,
     hasUnsavedChanges,
+    isLoading,
+    isSaving,
     passwordForm,
     passwordStrength,
     passwordsMatch,
@@ -27,8 +31,7 @@ export default function SettingsPage() {
     saveMessage,
     setActiveTab,
     settings,
-    handleSaveClosure,
-    handleDeleteClosure,
+    settingsOptions,
   } = useSettingsPageState();
 
   const pageContent =
@@ -57,6 +60,7 @@ export default function SettingsPage() {
         <SettingsAccountSecurityPanel
           account={settings.account}
           businessName={settings.businessName}
+          disabled={isLoading || isSaving}
           handleAccountFieldChange={handleAccountFieldChange}
           handlePasswordChange={handlePasswordChange}
           handleTogglePasswordVisibility={handleTogglePasswordVisibility}
@@ -67,6 +71,11 @@ export default function SettingsPage() {
         />
       ) : (
         <SettingsBusinessProfilePanel
+          businessTypeOptions={settingsOptions.businessTypeOptions}
+          closureTypeOptions={settingsOptions.closureTypeOptions}
+          cuisineOptions={settingsOptions.cuisineOptions}
+          currencyOptions={settingsOptions.currencyOptions}
+          disabled={isLoading || isSaving}
           handleBusinessHourChange={handleBusinessHourChange}
           handleDeactivateStore={handleDeactivateStore}
           handleDeleteStore={handleDeleteStore}
@@ -74,14 +83,18 @@ export default function SettingsPage() {
           handleNotificationToggle={handleNotificationToggle}
           handleResetAllSettings={handleResetAllSettings}
           handleToggleBusinessDay={handleToggleBusinessDay}
+          languageOptions={settingsOptions.languageOptions}
           settings={settings}
           handleSaveClosure={handleSaveClosure}
           handleDeleteClosure={handleDeleteClosure}
+          timeZoneOptions={settingsOptions.timeZoneOptions}
         />
       )}
 
       <SettingsActionsBar
         hasUnsavedChanges={hasUnsavedChanges}
+        isLoading={isLoading}
+        isSaving={isSaving}
         onCancel={handleCancel}
         onSave={handleSave}
         saveMessage={saveMessage}
