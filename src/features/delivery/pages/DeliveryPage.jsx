@@ -1,8 +1,8 @@
 import DeliveryActionsBar from "../components/DeliveryActionsBar";
 import DeliveryAddSlotModal from "../components/DeliveryAddSlotModal";
+import DeliveryAreasSection from "../components/DeliveryAreasSection";
 import DeliveryLimitsSection from "../components/DeliveryLimitsSection";
 import DeliveryModeSection from "../components/DeliveryModeSection";
-import DeliveryPostalCodesSection from "../components/DeliveryPostalCodesSection";
 import DeliveryPickupSection from "../components/DeliveryPickupSection";
 import DeliveryPricingSection from "../components/DeliveryPricingSection";
 import DeliveryScheduleSection from "../components/DeliveryScheduleSection";
@@ -37,7 +37,9 @@ export default function DeliveryPage() {
     isSaving,
     isSearchingAreas,
     isValidating,
+    minDeliveryTime,
     maxDeliveriesPerDay,
+    maxDeliveryTime,
     maxOrdersPerTimeSlot,
     pickupAddress,
     pickupInstructions,
@@ -51,7 +53,9 @@ export default function DeliveryPage() {
     setBaseFee,
     setCustomSlotDraft,
     setFreeDelivery,
+    setMinDeliveryTime,
     setMaxDeliveriesPerDay,
+    setMaxDeliveryTime,
     setMaxOrdersPerTimeSlot,
     setPickupAddress,
     setPickupInstructions,
@@ -100,6 +104,18 @@ export default function DeliveryPage() {
             selectedModes={selectedModes}
           />
 
+          <DeliveryAreasSection
+            disabled={isPageDisabled || isDeliveryDisabled}
+            error={fieldErrors.validAreaIds || fieldErrors.serviceAreas || ""}
+            isSearching={isSearchingAreas}
+            onAddArea={handleAddServiceArea}
+            onRemoveArea={handleRemoveServiceArea}
+            onSearchChange={(event) => handleServiceAreaSearchChange(event.target.value)}
+            searchResults={serviceAreaResults}
+            searchValue={serviceAreaSearch}
+            selectedAreas={serviceAreas}
+          />
+
           <DeliveryPickupSection
             disabled={isPageDisabled || !selectedModes.includes("pickup")}
             errors={fieldErrors}
@@ -120,18 +136,6 @@ export default function DeliveryPage() {
             sameFeeAllDistances={sameFeeAllDistances}
           />
 
-          <DeliveryPostalCodesSection
-            disabled={isPageDisabled || isDeliveryDisabled}
-            error={fieldErrors.validAreaIds || fieldErrors.serviceAreas || ""}
-            filteredPostalCodes={serviceAreaResults}
-            isSearching={isSearchingAreas}
-            onAddPostalCode={handleAddServiceArea}
-            onPostalCodeChange={(event) => handleServiceAreaSearchChange(event.target.value)}
-            onRemovePostalCode={handleRemoveServiceArea}
-            postalCode={serviceAreaSearch}
-            selectedPostalCodes={serviceAreas}
-          />
-
           <DeliveryScheduleSection
             activeDays={activeDays}
             days={deliveryDays}
@@ -146,10 +150,14 @@ export default function DeliveryPage() {
           <DeliveryLimitsSection
             disabled={isPageDisabled || isDeliveryDisabled}
             errors={fieldErrors}
+            maxDeliveryTime={maxDeliveryTime}
             maxDeliveriesPerDay={maxDeliveriesPerDay}
             maxOrdersPerTimeSlot={maxOrdersPerTimeSlot}
+            minDeliveryTime={minDeliveryTime}
+            onMaxDeliveryTimeChange={(event) => setMaxDeliveryTime(event.target.value)}
             onMaxDeliveriesPerDayChange={(event) => setMaxDeliveriesPerDay(event.target.value)}
             onMaxOrdersPerTimeSlotChange={(event) => setMaxOrdersPerTimeSlot(event.target.value)}
+            onMinDeliveryTimeChange={(event) => setMinDeliveryTime(event.target.value)}
           />
         </div>
 
