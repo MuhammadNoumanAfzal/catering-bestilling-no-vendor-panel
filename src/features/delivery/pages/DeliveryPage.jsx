@@ -2,6 +2,7 @@ import DeliveryActionsBar from "../components/DeliveryActionsBar";
 import DeliveryAddSlotModal from "../components/DeliveryAddSlotModal";
 import DeliveryLimitsSection from "../components/DeliveryLimitsSection";
 import DeliveryModeSection from "../components/DeliveryModeSection";
+import DeliveryPostalCodesSection from "../components/DeliveryPostalCodesSection";
 import DeliveryPickupSection from "../components/DeliveryPickupSection";
 import DeliveryPricingSection from "../components/DeliveryPricingSection";
 import DeliveryScheduleSection from "../components/DeliveryScheduleSection";
@@ -16,13 +17,16 @@ export default function DeliveryPage() {
     customSlotDraft,
     fieldErrors,
     freeDelivery,
+    handleAddServiceArea,
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
     handleRemoveTimeSlot,
+    handleRemoveServiceArea,
     loadError,
     handleSaveChanges,
     handleSaveCustomSlot,
+    handleServiceAreaSearchChange,
     handleToggleDay,
     handleToggleMode,
     hasUnsavedChanges,
@@ -31,11 +35,15 @@ export default function DeliveryPage() {
     isLoading,
     isPickupOnly,
     isSaving,
+    isSearchingAreas,
     isValidating,
     maxDeliveriesPerDay,
     maxOrdersPerTimeSlot,
     pickupAddress,
     pickupInstructions,
+    serviceAreaResults,
+    serviceAreaSearch,
+    serviceAreas,
     sameFeeAllDistances,
     saveMessage,
     selectedModes,
@@ -110,6 +118,18 @@ export default function DeliveryPage() {
             onFreeDeliveryChange={(event) => setFreeDelivery(event.target.value)}
             onSameFeeAllDistancesChange={setSameFeeAllDistances}
             sameFeeAllDistances={sameFeeAllDistances}
+          />
+
+          <DeliveryPostalCodesSection
+            disabled={isPageDisabled || isDeliveryDisabled}
+            error={fieldErrors.validAreaIds || fieldErrors.serviceAreas || ""}
+            filteredPostalCodes={serviceAreaResults}
+            isSearching={isSearchingAreas}
+            onAddPostalCode={handleAddServiceArea}
+            onPostalCodeChange={(event) => handleServiceAreaSearchChange(event.target.value)}
+            onRemovePostalCode={handleRemoveServiceArea}
+            postalCode={serviceAreaSearch}
+            selectedPostalCodes={serviceAreas}
           />
 
           <DeliveryScheduleSection

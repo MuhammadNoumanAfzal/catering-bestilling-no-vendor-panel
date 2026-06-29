@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getVendorDeliverySettings,
+  searchAvailableAreas,
   updateVendorDeliverySettings,
   validateVendorDeliverySettings,
 } from "../api/deliveryApi";
@@ -36,8 +37,12 @@ export default function useDeliverySettings() {
   const [customSlotDraft, setCustomSlotDraft] = useState({ start: "18:00", end: "21:00" });
   const [slotDraftError, setSlotDraftError] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [serviceAreaSearch, setServiceAreaSearch] = useState("");
+  const [serviceAreaResults, setServiceAreaResults] = useState([]);
+  const [isSearchingAreas, setIsSearchingAreas] = useState(false);
   const hasLoadedSettingsRef = useRef(false);
   const validationRequestIdRef = useRef(0);
+  const areaSearchRequestIdRef = useRef(0);
 
   async function loadDeliverySettings() {
     setIsLoading(true);
@@ -45,7 +50,7 @@ export default function useDeliverySettings() {
 
     try {
       const result = await getVendorDeliverySettings();
-      const nextSettings = mapVendorDeliverySettingsToForm(result?.vendorDeliverySettings);
+      const nextSettings = mapVendorDeliverySettingsToForm(result?.me?.vendor);
 
       setSavedSettings(nextSettings);
       setFormState(nextSettings);
@@ -129,6 +134,48 @@ export default function useDeliverySettings() {
     return () => window.clearTimeout(timeoutId);
   }, [formState, isLoading, loadError]);
 
+  useEffect(() => {
+    const searchValue = serviceAreaSearch.trim();
+
+    if (!searchValue || !formState.selectedModes.includes("delivery") || loadError) {
+      setServiceAreaResults([]);
+      setIsSearchingAreas(false);
+      return undefined;
+    }
+
+    const requestId = areaSearchRequestIdRef.current + 1;
+    areaSearchRequestIdRef.current = requestId;
+
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearchingAreas(true);
+
+      try {
+        const result = await searchAvailableAreas({ term: searchValue, first: 10 });
+
+        if (areaSearchRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        const selectedIds = new Set((formState.serviceAreas || []).map((area) => area.id));
+        setServiceAreaResults(
+          result.filter((area) => area?.id && !selectedIds.has(area.id)),
+        );
+      } catch {
+        if (areaSearchRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        setServiceAreaResults([]);
+      } finally {
+        if (areaSearchRequestIdRef.current === requestId) {
+          setIsSearchingAreas(false);
+        }
+      }
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
+
   const currentComparable = useMemo(
     () => getComparableDeliverySettings(formState),
     [formState],
@@ -189,6 +236,56 @@ export default function useDeliverySettings() {
     });
   }
 
+  function clearServiceAreaErrors() {
+    setFieldErrors((current) => {
+      if (!current.validAreaIds && !current.serviceAreas) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors.validAreaIds;
+      delete nextErrors.serviceAreas;
+      return nextErrors;
+    });
+  }
+
+  function handleServiceAreaSearchChange(value) {
+    setServiceAreaSearch(value);
+    clearServiceAreaErrors();
+  }
+
+  function handleAddServiceArea(area) {
+    setFormState((current) => {
+      if (current.serviceAreas.some((item) => item.id === area.id)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        serviceAreas: [
+          ...current.serviceAreas,
+          {
+            id: area.id,
+            name: area.name || "",
+            postCode: area.postCode || "",
+            isActive: area.isActive !== false,
+          },
+        ],
+      };
+    });
+    setServiceAreaSearch("");
+    setServiceAreaResults([]);
+    clearServiceAreaErrors();
+  }
+
+  function handleRemoveServiceArea(areaId) {
+    setFormState((current) => ({
+      ...current,
+      serviceAreas: current.serviceAreas.filter((area) => area.id !== areaId),
+    }));
+    clearServiceAreaErrors();
+  }
+
   function handleToggleDay(dayValue) {
     setFormState((current) => ({
       ...current,
@@ -247,6 +344,8 @@ export default function useDeliverySettings() {
     setIsAddSlotModalOpen(false);
     setCustomSlotDraft({ start: "18:00", end: "21:00" });
     setSlotDraftError("");
+    setServiceAreaSearch("");
+    setServiceAreaResults([]);
     setSaveMessage("Changes discarded.");
     await showVendorSuccessToast("Delivery changes discarded.");
   }
@@ -280,12 +379,17 @@ export default function useDeliverySettings() {
       }
 
       const nextSavedSettings = mapVendorDeliverySettingsToForm(
-        result.vendorDeliverySettings,
+        {
+          deliverySettings: result.vendorDeliverySettings,
+          serviceAreas: formState.serviceAreas,
+        },
       );
       setSavedSettings(nextSavedSettings);
       setFormState(nextSavedSettings);
       setFieldErrors({});
       setValidationState(nextSavedSettings.liveValidation || defaultValidationState);
+      setServiceAreaSearch("");
+      setServiceAreaResults([]);
       setSaveMessage("Changes saved.");
       await showVendorSuccessToast(result.message || "Delivery settings saved.");
     } catch (error) {
@@ -308,12 +412,15 @@ export default function useDeliverySettings() {
     customSlotDraft,
     fieldErrors,
     freeDelivery: formState.freeDelivery,
+    handleAddServiceArea,
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
     handleRemoveTimeSlot,
+    handleRemoveServiceArea,
     handleSaveChanges,
     handleSaveCustomSlot,
+    handleServiceAreaSearchChange,
     handleToggleDay,
     handleToggleMode,
     hasUnsavedChanges:
@@ -324,11 +431,15 @@ export default function useDeliverySettings() {
     isLoading,
     isPickupOnly,
     isSaving,
+    isSearchingAreas,
     isValidating,
     maxDeliveriesPerDay: formState.maxDeliveriesPerDay,
     maxOrdersPerTimeSlot: formState.maxOrdersPerTimeSlot,
     pickupAddress: formState.pickupAddress,
     pickupInstructions: formState.pickupInstructions,
+    serviceAreaResults,
+    serviceAreaSearch,
+    serviceAreas: formState.serviceAreas,
     sameFeeAllDistances: formState.sameFeeAllDistances,
     saveMessage,
     selectedModes: formState.selectedModes,

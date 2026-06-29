@@ -1,28 +1,52 @@
 export const GET_VENDOR_DELIVERY_SETTINGS_QUERY = `
   query GetVendorDeliverySettings {
-    vendorDeliverySettings {
+    me {
+      vendor {
+        id
+        name
+        deliverySettings {
+          id
+          deliveryMode
+          deliveryAvailable
+          pickupAvailable
+          pickupAddress
+          pickupInstructions
+          baseDeliveryFee
+          freeDeliveryOver
+          sameFeeAllDistances
+          deliveryDays
+          deliveryTimeSlots {
+            start
+            end
+          }
+          maxDeliveriesPerDay
+          maxOrdersPerTimeSlot
+          minDeliveryTime
+          maxDeliveryTime
+          liveValidation {
+            isValid
+            issues
+          }
+          createdAt
+          updatedAt
+        }
+        serviceAreas {
+          id
+          name
+          postCode
+          isActive
+        }
+      }
+    }
+  }
+`;
+
+export const SEARCH_AVAILABLE_AREAS_QUERY = `
+  query SearchAvailableAreas($term: String, $first: Int) {
+    validAreasSearch(term: $term, first: $first) {
       id
-      deliveryMode
-      deliveryAvailable
-      pickupAvailable
-      pickupAddress
-      pickupInstructions
-      baseDeliveryFee
-      freeDeliveryOver
-      sameFeeAllDistances
-      deliveryDays
-      deliveryTimeSlots {
-        start
-        end
-      }
-      maxDeliveriesPerDay
-      maxOrdersPerTimeSlot
-      liveValidation {
-        isValid
-        issues
-      }
-      createdAt
-      updatedAt
+      name
+      postCode
     }
   }
 `;
@@ -54,6 +78,8 @@ export const UPDATE_VENDOR_DELIVERY_SETTINGS_MUTATION = `
         }
         maxDeliveriesPerDay
         maxOrdersPerTimeSlot
+        minDeliveryTime
+        maxDeliveryTime
         liveValidation {
           isValid
           issues
