@@ -142,6 +142,29 @@ export function confirmVendorDeleteStore() {
   );
 }
 
+export function promptVendorPasswordConfirmation(actionLabel) {
+  return Swal.fire(
+    withBaseOptions({
+      title: `${actionLabel}?`,
+      text: "Please enter your password to continue.",
+      input: "password",
+      inputPlaceholder: "Enter password",
+      showCancelButton: true,
+      confirmButtonText: actionLabel,
+      cancelButtonText: "Cancel",
+      confirmButtonColor: BRAND_ORANGE,
+      cancelButtonColor: MUTED_BUTTON,
+      inputValidator: (value) => {
+        if (!String(value || "").trim()) {
+          return "Password is required.";
+        }
+
+        return undefined;
+      },
+    }),
+  );
+}
+
 export function showSupportTicketSubmitted() {
   return Swal.fire(
     withBaseOptions({

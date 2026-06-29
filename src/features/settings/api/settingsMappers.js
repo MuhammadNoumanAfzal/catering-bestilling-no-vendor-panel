@@ -244,7 +244,7 @@ export function buildNotificationPreferencesInput(settings) {
     newOrder: Boolean(settings.notifications.newOrder),
     orderUpdates: Boolean(settings.notifications.orderUpdates),
     reviewsRatings: Boolean(settings.notifications.reviewsRatings),
-    promos_tips: Boolean(settings.notifications.promos_tips),
+    promosTips: Boolean(settings.notifications.promos_tips),
     emailNotifications: Boolean(settings.notifications.emailNotifications),
     pushNotifications: Boolean(settings.notifications.pushNotifications),
     smsNotifications: Boolean(settings.notifications.smsNotifications),

@@ -29,7 +29,10 @@ import {
   mapVendorSettingsPage,
 } from "../api/settingsMappers";
 import {
+  confirmVendorDeactivateStore,
+  confirmVendorResetSettings,
   confirmVendorDeleteStore,
+  promptVendorPasswordConfirmation,
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
@@ -46,32 +49,6 @@ function hasPasswordChanges(passwordForm) {
     passwordForm.newPassword ||
     passwordForm.confirmPassword
   );
-}
-
-async function promptPasswordConfirmation(actionLabel) {
-  const result = await window.Swal.fire({
-    title: `${actionLabel}?`,
-    text: "Please enter your password to continue.",
-    input: "password",
-    inputPlaceholder: "Enter password",
-    showCancelButton: true,
-    confirmButtonText: actionLabel,
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#cf6e38",
-    inputValidator: (value) => {
-      if (!String(value || "").trim()) {
-        return "Password is required.";
-      }
-
-      return undefined;
-    },
-  });
-
-  if (!result.isConfirmed) {
-    return "";
-  }
-
-  return String(result.value || "").trim();
 }
 
 function mapApiHoursToState(hours = []) {
@@ -365,6 +342,12 @@ export default function useSettingsPageState() {
   }
 
   async function handleResetAllSettings() {
+    const confirmation = await confirmVendorResetSettings();
+
+    if (!confirmation.isConfirmed) {
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -391,7 +374,14 @@ export default function useSettingsPageState() {
   }
 
   async function handleDeactivateStore() {
-    const password = await promptPasswordConfirmation("Deactivate Store");
+    const confirmation = await confirmVendorDeactivateStore();
+
+    if (!confirmation.isConfirmed) {
+      return;
+    }
+
+    const passwordPrompt = await promptVendorPasswordConfirmation("Deactivate Store");
+    const password = String(passwordPrompt.value || "").trim();
 
     if (!password) {
       return;
@@ -431,7 +421,8 @@ export default function useSettingsPageState() {
       return;
     }
 
-    const password = await promptPasswordConfirmation("Delete Store");
+    const passwordPrompt = await promptVendorPasswordConfirmation("Delete Store");
+    const password = String(passwordPrompt.value || "").trim();
 
     if (!password) {
       return;
