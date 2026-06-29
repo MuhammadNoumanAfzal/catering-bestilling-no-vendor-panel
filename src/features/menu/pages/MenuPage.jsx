@@ -6,9 +6,11 @@ import MenuManagementHeader from "../components/management/MenuManagementHeader"
 import MenuManagementToolbar from "../components/management/MenuManagementToolbar";
 import MenuOfferingCard from "../components/management/MenuOfferingCard";
 import {
+  deleteVendorAddOn,
   deleteVendorMenu,
-  getVendorMenuFormBootstrap,
+  getVendorAddOns,
   getVendorMenus,
+  updateVendorAddOnStatus,
   updateVendorMenuStatus,
 } from "../api/menuApi";
 import {
@@ -51,7 +53,7 @@ export default function MenuPage() {
       try {
         const [menusResult, bootstrapResult] = await Promise.all([
           getVendorMenus(),
-          getVendorMenuFormBootstrap(),
+          getVendorAddOns(),
         ]);
 
         if (isCancelled) {
@@ -151,6 +153,7 @@ export default function MenuPage() {
 
   function handleEdit(item) {
     if (item.isAddOn) {
+      navigate(`/menu/add-ons/create?mode=edit&id=${encodeURIComponent(item.id)}`);
       return;
     }
 
@@ -159,6 +162,7 @@ export default function MenuPage() {
 
   function handleDuplicate(item) {
     if (item.isAddOn) {
+      navigate(`/menu/add-ons/create?mode=duplicate&id=${encodeURIComponent(item.id)}`);
       return;
     }
 
@@ -167,10 +171,26 @@ export default function MenuPage() {
 
   async function handleDelete(item) {
     if (item.isAddOn) {
-      await showVendorErrorAlert(
-        "Add-on management APIs are not connected yet in this module.",
-        "Add-on actions unavailable",
-      );
+      const result = await confirmVendorAction({
+        title: "Delete add-on?",
+        text: `Remove "${item.title}" from add-on management?`,
+        confirmButtonText: "Delete",
+        cancelButtonText: "Keep it",
+        icon: "warning",
+        confirmButtonColor: "#ff2918",
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      try {
+        await deleteVendorAddOn(item.id);
+        setAddOnCards((current) => current.filter((entry) => entry.id !== item.id));
+        await showVendorSuccessToast("Add-on removed successfully.");
+      } catch (error) {
+        await showVendorErrorAlert(error.message || "Unable to delete the add-on.");
+      }
       return;
     }
 
@@ -198,10 +218,27 @@ export default function MenuPage() {
 
   async function handleToggleStatus(item) {
     if (item.isAddOn) {
-      await showVendorErrorAlert(
-        "Add-on status APIs are not connected yet in this module.",
-        "Add-on actions unavailable",
-      );
+      const nextStatus = item.status === "Active" ? "paused" : "active";
+
+      try {
+        const result = await updateVendorAddOnStatus(item.id, nextStatus);
+        setAddOnCards((current) =>
+          current.map((addOn) =>
+            addOn.id === item.id
+              ? {
+                  ...addOn,
+                  status: nextStatus === "active" ? "Active" : "Paused",
+                  tone: result.instance?.menuStatus || nextStatus,
+                }
+              : addOn,
+          ),
+        );
+        await showVendorSuccessToast(
+          `Add-on status set to ${nextStatus === "active" ? "Active" : "Paused"}.`,
+        );
+      } catch (error) {
+        await showVendorErrorAlert(error.message || "Unable to update the add-on status.");
+      }
       return;
     }
 
@@ -258,7 +295,6 @@ export default function MenuPage() {
           {filteredItems.map((item) => (
             <MenuOfferingCard
               key={item.id}
-              actionsDisabled={Boolean(item.isAddOn)}
               item={item}
               onDelete={handleDelete}
               onEdit={handleEdit}

@@ -34,7 +34,7 @@ export default function CreateMenuAvailabilitySection({
             return (
               <button
                 key={dayValue}
-              className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border text-[13px] font-bold transition ${
+                className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border text-[13px] font-bold transition ${
                   isActive
                     ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
                     : "border-[#bdb2a9] bg-white text-[#29211d]"
@@ -51,7 +51,7 @@ export default function CreateMenuAvailabilitySection({
 
         <div className="mt-4">
           <div>
-            <Label>Min. Lead Time (Days)</Label>
+            <Label>Min. Lead Time (Hours)</Label>
             <SelectInput
               disabled={disabled}
               onChange={onLeadTimeChange}
@@ -72,7 +72,7 @@ export default function CreateMenuAvailabilitySection({
             return (
               <button
                 key={tag}
-              className={`cursor-pointer rounded-full border px-3 py-[8px] text-[13px] font-semibold transition ${
+                className={`cursor-pointer rounded-full border px-3 py-[8px] text-[13px] font-semibold transition ${
                   isActive
                     ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
                     : "border-[#bdb2a9] bg-white text-[#29211d]"
@@ -92,7 +92,7 @@ export default function CreateMenuAvailabilitySection({
         <span className="mb-1 block text-[14px] font-bold text-[#211913]">
           Delivery Availability Window (Optional)
         </span>
-        <p className="mb-3 text-[12px] font-medium text-[#746a62] leading-tight">
+        <p className="mb-3 text-[12px] font-medium leading-tight text-[#746a62]">
           Choose the date range when customers can order this menu for delivery.
         </p>
 
@@ -107,7 +107,7 @@ export default function CreateMenuAvailabilitySection({
 
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <span className="mb-1 block text-[11px] font-bold text-[#7b6d62] uppercase tracking-wide">
+            <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#7b6d62]">
               Available From
             </span>
             <TextInput
@@ -118,9 +118,9 @@ export default function CreateMenuAvailabilitySection({
               value={availabilityStart}
             />
           </div>
-          <span className="mt-5 text-[#9a8e85] font-bold">—</span>
+          <span className="mt-5 font-bold text-[#9a8e85]">-</span>
           <div className="flex-1">
-            <span className="mb-1 block text-[11px] font-bold text-[#7b6d62] uppercase tracking-wide">
+            <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#7b6d62]">
               Available Until
             </span>
             <TextInput

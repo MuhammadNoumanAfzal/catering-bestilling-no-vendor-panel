@@ -1,14 +1,17 @@
 import { X } from "lucide-react";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
-import { Label, SelectInput, TextInput, UploadBox } from "./CreateMenuFields";
+import { Label, MultiSelectInput, TextInput, UploadBox } from "./CreateMenuFields";
 
 export default function CreateMenuItemsSection({
   addMenuItem,
+  allergenFeatureMessage = "",
+  allergenFeatureUnavailable = false,
   allergenOptions,
   disabled = false,
   handleItemImageSelect,
   menuItems,
+  onAddNewAllergenClick,
   onAddFromOtherPackage,
   removeMenuItem,
   updateMenuItem,
@@ -52,14 +55,34 @@ export default function CreateMenuItemsSection({
               />
 
               <div className="mt-3">
-                <Label>Allergens</Label>
-                <SelectInput
-                  disabled={disabled}
-                  onChange={(event) => updateMenuItem(item.id, "allergen", event.target.value)}
+                <div className="flex items-center justify-between">
+                  <Label>Allergens</Label>
+                  {!disabled && !allergenFeatureUnavailable ? (
+                    <button
+                      type="button"
+                      onClick={onAddNewAllergenClick}
+                      className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
+                    >
+                      + Add New
+                    </button>
+                  ) : null}
+                </div>
+                <MultiSelectInput
+                  disabled={disabled || allergenFeatureUnavailable}
+                  onChange={(value) => updateMenuItem(item.id, "allergens", value)}
                   options={allergenOptions}
-                  placeholder="Select allergy info"
-                  value={item.allergen}
+                  placeholder={
+                    allergenFeatureUnavailable
+                      ? "Allergen API not available in production yet"
+                      : "Select one or more allergens"
+                  }
+                  value={item.allergens}
                 />
+                {allergenFeatureMessage ? (
+                  <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
+                    {allergenFeatureMessage}
+                  </p>
+                ) : null}
               </div>
 
             </div>

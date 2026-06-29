@@ -8,6 +8,11 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       name
       slug
     }
+    allergens {
+      id
+      name
+      slug
+    }
 
     categories {
       edges {
@@ -99,7 +104,11 @@ export const GET_VENDOR_MENU_DETAIL_QUERY = `
         id
         title
         description
-        allergens
+        allergens {
+          id
+          name
+          slug
+        }
         imageUrl
         fileId
         order
@@ -208,11 +217,53 @@ export const SAVE_VENDOR_MENU_MUTATION = `
           id
           title
           description
-          allergens
+          allergens {
+            id
+            name
+            slug
+          }
           imageUrl
           fileId
           order
         }
+      }
+    }
+  }
+`;
+
+export const CREATE_FOOD_TYPE_MUTATION = `
+  mutation CreateFoodType($input: FoodTypeInput!) {
+    foodTypeMutation(input: $input) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      instance {
+        id
+        name
+        slug
+      }
+    }
+  }
+`;
+
+export const CREATE_ALLERGEN_MUTATION = `
+  mutation CreateAllergen($input: AllergenInput!) {
+    allergenMutation(input: $input) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      instance {
+        id
+        name
+        slug
       }
     }
   }
@@ -249,6 +300,168 @@ export const DELETE_VENDOR_MENU_MUTATION = `
     vendorMenuDelete(id: $id) {
       success
       message
+    }
+  }
+`;
+
+export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
+  query GetVendorAddOnFormBootstrap {
+    categories {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+    menuStatusChoices
+    pricingTypeChoices
+    foodTypes {
+      id
+      name
+      slug
+    }
+  }
+`;
+
+export const GET_VENDOR_ADD_ONS_QUERY = `
+  query GetVendorAddOns($first: Int = 50, $after: String) {
+    vendorAddOns(first: $first, after: $after) {
+      edges {
+        node {
+          id
+          name
+          description
+          priceWithTax
+          taxPercent
+          menuStatus
+          dietaryTags
+          customDietary
+          availableDays
+          coverImage {
+            fileUrl
+            fileId
+          }
+          category {
+            id
+            name
+          }
+          foodTypes {
+            id
+            name
+            slug
+          }
+          createdOn
+          updatedOn
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
+  query GetVendorAddOnDetail($id: ID!) {
+    vendorAddOn(id: $id) {
+      id
+      name
+      description
+      priceWithTax
+      taxPercent
+      menuStatus
+      dietaryTags
+      customDietary
+      availableDays
+      coverImage {
+        fileUrl
+        fileId
+      }
+      category {
+        id
+        name
+      }
+      foodTypes {
+        id
+        name
+        slug
+      }
+      createdOn
+      updatedOn
+    }
+  }
+`;
+
+export const SAVE_VENDOR_ADD_ON_MUTATION = `
+  mutation SaveVendorAddOn($input: VendorAddOnInput!) {
+    vendorAddOnMutation(input: $input) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      instance {
+        id
+        name
+        description
+        priceWithTax
+        taxPercent
+        menuStatus
+        dietaryTags
+        customDietary
+        availableDays
+        coverImage {
+          fileUrl
+          fileId
+        }
+        category {
+          id
+          name
+        }
+        foodTypes {
+          id
+          name
+          slug
+        }
+        createdOn
+        updatedOn
+      }
+    }
+  }
+`;
+
+export const UPDATE_VENDOR_ADD_ON_STATUS_MUTATION = `
+  mutation UpdateVendorAddOnStatus($id: ID!, $menuStatus: String!) {
+    vendorAddOnStatusUpdate(id: $id, menuStatus: $menuStatus) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      instance {
+        id
+        menuStatus
+      }
+    }
+  }
+`;
+
+export const DELETE_VENDOR_ADD_ON_MUTATION = `
+  mutation DeleteVendorAddOn($id: ID!) {
+    vendorAddOnDelete(id: $id) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
     }
   }
 `;
