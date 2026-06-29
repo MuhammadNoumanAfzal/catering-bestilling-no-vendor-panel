@@ -45,7 +45,7 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         newOrder
         orderUpdates
         reviewsRatings
-        promos_tips
+        promos_tips: promosTips
         emailNotifications
         pushNotifications
         smsNotifications
@@ -211,7 +211,7 @@ export const UPDATE_VENDOR_NOTIFICATION_PREFERENCES_MUTATION = `
         newOrder
         orderUpdates
         reviewsRatings
-        promos_tips
+        promos_tips: promosTips
         emailNotifications
         pushNotifications
         smsNotifications
