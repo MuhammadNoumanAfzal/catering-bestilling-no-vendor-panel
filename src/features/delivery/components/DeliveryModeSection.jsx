@@ -6,6 +6,7 @@ export default function DeliveryModeSection({
   modes,
   selectedModes,
   onToggleMode,
+  disabled = false,
   errors = {},
 }) {
   const modeError =
@@ -17,6 +18,7 @@ export default function DeliveryModeSection({
       title="Delivery Mode"
     >
       <DeliveryModeSelector
+        disabled={disabled}
         modes={modes}
         onToggleMode={onToggleMode}
         selectedModes={selectedModes}

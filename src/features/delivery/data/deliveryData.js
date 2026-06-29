@@ -11,8 +11,6 @@ export const deliveryModes = [
   },
 ];
 
-export const servicePostalCodes = ["000243", "214254", "46356", "343"];
-
 export const deliveryDays = [
   { label: "Mo", value: "mo" },
   { label: "Tu", value: "tu" },
