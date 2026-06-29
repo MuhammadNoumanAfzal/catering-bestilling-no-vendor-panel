@@ -2,6 +2,7 @@ import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphq
 import {
   CREATE_ALLERGEN_MUTATION,
   CREATE_FOOD_TYPE_MUTATION,
+  CREATE_OCCASION_MUTATION,
   CREATE_VENDOR_CATEGORY_MUTATION,
   DELETE_VENDOR_ADD_ON_MUTATION,
   DELETE_VENDOR_MENU_MUTATION,
@@ -88,6 +89,14 @@ export async function createFoodType(name) {
   });
 
   return unwrapSuccessfulResult(result, "foodTypeMutation", "Unable to create the meal type.");
+}
+
+export async function createOccasion(name) {
+  const result = await executeProtectedGraphqlRequest(CREATE_OCCASION_MUTATION, {
+    name,
+  });
+
+  return unwrapSuccessfulResult(result, "occasionMutation", "Unable to create the occasion.");
 }
 
 export async function createAllergen(name) {

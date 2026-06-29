@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   createAllergen,
   createFoodType,
+  createOccasion,
   createVendorCategory,
   getVendorMenuDetail,
   getVendorMenuFormBootstrap,
@@ -16,6 +17,7 @@ import {
   mapCategoriesToOptions,
   mapChoiceOptions,
   mapFoodTypesToOptions,
+  mapOccasionsToOptions,
   mapMenuListResponse,
   mapVendorMenuDetailToForm,
   resolveMediaUrl,
@@ -45,6 +47,7 @@ export function useMenuEditor() {
   const [formState, setFormState] = useState(getInitialMenuState);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [menuTypeOptions, setMenuTypeOptions] = useState([]);
+  const [occasionOptions, setOccasionOptions] = useState([]);
   const [allergenOptions, setAllergenOptions] = useState(defaultAllergenOptions);
   const [pricingModes, setPricingModes] = useState([]);
   const [availableAddOns, setAvailableAddOns] = useState([]);
@@ -72,6 +75,7 @@ export function useMenuEditor() {
         const nextCategoryOptions = mapCategoriesToOptions(bootstrapResult.categories);
         const nextProductTypeOptions = mapChoiceOptions(bootstrapResult.productTypeChoices);
         const nextMenuTypeOptions = mapFoodTypesToOptions(bootstrapResult.foodTypes);
+        const nextOccasionOptions = mapOccasionsToOptions(bootstrapResult.occasions);
         const nextAllergenOptions = mapAllergensToOptions(bootstrapResult.allergens);
         const nextPricingModes = mapChoiceOptions(bootstrapResult.pricingTypeChoices);
         const nextAddOns = (bootstrapResult.vendorAddOns?.edges || [])
@@ -81,6 +85,7 @@ export function useMenuEditor() {
 
         setCategoryOptions(nextCategoryOptions);
         setMenuTypeOptions(nextMenuTypeOptions);
+        setOccasionOptions(nextOccasionOptions);
         setAllergenOptions(nextAllergenOptions);
         setPricingModes(nextPricingModes);
         setAvailableAddOns(nextAddOns);
@@ -277,7 +282,7 @@ export function useMenuEditor() {
     }
 
     if (!formState.menuTypes.length) {
-      return "Please choose at least one meal type.";
+      return "Please choose at least one food type.";
     }
 
     if (pricingModes.length > 0 && !formState.pricingMode) {
@@ -372,7 +377,29 @@ export function useMenuEditor() {
         : [...current.menuTypes, nextOption.value],
       isAddMealTypeModalOpen: false,
     }));
-    await showVendorSuccessToast(result.message || "Meal type created.");
+    await showVendorSuccessToast(result.message || "Food type created.");
+  }
+
+  function handleAddOccasionClick() {
+    setField("isAddOccasionModalOpen", true);
+  }
+
+  async function handleCreateOccasion(occasionName) {
+    const result = await createOccasion(occasionName);
+    const nextOption = {
+      label: result.instance?.name || occasionName,
+      value: result.instance?.id || result.instance?.slug || occasionName,
+    };
+
+    setOccasionOptions((currentOptions) => [...currentOptions, nextOption]);
+    setFormState((current) => ({
+      ...current,
+      selectedOccasions: current.selectedOccasions.includes(nextOption.value)
+        ? current.selectedOccasions
+        : [...current.selectedOccasions, nextOption.value],
+      isAddOccasionModalOpen: false,
+    }));
+    await showVendorSuccessToast(result.message || "Occasion created.");
   }
 
   function handleAddAllergenClick() {
@@ -411,17 +438,20 @@ export function useMenuEditor() {
     mode,
     pricingModes,
     menuItemsForDisplay,
+    occasionOptions,
     resolveMediaUrl,
     actions: {
       addMenuItem,
       handleAddAllergenClick,
       handleAddImportedItems,
       handleAddMealTypeClick,
+      handleAddOccasionClick,
       handleAddNewCategoryClick,
       handleCancel,
       handleCreateAllergen,
       handleCreateCategory,
       handleCreateMealType,
+      handleCreateOccasion,
       handleImageUpload,
       handleImportMenuItemsRequest,
       handlePublish,
