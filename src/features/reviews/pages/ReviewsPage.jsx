@@ -4,7 +4,7 @@ import ReviewsListSection from "../components/ReviewsListSection";
 import ReviewsPageHeader from "../components/ReviewsPageHeader";
 import ReviewsPagination from "../components/ReviewsPagination";
 import ReviewsSummaryCard from "../components/ReviewsSummaryCard";
-import { reviewFilters } from "../data/reviewsData";
+import { reviewFilters } from "../data/reviewFilters";
 import useReviewsPageState from "../hooks/useReviewsPageState";
 
 export default function ReviewsPage() {
