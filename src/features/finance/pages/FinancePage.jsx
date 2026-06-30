@@ -13,7 +13,6 @@ export default function FinancePage() {
     customFrom,
     customTo,
     dateButtonLabel,
-    filteredOrders,
     handleApplyCustomDate,
     handleExport,
     handlePageChange,

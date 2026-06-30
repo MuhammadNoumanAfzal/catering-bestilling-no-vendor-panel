@@ -1,15 +1,8 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
-
-const statusTabs = ["All", "Paid", "Processing", "Pending"];
-
-const dateOptions = [
-  { id: "7days", label: "Last 7 Days" },
-  { id: "30days", label: "Last 30 Days" },
-  { id: "thisMonth", label: "This Month" },
-  { id: "lastMonth", label: "Last Month" },
-  { id: "thisYear", label: "This Year" },
-  { id: "custom", label: "Custom Date" },
-];
+import {
+  financeDateOptions,
+  financeStatusTabs,
+} from "../data/financeFilterOptions";
 
 export default function FinanceOrdersFilters({
   activeStatus,
@@ -33,7 +26,7 @@ export default function FinanceOrdersFilters({
     <div className="rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-2.5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="flex items-center justify-between gap-3 max-[760px]:flex-col max-[760px]:items-stretch">
         <div className="flex items-center gap-5 max-[760px]:overflow-x-auto">
-          {statusTabs.map((status) => {
+          {financeStatusTabs.map((status) => {
             const isActive = activeStatus === status;
 
             return (
@@ -91,7 +84,7 @@ export default function FinanceOrdersFilters({
           {isDateMenuOpen ? (
             <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.14)]">
               <div className="space-y-1">
-                {dateOptions.map((option) => {
+                {financeDateOptions.map((option) => {
                     const isCustomOption = option.id === "custom";
                     const isActive = isCustomOption && isCustomDateOpen;
 
