@@ -22,6 +22,37 @@ import {
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
+const emptyFieldErrors = {
+  addOnName: "",
+  price: "",
+  category: "",
+  customCategory: "",
+  mealTypes: "",
+};
+
+function mapAddOnMutationErrors(errors = []) {
+  const fieldMap = {
+    name: "addOnName",
+    category: "category",
+    priceWithTax: "price",
+    foodTypes: "mealTypes",
+  };
+
+  return errors.reduce((accumulator, item) => {
+    const targetField = fieldMap[item?.field] || item?.field;
+
+    if (!targetField || !item?.message) {
+      return accumulator;
+    }
+
+    accumulator[targetField] = accumulator[targetField]
+      ? `${accumulator[targetField]} ${item.message}`
+      : item.message;
+
+    return accumulator;
+  }, {});
+}
+
 export function useAddOnEditor() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -33,6 +64,7 @@ export function useAddOnEditor() {
   const [formState, setFormState] = useState(getInitialAddOnState);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [mealTypeOptions, setMealTypeOptions] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -115,6 +147,10 @@ export function useAddOnEditor() {
   }, [categoryOptions, formState.category, formState.customCategory]);
 
   function setField(field, value) {
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: "",
+    }));
     setFormState((current) => ({
       ...current,
       [field]: value,
@@ -122,6 +158,7 @@ export function useAddOnEditor() {
   }
 
   function resetForm() {
+    setFieldErrors(emptyFieldErrors);
     setFormState({
       ...getInitialAddOnState(),
       category: categoryOptions[0]?.value || "",
@@ -159,16 +196,29 @@ export function useAddOnEditor() {
 
   async function validateAddOn() {
     if (!formState.addOnName.trim()) {
+      setFieldErrors((current) => ({
+        ...current,
+        addOnName: "Please enter an add-on name.",
+      }));
       await showVendorErrorAlert("Please enter an add-on name.");
       return false;
     }
 
     if (!String(formState.price).trim()) {
+      setFieldErrors((current) => ({
+        ...current,
+        price: "Please enter a price for this add-on.",
+      }));
       await showVendorErrorAlert("Please enter a price for this add-on.");
       return false;
     }
 
     if (!resolvedCategory) {
+      setFieldErrors((current) => ({
+        ...current,
+        category: "Please choose or create a category.",
+        customCategory: "Please choose or create a category.",
+      }));
       await showVendorErrorAlert("Please choose or create a category.");
       return false;
     }
@@ -227,6 +277,7 @@ export function useAddOnEditor() {
   }
 
   async function saveCurrentAddOn({ navigateAfterSave }) {
+    setFieldErrors(emptyFieldErrors);
     const isValid = await validateAddOn();
 
     if (!isValid) {
@@ -245,6 +296,7 @@ export function useAddOnEditor() {
         { categoryId: resolvedCategoryId },
       );
       const result = await saveVendorAddOn(variables);
+      setFieldErrors(emptyFieldErrors);
 
       await showVendorSuccessToast(
         result.message || (navigateAfterSave ? "Add-on saved successfully." : "Add-on added."),
@@ -257,6 +309,10 @@ export function useAddOnEditor() {
 
       resetForm();
     } catch (error) {
+      setFieldErrors((current) => ({
+        ...current,
+        ...mapAddOnMutationErrors(error?.errors),
+      }));
       await showVendorErrorAlert(error.message || "Unable to save the add-on right now.");
     } finally {
       setIsSaving(false);
@@ -277,6 +333,7 @@ export function useAddOnEditor() {
 
   return {
     categoryOptions,
+    fieldErrors,
     formState,
     imageUrl: resolveMediaUrl(formState.image),
     isDuplicateMode,

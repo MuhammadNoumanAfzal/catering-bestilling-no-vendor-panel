@@ -59,6 +59,14 @@ function getEdgeNodes(connection) {
   return safeArray(connection?.edges).map((edge) => edge?.node).filter(Boolean);
 }
 
+function getCategoryItems(categoriesValue) {
+  if (Array.isArray(categoriesValue)) {
+    return categoriesValue;
+  }
+
+  return getEdgeNodes(categoriesValue);
+}
+
 export function resolveMediaUrl(media) {
   if (!media) {
     return "";
@@ -100,6 +108,7 @@ export function mapOccasionsToOptions(occasions = []) {
   return safeArray(occasions).map((occasion) => ({
     label: occasion.name || formatChoiceLabel(occasion.slug || ""),
     value: occasion.id || occasion.slug,
+    iconUrl: occasion.iconUrl || "",
   }));
 }
 
@@ -111,10 +120,10 @@ export function mapAllergensToOptions(allergens = []) {
 }
 
 export function mapCategoriesToOptions(categoriesConnection) {
-  return getEdgeNodes(categoriesConnection)
+  return getCategoryItems(categoriesConnection)
     .map((category) => ({
       label: category.name,
-      value: category.id,
+      value: category.id || category.slug,
     }));
 }
 
@@ -372,6 +381,15 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
 export function buildSaveVendorAddOnVariables(formState, options = {}) {
   const resolvedCategoryId = options.categoryId || formState.category;
   const selectedStatus = formState.availableImmediately ? "active" : formState.status || "draft";
+  const attachments = formState.image?.fileUrl
+    ? [
+        {
+          fileUrl: formState.image.fileUrl,
+          fileId: formState.image.fileId,
+          isCover: true,
+        },
+      ]
+    : [];
 
   return {
     input: {
@@ -392,5 +410,6 @@ export function buildSaveVendorAddOnVariables(formState, options = {}) {
           }
         : {}),
     },
+    attachments,
   };
 }

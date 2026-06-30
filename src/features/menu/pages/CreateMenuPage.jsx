@@ -18,6 +18,7 @@ export default function CreateMenuPage() {
     allergenOptions,
     categoryOptions,
     existingMenus,
+    fieldErrors,
     filteredAddOns,
     formState,
     isDuplicateMode,
@@ -85,6 +86,7 @@ export default function CreateMenuPage() {
             coverImage={resolveMediaUrl(formState.coverImage)}
             description={formState.description}
             disabled={isViewMode || isSaving}
+            fieldErrors={fieldErrors}
             galleryImages={formState.galleryImages.map(resolveMediaUrl)}
             menuTitle={formState.menuTitle}
             menuTypes={formState.menuTypes}
@@ -121,6 +123,7 @@ export default function CreateMenuPage() {
           <CreateMenuPricingSection
             basePrice={formState.basePrice}
             disabled={isViewMode || isSaving}
+            fieldErrors={fieldErrors}
             minimumGuests={formState.minimumGuests}
             onBasePriceChange={(event) => actions.setField("basePrice", event.target.value)}
             onMinimumGuestsChange={(event) =>

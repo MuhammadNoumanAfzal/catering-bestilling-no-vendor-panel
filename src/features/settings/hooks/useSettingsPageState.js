@@ -36,8 +36,19 @@ import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
+import { uploadMenuImage } from "../../menu/api/menuUploadApi";
 
 const emptyPasswordForm = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+};
+
+const emptyFieldErrors = {
+  fullName: "",
+  emailAddress: "",
+  phoneNumber: "",
+  username: "",
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
@@ -49,6 +60,36 @@ function hasPasswordChanges(passwordForm) {
     passwordForm.newPassword ||
     passwordForm.confirmPassword
   );
+}
+
+function formatMutationErrors(errors = []) {
+  const normalizedErrors = errors
+    .map((item) => {
+      const field = item?.field ? `${item.field}: ` : "";
+      const message = item?.message || "";
+
+      return `${field}${message}`.trim();
+    })
+    .filter(Boolean);
+
+  return normalizedErrors.join("\n");
+}
+
+function mapMutationErrorsByField(errors = []) {
+  return errors.reduce((accumulator, item) => {
+    const field = item?.field;
+    const message = item?.message || "";
+
+    if (!field || !message) {
+      return accumulator;
+    }
+
+    accumulator[field] = accumulator[field]
+      ? `${accumulator[field]} ${message}`
+      : message;
+
+    return accumulator;
+  }, {});
 }
 
 function mapApiHoursToState(hours = []) {
@@ -75,6 +116,7 @@ export default function useSettingsPageState() {
     newPassword: false,
     confirmPassword: false,
   });
+  const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
   const [saveMessage, setSaveMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -140,6 +182,10 @@ export default function useSettingsPageState() {
 
   function handleAccountFieldChange(field) {
     return (event) => {
+      setFieldErrors((current) => ({
+        ...current,
+        [field]: "",
+      }));
       setSettings((current) => ({
         ...current,
         account: {
@@ -214,11 +260,51 @@ export default function useSettingsPageState() {
 
   function handlePasswordChange(field) {
     return (event) => {
+      setFieldErrors((current) => ({
+        ...current,
+        [field]: "",
+      }));
       setPasswordForm((current) => ({
         ...current,
         [field]: event.target.value,
       }));
     };
+  }
+
+  async function handleProfileImageUpload(file) {
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      await showVendorErrorAlert("Please upload a PNG, JPG, or WEBP image.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      await showVendorErrorAlert("Please upload an image under 5MB.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const uploadedAsset = await uploadMenuImage(file);
+
+      setSettings((current) => ({
+        ...current,
+        profileImage: uploadedAsset,
+      }));
+      setSaveMessage("Logo uploaded. Save changes to apply.");
+      await showVendorSuccessToast("Logo uploaded. Save changes to apply.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to upload the selected image.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleRemoveProfileImage() {
+    setSettings((current) => ({
+      ...current,
+      profileImage: null,
+    }));
+    setSaveMessage("Logo removed. Save changes to apply.");
   }
 
   function handleTogglePasswordVisibility(field) {
@@ -231,13 +317,20 @@ export default function useSettingsPageState() {
   async function handleCancel() {
     setSettings(savedSettings);
     setPasswordForm(emptyPasswordForm);
+    setFieldErrors(emptyFieldErrors);
     setSaveMessage("Changes discarded.");
     await showVendorSuccessToast("Settings changes discarded.");
   }
 
   async function handleSave() {
+    setFieldErrors(emptyFieldErrors);
+
     if (hasPasswordChanges(passwordForm)) {
       if (passwordForm.newPassword.length < 8) {
+        setFieldErrors((current) => ({
+          ...current,
+          newPassword: "Use at least 8 characters for the new password.",
+        }));
         await showVendorErrorAlert(
           "Use at least 8 characters for the new password.",
           "Password too short",
@@ -247,6 +340,10 @@ export default function useSettingsPageState() {
       }
 
       if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        setFieldErrors((current) => ({
+          ...current,
+          confirmPassword: "New password and confirm password must match.",
+        }));
         await showVendorErrorAlert(
           "New password and confirm password must match.",
           "Password mismatch",
@@ -287,10 +384,35 @@ export default function useSettingsPageState() {
         const result = await updateVendorAccountProfile(buildAccountProfileInput(settings));
 
         if (!result.success) {
-          await showVendorErrorAlert(result.message || "Unable to save account profile.");
+          setFieldErrors((current) => ({
+            ...current,
+            ...mapMutationErrorsByField(result.errors),
+          }));
+          await showVendorErrorAlert(
+            formatMutationErrors(result.errors) ||
+              result.message ||
+              "Unable to save account profile.",
+            "Account profile validation failed",
+          );
           return;
         }
 
+        nextSettings = {
+          ...nextSettings,
+          account: {
+            ...nextSettings.account,
+            id: result.account?.id || nextSettings.account.id,
+            fullName: result.account?.fullName || nextSettings.account.fullName,
+            emailAddress:
+              result.account?.emailAddress || nextSettings.account.emailAddress,
+            phoneNumber:
+              result.account?.phoneNumber ?? nextSettings.account.phoneNumber,
+            role: result.account?.role || nextSettings.account.role,
+            username: result.account?.username || nextSettings.account.username,
+            accountId: result.account?.accountId || nextSettings.account.accountId,
+            avatar: result.account?.avatar ?? nextSettings.account.avatar,
+          },
+        };
         confirmations.push(result.message || "Account profile saved.");
       }
 
@@ -350,7 +472,16 @@ export default function useSettingsPageState() {
         const result = await changeVendorPassword(buildPasswordChangeInput(passwordForm));
 
         if (!result.success) {
-          await showVendorErrorAlert(result.message || "Unable to change password.");
+          setFieldErrors((current) => ({
+            ...current,
+            ...mapMutationErrorsByField(result.errors),
+          }));
+          await showVendorErrorAlert(
+            formatMutationErrors(result.errors) ||
+              result.message ||
+              "Unable to change password.",
+            "Password change failed",
+          );
           return;
         }
 
@@ -360,6 +491,7 @@ export default function useSettingsPageState() {
       setSavedSettings(nextSettings);
       setSettings(nextSettings);
       setPasswordForm(emptyPasswordForm);
+      setFieldErrors(emptyFieldErrors);
       setSaveMessage("Changes saved.");
       await showVendorSuccessToast(
         confirmations[confirmations.length - 1] || "Settings saved successfully.",
@@ -394,6 +526,7 @@ export default function useSettingsPageState() {
       setSettings(mappedPage.settings);
       setSettingsOptions(mappedPage.options);
       setPasswordForm(emptyPasswordForm);
+      setFieldErrors(emptyFieldErrors);
       setSaveMessage("Settings reset to default.");
       await showVendorSuccessToast(result.message || "Settings reset to default.");
     } catch (error) {
@@ -471,6 +604,7 @@ export default function useSettingsPageState() {
       setSavedSettings(defaultSettingsState);
       setSettings(defaultSettingsState);
       setPasswordForm(emptyPasswordForm);
+      setFieldErrors(emptyFieldErrors);
       setSaveMessage("Store deleted permanently.");
       await showVendorSuccessToast(result.message || "Store deleted permanently.");
     } catch (error) {
@@ -639,12 +773,15 @@ export default function useSettingsPageState() {
     handleFieldChange,
     handleNotificationToggle,
     handlePasswordChange,
+    handleProfileImageUpload,
+    handleRemoveProfileImage,
     handleResetAllSettings,
     handleSave,
     handleSaveClosure,
     handleToggleBusinessDay,
     handleTogglePasswordVisibility,
     hasUnsavedChanges,
+    fieldErrors,
     isLoading,
     isSaving,
     passwordForm,

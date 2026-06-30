@@ -35,6 +35,41 @@ import {
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
+const emptyFieldErrors = {
+  menuTitle: "",
+  category: "",
+  menuTypes: "",
+  selectedOccasions: "",
+  basePrice: "",
+  minimumGuests: "",
+};
+
+function mapMenuMutationErrors(errors = []) {
+  const fieldMap = {
+    name: "menuTitle",
+    title: "menuTitle",
+    category: "category",
+    foodTypes: "menuTypes",
+    occasions: "selectedOccasions",
+    priceWithTax: "basePrice",
+    minimumGuests: "minimumGuests",
+  };
+
+  return errors.reduce((accumulator, item) => {
+    const targetField = fieldMap[item?.field] || item?.field;
+
+    if (!targetField || !item?.message) {
+      return accumulator;
+    }
+
+    accumulator[targetField] = accumulator[targetField]
+      ? `${accumulator[targetField]} ${item.message}`
+      : item.message;
+
+    return accumulator;
+  }, {});
+}
+
 export function useMenuEditor() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -52,6 +87,7 @@ export function useMenuEditor() {
   const [pricingModes, setPricingModes] = useState([]);
   const [availableAddOns, setAvailableAddOns] = useState([]);
   const [existingMenus, setExistingMenus] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -162,6 +198,10 @@ export function useMenuEditor() {
   }, [availableAddOns, formState.addOnSearch]);
 
   function setField(field, value) {
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: "",
+    }));
     setFormState((current) => ({
       ...current,
       [field]: value,
@@ -274,14 +314,26 @@ export function useMenuEditor() {
 
   function validateBeforeSave() {
     if (!formState.menuTitle.trim()) {
+      setFieldErrors((current) => ({
+        ...current,
+        menuTitle: "Please enter a menu title before saving.",
+      }));
       return "Please enter a menu title before saving.";
     }
 
     if (!formState.category) {
+      setFieldErrors((current) => ({
+        ...current,
+        category: "Please select a category for this menu.",
+      }));
       return "Please select a category for this menu.";
     }
 
     if (!formState.menuTypes.length) {
+      setFieldErrors((current) => ({
+        ...current,
+        menuTypes: "Please choose at least one food type.",
+      }));
       return "Please choose at least one food type.";
     }
 
@@ -290,10 +342,18 @@ export function useMenuEditor() {
     }
 
     if (!String(formState.basePrice).trim()) {
+      setFieldErrors((current) => ({
+        ...current,
+        basePrice: "Please enter a base price.",
+      }));
       return "Please enter a base price.";
     }
 
     if (!String(formState.minimumGuests).trim()) {
+      setFieldErrors((current) => ({
+        ...current,
+        minimumGuests: "Please enter the minimum guest count.",
+      }));
       return "Please enter the minimum guest count.";
     }
 
@@ -305,6 +365,7 @@ export function useMenuEditor() {
   }
 
   async function handleSave(statusOverride) {
+    setFieldErrors(emptyFieldErrors);
     const validationMessage = validateBeforeSave();
 
     if (validationMessage) {
@@ -316,9 +377,14 @@ export function useMenuEditor() {
       setIsSaving(true);
       const variables = buildSaveVendorMenuVariables(formState, statusOverride);
       const result = await saveVendorMenu(variables);
+      setFieldErrors(emptyFieldErrors);
       await showVendorSuccessToast(result.message || "Menu saved successfully.");
       navigate("/menu", { replace: true });
     } catch (error) {
+      setFieldErrors((current) => ({
+        ...current,
+        ...mapMenuMutationErrors(error?.errors),
+      }));
       await showVendorErrorAlert(error.message || "Unable to save the menu right now.");
     } finally {
       setIsSaving(false);
@@ -426,6 +492,7 @@ export function useMenuEditor() {
   return {
     categoryOptions,
     existingMenus,
+    fieldErrors,
     allergenOptions,
     filteredAddOns,
     formState,

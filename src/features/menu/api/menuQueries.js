@@ -12,22 +12,18 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       id
       name
       slug
+      iconUrl
     }
     allergens {
       id
       name
       slug
     }
-
     categories {
-      edges {
-        node {
-          id
-          name
-        }
-      }
+      id
+      name
+      slug
     }
-
     vendorAddOns(first: 100) {
       edges {
         node {
@@ -266,8 +262,26 @@ export const CREATE_FOOD_TYPE_MUTATION = `
 `;
 
 export const CREATE_OCCASION_MUTATION = `
-  mutation CreateOccasion($name: String!) {
-    occasionMutation(name: $name) {
+  mutation CreateOccasion(
+    $name: String!
+    $id: ID
+    $slug: String
+    $description: String
+    $iconUrl: String
+    $coverImageUrl: String
+    $isActive: Boolean
+    $sortOrder: Int
+  ) {
+    occasionMutation(
+      name: $name
+      id: $id
+      slug: $slug
+      description: $description
+      iconUrl: $iconUrl
+      coverImageUrl: $coverImageUrl
+      isActive: $isActive
+      sortOrder: $sortOrder
+    ) {
       success
       message
       errors {
@@ -308,9 +322,15 @@ export const CREATE_VENDOR_CATEGORY_MUTATION = `
     vendorCategoryMutation(input: $input) {
       success
       message
+      errors {
+        field
+        message
+        code
+      }
       instance {
         id
         name
+        slug
       }
     }
   }
@@ -341,12 +361,9 @@ export const DELETE_VENDOR_MENU_MUTATION = `
 export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
   query GetVendorAddOnFormBootstrap {
     categories {
-      edges {
-        node {
-          id
-          name
-        }
-      }
+      id
+      name
+      slug
     }
     menuStatusChoices
     pricingTypeChoices
@@ -429,8 +446,11 @@ export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
 `;
 
 export const SAVE_VENDOR_ADD_ON_MUTATION = `
-  mutation SaveVendorAddOn($input: VendorAddOnInput!) {
-    vendorAddOnMutation(input: $input) {
+  mutation SaveVendorAddOn(
+    $input: VendorAddOnInput!
+    $attachments: [ProductAttachmentInput]
+  ) {
+    vendorAddOnMutation(input: $input, attachments: $attachments) {
       success
       message
       errors {

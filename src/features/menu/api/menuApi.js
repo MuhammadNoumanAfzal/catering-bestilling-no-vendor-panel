@@ -91,9 +91,23 @@ export async function createFoodType(name) {
   return unwrapSuccessfulResult(result, "foodTypeMutation", "Unable to create the meal type.");
 }
 
-export async function createOccasion(name) {
+export async function createOccasion(input) {
+  const variables =
+    typeof input === "string"
+      ? { name: input }
+      : {
+          name: input?.name || "",
+          id: input?.id || null,
+          slug: input?.slug || null,
+          description: input?.description || null,
+          iconUrl: input?.iconUrl || null,
+          coverImageUrl: input?.coverImageUrl || null,
+          isActive: typeof input?.isActive === "boolean" ? input.isActive : null,
+          sortOrder: Number.isInteger(input?.sortOrder) ? input.sortOrder : null,
+        };
+
   const result = await executeProtectedGraphqlRequest(CREATE_OCCASION_MUTATION, {
-    name,
+    ...variables,
   });
 
   return unwrapSuccessfulResult(result, "occasionMutation", "Unable to create the occasion.");

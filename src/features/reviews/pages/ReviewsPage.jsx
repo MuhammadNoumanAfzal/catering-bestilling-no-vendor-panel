@@ -4,11 +4,7 @@ import ReviewsListSection from "../components/ReviewsListSection";
 import ReviewsPageHeader from "../components/ReviewsPageHeader";
 import ReviewsPagination from "../components/ReviewsPagination";
 import ReviewsSummaryCard from "../components/ReviewsSummaryCard";
-import {
-  ratingBreakdown,
-  reviewFilters,
-  reviewStats,
-} from "../data/reviewsData";
+import { reviewFilters } from "../data/reviewsData";
 import useReviewsPageState from "../hooks/useReviewsPageState";
 
 export default function ReviewsPage() {
@@ -31,12 +27,16 @@ export default function ReviewsPage() {
     handleToggleDateMenu,
     isCustomDateOpen,
     isDateMenuOpen,
+    isLoading,
+    isReplySaving,
     onCustomFromChange,
     onCustomToChange,
     pageSize,
     paginatedReviews,
     replyDrafts,
+    reviewSummary,
     selectedReview,
+    totalItems,
     totalPages,
     selectedDateOption,
   } = useReviewsPageState();
@@ -45,7 +45,7 @@ export default function ReviewsPage() {
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <ReviewsPageHeader />
 
-      <ReviewsSummaryCard breakdown={ratingBreakdown} stats={reviewStats} />
+      <ReviewsSummaryCard summary={reviewSummary} />
 
       <div className="mt-4">
         <ReviewsFiltersBar
@@ -68,6 +68,7 @@ export default function ReviewsPage() {
       </div>
 
       <ReviewsListSection
+        isLoading={isLoading}
         onReplyOpen={handleReplyOpen}
         reviews={paginatedReviews}
       />
@@ -77,7 +78,7 @@ export default function ReviewsPage() {
           currentPage={currentPage}
           onPageChange={handlePageChange}
           pageSize={pageSize}
-          totalItems={filteredReviews.length}
+          totalItems={totalItems}
           totalPages={totalPages}
         />
       </div>
@@ -85,6 +86,7 @@ export default function ReviewsPage() {
         draftReply={selectedReview ? replyDrafts[selectedReview.id] ?? "" : ""}
         onClose={handleReplyClose}
         onDraftChange={handleDraftChange}
+        isSaving={isReplySaving}
         onSubmit={handleReplySubmit}
         review={selectedReview}
       />
