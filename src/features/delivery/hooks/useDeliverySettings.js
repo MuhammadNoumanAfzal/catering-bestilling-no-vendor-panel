@@ -18,11 +18,29 @@ import {
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
+const DEFAULT_CUSTOM_SLOT_DRAFT = { start: "18:00", end: "21:00" };
 const defaultValidationState = {
   isValid: true,
   issues: [],
   errors: [],
 };
+
+function buildValidationState(result) {
+  return {
+    isValid: result?.isValid ?? false,
+    issues: Array.isArray(result?.issues) ? result.issues : [],
+    errors: Array.isArray(result?.errors) ? result.errors : [],
+  };
+}
+
+function normalizeServiceArea(area) {
+  return {
+    id: area.id,
+    name: area.name || "",
+    postCode: area.postCode || "",
+    isActive: area.isActive !== false,
+  };
+}
 
 export default function useDeliverySettings() {
   const [savedSettings, setSavedSettings] = useState(defaultDeliverySettings);
@@ -34,7 +52,7 @@ export default function useDeliverySettings() {
   const [validationState, setValidationState] = useState(defaultValidationState);
   const [fieldErrors, setFieldErrors] = useState({});
   const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
-  const [customSlotDraft, setCustomSlotDraft] = useState({ start: "18:00", end: "21:00" });
+  const [customSlotDraft, setCustomSlotDraft] = useState(DEFAULT_CUSTOM_SLOT_DRAFT);
   const [slotDraftError, setSlotDraftError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [serviceAreaSearch, setServiceAreaSearch] = useState("");
@@ -44,6 +62,23 @@ export default function useDeliverySettings() {
   const validationRequestIdRef = useRef(0);
   const areaSearchRequestIdRef = useRef(0);
 
+  function resetSlotDraftState() {
+    setCustomSlotDraft(DEFAULT_CUSTOM_SLOT_DRAFT);
+    setSlotDraftError("");
+  }
+
+  function resetServiceAreaSearchState() {
+    setServiceAreaSearch("");
+    setServiceAreaResults([]);
+  }
+
+  function applyLoadedSettings(nextSettings) {
+    setSavedSettings(nextSettings);
+    setFormState(nextSettings);
+    setValidationState(nextSettings.liveValidation || defaultValidationState);
+    setFieldErrors({});
+  }
+
   async function loadDeliverySettings() {
     setIsLoading(true);
     setLoadError("");
@@ -52,10 +87,7 @@ export default function useDeliverySettings() {
       const result = await getVendorDeliverySettings();
       const nextSettings = mapVendorDeliverySettingsToForm(result?.me?.vendor);
 
-      setSavedSettings(nextSettings);
-      setFormState(nextSettings);
-      setValidationState(nextSettings.liveValidation || defaultValidationState);
-      setFieldErrors({});
+      applyLoadedSettings(nextSettings);
       hasLoadedSettingsRef.current = true;
     } catch (error) {
       const nextError = error.message || "Unable to load delivery settings right now.";
@@ -112,11 +144,7 @@ export default function useDeliverySettings() {
           return;
         }
 
-        setValidationState({
-          isValid: result?.isValid ?? false,
-          issues: Array.isArray(result?.issues) ? result.issues : [],
-          errors: Array.isArray(result?.errors) ? result.errors : [],
-        });
+        setValidationState(buildValidationState(result));
         setFieldErrors(mapFieldErrors(result?.errors || []));
       } catch {
         if (validationRequestIdRef.current !== requestId) {
@@ -264,17 +292,11 @@ export default function useDeliverySettings() {
         ...current,
         serviceAreas: [
           ...current.serviceAreas,
-          {
-            id: area.id,
-            name: area.name || "",
-            postCode: area.postCode || "",
-            isActive: area.isActive !== false,
-          },
+          normalizeServiceArea(area),
         ],
       };
     });
-    setServiceAreaSearch("");
-    setServiceAreaResults([]);
+    resetServiceAreaSearchState();
     clearServiceAreaErrors();
   }
 
@@ -303,15 +325,13 @@ export default function useDeliverySettings() {
   }
 
   function handleOpenAddSlotModal() {
-    setCustomSlotDraft({ start: "18:00", end: "21:00" });
-    setSlotDraftError("");
+    resetSlotDraftState();
     setIsAddSlotModalOpen(true);
   }
 
   function handleCloseAddSlotModal() {
     setIsAddSlotModalOpen(false);
-    setCustomSlotDraft({ start: "18:00", end: "21:00" });
-    setSlotDraftError("");
+    resetSlotDraftState();
   }
 
   function handleSaveCustomSlot() {
@@ -342,10 +362,8 @@ export default function useDeliverySettings() {
     setFieldErrors({});
     setValidationState(savedSettings.liveValidation || defaultValidationState);
     setIsAddSlotModalOpen(false);
-    setCustomSlotDraft({ start: "18:00", end: "21:00" });
-    setSlotDraftError("");
-    setServiceAreaSearch("");
-    setServiceAreaResults([]);
+    resetSlotDraftState();
+    resetServiceAreaSearchState();
     setSaveMessage("Changes discarded.");
     await showVendorSuccessToast("Delivery changes discarded.");
   }
@@ -369,11 +387,7 @@ export default function useDeliverySettings() {
       if (!result?.success) {
         const nextErrors = mapFieldErrors(result?.errors || []);
         setFieldErrors(nextErrors);
-        setValidationState({
-          isValid: false,
-          issues: [],
-          errors: result?.errors || [],
-        });
+        setValidationState(buildValidationState(result));
         setSaveMessage(result?.message || "Fix validation errors before saving.");
         return;
       }
@@ -384,12 +398,8 @@ export default function useDeliverySettings() {
           serviceAreas: formState.serviceAreas,
         },
       );
-      setSavedSettings(nextSavedSettings);
-      setFormState(nextSavedSettings);
-      setFieldErrors({});
-      setValidationState(nextSavedSettings.liveValidation || defaultValidationState);
-      setServiceAreaSearch("");
-      setServiceAreaResults([]);
+      applyLoadedSettings(nextSavedSettings);
+      resetServiceAreaSearchState();
       setSaveMessage("Changes saved.");
       await showVendorSuccessToast(result.message || "Delivery settings saved.");
     } catch (error) {
