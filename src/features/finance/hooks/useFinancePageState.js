@@ -1,11 +1,27 @@
-import { useMemo, useState } from "react";
-import { financeOrders } from "../data/financeData";
+import { useEffect, useMemo, useState } from "react";
+import {
+  exportVendorFinanceTransactions,
+  getVendorFinanceOverviewChart,
+  getVendorFinanceSummary,
+  getVendorFinanceTransactionDetail,
+  getVendorFinanceTransactions,
+  getVendorPayoutStatus,
+} from "../api/financeApi";
+import {
+  getChartGroupBy,
+  getFinanceRangeVariables,
+  mapFinanceChartPoints,
+  mapFinanceSummaryCards,
+  mapPayoutStatusItems,
+  mapTransactionDetail,
+  mapTransactionsConnection,
+} from "../api/financeMappers";
+import {
+  showVendorErrorAlert,
+  showVendorSuccessToast,
+} from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
-
-function parseFinanceDate(dateText) {
-  return new Date(dateText);
-}
 
 function formatDateLabel(dateValue) {
   const date = new Date(dateValue);
@@ -19,93 +35,197 @@ function formatDateLabel(dateValue) {
 
 export default function useFinancePageState() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [headerFilter, setHeaderFilter] = useState("7days");
   const [activeStatus, setActiveStatus] = useState("All");
-  const [selectedDateOption, setSelectedDateOption] = useState("latest");
+  const [selectedDateOption, setSelectedDateOption] = useState("30days");
   const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
   const [isCustomDateOpen, setIsCustomDateOpen] = useState(false);
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [appliedCustomRange, setAppliedCustomRange] = useState(null);
+  const [summaryCards, setSummaryCards] = useState([]);
+  const [chartPoints, setChartPoints] = useState([]);
+  const [payoutStatuses, setPayoutStatuses] = useState([]);
+  const [pageCache, setPageCache] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const filteredOrders = useMemo(() => {
-    const latestOrderDate = financeOrders.reduce((latest, order) => {
-      const orderDate = parseFinanceDate(order[3]);
-      return orderDate > latest ? orderDate : latest;
-    }, parseFinanceDate(financeOrders[0][3]));
+  const headerRangeVariables = useMemo(
+    () => getFinanceRangeVariables({ rangePreset: headerFilter }),
+    [headerFilter],
+  );
 
-    return financeOrders.filter((order) => {
-      const orderStatus = order[7];
-      const orderDate = parseFinanceDate(order[3]);
+  const ordersRangeVariables = useMemo(
+    () =>
+      getFinanceRangeVariables({
+        rangePreset: selectedDateOption,
+        customFrom: appliedCustomRange?.from,
+        customTo: appliedCustomRange?.to,
+      }),
+    [appliedCustomRange?.from, appliedCustomRange?.to, selectedDateOption],
+  );
 
-      const matchesStatus =
-        activeStatus === "All" || orderStatus === activeStatus;
+  useEffect(() => {
+    let isCancelled = false;
 
-      let matchesDate = true;
+    async function loadHeaderData() {
+      try {
+        const [summaryResult, chartResult, payoutResult] = await Promise.all([
+          getVendorFinanceSummary(headerRangeVariables),
+          getVendorFinanceOverviewChart({
+            ...headerRangeVariables,
+            groupBy: getChartGroupBy(headerFilter),
+          }),
+          getVendorPayoutStatus(),
+        ]);
 
-      if (selectedDateOption === "lastMonth") {
-        const threshold = new Date(latestOrderDate);
-        threshold.setMonth(threshold.getMonth() - 1);
-        matchesDate = orderDate >= threshold;
-      } else if (selectedDateOption === "last3Months") {
-        const threshold = new Date(latestOrderDate);
-        threshold.setMonth(threshold.getMonth() - 3);
-        matchesDate = orderDate >= threshold;
-      } else if (selectedDateOption === "last6Months") {
-        const threshold = new Date(latestOrderDate);
-        threshold.setMonth(threshold.getMonth() - 6);
-        matchesDate = orderDate >= threshold;
-      } else if (selectedDateOption === "thisYear") {
-        matchesDate = orderDate.getFullYear() === latestOrderDate.getFullYear();
-      } else if (
-        selectedDateOption === "custom" &&
-        appliedCustomRange?.from &&
-        appliedCustomRange?.to
-      ) {
-        const fromDate = new Date(appliedCustomRange.from);
-        const toDate = new Date(appliedCustomRange.to);
-        toDate.setHours(23, 59, 59, 999);
-        matchesDate = orderDate >= fromDate && orderDate <= toDate;
+        if (isCancelled) {
+          return;
+        }
+
+        setSummaryCards(mapFinanceSummaryCards(summaryResult));
+        setChartPoints(mapFinanceChartPoints(chartResult));
+        setPayoutStatuses(mapPayoutStatusItems(payoutResult));
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load finance summary right now.",
+            "Finance unavailable",
+          );
+        }
       }
+    }
 
-      return matchesStatus && matchesDate;
-    });
-  }, [activeStatus, appliedCustomRange, selectedDateOption]);
+    loadHeaderData();
 
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
+    return () => {
+      isCancelled = true;
+    };
+  }, [headerFilter, headerRangeVariables]);
 
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    return filteredOrders.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [currentPage, filteredOrders]);
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadTransactions() {
+      setIsLoading(true);
+
+      try {
+        const result = await getVendorFinanceTransactions({
+          first: PAGE_SIZE,
+          ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
+          ...ordersRangeVariables,
+        });
+
+        if (isCancelled) {
+          return;
+        }
+
+        const mapped = mapTransactionsConnection(result);
+        setPageCache({ 1: mapped });
+        setCurrentPage(1);
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load finance transactions right now.",
+            "Transactions unavailable",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadTransactions();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeStatus, ordersRangeVariables]);
+
+  const currentPageData = pageCache[currentPage] || {
+    rows: [],
+    pageInfo: {
+      hasNextPage: false,
+      endCursor: "",
+    },
+    totalCount: 0,
+  };
+
+  const filteredOrders = currentPageData.rows;
+  const paginatedOrders = currentPageData.rows;
+  const totalItems = currentPageData.totalCount || 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
 
   const dateButtonLabel =
     selectedDateOption === "custom" &&
     appliedCustomRange?.from &&
     appliedCustomRange?.to
       ? `From: ${formatDateLabel(appliedCustomRange.from)} To: ${formatDateLabel(appliedCustomRange.to)}`
-      : selectedDateOption === "lastMonth"
+      : selectedDateOption === "30days"
+        ? "Last 30 Days"
+        : selectedDateOption === "lastMonth"
         ? "Last Month"
-        : selectedDateOption === "last3Months"
-          ? "Last 3 Months"
-          : selectedDateOption === "last6Months"
-            ? "Last 6 Months"
-            : selectedDateOption === "thisYear"
-              ? "This Year"
-              : selectedDateOption === "custom"
-                ? "Custom Date"
-                : "Latest";
+        : selectedDateOption === "thisMonth"
+          ? "This Month"
+          : selectedDateOption === "thisYear"
+            ? "This Year"
+            : selectedDateOption === "custom"
+              ? "Custom Date"
+              : "Last 30 Days";
 
-  function handlePageChange(nextPage) {
+  async function handlePageChange(nextPage) {
     if (nextPage < 1 || nextPage > totalPages) {
       return;
     }
 
-    setCurrentPage(nextPage);
+    if (pageCache[nextPage]) {
+      setCurrentPage(nextPage);
+      return;
+    }
+
+    if (nextPage < currentPage) {
+      setCurrentPage(nextPage);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      let nextCache = { ...pageCache };
+      let lastKnownPage = currentPage;
+
+      while (lastKnownPage < nextPage) {
+        const currentData = nextCache[lastKnownPage];
+
+        if (!currentData?.pageInfo?.hasNextPage || !currentData?.pageInfo?.endCursor) {
+          break;
+        }
+
+        const result = await getVendorFinanceTransactions({
+          first: PAGE_SIZE,
+          after: currentData.pageInfo.endCursor,
+          ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
+          ...ordersRangeVariables,
+        });
+        nextCache[lastKnownPage + 1] = mapTransactionsConnection(result);
+        lastKnownPage += 1;
+      }
+
+      setPageCache(nextCache);
+      setCurrentPage(Math.min(nextPage, lastKnownPage));
+    } catch (error) {
+      await showVendorErrorAlert(
+        error.message || "Unable to load more transactions right now.",
+        "Pagination failed",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleStatusChange(nextStatus) {
     setActiveStatus(nextStatus);
-    setCurrentPage(1);
   }
 
   function handleToggleDateMenu() {
@@ -114,7 +234,6 @@ export default function useFinancePageState() {
 
   function handleSelectDateOption(optionId) {
     setSelectedDateOption(optionId);
-    setCurrentPage(1);
 
     if (optionId === "custom") {
       setIsCustomDateOpen(true);
@@ -139,7 +258,35 @@ export default function useFinancePageState() {
     setSelectedDateOption("custom");
     setIsDateMenuOpen(false);
     setIsCustomDateOpen(false);
-    setCurrentPage(1);
+  }
+
+  async function handleRequestTransactionDetail(id) {
+    const result = await getVendorFinanceTransactionDetail(id);
+    return mapTransactionDetail(result?.vendorFinanceTransaction);
+  }
+
+  async function handleExport(format) {
+    try {
+      setIsExporting(true);
+      const result = await exportVendorFinanceTransactions({
+        ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
+        ...ordersRangeVariables,
+        format,
+      });
+
+      if (result.downloadUrl && typeof window !== "undefined") {
+        window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+      }
+
+      await showVendorSuccessToast(result.message || "Export generated successfully.");
+    } catch (error) {
+      await showVendorErrorAlert(
+        error.message || "Unable to export transactions right now.",
+        "Export failed",
+      );
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   return {
@@ -147,29 +294,38 @@ export default function useFinancePageState() {
     customFrom,
     customTo,
     dateButtonLabel,
+    chartPoints,
     filteredOrders,
     handleApplyCustomDate,
+    handleExport,
     handlePageChange,
+    handleRequestTransactionDetail,
     handleSelectDateOption,
     handleStatusChange,
     handleToggleDateMenu,
+    headerFilter,
+    isExporting,
     isCustomDateOpen,
     isDateMenuOpen,
+    isLoading,
     onCustomFromChange: setCustomFrom,
     onCustomToChange: setCustomTo,
+    payoutStatuses,
     paginatedOrders,
     pageSize: PAGE_SIZE,
+    setHeaderFilter,
+    summaryCards,
+    totalItems,
     totalPages,
     currentPage,
     selectedDateOption,
     handleClearDateFilter: () => {
-      setSelectedDateOption("latest");
+      setSelectedDateOption("30days");
       setAppliedCustomRange(null);
       setCustomFrom("");
       setCustomTo("");
       setIsCustomDateOpen(false);
       setIsDateMenuOpen(false);
-      setCurrentPage(1);
     },
   };
 }

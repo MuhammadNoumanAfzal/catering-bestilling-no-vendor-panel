@@ -26,9 +26,13 @@ export default function FinancePageHeader({ filter, onFilterChange }) {
     };
   }, []);
 
-  function handleSelect(label) {
-    onFilterChange(label);
+  function handleSelect(id) {
+    onFilterChange(id);
     setIsOpen(false);
+  }
+
+  function getDisplayLabel(value) {
+    return timeFilters.find((item) => item.id === value)?.label || value;
   }
 
   return (
@@ -46,7 +50,7 @@ export default function FinancePageHeader({ filter, onFilterChange }) {
           onClick={() => setIsOpen((prev) => !prev)}
           type="button"
         >
-          <span>{filter}</span>
+          <span>{getDisplayLabel(filter)}</span>
           <ChevronDown
             className={`shrink-0 text-[#7d7064] transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
@@ -58,7 +62,7 @@ export default function FinancePageHeader({ filter, onFilterChange }) {
         {isOpen && (
           <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-[140px] rounded-[8px] border border-[#ddd4cc] bg-white py-1 shadow-[0_12px_28px_rgba(0,0,0,0.12)]">
             {timeFilters.map((filterOption) => {
-              const isActive = filterOption.label === filter;
+              const isActive = filterOption.id === filter;
 
               return (
                 <button
@@ -68,7 +72,7 @@ export default function FinancePageHeader({ filter, onFilterChange }) {
                       ? "bg-[#fff1eb] font-bold text-[#d96e39]"
                       : "text-[#40352f] hover:bg-[#faf5f1]"
                   }`}
-                  onClick={() => handleSelect(filterOption.label)}
+                  onClick={() => handleSelect(filterOption.id)}
                   type="button"
                 >
                   {filterOption.label}
