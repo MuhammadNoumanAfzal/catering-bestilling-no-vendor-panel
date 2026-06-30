@@ -85,12 +85,21 @@ function ImageSlider({ images }) {
   );
 }
 
+function FieldError({ message }) {
+  if (!message) {
+    return null;
+  }
+
+  return <p className="mt-1 text-[12px] font-medium text-[#d2542f]">{message}</p>;
+}
+
 export default function CreateMenuBasicInfoSection({
   category,
   categoryOptions,
   coverImage,
   description,
   disabled = false,
+  fieldErrors,
   galleryImages = [],
   menuTitle,
   menuTypes,
@@ -123,6 +132,7 @@ export default function CreateMenuBasicInfoSection({
             placeholder="e.g. Royal Wedding Grand Buffet"
             value={menuTitle}
           />
+          <FieldError message={fieldErrors?.menuTitle} />
         </div>
 
         <div>
@@ -156,6 +166,7 @@ export default function CreateMenuBasicInfoSection({
               placeholder="Select category"
               value={category}
             />
+            <FieldError message={fieldErrors?.category} />
           </div>
           <div>
             <div className="flex items-center justify-between">
@@ -177,6 +188,7 @@ export default function CreateMenuBasicInfoSection({
               placeholder="Select one or more food types"
               value={menuTypes}
             />
+            <FieldError message={fieldErrors?.menuTypes} />
           </div>
         </div>
 
@@ -200,6 +212,7 @@ export default function CreateMenuBasicInfoSection({
             placeholder="Select one or more occasions"
             value={selectedOccasions}
           />
+          <FieldError message={fieldErrors?.selectedOccasions} />
           <p className="mt-2 text-[12px] font-medium leading-[1.5] text-[#8a776a]">
             Rule: Select at least one Food Type to show this menu under Browse by Food Type. Occasion is optional and only controls where the menu appears under Browse by Occasion.
           </p>

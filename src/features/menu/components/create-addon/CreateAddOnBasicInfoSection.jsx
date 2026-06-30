@@ -7,6 +7,14 @@ import {
   UploadBox,
 } from "../create-menu/CreateMenuFields";
 
+function FieldError({ message }) {
+  if (!message) {
+    return null;
+  }
+
+  return <p className="mt-1 text-[12px] font-medium text-[#d2542f]">{message}</p>;
+}
+
 export default function CreateAddOnBasicInfoSection({
   addOnName,
   category,
@@ -14,6 +22,7 @@ export default function CreateAddOnBasicInfoSection({
   customCategory,
   description,
   disabled = false,
+  fieldErrors,
   image,
   mealTypeOptions,
   mealTypes,
@@ -49,6 +58,7 @@ export default function CreateAddOnBasicInfoSection({
               placeholder="e.g. Royal Wedding Grand Buffet"
               value={addOnName}
             />
+            <FieldError message={fieldErrors?.addOnName} />
           </div>
 
           <div>
@@ -71,6 +81,7 @@ export default function CreateAddOnBasicInfoSection({
                 type="number"
                 value={price}
               />
+              <FieldError message={fieldErrors?.price} />
             </div>
 
             <div>
@@ -82,6 +93,7 @@ export default function CreateAddOnBasicInfoSection({
                 placeholder="Select one or more meal types"
                 value={mealTypes}
               />
+              <FieldError message={fieldErrors?.mealTypes} />
             </div>
           </div>
 
@@ -117,6 +129,7 @@ export default function CreateAddOnBasicInfoSection({
                 );
               })}
             </div>
+            <FieldError message={fieldErrors?.category} />
 
             <div className="mt-4 border-t border-[#e6dbd2] pt-3">
               <span className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
@@ -128,6 +141,7 @@ export default function CreateAddOnBasicInfoSection({
                 placeholder="Enter category name (e.g. Sauces, Premium Items)"
                 value={customCategory}
               />
+              <FieldError message={fieldErrors?.customCategory} />
             </div>
           </div>
         </div>

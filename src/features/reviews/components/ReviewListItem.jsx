@@ -38,10 +38,12 @@ export default function ReviewListItem({ review }) {
 
         <div className="flex items-center gap-4 max-[520px]:w-full max-[520px]:justify-between max-[520px]:border-t max-[520px]:border-[#efe6de] max-[520px]:pt-2.5">
           <div className="flex flex-col items-end max-[520px]:items-start leading-none">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
-              Order Ref
+              <span className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
+                Order Ref
+              </span>
+            <span className="mt-1 text-[13px] font-extrabold text-[#201914]">
+              {review.orderRef ? `#${review.orderRef}` : review.id}
             </span>
-            <span className="mt-1 text-[13px] font-extrabold text-[#201914]">#{review.id}</span>
           </div>
           <button
             className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#d8d0c9] cursor-pointer bg-white px-3 py-[7px] text-[10px] font-bold text-[#201914] active:scale-95 transition"
@@ -49,12 +51,23 @@ export default function ReviewListItem({ review }) {
             type="button"
           >
             <CornerUpLeft size={11} />
-            Reply
+            {review.initialReply ? "Edit Reply" : "Reply"}
           </button>
         </div>
       </div>
 
       <p className="type-subpara mt-3 text-[#75695f]">{review.text}</p>
+
+      {review.initialReply ? (
+        <div className="mt-3 rounded-[8px] border border-[#eadfd7] bg-[#faf7f4] px-3 py-2.5">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8c7f73]">
+            Your Reply
+          </p>
+          <p className="mt-1 text-[13px] font-medium leading-[1.5] text-[#4c423b]">
+            {review.initialReply}
+          </p>
+        </div>
+      ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-[#fff2ec] px-2.5 py-1 text-[12px] font-bold text-[#d96e39]">

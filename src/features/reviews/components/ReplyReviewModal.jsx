@@ -2,6 +2,7 @@ import { Star, X } from "lucide-react";
 
 export default function ReplyReviewModal({
   draftReply,
+  isSaving = false,
   onClose,
   onDraftChange,
   onSubmit,
@@ -37,7 +38,7 @@ export default function ReplyReviewModal({
             <div className="min-w-0 flex-1">
               <p className="type-h4 m-0 text-[#181310]">{review.author}</p>
               <p className="mt-1 text-[13px] font-medium text-[#8c7f73]">
-                {review.reviewDate} | Order {review.id}
+                {review.reviewDate} | Order {review.orderRef || review.id}
               </p>
             </div>
           </div>
@@ -71,7 +72,9 @@ export default function ReplyReviewModal({
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
                 <span className="font-semibold text-[#7a6d63]">Order Type</span>
-                <span className="font-extrabold text-[#1c1510]">{review.deliveryType}</span>
+                <span className="font-extrabold text-[#1c1510]">
+                  {review.orderType || review.deliveryType}
+                </span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
                 <span className="font-semibold text-[#7a6d63]">Delivery Time</span>
@@ -108,11 +111,11 @@ export default function ReplyReviewModal({
           </button>
           <button
             className="h-8 cursor-pointer rounded-[6px] bg-[#d96e39] px-4 text-[12px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] active:scale-95 transition disabled:pointer-events-none disabled:opacity-50"
-            disabled={!isReadyToPost}
+            disabled={!isReadyToPost || isSaving}
             onClick={onSubmit}
             type="button"
           >
-            Post Reply
+            {isSaving ? "Posting..." : "Post Reply"}
           </button>
         </div>
 

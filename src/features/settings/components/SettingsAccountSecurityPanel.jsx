@@ -1,19 +1,35 @@
 import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { useRef } from "react";
 
 import SettingsSectionCard from "./SettingsSectionCard";
 import { strengthToneClasses } from "../data/settingsData";
 
-function AccountField({ label, onChange, value, disabled = false }) {
+function FieldError({ message }) {
+  if (!message) {
+    return null;
+  }
+
+  return <p className="mt-1 text-[11px] font-medium text-[#d2542f]">{message}</p>;
+}
+
+function AccountField({ label, onChange, value, error, disabled = false }) {
   return (
-    <div className="grid grid-cols-[100px_minmax(0,1fr)] items-center gap-3 max-[640px]:grid-cols-1 max-[640px]:gap-1.5">
+    <div className="grid grid-cols-[100px_minmax(0,1fr)] items-start gap-3 max-[640px]:grid-cols-1 max-[640px]:gap-1.5">
       <span className="text-[13px] font-bold text-[#1f1814]">{label}</span>
-      <input
-        className="h-[34px] rounded-[7px] border border-[#d9d9d9] bg-[#f2f2f2] px-3 text-[12px] text-[#4d433d] outline-none transition placeholder:text-[#9d9187] focus:border-[#cf6e38] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={disabled}
-        onChange={onChange}
-        type="text"
-        value={value}
-      />
+      <div>
+        <input
+          className={`h-[34px] w-full rounded-[7px] border px-3 text-[12px] text-[#4d433d] outline-none transition placeholder:text-[#9d9187] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:opacity-60 ${
+            error
+              ? "border-[#d2542f] bg-[#fff7f5] focus:border-[#d2542f]"
+              : "border-[#d9d9d9] bg-[#f2f2f2] focus:border-[#cf6e38]"
+          }`}
+          disabled={disabled}
+          onChange={onChange}
+          type="text"
+          value={value}
+        />
+        <FieldError message={error} />
+      </div>
     </div>
   );
 }
@@ -26,6 +42,7 @@ function PasswordField({
   placeholder,
   value,
   visible,
+  error,
   disabled = false,
 }) {
   return (
@@ -33,7 +50,11 @@ function PasswordField({
       <span className="text-[13px] font-bold text-[#1f1814]">{label}</span>
       <div className="relative">
         <input
-          className="type-subpara h-[38px] w-full rounded-[8px] border border-[#d5cbc3] bg-white px-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
+          className={`type-subpara h-[38px] w-full rounded-[8px] border bg-white px-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73] ${
+            error
+              ? "border-[#d2542f] bg-[#fff7f5] focus:border-[#d2542f]"
+              : "border-[#d5cbc3] focus:border-[#cf6e38]"
+          }`}
           disabled={disabled}
           name={name}
           onChange={onChange}
@@ -50,6 +71,7 @@ function PasswordField({
           {visible ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
       </div>
+      <FieldError message={error} />
     </label>
   );
 }
@@ -57,6 +79,9 @@ function PasswordField({
 export default function SettingsAccountSecurityPanel({
   account,
   businessName,
+  profileImage,
+  handleProfileImageUpload,
+  handleRemoveProfileImage,
   handleAccountFieldChange,
   handlePasswordChange,
   handleTogglePasswordVisibility,
@@ -64,8 +89,11 @@ export default function SettingsAccountSecurityPanel({
   passwordStrength,
   passwordsMatch,
   passwordVisibility,
+  fieldErrors,
   disabled = false,
 }) {
+  const profileImageInputRef = useRef(null);
+
   return (
     <div className="grid grid-cols-2 gap-4 max-[1120px]:grid-cols-1">
       <SettingsSectionCard
@@ -74,16 +102,49 @@ export default function SettingsAccountSecurityPanel({
       >
         <div className="mb-4 flex items-center gap-3 rounded-[10px] bg-[#fffaf4] p-3">
           <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[10px] border border-[#f0d5b7] bg-[#fff1d8]">
-            <img alt={businessName || "Business"} className="max-h-[42px] w-auto" src="/logo.png" />
+            <img
+              alt={businessName || "Business"}
+              className="max-h-[42px] w-auto rounded-[8px] object-contain"
+              src={profileImage?.fileUrl || "/logo.png"}
+            />
           </div>
           <div className="min-w-0">
-            <button
-              className="mb-1 rounded-[6px] border border-[#d9cec7] bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#6d625a] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled
-              type="button"
-            >
-              Change Profile
-            </button>
+            <div className="mb-1 flex flex-wrap gap-2">
+              <button
+                className="rounded-[6px] border border-[#d9cec7] bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#6d625a] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={disabled}
+                onClick={() => profileImageInputRef.current?.click()}
+                type="button"
+              >
+                Change Logo
+              </button>
+              {profileImage?.fileUrl ? (
+                <button
+                  className="rounded-[6px] border border-[#ead7cf] bg-[#fff7f3] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#b45e39] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={disabled}
+                  onClick={handleRemoveProfileImage}
+                  type="button"
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+            <input
+              ref={profileImageInputRef}
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              disabled={disabled}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+
+                if (file) {
+                  handleProfileImageUpload(file);
+                }
+
+                event.target.value = "";
+              }}
+              type="file"
+            />
             <p className="text-[12px] font-bold text-[#211915]">{businessName || "Business profile"}</p>
             <p className="text-[10px] text-[#8c8075]">PNG, JPG up to 5 MB</p>
           </div>
@@ -92,30 +153,34 @@ export default function SettingsAccountSecurityPanel({
         <div className="space-y-3">
           <AccountField
             disabled={disabled}
+            error={fieldErrors.fullName}
             label="Full Name"
             onChange={handleAccountFieldChange("fullName")}
             value={account.fullName}
           />
           <AccountField
             disabled={disabled}
+            error={fieldErrors.emailAddress}
             label="Email Address"
             onChange={handleAccountFieldChange("emailAddress")}
             value={account.emailAddress}
           />
           <AccountField
             disabled={disabled}
+            error={fieldErrors.phoneNumber}
             label="Phone Number"
             onChange={handleAccountFieldChange("phoneNumber")}
             value={account.phoneNumber}
           />
           <AccountField
-            disabled={disabled}
+            disabled
             label="Role"
             onChange={handleAccountFieldChange("role")}
             value={account.role}
           />
           <AccountField
             disabled={disabled}
+            error={fieldErrors.username}
             label="Username"
             onChange={handleAccountFieldChange("username")}
             value={account.username}
@@ -136,6 +201,7 @@ export default function SettingsAccountSecurityPanel({
         <div className="space-y-3">
           <PasswordField
             disabled={disabled}
+            error={fieldErrors.currentPassword}
             label="Current Password"
             name="currentPassword"
             onChange={handlePasswordChange("currentPassword")}
@@ -146,6 +212,7 @@ export default function SettingsAccountSecurityPanel({
           />
           <PasswordField
             disabled={disabled}
+            error={fieldErrors.newPassword}
             label="New Password"
             name="newPassword"
             onChange={handlePasswordChange("newPassword")}
@@ -190,6 +257,7 @@ export default function SettingsAccountSecurityPanel({
 
           <PasswordField
             disabled={disabled}
+            error={fieldErrors.confirmPassword}
             label="Confirm Password"
             name="confirmPassword"
             onChange={handlePasswordChange("confirmPassword")}

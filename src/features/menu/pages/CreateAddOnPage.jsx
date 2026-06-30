@@ -12,6 +12,7 @@ export default function CreateAddOnPage() {
   const navigate = useNavigate();
   const {
     categoryOptions,
+    fieldErrors,
     formState,
     imageUrl,
     isDuplicateMode,
@@ -64,6 +65,7 @@ export default function CreateAddOnPage() {
           customCategory={formState.customCategory}
           description={formState.description}
           disabled={isSaving}
+          fieldErrors={fieldErrors}
           image={imageUrl}
           mealTypeOptions={mealTypeOptions}
           mealTypes={formState.mealTypes}

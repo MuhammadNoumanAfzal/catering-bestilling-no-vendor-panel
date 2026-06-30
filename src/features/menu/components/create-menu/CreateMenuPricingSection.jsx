@@ -1,9 +1,18 @@
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { Label, TextInput } from "./CreateMenuFields";
 
+function FieldError({ message }) {
+  if (!message) {
+    return null;
+  }
+
+  return <p className="mt-1 text-[12px] font-medium text-[#d2542f]">{message}</p>;
+}
+
 export default function CreateMenuPricingSection({
   basePrice,
   disabled = false,
+  fieldErrors,
   minimumGuests,
   onBasePriceChange,
   onMinimumGuestsChange,
@@ -69,6 +78,7 @@ export default function CreateMenuPricingSection({
             placeholder="kr 120"
             value={basePrice}
           />
+          <FieldError message={fieldErrors?.basePrice} />
         </div>
         <div>
           <Label>Minimum Guests</Label>
@@ -78,6 +88,7 @@ export default function CreateMenuPricingSection({
             placeholder="20"
             value={minimumGuests}
           />
+          <FieldError message={fieldErrors?.minimumGuests} />
         </div>
       </div>
     </CreateMenuSectionCard>

@@ -16,6 +16,8 @@ export default function SettingsPage() {
     handleFieldChange,
     handleNotificationToggle,
     handlePasswordChange,
+    handleProfileImageUpload,
+    handleRemoveProfileImage,
     handleResetAllSettings,
     handleSave,
     handleSaveClosure,
@@ -24,6 +26,7 @@ export default function SettingsPage() {
     hasUnsavedChanges,
     isLoading,
     isSaving,
+    fieldErrors,
     passwordForm,
     passwordStrength,
     passwordsMatch,
@@ -63,7 +66,11 @@ export default function SettingsPage() {
           disabled={isLoading || isSaving}
           handleAccountFieldChange={handleAccountFieldChange}
           handlePasswordChange={handlePasswordChange}
+          handleProfileImageUpload={handleProfileImageUpload}
+          handleRemoveProfileImage={handleRemoveProfileImage}
+          profileImage={settings.profileImage}
           handleTogglePasswordVisibility={handleTogglePasswordVisibility}
+          fieldErrors={fieldErrors}
           passwordForm={passwordForm}
           passwordStrength={passwordStrength}
           passwordsMatch={passwordsMatch}

@@ -1,12 +1,23 @@
-import { useMemo, useState } from "react";
-import { reviewItems } from "../data/reviewsData";
-import { showReplyPostedSuccess } from "../../../utils/vendorAlerts";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getVendorReviewDetail,
+  getVendorReviews,
+  getVendorReviewSummary,
+  saveVendorReviewReply,
+} from "../api/reviewsApi";
+import {
+  createEmptyReviewSummary,
+  getReviewQueryVariables,
+  mapVendorReviewNode,
+  mapVendorReviewsConnection,
+  mapVendorReviewSummary,
+} from "../api/reviewsMappers";
+import {
+  showReplyPostedSuccess,
+  showVendorErrorAlert,
+} from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
-
-function parseReviewDate(dateText) {
-  return new Date(dateText);
-}
 
 function formatDateLabel(dateValue) {
   const date = new Date(dateValue);
@@ -28,69 +39,86 @@ export default function useReviewsPageState() {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [appliedCustomRange, setAppliedCustomRange] = useState(null);
-  const [replyDrafts, setReplyDrafts] = useState(() =>
-    Object.fromEntries(
-      reviewItems
-        .filter((item) => item.initialReply)
-        .map((item) => [item.id, item.initialReply]),
-    ),
+  const [replyDrafts, setReplyDrafts] = useState({});
+  const [reviewSummary, setReviewSummary] = useState(createEmptyReviewSummary);
+  const [pageCache, setPageCache] = useState({});
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isReplySaving, setIsReplySaving] = useState(false);
+
+  const queryVariables = useMemo(
+    () =>
+      getReviewQueryVariables({
+        pageSize: PAGE_SIZE,
+        ratingFilter: activeFilter,
+        selectedDateOption,
+        appliedCustomRange,
+      }),
+    [activeFilter, appliedCustomRange, selectedDateOption],
   );
 
-  const filteredReviews = useMemo(() => {
-    const latestReviewDate = reviewItems.reduce((latest, item) => {
-      const reviewDate = parseReviewDate(item.reviewDate);
-      return reviewDate > latest ? reviewDate : latest;
-    }, parseReviewDate(reviewItems[0].reviewDate));
+  useEffect(() => {
+    let isCancelled = false;
 
-    return reviewItems.filter((item) => {
-      const matchesRating =
-        activeFilter === "All" ||
-        item.rating === Number(activeFilter.split(".")[0]);
+    async function loadInitialReviewData() {
+      setIsLoading(true);
 
-      const reviewDate = parseReviewDate(item.reviewDate);
-      let matchesDate = true;
+      try {
+        const [summaryResult, listResult] = await Promise.all([
+          getVendorReviewSummary(queryVariables),
+          getVendorReviews(queryVariables),
+        ]);
 
-      if (selectedDateOption === "lastMonth") {
-        const threshold = new Date(latestReviewDate);
-        threshold.setMonth(threshold.getMonth() - 1);
-        matchesDate = reviewDate >= threshold;
-      } else if (selectedDateOption === "last3Months") {
-        const threshold = new Date(latestReviewDate);
-        threshold.setMonth(threshold.getMonth() - 3);
-        matchesDate = reviewDate >= threshold;
-      } else if (selectedDateOption === "last6Months") {
-        const threshold = new Date(latestReviewDate);
-        threshold.setMonth(threshold.getMonth() - 6);
-        matchesDate = reviewDate >= threshold;
-      } else if (selectedDateOption === "thisYear") {
-        matchesDate =
-          reviewDate.getFullYear() === latestReviewDate.getFullYear();
-      } else if (
-        selectedDateOption === "custom" &&
-        appliedCustomRange?.from &&
-        appliedCustomRange?.to
-      ) {
-        const fromDate = new Date(appliedCustomRange.from);
-        const toDate = new Date(appliedCustomRange.to);
-        toDate.setHours(23, 59, 59, 999);
-        matchesDate = reviewDate >= fromDate && reviewDate <= toDate;
+        if (isCancelled) {
+          return;
+        }
+
+        const mappedSummary = mapVendorReviewSummary(summaryResult);
+        const mappedList = mapVendorReviewsConnection(listResult);
+
+        setReviewSummary(mappedSummary);
+        setPageCache({
+          1: mappedList,
+        });
+        setCurrentPage(1);
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error.message || "Unable to load reviews right now.",
+            "Reviews unavailable",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
+    }
 
-      return matchesRating && matchesDate;
-    });
-  }, [activeFilter, appliedCustomRange, selectedDateOption]);
+    setSelectedReviewId(null);
+    setSelectedReview(null);
+    loadInitialReviewData();
 
-  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / PAGE_SIZE));
+    return () => {
+      isCancelled = true;
+    };
+  }, [queryVariables]);
 
-  const paginatedReviews = useMemo(() => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    return filteredReviews.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [currentPage, filteredReviews]);
+  const currentPageData = pageCache[currentPage] || {
+    reviews: [],
+    pageInfo: {
+      hasNextPage: false,
+      hasPreviousPage: false,
+      startCursor: "",
+      endCursor: "",
+    },
+    totalCount: 0,
+  };
 
-  const selectedReview = useMemo(
-    () => reviewItems.find((item) => item.id === selectedReviewId) ?? null,
-    [selectedReviewId],
-  );
+  const filteredReviews = currentPageData.reviews;
+  const paginatedReviews = currentPageData.reviews;
+  const totalItems = currentPageData.totalCount || reviewSummary.totalCount || 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
 
   const dateButtonLabel =
     selectedDateOption === "custom" &&
@@ -109,7 +137,6 @@ export default function useReviewsPageState() {
 
   function handleFilterChange(filter) {
     setActiveFilter(filter);
-    setCurrentPage(1);
   }
 
   function handleToggleDateMenu() {
@@ -118,7 +145,6 @@ export default function useReviewsPageState() {
 
   function handleSelectDateOption(optionId) {
     setSelectedDateOption(optionId);
-    setCurrentPage(1);
 
     if (optionId === "custom") {
       setIsCustomDateOpen(true);
@@ -143,7 +169,6 @@ export default function useReviewsPageState() {
     setSelectedDateOption("custom");
     setIsCustomDateOpen(false);
     setIsDateMenuOpen(false);
-    setCurrentPage(1);
   }
 
   function handleClearFilters() {
@@ -154,27 +179,85 @@ export default function useReviewsPageState() {
     setCustomFrom("");
     setCustomTo("");
     setAppliedCustomRange(null);
-    setCurrentPage(1);
   }
 
-  function handlePageChange(nextPage) {
+  async function handlePageChange(nextPage) {
     if (nextPage < 1 || nextPage > totalPages) {
       return;
     }
 
-    setCurrentPage(nextPage);
+    if (pageCache[nextPage]) {
+      setCurrentPage(nextPage);
+      return;
+    }
+
+    if (nextPage < currentPage) {
+      setCurrentPage(nextPage);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      let lastKnownPage = currentPage;
+      let nextCache = { ...pageCache };
+
+      while (lastKnownPage < nextPage) {
+        const currentData = nextCache[lastKnownPage];
+
+        if (!currentData?.pageInfo?.hasNextPage || !currentData?.pageInfo?.endCursor) {
+          break;
+        }
+
+        const result = await getVendorReviews({
+          ...queryVariables,
+          after: currentData.pageInfo.endCursor,
+        });
+        const mappedPage = mapVendorReviewsConnection(result);
+        nextCache[lastKnownPage + 1] = mappedPage;
+        lastKnownPage += 1;
+      }
+
+      setPageCache(nextCache);
+      setCurrentPage(Math.min(nextPage, lastKnownPage));
+    } catch (error) {
+      await showVendorErrorAlert(
+        error.message || "Unable to load more reviews right now.",
+        "Pagination failed",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function handleReplyOpen(review) {
+  async function handleReplyOpen(review) {
     setSelectedReviewId(review.id);
-    setReplyDrafts((currentDrafts) => ({
-      ...currentDrafts,
-      [review.id]: currentDrafts[review.id] ?? review.initialReply ?? "",
-    }));
+
+    try {
+      const result = await getVendorReviewDetail(review.id);
+      const mappedReview = mapVendorReviewNode(result?.vendorReview);
+
+      setSelectedReview(mappedReview);
+      setReplyDrafts((currentDrafts) => ({
+        ...currentDrafts,
+        [review.id]: currentDrafts[review.id] ?? mappedReview.initialReply ?? "",
+      }));
+    } catch (error) {
+      setSelectedReview(review);
+      setReplyDrafts((currentDrafts) => ({
+        ...currentDrafts,
+        [review.id]: currentDrafts[review.id] ?? review.initialReply ?? "",
+      }));
+      await showVendorErrorAlert(
+        error.message || "Unable to load the full review details.",
+        "Review detail unavailable",
+      );
+    }
   }
 
   function handleReplyClose() {
     setSelectedReviewId(null);
+    setSelectedReview(null);
   }
 
   function handleDraftChange(nextValue) {
@@ -193,8 +276,71 @@ export default function useReviewsPageState() {
       return;
     }
 
-    setSelectedReviewId(null);
-    await showReplyPostedSuccess();
+    const replyText = (replyDrafts[selectedReviewId] || "").trim();
+
+    if (!replyText) {
+      return;
+    }
+
+    try {
+      setIsReplySaving(true);
+      const result = await saveVendorReviewReply({
+        id: selectedReviewId,
+        replyText,
+        attentionRequired: selectedReview?.attentionRequired || false,
+      });
+
+      setPageCache((currentCache) => {
+        const nextCache = {};
+
+        Object.entries(currentCache).forEach(([page, value]) => {
+          nextCache[page] = {
+            ...value,
+            reviews: value.reviews.map((item) =>
+              item.id === selectedReviewId
+                ? {
+                    ...item,
+                    initialReply: result.instance?.vendorReply?.message || replyText,
+                    vendorReplyId: result.instance?.vendorReply?.id || item.vendorReplyId,
+                    vendorReplyCreatedOn:
+                      result.instance?.vendorReply?.createdOn || item.vendorReplyCreatedOn,
+                    status: result.instance?.status || item.status,
+                    tone: "neutral",
+                    attentionRequired: false,
+                  }
+                : item,
+            ),
+          };
+        });
+
+        return nextCache;
+      });
+
+      setSelectedReview((current) =>
+        current
+          ? {
+              ...current,
+              initialReply: result.instance?.vendorReply?.message || replyText,
+              vendorReplyId: result.instance?.vendorReply?.id || current.vendorReplyId,
+              vendorReplyCreatedOn:
+                result.instance?.vendorReply?.createdOn || current.vendorReplyCreatedOn,
+              status: result.instance?.status || current.status,
+              tone: "neutral",
+              attentionRequired: false,
+            }
+          : current,
+      );
+      setSelectedReviewId(null);
+      setSelectedReview(null);
+      await showReplyPostedSuccess();
+    } catch (error) {
+      await showVendorErrorAlert(
+        error.message || "Unable to post the review reply right now.",
+        "Reply failed",
+      );
+    } finally {
+      setIsReplySaving(false);
+    }
   }
 
   return {
@@ -216,13 +362,17 @@ export default function useReviewsPageState() {
     handleToggleDateMenu,
     isCustomDateOpen,
     isDateMenuOpen,
+    isLoading,
+    isReplySaving,
     onCustomFromChange: setCustomFrom,
     onCustomToChange: setCustomTo,
     pageSize: PAGE_SIZE,
     paginatedReviews,
     replyDrafts,
+    reviewSummary,
     selectedReview,
     totalPages,
+    totalItems,
     selectedDateOption,
   };
 }

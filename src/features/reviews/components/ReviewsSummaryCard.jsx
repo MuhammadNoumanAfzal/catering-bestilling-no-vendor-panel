@@ -1,15 +1,33 @@
 import { Star } from "lucide-react";
 
-export default function ReviewsSummaryCard({ breakdown, stats }) {
+export default function ReviewsSummaryCard({ summary }) {
+  const breakdown = summary?.ratingBreakdown || [];
   const maxCount = Math.max(...breakdown.map((item) => item.count));
   const totalCount = breakdown.reduce((sum, item) => sum + item.count, 0);
+  const stats = [
+    {
+      label: "TOTAL REVIEWS",
+      value: String(summary?.totalCount ?? 0),
+      helper: "All time reviews",
+    },
+    {
+      label: "NEW REVIEWS",
+      value: String(summary?.newReviewsCount ?? 0),
+      helper: "Within selected range",
+    },
+    {
+      label: "RESPONSE RATE",
+      value: `${Number(summary?.responseRate ?? 0)}%`,
+      helper: `You replied to ${Number(summary?.repliedCount ?? 0)} of ${Number(summary?.totalCount ?? 0)}`,
+    },
+  ];
 
   return (
     <section className="rounded-[12px] border border-[#ddd5ce] bg-white px-5 py-3 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="grid grid-cols-[minmax(150px,0.88fr)_minmax(260px,1.2fr)_minmax(190px,0.82fr)] gap-4 max-[980px]:grid-cols-1">
         <div className="flex flex-col items-center justify-center border-r border-[#eadfd7] pr-5 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pb-4 max-[980px]:pr-0">
           <strong className="type-h1 text-[42px] leading-none text-[#15110f]">
-            4.8
+            {Number(summary?.averageRating ?? 0).toFixed(1)}
           </strong>
           <div className="mt-2 flex items-center gap-1 text-[#f6c444]">
             {Array.from({ length: 5 }).map((_, index) => (
@@ -37,7 +55,7 @@ export default function ReviewsSummaryCard({ breakdown, stats }) {
                     <div className="h-[10px] w-full overflow-hidden rounded-full bg-[#ece7e2]">
                       <div
                         className="h-full rounded-full bg-[#d96e39]"
-                        style={{ width: `${(item.count / maxCount) * 100}%` }}
+                        style={{ width: `${maxCount ? (item.count / maxCount) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
