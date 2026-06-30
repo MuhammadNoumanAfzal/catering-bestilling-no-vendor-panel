@@ -49,6 +49,7 @@ export const defaultSettingsState = {
     id: "",
     day,
     enabled: false,
+    timeRange: "Closed",
     open: DEFAULT_HOUR_TIME,
     close: DEFAULT_HOUR_TIME,
   })),
@@ -66,6 +67,45 @@ export const defaultSettingsOptions = {
 
 function normalizeString(value) {
   return value == null ? "" : String(value);
+}
+
+function buildTimeRange(openTime, closeTime) {
+  const start = normalizeString(openTime).trim();
+  const end = normalizeString(closeTime).trim();
+
+  if (!start || !end) {
+    return "";
+  }
+
+  return `${start}-${end}`;
+}
+
+function splitTimeRange(value) {
+  const normalized = normalizeString(value).trim();
+
+  if (!normalized || normalized === "Closed") {
+    return {
+      open: DEFAULT_HOUR_TIME,
+      close: DEFAULT_HOUR_TIME,
+      timeRange: "Closed",
+    };
+  }
+
+  const [start = "", end = ""] = normalized.split("-").map((item) => item.trim());
+
+  if (!start || !end) {
+    return {
+      open: DEFAULT_HOUR_TIME,
+      close: DEFAULT_HOUR_TIME,
+      timeRange: "Closed",
+    };
+  }
+
+  return {
+    open: start,
+    close: end,
+    timeRange: `${start}-${end}`,
+  };
 }
 
 function mapTaxonomyOptions(items = []) {
@@ -95,17 +135,23 @@ function mapBusinessHours(hours = []) {
         id: "",
         day,
         enabled: false,
+        timeRange: "Closed",
         open: DEFAULT_HOUR_TIME,
         close: DEFAULT_HOUR_TIME,
       };
     }
 
+    const normalizedRange = splitTimeRange(
+      matchedHour.timeRange || buildTimeRange(matchedHour.openTime, matchedHour.closeTime),
+    );
+
     return {
       id: matchedHour.id || "",
       day,
       enabled: Boolean(matchedHour.enabled),
-      open: matchedHour.enabled ? normalizeString(matchedHour.openTime) : DEFAULT_HOUR_TIME,
-      close: matchedHour.enabled ? normalizeString(matchedHour.closeTime) : DEFAULT_HOUR_TIME,
+      timeRange: matchedHour.enabled ? normalizedRange.timeRange : "Closed",
+      open: matchedHour.enabled ? normalizedRange.open : DEFAULT_HOUR_TIME,
+      close: matchedHour.enabled ? normalizedRange.close : DEFAULT_HOUR_TIME,
     };
   });
 }
@@ -260,13 +306,18 @@ export function buildRegionalPreferencesInput(settings) {
 }
 
 export function buildBusinessHoursInput(settings) {
-  return settings.hours.map((item) => ({
-    id: item.id || null,
-    day: item.day,
-    enabled: Boolean(item.enabled),
-    openTime: item.enabled ? normalizeString(item.open) : null,
-    closeTime: item.enabled ? normalizeString(item.close) : null,
-  }));
+  return settings.hours.map((item) => {
+    const normalizedRange = splitTimeRange(item.timeRange);
+
+    return {
+      id: item.id || null,
+      day: item.day,
+      enabled: Boolean(item.enabled),
+      timeRange: item.enabled ? normalizedRange.timeRange : null,
+      openTime: item.enabled ? normalizedRange.open : null,
+      closeTime: item.enabled ? normalizedRange.close : null,
+    };
+  });
 }
 
 export function buildSpecialClosureInput(type, start, end, reason, id) {

@@ -1,22 +1,30 @@
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 
-const timeOptions = [
-  { value: "08:00-12:00", label: "08:00 - 12:00" },
-  { value: "13:00-17:00", label: "13:00 - 17:00" },
-  { value: "09:00-17:00", label: "09:00 - 17:00" },
-  { value: "10:00-18:00", label: "10:00 - 18:00" },
-  { value: "08:00-16:00", label: "08:00 - 16:00" },
-  { value: "12:00-20:00", label: "12:00 - 20:00" },
-  { value: "Closed", label: "Closed" },
-];
+const timeOptions = Array.from({ length: 24 }, (_, index) => {
+  const value = `${String(index).padStart(2, "0")}:00`;
+
+  return {
+    value,
+    label: value,
+  };
+});
+
+function getCloseOptions(openValue) {
+  const openIndex = timeOptions.findIndex((option) => option.value === openValue);
+
+  if (openIndex === -1) {
+    return timeOptions;
+  }
+
+  return timeOptions.slice(openIndex + 1);
+}
 
 export default function SettingsBusinessHoursSection({
   hours,
   onToggleDay,
   onChangeTime,
   disabled = false,
-  options = timeOptions,
 }) {
   return (
     <SettingsSectionCard
@@ -25,6 +33,10 @@ export default function SettingsBusinessHoursSection({
     >
       <div className="divide-y divide-[#eee7df]">
         {hours.map((item) => (
+          (() => {
+            const closeOptions = getCloseOptions(item.open);
+
+            return (
           <div
             key={item.day}
             className="flex items-center justify-between gap-4 py-3 max-[760px]:flex-col max-[760px]:items-stretch"
@@ -55,24 +67,26 @@ export default function SettingsBusinessHoursSection({
                   disabled={disabled || !item.enabled}
                   label=""
                   onChange={(event) => onChangeTime(item.day, "open", event.target.value)}
-                  options={options}
-                  placeholder="Select hours"
+                  options={timeOptions}
+                  placeholder="Open"
                   value={item.open}
                 />
               </div>
               <span className="px-1 font-semibold text-[#8a7c70]">-</span>
               <div className="w-[160px]">
                 <SettingsSelectField
-                  disabled={disabled || !item.enabled}
+                  disabled={disabled || !item.enabled || !closeOptions.length}
                   label=""
                   onChange={(event) => onChangeTime(item.day, "close", event.target.value)}
-                  options={options}
-                  placeholder="Select hours"
+                  options={closeOptions}
+                  placeholder="Close"
                   value={item.close}
                 />
               </div>
             </div>
           </div>
+            );
+          })()
         ))}
       </div>
     </SettingsSectionCard>
