@@ -1,11 +1,6 @@
 import NotificationItem from "./NotificationItem";
 
-export default function NotificationSection({
-  label,
-  items,
-  onOpenDetail,
-  onOpenReceipt,
-}) {
+export default function NotificationSection({ label, items, onOpen }) {
   return (
     <section>
       <h2 className="type-h4 mb-2">{label}</h2>
@@ -14,8 +9,7 @@ export default function NotificationSection({
           <NotificationItem
             key={notification.id}
             notification={notification}
-            onOpenDetail={onOpenDetail}
-            onOpenReceipt={onOpenReceipt}
+            onOpen={onOpen}
           />
         ))}
       </div>

@@ -94,8 +94,7 @@ export default function NotificationsPage() {
               key={section.id}
               items={section.items}
               label={section.label}
-              onOpenDetail={handleOpenNotification}
-              onOpenReceipt={handleOpenNotification}
+              onOpen={handleOpenNotification}
             />
           ))
         ) : (

@@ -181,7 +181,7 @@ export function deriveOrderSummary(notification) {
     customer: order.customerName || "--",
     status: order.status || "",
     amount: formatMoney(order.amount, order.currency),
-    coverImageUrl: order.coverImageUrl || "/heroBg.webp",
+    coverImageUrl: order.coverImageUrl || "",
     itemsSummary: order.itemsSummary || "",
     items: Array.isArray(order.items) ? order.items : [],
   };

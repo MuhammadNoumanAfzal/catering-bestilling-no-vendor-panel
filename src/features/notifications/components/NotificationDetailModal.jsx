@@ -11,7 +11,13 @@ export default function NotificationDetailModal({
   }
 
   if (notification.type === "ORDER") {
-    return <OrderNotificationDetail notification={notification} onClose={onClose} />;
+    return (
+      <OrderNotificationDetail
+        isLoading={isLoading}
+        notification={notification}
+        onClose={onClose}
+      />
+    );
   }
 
   return (
