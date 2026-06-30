@@ -1,12 +1,12 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 
-const statusTabs = ["All", "Paid", "Pending"];
+const statusTabs = ["All", "Paid", "Processing", "Pending"];
 
 const dateOptions = [
-  { id: "latest", label: "Latest" },
+  { id: "7days", label: "Last 7 Days" },
+  { id: "30days", label: "Last 30 Days" },
+  { id: "thisMonth", label: "This Month" },
   { id: "lastMonth", label: "Last Month" },
-  { id: "last3Months", label: "Last 3 Months" },
-  { id: "last6Months", label: "Last 6 Months" },
   { id: "thisYear", label: "This Year" },
   { id: "custom", label: "Custom Date" },
 ];
@@ -24,6 +24,8 @@ export default function FinanceOrdersFilters({
   onSelectDateOption,
   onStatusChange,
   onToggleDateMenu,
+  onExport,
+  isExporting = false,
   selectedDateOption,
   onClearDateFilter,
 }) {
@@ -52,35 +54,44 @@ export default function FinanceOrdersFilters({
         </div>
 
         <div className="relative">
-          <button
-            className="flex min-w-[108px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-full border border-[#d7cfc7] bg-white px-4 py-[7px] text-[12px] font-semibold text-[#231b16]"
-            onClick={onToggleDateMenu}
-            type="button"
-          >
-            <span className="truncate">{dateButtonLabel}</span>
-            {selectedDateOption !== "latest" ? (
-              <span
-                className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClearDateFilter();
-                }}
-              >
-                <X size={12} />
-              </span>
-            ) : isDateMenuOpen ? (
-              <ChevronUp size={14} />
-            ) : (
-              <ChevronDown size={14} />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="flex min-w-[108px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-full border border-[#d7cfc7] bg-white px-4 py-[7px] text-[12px] font-semibold text-[#231b16]"
+              onClick={onToggleDateMenu}
+              type="button"
+            >
+              <span className="truncate">{dateButtonLabel}</span>
+              {selectedDateOption !== "30days" ? (
+                <span
+                  className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClearDateFilter();
+                  }}
+                >
+                  <X size={12} />
+                </span>
+              ) : isDateMenuOpen ? (
+                <ChevronUp size={14} />
+              ) : (
+                <ChevronDown size={14} />
+              )}
+            </button>
+
+            <button
+              className="cursor-pointer rounded-[8px] border border-[#dcd4cc] bg-white px-3 py-[7px] text-[10px] font-bold text-[#2b231d] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isExporting}
+              onClick={() => onExport("csv")}
+              type="button"
+            >
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </button>
+          </div>
 
           {isDateMenuOpen ? (
             <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.14)]">
               <div className="space-y-1">
-                {dateOptions
-                  .filter((option) => option.id !== "latest")
-                  .map((option) => {
+                {dateOptions.map((option) => {
                     const isCustomOption = option.id === "custom";
                     const isActive = isCustomOption && isCustomDateOpen;
 

@@ -1,38 +1,22 @@
 import { useState } from "react";
 
-const chartLabels = ["Oct 1", "Oct 10", "Oct 20", "Oct 30"];
-const earningAxisLabels = ["kr 0", "kr 250", "kr 500", "kr 750", "kr 1000"];
-const ordersAxisLabels = ["0", "10", "20", "30", "40"];
-
-function buildChartPoints(points, mode) {
-  if (!points.length) {
-    return chartLabels.map((label) => ({ label, value: 0 }));
-  }
-
-  const sliceSize = Math.max(1, Math.floor(points.length / chartLabels.length));
-
-  return chartLabels.map((label, index) => {
-    const startIndex = index * sliceSize;
-    const sourceValue =
-      points[Math.min(startIndex + sliceSize - 1, points.length - 1)] ??
-      points[points.length - 1];
-
-    return {
-      label,
-      value:
-        mode === "orders"
-          ? Math.max(8, Math.round(sourceValue / 20))
-          : sourceValue,
-    };
-  });
-}
+const fallbackLabels = ["Point 1", "Point 2", "Point 3", "Point 4"];
 
 export default function FinanceChartCard({ points }) {
   const [activeTab, setActiveTab] = useState("earning");
   const isOrdersView = activeTab === "orders";
-  const chartPoints = buildChartPoints(points, activeTab);
-  const axisLabels = isOrdersView ? ordersAxisLabels : earningAxisLabels;
+  const chartPoints = points.length
+    ? points.map((point) => ({
+        label: point.label,
+        value: isOrdersView ? point.orders : point.earnings,
+      }))
+    : fallbackLabels.map((label) => ({ label, value: 0 }));
   const maxValue = Math.max(...chartPoints.map((point) => point.value), 1);
+  const axisLabels = Array.from({ length: 5 }, (_, index) => {
+    const step = maxValue / 4;
+    const value = Math.round(step * (4 - index));
+    return isOrdersView ? String(value) : `kr ${value}`;
+  });
 
   return (
     <section className="flex h-full min-h-[428px] flex-col rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-3 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
@@ -40,7 +24,7 @@ export default function FinanceChartCard({ points }) {
         <div>
           <h2 className="type-h3 m-0 text-[#181310]">Earning Overview</h2>
           <p className="type-para mt-1 text-[#6f6258]">
-            Revenue performance over the last 7 days
+            Revenue and order performance for the selected range
           </p>
         </div>
 

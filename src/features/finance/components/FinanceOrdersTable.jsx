@@ -4,8 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 function TransactionDetailModal({ order, onClose }) {
   if (!order) return null;
 
-  const [orderId, customer, event, date, total, commission, net, status] = order;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-fade-in">
       <div className="w-full max-w-[420px] rounded-[18px] border border-[#e8dfd5] bg-[#fffdfa] p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
@@ -15,7 +13,7 @@ function TransactionDetailModal({ order, onClose }) {
             Catering bestilling.no
           </span>
           <h2 className="m-0 text-[18px] font-extrabold mt-0.5 text-white">
-            Order {orderId} Details
+            Order {order.orderId} Details
           </h2>
           <button
             onClick={onClose}
@@ -32,16 +30,20 @@ function TransactionDetailModal({ order, onClose }) {
           <div className="flex items-center justify-between border-b border-[#f2ece6] pb-3">
             <div className="flex flex-col">
               <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">Customer</span>
-              <strong className="text-[15px] text-[#1c1510] font-extrabold">{customer}</strong>
+              <strong className="text-[15px] text-[#1c1510] font-extrabold">{order.customerName}</strong>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">Status</span>
               <span
                 className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-3 text-[12px] font-extrabold shadow-sm mt-0.5 ${
-                  status === "Pending" ? "bg-[#fff4dd] text-[#d8a12f]" : "bg-[#edf9ef] text-[#38a657]"
+                  order.payoutStatus.toLowerCase() === "pending"
+                    ? "bg-[#fff4dd] text-[#d8a12f]"
+                    : order.payoutStatus.toLowerCase() === "processing"
+                      ? "bg-[#eef4ff] text-[#4e78d8]"
+                      : "bg-[#edf9ef] text-[#38a657]"
                 }`}
               >
-                {status}
+                {order.payoutStatus}
               </span>
             </div>
           </div>
@@ -50,11 +52,11 @@ function TransactionDetailModal({ order, onClose }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-[#ffefe5] border border-[#ffdcd0] p-3 text-center">
               <span className="block text-[12px] font-extrabold text-[#c85e2f] uppercase tracking-wide">Event Type</span>
-              <span className="text-[14px] font-extrabold text-[#cf6e38] mt-1 block">{event}</span>
+              <span className="text-[14px] font-extrabold text-[#cf6e38] mt-1 block">{order.eventType}</span>
             </div>
             <div className="rounded-xl bg-[#f0f4f8] border border-[#d6e4f0] p-3 text-center">
               <span className="block text-[12px] font-extrabold text-[#3b70a6] uppercase tracking-wide">Event Date</span>
-              <span className="text-[14px] font-extrabold text-[#3b70a6] mt-1 block">{date}</span>
+              <span className="text-[14px] font-extrabold text-[#3b70a6] mt-1 block">{order.eventDate}</span>
             </div>
           </div>
 
@@ -67,11 +69,11 @@ function TransactionDetailModal({ order, onClose }) {
             <div className="space-y-2.5">
               <div className="flex justify-between items-center text-[14px] px-1">
                 <span className="font-semibold text-[#6f6358]">Total Charged</span>
-                <span className="font-extrabold text-[#1c1510] text-[15px]">{total}</span>
+                <span className="font-extrabold text-[#1c1510] text-[15px]">{order.grossAmount}</span>
               </div>
               <div className="flex justify-between items-center text-[14px] px-1">
                 <span className="font-semibold text-[#6f6358]">Platform Commission</span>
-                <span className="font-bold text-[#de5f5f] bg-[#fff0f0] px-2 py-0.5 rounded-full text-[13px]">{commission}</span>
+                <span className="font-bold text-[#de5f5f] bg-[#fff0f0] px-2 py-0.5 rounded-full text-[13px]">{order.commissionAmount}</span>
               </div>
 
               <div className="mt-3 bg-[#edf9ef] border border-[#c7ebd0] px-4 py-3 rounded-xl flex justify-between items-center shadow-sm">
@@ -79,7 +81,7 @@ function TransactionDetailModal({ order, onClose }) {
                   <span className="text-[12px] font-bold uppercase tracking-wider text-[#38a657]">Net Earnings</span>
                   <span className="text-[13px] font-medium text-[#4c8f59]">Transferred to Wallet</span>
                 </div>
-                <span className="text-[18px] font-extrabold text-[#237a39]">{net}</span>
+                <span className="text-[18px] font-extrabold text-[#237a39]">{order.netAmount}</span>
               </div>
             </div>
           </div>
@@ -102,7 +104,9 @@ function TransactionDetailModal({ order, onClose }) {
 
 export default function FinanceOrdersTable({
   currentPage,
+  isLoading = false,
   onPageChange,
+  onRequestDetail,
   pageSize,
   rows,
   totalItems,
@@ -110,6 +114,7 @@ export default function FinanceOrdersTable({
 }) {
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   useEffect(() => {
     function handleOutsideClick() {
@@ -127,8 +132,11 @@ export default function FinanceOrdersTable({
     }
   }
 
-  function handleViewDetail(row) {
-    setSelectedOrder(row);
+  async function handleViewDetail(row) {
+    setIsDetailLoading(true);
+    const detail = await onRequestDetail(row.id).catch(() => row);
+    setSelectedOrder(detail || row);
+    setIsDetailLoading(false);
     setOpenDropdownId(null);
   }
 
@@ -166,47 +174,60 @@ export default function FinanceOrdersTable({
             </tr>
           </thead>
           <tbody>
-            {rows.length ? (
+            {isLoading && !rows.length ? (
+              <tr>
+                <td
+                  className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
+                  colSpan={10}
+                >
+                  Loading transactions...
+                </td>
+              </tr>
+            ) : rows.length ? (
               rows.map((row, index) => (
-                <tr key={`${row[0]}-${index}`} className="border-b border-[#f2ece6] last:border-b-0">
+                <tr key={`${row.id}-${index}`} className="border-b border-[#f2ece6] last:border-b-0">
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[16px] font-extrabold text-[#1c1510]">
-                    {row[0]}
+                    {row.orderId}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
-                    {row[1]}
+                    {row.customerName}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
-                    {row[2]}
+                    {row.eventType}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-semibold text-[#75695f]">
-                    {row[3]}
+                    {row.eventDate}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
-                    {row[4]}
+                    {row.grossAmount}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#de5f5f]">
-                    {row[5]}
+                    {row.commissionAmount}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
-                    {row[6]}
+                    {row.netAmount}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3">
                     <span
                       className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-[11px] text-[12px] font-bold ${
-                        row[7] === "Pending" ? "bg-[#fff4dd] text-[#d8a12f]" : "bg-[#edf9ef] text-[#38a657]"
+                        row.payoutStatus.toLowerCase() === "pending"
+                          ? "bg-[#fff4dd] text-[#d8a12f]"
+                          : row.payoutStatus.toLowerCase() === "processing"
+                            ? "bg-[#eef4ff] text-[#4e78d8]"
+                            : "bg-[#edf9ef] text-[#38a657]"
                       }`}
                     >
-                      {row[7]}
+                      {row.payoutStatus}
                     </span>
                   </td>
                   <td className="relative border-b border-[#eee7df] px-[10px] py-3 text-[16px]">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleToggleDropdown(`${row[0]}-${index}`);
+                        handleToggleDropdown(`${row.id}-${index}`);
                       }}
                       className="cursor-pointer text-[#6f6358] hover:text-[#cf6e38] font-bold tracking-[0.2em] focus:outline-none transition active:scale-90"
                       type="button"
@@ -214,7 +235,7 @@ export default function FinanceOrdersTable({
                       ...
                     </button>
 
-                    {openDropdownId === `${row[0]}-${index}` && (
+                    {openDropdownId === `${row.id}-${index}` && (
                       <div className="absolute right-2.5 top-[38px] z-10 w-28 rounded-lg border border-[#e4d9cf] bg-white p-1 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
                         <button
                           onClick={() => handleViewDetail(row)}
@@ -296,6 +317,11 @@ export default function FinanceOrdersTable({
           onClose={() => setSelectedOrder(null)}
         />
       )}
+      {isDetailLoading ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 text-[14px] font-semibold text-white">
+          Loading transaction details...
+        </div>
+      ) : null}
     </section>
   );
 }
