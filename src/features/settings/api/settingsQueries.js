@@ -70,6 +70,7 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         enabled
         openTime
         closeTime
+        timeRange
       }
       specialClosures {
         id
@@ -264,6 +265,7 @@ export const UPDATE_VENDOR_BUSINESS_HOURS_MUTATION = `
         enabled
         openTime
         closeTime
+        timeRange
       }
     }
   }

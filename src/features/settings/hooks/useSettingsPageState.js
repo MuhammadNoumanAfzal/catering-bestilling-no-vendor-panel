@@ -56,6 +56,9 @@ function mapApiHoursToState(hours = []) {
     id: item.id || "",
     day: item.day,
     enabled: Boolean(item.enabled),
+    timeRange: item.enabled
+      ? item.timeRange || [item.openTime, item.closeTime].filter(Boolean).join("-")
+      : "Closed",
     open: item.enabled ? item.openTime : "Closed",
     close: item.enabled ? item.closeTime : "Closed",
   }));
@@ -165,8 +168,9 @@ export default function useSettingsPageState() {
           ? {
               ...item,
               enabled: !item.enabled,
-              open: !item.enabled ? "08:00-12:00" : "Closed",
-              close: !item.enabled ? "13:00-17:00" : "Closed",
+              timeRange: !item.enabled ? "08:00-12:00" : "Closed",
+              open: !item.enabled ? "08:00" : "Closed",
+              close: !item.enabled ? "12:00" : "Closed",
             }
           : item,
       ),
@@ -176,9 +180,35 @@ export default function useSettingsPageState() {
   function handleBusinessHourChange(day, field, value) {
     setSettings((current) => ({
       ...current,
-      hours: current.hours.map((item) =>
-        item.day === day ? { ...item, [field]: value } : item,
-      ),
+      hours: current.hours.map((item) => {
+        if (item.day !== day) {
+          return item;
+        }
+
+        const nextItem =
+          field === "open"
+            ? {
+                ...item,
+                open: value,
+                close: "Closed",
+              }
+            : {
+                ...item,
+                close: value,
+              };
+
+        return {
+          ...nextItem,
+          timeRange:
+            nextItem.enabled &&
+            nextItem.open &&
+            nextItem.close &&
+            nextItem.open !== "Closed" &&
+            nextItem.close !== "Closed"
+              ? `${nextItem.open}-${nextItem.close}`
+              : "Closed",
+        };
+      }),
     }));
   }
 
