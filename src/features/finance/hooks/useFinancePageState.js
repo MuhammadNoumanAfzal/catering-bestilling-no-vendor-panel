@@ -70,7 +70,7 @@ export default function useFinancePageState() {
 
     async function loadHeaderData() {
       try {
-        const [summaryResult, chartResult, payoutResult] = await Promise.all([
+        const [summaryResult, chartResult, payoutResult] = await Promise.allSettled([
           getVendorFinanceSummary(headerRangeVariables),
           getVendorFinanceOverviewChart({
             ...headerRangeVariables,
@@ -83,9 +83,23 @@ export default function useFinancePageState() {
           return;
         }
 
-        setSummaryCards(mapFinanceSummaryCards(summaryResult));
-        setChartPoints(mapFinanceChartPoints(chartResult));
-        setPayoutStatuses(mapPayoutStatusItems(payoutResult));
+        if (summaryResult.status !== "fulfilled" || chartResult.status !== "fulfilled") {
+          const summaryError =
+            summaryResult.status === "rejected" ? summaryResult.reason : null;
+          const chartError =
+            chartResult.status === "rejected" ? chartResult.reason : null;
+
+          throw summaryError || chartError || new Error("Unable to load finance summary right now.");
+        }
+
+        setSummaryCards(mapFinanceSummaryCards(summaryResult.value));
+        setChartPoints(mapFinanceChartPoints(chartResult.value));
+
+        if (payoutResult.status === "fulfilled") {
+          setPayoutStatuses(mapPayoutStatusItems(payoutResult.value));
+        } else {
+          setPayoutStatuses([]);
+        }
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(

@@ -24,35 +24,41 @@ export default function FinancePayoutStatus({ items }) {
       <h2 className="type-h3 m-0 text-[#181310]">Payout Status</h2>
 
       <div className="mt-4 flex flex-col gap-3.5">
-        {items.map((item) => {
-          const Icon = iconMap[item.tone];
+        {items.length ? (
+          items.map((item) => {
+            const Icon = iconMap[item.tone];
 
-          return (
-            <div
-              key={item.title}
-              className="flex items-start justify-between gap-4 rounded-[12px] border border-[#efe6de] px-4 py-4 max-[420px]:flex-col max-[420px]:gap-3"
-            >
-              <div className="flex items-start gap-3">
-                <span
-                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${toneStyles[item.tone]}`}
-                >
-                  <Icon size={16} />
-                </span>
-                <span className="flex flex-col">
-                  <strong className="type-h5 block text-[#1a1410]">
-                    {item.title}
-                  </strong>
-                  <span className="type-subpara text-[#86786d]">
-                    {item.description}
+            return (
+              <div
+                key={item.title}
+                className="flex items-start justify-between gap-4 rounded-[12px] border border-[#efe6de] px-4 py-4 max-[420px]:flex-col max-[420px]:gap-3"
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${toneStyles[item.tone]}`}
+                  >
+                    <Icon size={16} />
                   </span>
+                  <span className="flex flex-col">
+                    <strong className="type-h5 block text-[#1a1410]">
+                      {item.title}
+                    </strong>
+                    <span className="type-subpara text-[#86786d]">
+                      {item.description}
+                    </span>
+                  </span>
+                </div>
+                <span className={`type-h5 shrink-0 max-[420px]:pl-10 ${amountStyles[item.tone]}`}>
+                  {item.amount}
                 </span>
               </div>
-              <span className={`type-h5 shrink-0 max-[420px]:pl-10 ${amountStyles[item.tone]}`}>
-                {item.amount}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="rounded-[12px] border border-dashed border-[#e6ddd6] bg-[#fcfaf8] px-4 py-4 text-[13px] font-medium leading-[1.5] text-[#86786d]">
+            Payout information is not available right now. Your earnings summary and transactions are still up to date.
+          </div>
+        )}
       </div>
     </section>
   );
