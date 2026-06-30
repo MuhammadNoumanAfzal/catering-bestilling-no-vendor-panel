@@ -18,6 +18,7 @@ export default function NotificationReceiptModal({
   const receiptUrl = deriveReceiptUrl(notification);
   const amount = deriveReceiptAmount(notification);
   const status = deriveReceiptStatus(notification);
+  const detailRows = Array.isArray(notification.detailRows) ? notification.detailRows : [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6">
@@ -47,7 +48,7 @@ export default function NotificationReceiptModal({
         </div>
 
         <div className="mt-4 grid grid-cols-[minmax(120px,0.8fr)_1fr] gap-x-4 gap-y-3 max-[520px]:grid-cols-1">
-          {notification.detailRows.map((row) => (
+          {detailRows.map((row) => (
             <Fragment key={`${notification.id}-${row.label}`}>
               <span className="type-subpara text-[#8b7d72]">{row.label}</span>
               <span className="type-subpara text-[#241c16]">{row.value}</span>

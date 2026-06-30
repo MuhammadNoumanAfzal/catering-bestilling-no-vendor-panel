@@ -2,7 +2,11 @@ import { ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { deriveOrderSummary } from "../api/notificationsMappers";
 
-export default function OrderNotificationDetail({ notification, onClose }) {
+export default function OrderNotificationDetail({
+  notification,
+  onClose,
+  isLoading = false,
+}) {
   const [expandedItem, setExpandedItem] = useState(null);
   const orderSummary = deriveOrderSummary(notification);
   const fallbackRows = Array.isArray(notification.detailRows) ? notification.detailRows : [];
@@ -13,6 +17,10 @@ export default function OrderNotificationDetail({ notification, onClose }) {
   const amountRow = fallbackRows.find((row) => row.label === "Amount");
 
   const firstItem = orderSummary?.items?.[0];
+  const displayStatus = orderSummary?.status || statusRow?.value || "--";
+  const displayAmount = orderSummary?.amount || amountRow?.value || "--";
+  const displayCustomer = orderSummary?.customer || customerRow?.value || "--";
+  const displayOrderId = orderSummary?.orderId || orderIdRow?.value || "--";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-[2px]">
@@ -31,30 +39,34 @@ export default function OrderNotificationDetail({ notification, onClose }) {
         </div>
 
         <div className="hide-scrollbar flex-1 overflow-y-auto pr-0.5">
-          <div
-            className="h-[160px] w-full rounded-[12px] border border-[#efe6de] bg-cover bg-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-            style={{
-              backgroundImage: `url("${orderSummary?.coverImageUrl || "/heroBg.webp"}")`,
-            }}
-          />
+          {orderSummary?.coverImageUrl ? (
+            <div
+              className="h-[160px] w-full rounded-[12px] border border-[#efe6de] bg-cover bg-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+              style={{ backgroundImage: `url("${orderSummary.coverImageUrl}")` }}
+            />
+          ) : (
+            <div className="flex h-[160px] w-full items-center justify-center rounded-[12px] border border-[#efe6de] bg-[#faf7f4] text-[13px] font-semibold text-[#7a6d63] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+              Order preview not available
+            </div>
+          )}
 
           <div className="hide-scrollbar mt-3.5 flex items-center justify-between gap-4 overflow-x-auto whitespace-nowrap border-b border-[#f2ece6] pb-2.5 text-[12px] font-semibold sm:text-[13px]">
             <span className="text-[#7a6d63]">
               Status:{" "}
               <strong className="font-bold text-[#2ca24f]">
-                {orderSummary?.status || statusRow?.value || "Accepted"}
+                {displayStatus}
               </strong>
             </span>
             <span className="text-[#7a6d63]">
               Customer:{" "}
               <strong className="font-extrabold text-[#1c1510]">
-                {orderSummary?.customer || customerRow?.value || "--"}
+                {displayCustomer}
               </strong>
             </span>
             <span className="text-[#7a6d63]">
               Order ID:{" "}
               <strong className="font-extrabold text-[#1c1510]">
-                {orderSummary?.orderId || orderIdRow?.value || "--"}
+                {displayOrderId}
               </strong>
             </span>
           </div>
@@ -63,22 +75,30 @@ export default function OrderNotificationDetail({ notification, onClose }) {
             <h4 className="type-h4 m-0 font-extrabold text-[#17120e]">Items</h4>
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3 px-1">
-            <div className="flex items-center gap-3">
-              <span className="type-h5 font-extrabold text-[#8c7f73]">
-                {firstItem?.quantity || "--"}
-              </span>
-              <span className="type-h5 font-extrabold text-[#3a312a] capitalize">
-                {firstItem?.name || orderSummary?.itemsSummary || "--"}
-              </span>
+          {isLoading ? (
+            <div className="mt-4 space-y-3">
+              <div className="h-5 w-full animate-pulse rounded bg-[#ecdcd0]" />
+              <div className="h-16 w-full animate-pulse rounded bg-[#f4ede7]" />
+              <div className="h-16 w-full animate-pulse rounded bg-[#f4ede7]" />
             </div>
-            <span className="type-h5 font-extrabold text-[#3a312a]">
-              {orderSummary?.amount || amountRow?.value || "--"}
-            </span>
-          </div>
+          ) : (
+            <>
+              <div className="mt-3 flex items-center justify-between gap-3 px-1">
+                <div className="flex items-center gap-3">
+                  <span className="type-h5 font-extrabold text-[#8c7f73]">
+                    {firstItem?.quantity || "--"}
+                  </span>
+                  <span className="type-h5 font-extrabold text-[#3a312a] capitalize">
+                    {firstItem?.name || orderSummary?.itemsSummary || "--"}
+                  </span>
+                </div>
+                <span className="type-h5 font-extrabold text-[#3a312a]">
+                  {displayAmount}
+                </span>
+              </div>
 
-          <div className="mt-4 flex flex-col gap-2.5 pl-3">
-            {orderSummary?.items?.length ? (
+              <div className="mt-4 flex flex-col gap-2.5 pl-3">
+                {orderSummary?.items?.length ? (
               orderSummary.items.map((item) => {
                 const isExpanded = expandedItem === item.id;
 
@@ -93,11 +113,17 @@ export default function OrderNotificationDetail({ notification, onClose }) {
                       type="button"
                     >
                       <div className="flex items-center gap-3">
-                        <img
-                          alt={item.name}
-                          className="h-9 w-[56px] shrink-0 rounded-[6px] border border-[#efe6de] object-cover"
-                          src={item.imageUrl || "/heroBg.webp"}
-                        />
+                        {item.imageUrl ? (
+                          <img
+                            alt={item.name}
+                            className="h-9 w-[56px] shrink-0 rounded-[6px] border border-[#efe6de] object-cover"
+                            src={item.imageUrl}
+                          />
+                        ) : (
+                          <div className="flex h-9 w-[56px] shrink-0 items-center justify-center rounded-[6px] border border-[#efe6de] bg-[#f4ede7] text-[10px] font-bold uppercase tracking-[0.06em] text-[#8c7f73]">
+                            Item
+                          </div>
+                        )}
                         <span className="text-[13px] font-bold text-[#3a312a]">
                           {item.name}
                         </span>
@@ -133,12 +159,14 @@ export default function OrderNotificationDetail({ notification, onClose }) {
                   </div>
                 );
               })
-            ) : (
-              <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] px-4 py-3 text-[13px] font-semibold text-[#5c5046]">
-                No item-level payload is available for this notification.
+                ) : (
+                  <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] px-4 py-3 text-[13px] font-semibold text-[#5c5046]">
+                    Order item details are not available for this notification yet.
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
         <div className="mt-4 flex justify-end border-t border-[#efe6de] pt-3">

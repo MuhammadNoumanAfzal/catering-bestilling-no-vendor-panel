@@ -1,18 +1,5 @@
-export default function NotificationItem({
-  notification,
-  onOpenDetail,
-  onOpenReceipt,
-}) {
+export default function NotificationItem({ notification, onOpen }) {
   const isHighlighted = notification.highlighted;
-
-  function handleActionClick() {
-    if (notification.type === "PAYOUT") {
-      onOpenReceipt(notification);
-      return;
-    }
-
-    onOpenDetail(notification);
-  }
 
   return (
     <article
@@ -25,7 +12,7 @@ export default function NotificationItem({
       <div className="flex items-start justify-between gap-3">
         <button
           className="min-w-0 flex-1 border-0 bg-transparent p-0 text-left"
-          onClick={handleActionClick}
+          onClick={() => onOpen(notification)}
           type="button"
         >
           <div className="flex items-center gap-2">
@@ -48,7 +35,7 @@ export default function NotificationItem({
       <div className="mt-2 flex justify-end">
         <button
           className="type-subpara border-0 bg-transparent p-0 text-[#302822] underline-offset-2 hover:underline"
-          onClick={handleActionClick}
+          onClick={() => onOpen(notification)}
           type="button"
         >
           {notification.actionLabel}
