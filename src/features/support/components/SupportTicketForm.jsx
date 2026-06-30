@@ -1,141 +1,27 @@
-import { useMemo, useState } from "react";
 import SupportAttachmentDropzone from "./SupportAttachmentDropzone";
 import SupportFieldSelect from "./SupportFieldSelect";
-import { createSupportTicket } from "../api/supportApi";
-import { uploadMenuImage } from "../../menu/api/menuUploadApi";
+import useSupportTicketForm from "../hooks/useSupportTicketForm";
 import {
-  showSupportTicketSubmitted,
-  showVendorErrorAlert,
-} from "../../../utils/vendorAlerts";
-
-const issueTypeOptions = [
-  { value: "payout-delay", label: "Payout delayed" },
-  { value: "earning-discrepancy", label: "Earning discrepancy" },
-  { value: "order-management", label: "Order management issue" },
-  { value: "unable-update-menu", label: "Unable to update menu" },
-  { value: "delivery-config", label: "Delivery configuration issue" },
-  { value: "store-visibility", label: "Store visibility issue" },
-  { value: "account-verification", label: "Account verification issue" },
-  { value: "customer-dispute", label: "Customer dispute" },
-  { value: "technical-platform", label: "Technical platform bug" },
-  { value: "notification", label: "Notification issue" },
-  { value: "menu-upload", label: "Menu upload issue" },
-  { value: "general-support", label: "General support request" },
-];
-
-const initialForm = {
-  category: "vendor",
-  issueType: "",
-  relatedOrder: "",
-  description: "",
-};
+  supportGuidePoints,
+  supportIssueTypeOptions,
+} from "../data/supportData";
 
 export default function SupportTicketForm() {
-  const [form, setForm] = useState(initialForm);
-  const [attachment, setAttachment] = useState(null);
-  const [attachmentError, setAttachmentError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submittedTicketId, setSubmittedTicketId] = useState("");
-
-  const descriptionCount = form.description.length;
-  const isReadyToSubmit = useMemo(
-    () => form.issueType && form.description.trim().length > 0,
-    [form.description, form.issueType],
-  );
-
-  function handleFieldChange(field) {
-    return (event) => {
-      setSubmitted(false);
-      setForm((current) => ({
-        ...current,
-        [field]: event.target.value,
-      }));
-    };
-  }
-
-  function handleCategoryChange(category) {
-    setSubmitted(false);
-    setForm((current) => ({
-      ...current,
-      category,
-    }));
-  }
-
-  function handleAttachmentChange(event) {
-    const nextFile = event.target.files?.[0] || null;
-    setSubmitted(false);
-    setAttachmentError("");
-
-    if (!nextFile) {
-      setAttachment(null);
-      return;
-    }
-
-    if (!["image/png", "image/jpeg", "image/jpg", "image/webp"].includes(nextFile.type)) {
-      setAttachment(null);
-      setAttachmentError("Please upload a PNG, JPG, JPEG, or WEBP screenshot.");
-      return;
-    }
-
-    if (nextFile.size > 2 * 1024 * 1024) {
-      setAttachment(null);
-      setAttachmentError("Please upload a screenshot under 2MB.");
-      return;
-    }
-
-    setAttachment(nextFile);
-  }
-
-  function handleAttachmentRemove() {
-    setAttachment(null);
-    setAttachmentError("");
-    setSubmitted(false);
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    if (!isReadyToSubmit) {
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      let uploadedAttachment = null;
-
-      if (attachment) {
-        uploadedAttachment = await uploadMenuImage(attachment);
-      }
-
-      const selectedIssueLabel =
-        issueTypeOptions.find((option) => option.value === form.issueType)?.label || form.issueType;
-
-      const result = await createSupportTicket({
-        userRole: form.category,
-        subject: selectedIssueLabel,
-        relatedOrderId: form.relatedOrder,
-        description: form.description,
-        attachmentUrl: uploadedAttachment?.fileUrl || null,
-        attachmentFileId: uploadedAttachment?.fileId || null,
-      });
-
-      setSubmitted(true);
-      setSubmittedTicketId(result.ticketId || "");
-      setForm(initialForm);
-      setAttachment(null);
-      setAttachmentError("");
-      await showSupportTicketSubmitted();
-    } catch (error) {
-      await showVendorErrorAlert(
-        error.message || "Unable to submit your support ticket right now.",
-        "Support ticket failed",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const {
+    attachmentError,
+    attachmentName,
+    descriptionCount,
+    form,
+    handleAttachmentChange,
+    handleAttachmentRemove,
+    handleCategoryChange,
+    handleFieldChange,
+    handleSubmit,
+    isReadyToSubmit,
+    isSubmitting,
+    submitted,
+    submittedTicketId,
+  } = useSupportTicketForm();
 
   return (
     <section className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_320px]">
@@ -185,7 +71,7 @@ export default function SupportTicketForm() {
               <SupportFieldSelect
                 label="Subject Issue Type"
                 onChange={handleFieldChange("issueType")}
-                options={issueTypeOptions}
+                options={supportIssueTypeOptions}
                 placeholder="Select issue type"
                 value={form.issueType}
               />
@@ -224,7 +110,7 @@ export default function SupportTicketForm() {
               <div className="mt-2">
                 <SupportAttachmentDropzone
                   error={attachmentError}
-                  fileName={attachment?.name || ""}
+                  fileName={attachmentName}
                   onChange={handleAttachmentChange}
                   onRemove={handleAttachmentRemove}
                 />
@@ -259,16 +145,17 @@ export default function SupportTicketForm() {
           Help us resolve your issue faster
         </h3>
         <div className="mt-4 space-y-3 text-[13px] leading-[1.6] text-[#6e6259]">
-          <p className="m-0">Choose the issue type that best matches your problem.</p>
-          <p className="m-0">Add an order ID when your request is linked to a specific booking.</p>
-          <p className="m-0">Attach a screenshot for menu, payout, or technical issues when possible.</p>
-          <p className="m-0">For urgent account access problems, mention the affected email address in the description.</p>
+          {supportGuidePoints.map((point) => (
+            <p key={point} className="m-0">
+              {point}
+            </p>
+          ))}
         </div>
 
         <div className="mt-5 rounded-[14px] border border-[#eadfd6] bg-white px-4 py-4">
-          <p className="m-0 text-[13px] font-bold text-[#2a211b]">Current API status</p>
+          <p className="m-0 text-[13px] font-bold text-[#2a211b]">What happens next</p>
           <p className="mt-2 text-[12px] leading-[1.6] text-[#7d7064]">
-            Ticket submission is now API-based. If you want the issue-type dropdown to be fully API-driven too, backend should expose a support bootstrap query for issue type choices.
+            After you submit your ticket, our support team will review the details and contact you with the next steps.
           </p>
         </div>
       </aside>
