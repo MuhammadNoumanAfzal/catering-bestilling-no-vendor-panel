@@ -167,7 +167,6 @@ export default function useFinancePageState() {
     totalCount: 0,
   };
 
-  const filteredOrders = currentPageData.rows;
   const paginatedOrders = currentPageData.rows;
   const totalItems = currentPageData.totalCount || 0;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
@@ -309,7 +308,6 @@ export default function useFinancePageState() {
     customTo,
     dateButtonLabel,
     chartPoints,
-    filteredOrders,
     handleApplyCustomDate,
     handleExport,
     handlePageChange,
