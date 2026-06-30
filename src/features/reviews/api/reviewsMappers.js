@@ -61,7 +61,7 @@ export function mapVendorReviewNode(node) {
   return {
     id: normalizeString(node?.id),
     author: normalizeString(node?.customer?.fullName) || "Anonymous Customer",
-    avatar: normalizeString(node?.customer?.avatarUrl) || "/heroBg.webp",
+    avatar: normalizeString(node?.customer?.avatarUrl),
     rating,
     age: normalizeString(node?.ageLabel),
     reviewDate: normalizeString(node?.eventDate || node?.createdOn),

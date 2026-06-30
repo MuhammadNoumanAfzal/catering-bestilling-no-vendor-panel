@@ -29,12 +29,18 @@ export default function ReplyReviewModal({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto py-3.5 hide-scrollbar">
           {/* User profile */}
-          <div className="flex items-start gap-3">
-            <img
-              alt={review.author}
-              className="h-10 w-10 rounded-full object-cover border border-[#efe6de]"
-              src={review.avatar}
-            />
+        <div className="flex items-start gap-3">
+            {review.avatar ? (
+              <img
+                alt={review.author}
+                className="h-10 w-10 rounded-full object-cover border border-[#efe6de]"
+                src={review.avatar}
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#efe6de] bg-[#f2ebe5] text-[13px] font-bold text-[#8d7f73]">
+                {review.author?.trim?.()?.charAt(0)?.toUpperCase?.() || "U"}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="type-h4 m-0 text-[#181310]">{review.author}</p>
               <p className="mt-1 text-[13px] font-medium text-[#8c7f73]">
@@ -78,11 +84,11 @@ export default function ReplyReviewModal({
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
                 <span className="font-semibold text-[#7a6d63]">Delivery Time</span>
-                <span className="font-extrabold text-[#1c1510]">{review.deliveryTime}</span>
+                <span className="font-extrabold text-[#1c1510]">{review.deliveryTime || "--"}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="font-semibold text-[#7a6d63]">Reviewed On</span>
-                <span className="font-extrabold text-[#1c1510]">{review.reviewedOn}</span>
+                <span className="font-extrabold text-[#1c1510]">{review.reviewedOn || "--"}</span>
               </div>
             </div>
           </div>

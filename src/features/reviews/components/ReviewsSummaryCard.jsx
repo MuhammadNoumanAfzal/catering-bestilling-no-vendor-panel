@@ -40,7 +40,7 @@ export default function ReviewsSummaryCard({ summary }) {
         <div className="flex items-center border-r border-[#eadfd7] pr-4 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pb-4 max-[980px]:pr-0">
           <div className="flex w-full flex-col justify-center gap-3">
             {breakdown.map((item) => {
-              const percentage = Math.round((item.count / totalCount) * 100);
+              const percentage = totalCount ? Math.round((item.count / totalCount) * 100) : 0;
 
               return (
                 <div

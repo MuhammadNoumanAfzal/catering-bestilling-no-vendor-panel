@@ -11,11 +11,17 @@ export default function ReviewListItem({ review }) {
     >
       <div className="flex items-start justify-between gap-3 max-[520px]:flex-col max-[520px]:items-stretch max-[520px]:gap-3.5">
         <div className="flex items-start gap-3">
-          <img
-            alt={review.author}
-            className="h-9 w-9 rounded-full object-cover"
-            src={review.avatar}
-          />
+          {review.avatar ? (
+            <img
+              alt={review.author}
+              className="h-9 w-9 rounded-full object-cover"
+              src={review.avatar}
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f2ebe5] text-[12px] font-bold text-[#8d7f73]">
+              {review.author?.trim?.()?.charAt(0)?.toUpperCase?.() || "U"}
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-2">
               <h3 className="type-h4 m-0 text-[#181310]">{review.author}</h3>
