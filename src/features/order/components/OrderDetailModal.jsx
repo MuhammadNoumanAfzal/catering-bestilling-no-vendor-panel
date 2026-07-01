@@ -77,10 +77,41 @@ const mockSubItems = [
   },
 ];
 
-export default function OrderDetailModal({ orderId, onClose }) {
+export default function OrderDetailModal({ orderId, onClose, order, orderDetail }) {
   const [expandedItem, setExpandedItem] = useState(null);
 
   const orderData = useMemo(() => {
+    if (order || orderDetail) {
+      const status = orderDetail?.status || order?.status || "New";
+      const customer = orderDetail?.customer?.name || order?.customer || "Customer unavailable";
+      const idVal = orderDetail?.id || order?.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`);
+      const priceVal =
+        orderDetail?.orderItem?.modalDetails?.price ||
+        orderDetail?.financialSummary?.find?.((item) => item.label === "Order Total" || item.label === "Total")?.value ||
+        "kr 0.00";
+      const qtyVal = orderDetail?.guests || order?.guests || 0;
+      const nameVal = orderDetail?.orderItem?.modalDetails?.title || orderDetail?.orderItem?.name || order?.event || "Order";
+      const dateVal = orderDetail?.date || order?.date || "Not specified";
+      const timeVal = orderDetail?.time || order?.time || "Not specified";
+      const addressVal = orderDetail?.logistics?.deliveryAddress || "Not specified";
+      const noteVal = orderDetail?.note || "";
+      const statusTone = orderDetail?.statusTone || order?.statusTone || "is-new";
+
+      return {
+        status,
+        statusTone,
+        customer,
+        id: idVal,
+        price: priceVal,
+        qty: qtyVal,
+        name: nameVal,
+        date: dateVal,
+        time: timeVal,
+        address: addressVal,
+        note: noteVal,
+      };
+    }
+
     const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
     const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
     const mainOrder = currentOrders.find(

@@ -67,10 +67,10 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
   const [date, setDate] = useState("2026-03-25");
   const [time, setTime] = useState("14:30");
   const [personCount, setPersonCount] = useState(orderDetail?.guests || 20);
-  const [address, setAddress] = useState(orderDetail?.logistics?.deliveryAddress || "Åsane #1234, Norway");
+  const [address, setAddress] = useState("Åsane #1234, Norway");
   const [apartment, setApartment] = useState("5");
-  const [city, setCity] = useState(orderDetail?.customer?.city || "Bergen");
-  const [postalCode, setPostalCode] = useState(orderDetail?.customer?.postalCode || "1235");
+  const [city, setCity] = useState("Bergen");
+  const [postalCode, setPostalCode] = useState("1235");
 
   // Filter suggestion list based on search
   const filteredSuggestions = useMemo(() => {

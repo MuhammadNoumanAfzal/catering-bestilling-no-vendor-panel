@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
 import DetailPanel from "./DetailPanel";
 import OrderDetailModal from "../OrderDetailModal";
 
-export default function OrderItemsPanel({ orderItem, note, addOns }) {
-  const { orderId } = useParams();
+export default function OrderItemsPanel({ orderItem, note, addOns, orderId, order }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -77,7 +75,12 @@ export default function OrderItemsPanel({ orderItem, note, addOns }) {
       </DetailPanel>
 
       {isModalOpen ? (
-        <OrderDetailModal orderId={orderId} onClose={() => setIsModalOpen(false)} />
+        <OrderDetailModal
+          order={order}
+          orderDetail={order}
+          orderId={orderId}
+          onClose={() => setIsModalOpen(false)}
+        />
       ) : null}
     </>
   );
