@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ConfirmedLifecyclePanel from "../components/order-details/ConfirmedLifecyclePanel";
 import CustomerInfoPanel from "../components/order-details/CustomerInfoPanel";
@@ -6,262 +6,87 @@ import FinancialSummaryPanel from "../components/order-details/FinancialSummaryP
 import LifecyclePanel from "../components/order-details/LifecyclePanel";
 import LogisticsPanel from "../components/order-details/LogisticsPanel";
 import OrderItemsPanel from "../components/order-details/OrderItemsPanel";
-import { ordersTableRows, orderDetailRecords } from "../data/orderData";
+import { getVendorOrderDetail, updateVendorOrderStatus } from "../api/orderApi";
+import {
+  getStatusMutationValue,
+  mapVendorOrderDetail,
+  normalizeBackendStatus,
+} from "../api/orderMappers";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
+  showVendorErrorAlert,
 } from "../../../utils/vendorAlerts";
 
 function getStatusFromActionLabel(label) {
-  const norm = label.toLowerCase();
-  if (norm.includes("prepare") || norm.includes("preparing")) return "Preparing";
-  if (norm.includes("ready")) return "Ready";
-  if (norm.includes("delivery") || norm.includes("out for delivery")) return "Out for delivery";
-  if (norm.includes("delivered") || norm.includes("mark delivered")) return "Delivered";
-  if (norm.includes("cancel") || norm.includes("canceled") || norm.includes("reject")) return "Canceled";
-  if (norm.includes("accept")) return "Accepted";
-  return label;
-}
-
-function getActionsForStatus(status) {
-  if (status === "New") {
-    return [
-      { label: "Accept", tone: "is-primary", navigateToDetail: true },
-      { label: "Reject", tone: "is-muted" }
-    ];
-  }
-  if (status === "Accepted") {
-    return [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }];
-  }
-  if (status === "Preparing") {
-    return [{ label: "Ready", tone: "is-primary", hasDropdown: true }];
-  }
-  if (status === "Ready") {
-    return [{ label: "Out for delivery", tone: "is-primary", hasDropdown: true }];
-  }
-  if (status === "Out for delivery") {
-    return [{ label: "Delivered", tone: "is-primary", hasDropdown: true }];
-  }
-  if (status === "Modified") {
-    return [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }];
-  }
-  return [{ label: "View Details", tone: "is-muted", navigateToDetail: true }];
-}
-
-function getToneForStatus(status) {
-  if (status === "New") return "is-new";
-  if (status === "Accepted") return "is-accepted";
-  if (status === "Preparing") return "is-preparing";
-  if (status === "Ready") return "is-ready";
-  if (status === "Out for delivery") return "is-delivery";
-  if (status === "Delivered") return "is-delivered";
-  if (status === "Canceled") return "is-canceled";
-  if (status === "Reject") return "is-reject";
-  if (status === "Modified") return "is-modified";
-  return "is-new";
+  return normalizeBackendStatus(label);
 }
 
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
-  const [triggerVal, setTriggerVal] = useState(0);
+  const decodedOrderId = useMemo(() => decodeURIComponent(orderId || ""), [orderId]);
+  const [orderDetail, setOrderDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const orderDetail = useMemo(() => {
-    // Reference triggerVal to justify dependency for recalculation
-    void triggerVal;
-    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
-    const cleanId = orderId.replace("#", "");
+  useEffect(() => {
+    let isCancelled = false;
 
-    if (!savedDetailsRaw) {
-      window.localStorage.setItem("vendor-order-details", JSON.stringify(orderDetailRecords));
-    }
+    async function loadOrderDetail() {
+      setIsLoading(true);
 
-    let detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
+      try {
+        const result = await getVendorOrderDetail(decodedOrderId);
+        if (isCancelled) {
+          return;
+        }
 
-    if (!detail) {
-      const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-      const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
-      const mainOrder = currentOrders.find((o) => o.id.replace("#", "") === cleanId);
-
-      if (mainOrder) {
-        detail = {
-          id: mainOrder.id,
-          date: mainOrder.date,
-          time: mainOrder.time,
-          customer: {
-            name: mainOrder.customer,
-            organization: `${mainOrder.customer} Ltd`,
-            postalCode: "0278",
-            city: "Oslo",
-            email: `${mainOrder.customer.toLowerCase().replace(/[^a-z0-9]/g, "")}@catering-bestilling.no`,
-            historyText: "Returning customer (2 past orders)",
-            historyOrders: [
-              {
-                id: "ORD-1120",
-                title: mainOrder.event || "Lunch buffet",
-                date: "10 Jan, 2026",
-                amount: `kr ${(mainOrder.guests * 42).toFixed(2)}`,
-                guests: `${mainOrder.guests} GUESTS`,
-                status: "DELIVERED",
-                statusTone: "delivered",
-              }
-            ],
-          },
-          orderItem: {
-            name: mainOrder.event || "Standard Catering Buffet",
-            quantity: `Full catering package for ${mainOrder.guests} guests.`,
-            description: "CORE ITEMS",
-            includedItems: [
-              "Freshly Roasted Seasonal Veggies (x1)",
-              "Hot Protein Platters (x2)",
-              "Standard Dessert Curation (x1)"
-            ],
-            modalDetails: {
-              title: mainOrder.event || "Standard Catering Buffet",
-              price: `kr ${(mainOrder.guests * 42).toFixed(2)}`,
-              facts: [
-                "Cuisine: Buffet",
-                `Serves: ${mainOrder.guests} guests`,
-              ],
-              items: [
-                "Includes: Main courses, sides, salads, and dessert box",
-              ],
-              extras: ["Delivery and table setup included"],
-            },
-          },
-          addOns: ["Assorted Cold Beverages", "Environment Friendly Cutlery"],
-          note: "Please contact event manager on arrival.",
-          logistics: {
-            deliveryAddress: "1221 Avenue of the Americas, Floor 42, New York, NY 10020",
-            eventDate: mainOrder.date,
-            deliveryWindow: mainOrder.time,
-            fullAddress: "1221 Avenue of the Americas, Floor 42, New York, NY 10020",
-            eventType: mainOrder.event || "Catering Event",
-            serviceType: "Full Service",
-          },
-          status: mainOrder.status || "New",
-          financialSummary: [
-            { label: "Subtotal", value: `kr ${(mainOrder.guests * 42).toFixed(2)}` },
-            { label: "Delivery Fee", value: "kr 30.00" },
-            { label: "Platform Fee (2%)", value: `-kr ${(mainOrder.guests * 0.84).toFixed(2)}` },
-            { label: "Total", value: `kr ${(mainOrder.guests * 42 + 30 - mainOrder.guests * 0.84).toFixed(2)}` },
-          ],
-        };
-
-        const updatedDetails = {
-          ...currentDetails,
-          [cleanId]: detail,
-        };
-        window.localStorage.setItem("vendor-order-details", JSON.stringify(updatedDetails));
+        setOrderDetail(mapVendorOrderDetail(result, decodedOrderId));
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error instanceof Error ? error.message : "Unable to load the order details.",
+          );
+          setOrderDetail(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     }
 
-    if (!detail) return null;
-
-    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-    const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
-    const mainOrder = currentOrders.find((o) => o.id.replace("#", "") === cleanId);
-
-    const currentStatus = mainOrder ? mainOrder.status : (detail.status || "New");
-
-    let lifecycleActions = [];
-    let confirmedLifecycleActions = [];
-    let isAccepted = false;
-    let statusTitle = "";
-    let statusSubtitle = "";
-
-    if (currentStatus === "New") {
-      isAccepted = false;
-      lifecycleActions = [
-        { label: "Accept Order", primary: true, navigateToAccepted: true },
-        { label: "Reject Order", primary: false },
-      ];
-    } else {
-      isAccepted = true;
-      statusTitle = `Order is ${currentStatus}`;
-
-      if (currentStatus === "Accepted") {
-        statusSubtitle = "Update status to notify the customer";
-        confirmedLifecycleActions = [
-          { label: "Preparing", primary: true },
-          { label: "Request Changes", primary: false },
-        ];
-      } else if (currentStatus === "Modified") {
-        statusSubtitle = "Adjustments applied - ready to prepare";
-        confirmedLifecycleActions = [
-          { label: "Preparing", primary: true },
-          { label: "Request Changes", primary: false },
-        ];
-      } else if (currentStatus === "Preparing") {
-        statusSubtitle = "Preparing the fresh ingredients";
-        confirmedLifecycleActions = [
-          { label: "Ready", primary: true },
-        ];
-      } else if (currentStatus === "Ready") {
-        statusSubtitle = "Waiting to be picked up";
-        confirmedLifecycleActions = [
-          { label: "Out for delivery", primary: true },
-        ];
-      } else if (currentStatus === "Out for delivery") {
-        statusSubtitle = "On the way to the customer";
-        confirmedLifecycleActions = [
-          { label: "Delivered", primary: true },
-        ];
-      } else if (currentStatus === "Delivered") {
-        statusSubtitle = "Successfully delivered to customer";
-        confirmedLifecycleActions = [];
-      } else {
-        statusTitle = "Order Canceled";
-        statusSubtitle = "This order was canceled or rejected";
-        confirmedLifecycleActions = [];
-      }
+    if (decodedOrderId) {
+      loadOrderDetail();
     }
 
-    return {
-      ...detail,
-      date: mainOrder ? mainOrder.date : detail.date,
-      status: currentStatus,
-      isAcceptedView: isAccepted,
-      lifecycleActions,
-      confirmedStatus: {
-        title: statusTitle,
-        subtitle: statusSubtitle,
-      },
-      confirmedLifecycleActions,
+    return () => {
+      isCancelled = true;
     };
-  }, [orderId, triggerVal]);
+  }, [decodedOrderId]);
 
-  const isAcceptedView = orderDetail?.isAcceptedView;
+  async function refreshOrderDetail() {
+    const result = await getVendorOrderDetail(decodedOrderId);
+    setOrderDetail(mapVendorOrderDetail(result, decodedOrderId));
+  }
 
-  function updateOrderStatus(nextStatus) {
-    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-    const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
-    const nextOrders = currentOrders.map((order) => {
-      if (order.id.replace("#", "") === orderId) {
-        return {
-          ...order,
-          status: nextStatus,
-          statusTone: getToneForStatus(nextStatus),
-          actions: getActionsForStatus(nextStatus),
-        };
-      }
-      return order;
+  async function updateOrderStatus(nextStatus, message) {
+    await updateVendorOrderStatus({
+      id: decodedOrderId,
+      status: getStatusMutationValue(nextStatus),
+      note: "",
     });
-    window.localStorage.setItem("vendor-orders", JSON.stringify(nextOrders));
 
-    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-    const cleanId = orderId.replace("#", "");
-    if (currentDetails[cleanId]) {
-      currentDetails[cleanId] = {
-        ...currentDetails[cleanId],
-        status: nextStatus,
-      };
-      window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-    }
+    await refreshOrderDetail();
+    await showOrderStatusUpdated(message);
+  }
 
-    setTriggerVal((prev) => prev + 1);
+  if (isLoading) {
+    return (
+      <section className="flex min-h-[360px] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
+      </section>
+    );
   }
 
   if (!orderDetail) {
@@ -277,42 +102,70 @@ export default function OrderDetailPage() {
     );
   }
 
+  const isAcceptedView = orderDetail.status !== "New";
+  const lifecycleActions = isAcceptedView ? [] : orderDetail.actions;
+  const confirmedLifecycleActions = isAcceptedView
+    ? orderDetail.actions.filter((action) => action.label !== "View Details")
+    : [];
+
   async function handleLifecycleActionClick(action) {
-    if (action.navigateToAccepted) {
-      const result = await confirmOrderStatusAction("Accept order", orderDetail.id);
+    try {
+      if (/accept/i.test(action.label)) {
+        const result = await confirmOrderStatusAction("Accept order", orderDetail.id);
+        if (!result.isConfirmed) {
+          return;
+        }
 
-      if (!result.isConfirmed) {
+        await updateOrderStatus("Accepted", `Order ${orderDetail.id} accepted.`);
         return;
       }
 
-      updateOrderStatus("Accepted");
-      await showOrderStatusUpdated(`Order ${orderDetail.id} accepted.`);
-      return;
-    }
+      if (/reject/i.test(action.label)) {
+        const result = await confirmOrderStatusAction("Reject order", orderDetail.id);
+        if (!result.isConfirmed) {
+          return;
+        }
 
-    if (/reject/i.test(action.label)) {
-      const result = await confirmOrderStatusAction("Reject order", orderDetail.id);
-
-      if (!result.isConfirmed) {
-        return;
+        await updateOrderStatus("Canceled", `Order ${orderDetail.id} rejected.`);
+        navigate("/orders");
       }
-
-      updateOrderStatus("Canceled");
-      await showOrderStatusUpdated(`Order ${orderDetail.id} rejected.`);
-      navigate("/orders");
+    } catch (error) {
+      await showVendorErrorAlert(
+        error instanceof Error ? error.message : "Unable to update the order right now.",
+      );
     }
   }
 
   async function handleConfirmedActionClick(action) {
-    const result = await confirmOrderStatusAction(action.label, orderDetail.id);
+    try {
+      const result = await confirmOrderStatusAction(action.label, orderDetail.id);
+      if (!result.isConfirmed) {
+        return;
+      }
 
-    if (!result.isConfirmed) {
-      return;
+      const nextStatus = getStatusFromActionLabel(action.label);
+      await updateOrderStatus(
+        nextStatus,
+        `${orderDetail.id} updated to ${action.label.toLowerCase()}.`,
+      );
+    } catch (error) {
+      await showVendorErrorAlert(
+        error instanceof Error ? error.message : "Unable to update the order right now.",
+      );
     }
+  }
 
-    const nextStatus = getStatusFromActionLabel(action.label);
-    updateOrderStatus(nextStatus);
-    await showOrderStatusUpdated(`${orderDetail.id} updated to ${action.label.toLowerCase()}.`);
+  async function handleManualStatusSelect(nextStatus) {
+    try {
+      await updateOrderStatus(
+        nextStatus,
+        `${orderDetail.id} updated to ${nextStatus.toLowerCase()}.`,
+      );
+    } catch (error) {
+      await showVendorErrorAlert(
+        error instanceof Error ? error.message : "Unable to update the order right now.",
+      );
+    }
   }
 
   return (
@@ -326,7 +179,7 @@ export default function OrderDetailPage() {
             Order<span className="ml-0.5">{orderDetail.id}</span>
           </h1>
           <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
-            {orderDetail.date} • {orderDetail.time}
+            {orderDetail.date} | {orderDetail.time}
           </p>
         </div>
       </header>
@@ -337,6 +190,8 @@ export default function OrderDetailPage() {
           <OrderItemsPanel
             addOns={orderDetail.addOns}
             note={orderDetail.note}
+            order={orderDetail}
+            orderId={decodedOrderId}
             orderItem={orderDetail.orderItem}
           />
           <LogisticsPanel logistics={orderDetail.logistics} />
@@ -345,17 +200,21 @@ export default function OrderDetailPage() {
         <aside className="flex flex-col gap-3">
           {isAcceptedView ? (
             <ConfirmedLifecyclePanel
-              actions={orderDetail.confirmedLifecycleActions}
-              onActionClick={handleConfirmedActionClick}
-              onOrderAdjustmentClick={() => navigate(`/orders/${orderId}/adjust`)}
+              actions={confirmedLifecycleActions}
               currentStatus={orderDetail.status}
-              onStatusSelect={updateOrderStatus}
+              onActionClick={handleConfirmedActionClick}
+              onOrderAdjustmentClick={() =>
+                navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+              }
+              onStatusSelect={handleManualStatusSelect}
             />
           ) : (
             <LifecyclePanel
-              actions={orderDetail.lifecycleActions}
+              actions={lifecycleActions}
               onActionClick={handleLifecycleActionClick}
-              onOrderAdjustmentClick={() => navigate(`/orders/${orderId}/adjust`)}
+              onOrderAdjustmentClick={() =>
+                navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+              }
             />
           )}
           <FinancialSummaryPanel summary={orderDetail.financialSummary} />

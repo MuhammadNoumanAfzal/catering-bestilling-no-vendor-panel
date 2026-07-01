@@ -1,43 +1,13 @@
 import { AlertTriangle, ChevronRight, Search, Calendar, Clock, Minus, Plus } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { showOrderStatusUpdated } from "../../../utils/vendorAlerts";
-import { orderDetailRecords, ordersTableRows } from "../data/orderData";
-
-const MOCK_SUGGESTIONS = [
-  {
-    id: "sug-1",
-    name: "Lemon tea",
-    serves: "Serves 10 persons",
-    price: 1200,
-    priceStr: "kr 120.00",
-    image: "/heroBg.webp",
-  },
-  {
-    id: "sug-2",
-    name: "Apple juice",
-    serves: "Serves 10 persons",
-    price: 1000,
-    priceStr: "kr 100.00",
-    image: "/heroBg.webp",
-  },
-  {
-    id: "sug-3",
-    name: "Berry smoothie",
-    serves: "Serves 10 persons",
-    price: 1500,
-    priceStr: "kr 150.00",
-    image: "/heroBg.webp",
-  },
-  {
-    id: "sug-4",
-    name: "Soft drink pack",
-    serves: "Serves 12 persons",
-    price: 800,
-    priceStr: "kr 80.00",
-    image: "/heroBg.webp",
-  },
-];
+import { showOrderStatusUpdated, showVendorErrorAlert } from "../../../utils/vendorAlerts";
+import {
+  createVendorOrderAdjustment,
+  getVendorOrderDetail,
+  searchVendorAdjustmentItems,
+} from "../api/orderApi";
+import { mapVendorOrderDetail } from "../api/orderMappers";
 
 const REASON_OPTIONS = [
   "Item unavailable",
@@ -73,57 +43,142 @@ const parseCurrencyValue = (valStr) => {
   return isNaN(val) ? 0 : val;
 };
 
+const REASON_ENUM_MAP = {
+  "Item unavailable": "ITEM_UNAVAILABLE",
+  "Price adjustment": "OTHER",
+  "Delivery time issue": "DELIVERY_TIME_CONFLICT",
+  "Minimum guest count issue": "OTHER",
+  "Need item replacement": "OTHER",
+  "Cancel Order": "OTHER",
+  "Reject Order": "OTHER",
+};
+
+function createIdempotencyKey() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `adj-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function mapErrorsByField(errors) {
+  if (!Array.isArray(errors)) {
+    return {};
+  }
+
+  return errors.reduce((accumulator, error) => {
+    if (error?.field && error?.message && !accumulator[error.field]) {
+      accumulator[error.field] = error.message;
+    }
+
+    return accumulator;
+  }, {});
+}
+
 export default function OrderAdjustmentPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
-
-  // Load Order Details
-  const orderDetail = useMemo(() => {
-    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
-    const cleanId = orderId.replace("#", "");
-
-    if (!savedDetailsRaw) {
-      window.localStorage.setItem("vendor-order-details", JSON.stringify(orderDetailRecords));
-    }
-
-    const detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
-    if (!detail) return null;
-
-    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-    const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
-    const mainOrder = currentOrders.find((o) => o.id.replace("#", "") === cleanId);
-
-    const currentStatus = mainOrder ? mainOrder.status : (detail.status || "New");
-
-    return {
-      ...detail,
-      status: currentStatus,
-    };
-  }, [orderId]);
+  const decodedOrderId = useMemo(() => decodeURIComponent(orderId || ""), [orderId]);
+  const [orderDetail, setOrderDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [reason, setReason] = useState("");
   const [isReasonDropdownOpen, setIsReasonDropdownOpen] = useState(false);
   const [modifiedItems, setModifiedItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestedList, setSuggestedList] = useState([]);
+  const [availableSuggestions, setAvailableSuggestions] = useState([]);
   const [additionalDetails, setAdditionalDetails] = useState("");
+  const [formErrors, setFormErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   
   // Form values
   const [date, setDate] = useState("2026-03-25");
   const [time, setTime] = useState("14:30");
-  const [personCount, setPersonCount] = useState(orderDetail?.guests || 20);
-  const [address, setAddress] = useState(orderDetail?.logistics?.deliveryAddress || "Åsane #1234, Norway");
+  const [personCount, setPersonCount] = useState(20);
+  const [address, setAddress] = useState("Åsane #1234, Norway");
   const [apartment, setApartment] = useState("5");
-  const [city, setCity] = useState(orderDetail?.customer?.city || "Bergen");
-  const [postalCode, setPostalCode] = useState(orderDetail?.customer?.postalCode || "1235");
+  const [city, setCity] = useState("Bergen");
+  const [postalCode, setPostalCode] = useState("1235");
 
-  // Filter suggestion list based on search
-  const filteredSuggestions = useMemo(() => {
-    if (!searchTerm) return MOCK_SUGGESTIONS;
-    return MOCK_SUGGESTIONS.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadOrderDetail() {
+      setIsLoading(true);
+
+      try {
+        const result = await getVendorOrderDetail(decodedOrderId);
+        if (isCancelled) {
+          return;
+        }
+
+        const mappedOrder = mapVendorOrderDetail(result, decodedOrderId);
+        setOrderDetail(mappedOrder);
+        setPersonCount(mappedOrder?.guests || 20);
+        setAddress(mappedOrder?.logistics?.deliveryAddress || "Asane #1234, Norway");
+        setCity(mappedOrder?.customer?.city || "Bergen");
+        setPostalCode(mappedOrder?.customer?.postalCode || "1235");
+      } catch (error) {
+        if (!isCancelled) {
+          await showVendorErrorAlert(
+            error instanceof Error ? error.message : "Unable to load the order details.",
+          );
+          setOrderDetail(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    if (decodedOrderId) {
+      loadOrderDetail();
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [decodedOrderId]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadSuggestions() {
+      const query = searchTerm.trim();
+
+      if (!query) {
+        setAvailableSuggestions([]);
+        return;
+      }
+
+      setIsSuggestionLoading(true);
+
+      try {
+        const items = await searchVendorAdjustmentItems({ search: query, first: 10 });
+        if (!isCancelled) {
+          setAvailableSuggestions(items);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setAvailableSuggestions([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSuggestionLoading(false);
+        }
+      }
+    }
+
+    const timeoutId = setTimeout(loadSuggestions, 250);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [searchTerm]);
 
   // Handle suggestion horizontal scroll
@@ -189,119 +244,74 @@ export default function OrderAdjustmentPage() {
 
   const handleAdjustOrderSubmit = async () => {
     if (!reason) {
-      alert("Please select a reason for the change.");
+      setFormErrors({ reason: "Please select a reason for the change." });
       return;
     }
 
-    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : {};
-    const cleanId = orderId.replace("#", "");
-    
-    // We update/generate details
-    const existingDetail = currentDetails[cleanId] || orderDetail || {};
-    
-    // Format the date nicely, e.g. "25 March 2026"
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-    let formattedDate = date; // fallback
+    setFormErrors({});
+    setSubmitError("");
+    setIsSubmitting(true);
+
     try {
-      const parsedDate = new Date(date);
-      if (!isNaN(parsedDate.getTime())) {
-        formattedDate = `${parsedDate.getDate()} ${months[parsedDate.getMonth()]} ${parsedDate.getFullYear()}`;
-      }
-    } catch (e) {
-      console.error(e);
-    }
+      const removedItems = (orderDetail?.raw?.orderCarts || [])
+        .filter((cart) => modifiedItems.includes(cart?.item?.title))
+        .map((cart) => cart?.item?.id)
+        .filter(Boolean);
 
-    // Format time (keep 24-hour style, e.g. "14:30")
-    let formattedTime = time;
+      const addedItems = suggestedList
+        .map((item) => item.backendId || null)
+        .filter(Boolean);
 
-    // Create the updated financialSummary array
-    const originalSummary = existingDetail.financialSummary || [];
-    const newSummary = [];
-    
-    // Copy all rows except "total" and any previous adjustments
-    originalSummary.forEach(row => {
-      const labelLower = row.label.toLowerCase();
-      if (
-        labelLower !== "total" &&
-        !labelLower.includes("removed items adjustment") &&
-        !labelLower.includes("added items adjustment")
-      ) {
-        newSummary.push(row);
-      }
-    });
+      const vendorNote = [
+        additionalDetails.trim(),
+        suggestedList.length ? `Suggested additions: ${suggestedList.map((item) => item.name).join(", ")}` : "",
+        modifiedItems.length ? `Requested removals: ${modifiedItems.join(", ")}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
 
-    // Add adjustments if applicable
-    if (modifiedItems.length > 0) {
-      const removedAmt = modifiedItems.reduce((sum, item) => sum + (isUSD ? (ORIGINAL_ITEM_PRICES[item] || 0) / 10 : (ORIGINAL_ITEM_PRICES[item] || 0)), 0);
-      newSummary.push({
-        label: `Removed Items Adjustment (${modifiedItems.join(", ")})`,
-        value: `-${formatCurrency(removedAmt)}`
+      const payload = await createVendorOrderAdjustment({
+        orderId: decodedOrderId,
+        reason: REASON_ENUM_MAP[reason] || "OTHER",
+        vendorNote,
+        proposedEventDate: date || null,
+        proposedDeliveryWindowStart: time ? `${time}:00` : null,
+        proposedDeliveryWindowEnd: null,
+        proposedGuestCount: personCount,
+        proposedAddressLine1: address || null,
+        proposedAddressLine2: apartment || null,
+        proposedCity: city || null,
+        proposedPostalCode: postalCode || null,
+        removedItems,
+        addedItems,
+        version: orderDetail?.version || 1,
+        idempotencyKey: createIdempotencyKey(),
       });
-    }
 
-    if (suggestedList.length > 0) {
-      const addedAmt = suggestedList.reduce((sum, item) => sum + (isUSD ? item.price / 10 : item.price), 0);
-      newSummary.push({
-        label: `Added Items Adjustment (${suggestedList.map(s => s.name).join(", ")})`,
-        value: `+${formatCurrency(addedAmt)}`
-      });
-    }
-
-    // Add updated total
-    newSummary.push({
-      label: "Total",
-      value: formatCurrency(newTotal)
-    });
-
-    const updatedDetail = {
-      ...orderDetail,
-      ...existingDetail,
-      status: "Modified",
-      guests: personCount,
-      date: formattedDate,
-      time: formattedTime,
-      note: additionalDetails ? `${additionalDetails.toUpperCase()}` : (existingDetail.note || orderDetail.note),
-      logistics: {
-        ...(existingDetail.logistics || orderDetail.logistics || {}),
-        deliveryAddress: address,
-      },
-      customer: {
-        ...(existingDetail.customer || orderDetail.customer || {}),
-        city: city,
-        postalCode: postalCode,
-      },
-      financialSummary: newSummary,
-    };
-
-    currentDetails[cleanId] = updatedDetail;
-    window.localStorage.setItem("vendor-order-details", JSON.stringify(currentDetails));
-
-    // Also update vendor-orders summaries
-    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-    if (savedOrdersRaw) {
-      const currentOrders = JSON.parse(savedOrdersRaw);
-      const idx = currentOrders.findIndex((o) => o.id.replace("#", "") === cleanId);
-      if (idx !== -1) {
-        currentOrders[idx] = {
-          ...currentOrders[idx],
-          status: "Modified",
-          statusTone: "is-modified",
-          actions: [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }],
-          guests: personCount,
-          date: formattedDate,
-          time: formattedTime,
-        };
-        window.localStorage.setItem("vendor-orders", JSON.stringify(currentOrders));
+      if (!payload?.success) {
+        setFormErrors(mapErrorsByField(payload?.errors));
+        setSubmitError(payload?.message || "Unable to submit the order adjustment.");
+        return;
       }
-    }
 
-    await showOrderStatusUpdated(`Order #${orderId} successfully adjusted.`);
-    navigate(`/orders/${orderId}`);
+      await showOrderStatusUpdated(`Order ${orderDetail?.id || decodedOrderId} adjustment submitted successfully.`);
+      navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : "Unable to submit the order adjustment.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <section className="flex min-h-[360px] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
+      </section>
+    );
+  }
 
   if (!orderDetail) {
     return (
@@ -320,7 +330,10 @@ export default function OrderAdjustmentPage() {
     <section className="flex flex-col gap-3">
       {/* Back Link */}
       <header className="flex flex-col gap-1">
-        <Link className="text-[13px] font-bold text-[#5d7fc9] no-underline" to={`/orders/${orderId}`}>
+        <Link
+          className="text-[13px] font-bold text-[#5d7fc9] no-underline"
+          to={`/orders/${encodeURIComponent(decodedOrderId)}`}
+        >
           &lt; Back to Order Details
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
@@ -346,6 +359,12 @@ export default function OrderAdjustmentPage() {
                 <strong>Important:</strong> Please call the customer and confirm the changes with them before doing adjustment in order.
               </span>
             </div>
+
+            {submitError ? (
+              <div className="rounded-[10px] border border-[#ffd0cc] bg-[#fff2f1] px-3 py-3 text-[13px] font-semibold text-[#b42318]">
+                {submitError}
+              </div>
+            ) : null}
 
             {/* 1. Reason for Change */}
             <div className="flex flex-col gap-1.5 relative">
@@ -379,6 +398,9 @@ export default function OrderAdjustmentPage() {
                   ))}
                 </div>
               )}
+              {formErrors.reason ? (
+                <span className="text-[12px] font-bold text-[#b42318]">{formErrors.reason}</span>
+              ) : null}
             </div>
 
             {/* 2. Items to Modify */}
@@ -445,7 +467,7 @@ export default function OrderAdjustmentPage() {
                   id="suggestion-slider"
                   className="flex gap-2.5 overflow-x-auto pr-8 hide-scrollbar scroll-smooth pb-1"
                 >
-                  {filteredSuggestions.map((item) => (
+                  {availableSuggestions.map((item) => (
                     <div
                       key={item.id}
                       className="w-[180px] shrink-0 p-3 rounded-[12px] border border-[#efe6de] bg-white flex flex-col gap-2 shadow-sm hover:shadow-md hover:border-[#cf6e38] transition duration-200"
@@ -474,6 +496,12 @@ export default function OrderAdjustmentPage() {
                     </div>
                   ))}
                 </div>
+                {isSuggestionLoading ? (
+                  <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">Loading suggestions...</div>
+                ) : null}
+                {!isSuggestionLoading && searchTerm.trim() && availableSuggestions.length === 0 ? (
+                  <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">No matching items found.</div>
+                ) : null}
                 <button
                   type="button"
                   onClick={scrollSuggestions}
@@ -582,26 +610,32 @@ export default function OrderAdjustmentPage() {
                 <span className="text-[13px] font-extrabold text-[#1c1510]">Date</span>
                 <div className="relative flex items-center">
                   <Calendar size={14} className="absolute left-3 text-[#8a7a6d]" />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
-                  />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
+                />
                 </div>
+                {formErrors.proposedEventDate ? (
+                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedEventDate}</span>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-[13px] font-extrabold text-[#1c1510]">Time</span>
                 <div className="relative flex items-center">
                   <Clock size={14} className="absolute left-3 text-[#8a7a6d]" />
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
-                  />
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
+                />
                 </div>
+                {formErrors.proposedDeliveryWindowStart ? (
+                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedDeliveryWindowStart}</span>
+                ) : null}
               </div>
             </div>
 
@@ -625,6 +659,9 @@ export default function OrderAdjustmentPage() {
                   <Plus size={14} strokeWidth={2.5} />
                 </button>
               </div>
+              {formErrors.proposedGuestCount ? (
+                <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedGuestCount}</span>
+              ) : null}
             </div>
 
             {/* Address fields */}
@@ -637,6 +674,9 @@ export default function OrderAdjustmentPage() {
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full h-10 px-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
                 />
+                {formErrors.proposedAddressLine1 ? (
+                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedAddressLine1}</span>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -660,6 +700,9 @@ export default function OrderAdjustmentPage() {
                   onChange={(e) => setCity(e.target.value)}
                   className="w-full h-10 px-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
                 />
+                {formErrors.proposedCity ? (
+                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedCity}</span>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -670,6 +713,9 @@ export default function OrderAdjustmentPage() {
                   onChange={(e) => setPostalCode(e.target.value)}
                   className="w-full h-10 px-3 rounded-[8px] border border-[#d8cec4] text-[13px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
                 />
+                {formErrors.proposedPostalCode ? (
+                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedPostalCode}</span>
+                ) : null}
               </div>
             </div>
 
@@ -771,11 +817,12 @@ export default function OrderAdjustmentPage() {
             Cancel
           </Link>
           <button
-            className="h-10 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[13px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition"
+            className="h-10 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[13px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSubmitting}
             onClick={handleAdjustOrderSubmit}
             type="button"
           >
-            Adjust Order
+            {isSubmitting ? "Submitting..." : "Adjust Order"}
           </button>
         </div>
       </div>
