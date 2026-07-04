@@ -30,6 +30,16 @@ function parseAmount(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function resolveGuestCount(node, fallbackValue = 0) {
+  return toNumber(
+    node?.personCount ??
+      node?.guestCount ??
+      node?.companyAllowance ??
+      node?.customerAllowance,
+    fallbackValue,
+  );
+}
+
 export function normalizeBackendStatus(status) {
   const normalized = normalizeString(status).trim().toLowerCase().replace(/[_-]+/g, " ");
 
@@ -139,8 +149,24 @@ export function mapAvailableActionsToUi(availableActions, status) {
 export function getStatusMutationValue(status) {
   const normalizedStatus = normalizeBackendStatus(status);
 
+  if (normalizedStatus === "New") {
+    return "PENDING";
+  }
+
+  if (normalizedStatus === "Accepted") {
+    return "CONFIRMED";
+  }
+
   if (normalizedStatus === "Out for delivery") {
     return "OUT_FOR_DELIVERY";
+  }
+
+  if (normalizedStatus === "Delivered") {
+    return "COMPLETED";
+  }
+
+  if (normalizedStatus === "Canceled") {
+    return "CANCELED";
   }
 
   return normalizedStatus.toUpperCase().replace(/\s+/g, "_");
@@ -209,29 +235,39 @@ function getOrderCartsArray(orderCarts) {
   return [];
 }
 
-function buildFallbackCustomer(detail, billingAddress) {
+function buildFallbackCustomer(detail, addressFallback) {
   const customer = detail?.customer || {};
 
   return {
     name: customer.name || "Customer unavailable",
     organization: customer.organization || "Organization unavailable",
-    postalCode: customer.postalCode || normalizeString(billingAddress?.postalCode ?? billingAddress?.postCode) || "-",
-    city: customer.city || normalizeString(billingAddress?.city) || "-",
+    postalCode:
+      customer.postalCode ||
+      normalizeString(addressFallback?.postalCode ?? addressFallback?.postCode) ||
+      "-",
+    city: customer.city || normalizeString(addressFallback?.city) || "-",
     email: customer.email || "Email unavailable",
     historyText: customer.historyText || "Customer history is not available from the API yet.",
     historyOrders: Array.isArray(customer.historyOrders) ? customer.historyOrders : [],
   };
 }
 
-function buildCustomerFromApi(node, fallbackDetail, billingAddress) {
+function buildCustomerFromApi(node, fallbackDetail, addressFallback) {
   const customerInfo = node?.customerInfo || {};
-  const fallbackCustomer = buildFallbackCustomer(fallbackDetail, billingAddress);
+  const fallbackCustomer = buildFallbackCustomer(fallbackDetail, addressFallback);
 
   return {
     name: firstNonEmpty(customerInfo.fullName, node?.customerName, fallbackCustomer.name) || "Customer unavailable",
     organization: firstNonEmpty(customerInfo.organization, fallbackCustomer.organization) || "Organization unavailable",
-    postalCode: firstNonEmpty(customerInfo.postalCode, billingAddress?.postalCode, billingAddress?.postCode, fallbackCustomer.postalCode) || "-",
-    city: firstNonEmpty(customerInfo.city, billingAddress?.city, fallbackCustomer.city) || "-",
+    postalCode:
+      firstNonEmpty(
+        customerInfo.postalCode,
+        addressFallback?.postalCode,
+        addressFallback?.postCode,
+        fallbackCustomer.postalCode,
+      ) || "-",
+    city:
+      firstNonEmpty(customerInfo.city, addressFallback?.city, fallbackCustomer.city) || "-",
     email: firstNonEmpty(customerInfo.email, fallbackCustomer.email) || "Email unavailable",
     phone: firstNonEmpty(customerInfo.phone),
     historyText: fallbackCustomer.historyText,
@@ -296,10 +332,11 @@ function buildFinancialSummary(order, carts, fallbackDetail) {
   const cartSubtotal = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
   const total = parseAmount(order?.finalPrice);
   const subtotal = cartSubtotal || parseAmount(fallbackDetail?.financialSummary?.[0]?.value);
+  const guestCount = resolveGuestCount(order);
 
   const summary = [
     {
-      label: `Subtotal${subtotal && (order?.guestCount ?? order?.companyAllowance ?? order?.customerAllowance) ? ` (${order?.guestCount ?? order?.companyAllowance ?? order?.customerAllowance} guests)` : ""}`,
+      label: `Subtotal${subtotal && guestCount ? ` (${guestCount} guests)` : ""}`,
       value: formatCurrency(subtotal),
     },
   ];
@@ -333,7 +370,7 @@ export function mapVendorOrderNode(node) {
     customer:
       firstNonEmpty(node?.customerName, fallback?.customer?.name, fallback?.customer) || "Customer unavailable",
     event: firstNonEmpty(node?.eventName, primaryTitle, fallback?.event, fallback?.orderItem?.name) || "Order",
-    guests: toNumber(node?.guestCount ?? node?.companyAllowance ?? node?.customerAllowance, fallback?.guests || 0),
+    guests: resolveGuestCount(node, fallback?.guests || 0),
     date: dateLabel,
     time: timeLabel,
     status: firstNonEmpty(node?.statusLabel, status) || status,
@@ -444,12 +481,20 @@ export function mapVendorOrderDetail(data, orderId) {
   const friendlyId = normalizeString(orderId || node?.id);
   const fallback = getFallbackOrderByFriendlyId(friendlyId);
   const carts = getOrderCartsArray(node?.orderCarts);
-  const billingAddress = node?.billingAddress || {};
+  const deliveryAddress = {
+    address: node?.deliveryAddress,
+    addressLine1: node?.deliveryAddress,
+    addressLine2: node?.deliverySuite,
+    city: node?.deliveryCity,
+    postalCode: node?.deliveryPostalCode,
+    postCode: node?.deliveryPostalCode,
+    fullAddress: node?.deliveryAddressStr,
+  };
   const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const status = normalizeBackendStatus(node?.status);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
-  const customer = buildCustomerFromApi(node, fallback, billingAddress);
+  const customer = buildCustomerFromApi(node, fallback, deliveryAddress);
   const orderItem = buildOrderItems(carts, fallback);
   const financialSummary =
     Array.isArray(node?.pricingLines) && node.pricingLines.length > 0
@@ -476,7 +521,7 @@ export function mapVendorOrderDetail(data, orderId) {
     id: formatOrderReference(node?.orderNumber, node?.id),
     date: dateLabel,
     time: timeLabel,
-    guests: toNumber(node?.guestCount ?? node?.companyAllowance ?? node?.customerAllowance, fallback?.guests || 0),
+    guests: resolveGuestCount(node, fallback?.guests || 0),
     status: firstNonEmpty(node?.statusLabel, status) || status,
     statusTone: mapBackendTone(node?.statusTone, status),
     customer,
@@ -485,17 +530,18 @@ export function mapVendorOrderDetail(data, orderId) {
     note: firstNonEmpty(node?.specialInstructions, fallback?.note),
     logistics: {
       deliveryAddress:
-        normalizeString(billingAddress?.address ?? billingAddress?.addressLine1) ||
+        normalizeString(deliveryAddress.fullAddress) ||
+        normalizeString(deliveryAddress?.address ?? deliveryAddress?.addressLine1) ||
         normalizeString(fallbackLogistics.deliveryAddress) ||
         "Address unavailable",
       eventDate: dateLabel,
-      deliveryWindow: timeLabel,
+      deliveryWindow: firstNonEmpty(node?.eventTime, timeLabel) || "Time unavailable",
       fullAddress:
         [
-          normalizeString(billingAddress?.address ?? billingAddress?.addressLine1),
-          normalizeString(billingAddress?.addressLine2),
-          normalizeString(billingAddress?.city),
-          normalizeString(billingAddress?.postalCode ?? billingAddress?.postCode),
+          normalizeString(deliveryAddress?.address ?? deliveryAddress?.addressLine1),
+          normalizeString(deliveryAddress?.addressLine2),
+          normalizeString(deliveryAddress?.city),
+          normalizeString(deliveryAddress?.postalCode ?? deliveryAddress?.postCode),
         ]
           .filter(Boolean)
           .join(", ") || normalizeString(fallbackLogistics.fullAddress) || "Address unavailable",

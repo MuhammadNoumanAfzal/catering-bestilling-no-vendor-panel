@@ -1,4 +1,5 @@
-const GRAPHQL_API_URL = import.meta.env.VITE_GRAPHQL_API_URL;
+const GRAPHQL_API_URL =
+  import.meta.env.VITE_GRAPHQL_API_URL ?? import.meta.env.VITE_GRAPHQL_URL;
 
 function getErrorMessage(payload, fallbackMessage) {
   const firstError = payload?.errors?.[0];
@@ -42,7 +43,9 @@ export function isAuthenticationError(payload) {
 
 export async function executeGraphqlRequest(query, variables, options = {}) {
   if (!GRAPHQL_API_URL) {
-    throw new Error("Missing VITE_GRAPHQL_API_URL. Add it to your environment configuration.");
+    throw new Error(
+      "Missing GraphQL endpoint. Add VITE_GRAPHQL_API_URL or VITE_GRAPHQL_URL to your environment configuration.",
+    );
   }
 
   const headers = {

@@ -284,7 +284,7 @@ export default function OrderAdjustmentPage() {
         proposedPostalCode: postalCode || null,
         removedItems,
         addedItems,
-        version: orderDetail?.version || 1,
+        ...(orderDetail?.version ? { version: orderDetail.version } : {}),
         idempotencyKey: createIdempotencyKey(),
       });
 

@@ -1,6 +1,9 @@
 import { ChevronDown, X, Calendar, Clock, MapPin, Users, MessageSquare, AlertTriangle } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ordersTableRows, orderDetailRecords } from "../data/orderData";
+import { getVendorOrderDetail } from "../api/orderApi";
+import { mapVendorOrderDetail } from "../api/orderMappers";
+import { showVendorErrorAlert } from "../../../utils/vendorAlerts";
 
 const statusToneClasses = {
   "is-new": "border border-[#bde3f9] bg-[#e3f4ff] text-[#1d70a2]",
@@ -79,23 +82,65 @@ const mockSubItems = [
 
 export default function OrderDetailModal({ orderId, onClose, order, orderDetail }) {
   const [expandedItem, setExpandedItem] = useState(null);
+  const [fetchedOrderDetail, setFetchedOrderDetail] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadOrderDetail() {
+      if (!orderId) {
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const result = await getVendorOrderDetail(orderId);
+        if (isCancelled) {
+          return;
+        }
+
+        setFetchedOrderDetail(mapVendorOrderDetail(result, orderId));
+      } catch (error) {
+        if (!isCancelled) {
+          setFetchedOrderDetail(null);
+          await showVendorErrorAlert(
+            error instanceof Error ? error.message : "Unable to load the order details.",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadOrderDetail();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [orderId]);
 
   const orderData = useMemo(() => {
-    if (order || orderDetail) {
-      const status = orderDetail?.status || order?.status || "New";
-      const customer = orderDetail?.customer?.name || order?.customer || "Customer unavailable";
-      const idVal = orderDetail?.id || order?.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`);
+    const detailSource = fetchedOrderDetail || orderDetail;
+
+    if (order || detailSource) {
+      const status = detailSource?.status || order?.status || "New";
+      const customer = detailSource?.customer?.name || order?.customer || "Customer unavailable";
+      const idVal = detailSource?.id || order?.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`);
       const priceVal =
-        orderDetail?.orderItem?.modalDetails?.price ||
-        orderDetail?.financialSummary?.find?.((item) => item.label === "Order Total" || item.label === "Total")?.value ||
+        detailSource?.orderItem?.modalDetails?.price ||
+        detailSource?.financialSummary?.find?.((item) => item.label === "Order Total" || item.label === "Total")?.value ||
         "kr 0.00";
-      const qtyVal = orderDetail?.guests || order?.guests || 0;
-      const nameVal = orderDetail?.orderItem?.modalDetails?.title || orderDetail?.orderItem?.name || order?.event || "Order";
-      const dateVal = orderDetail?.date || order?.date || "Not specified";
-      const timeVal = orderDetail?.time || order?.time || "Not specified";
-      const addressVal = orderDetail?.logistics?.deliveryAddress || "Not specified";
-      const noteVal = orderDetail?.note || "";
-      const statusTone = orderDetail?.statusTone || order?.statusTone || "is-new";
+      const qtyVal = detailSource?.guests || order?.guests || 0;
+      const nameVal = detailSource?.orderItem?.modalDetails?.title || detailSource?.orderItem?.name || order?.event || "Order";
+      const dateVal = detailSource?.date || order?.date || "Not specified";
+      const timeVal = detailSource?.time || order?.time || "Not specified";
+      const addressVal = detailSource?.logistics?.deliveryAddress || "Not specified";
+      const noteVal = detailSource?.note || "";
+      const statusTone = detailSource?.statusTone || order?.statusTone || "is-new";
 
       return {
         status,
@@ -165,7 +210,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
       address: addressVal,
       note: noteVal,
     };
-  }, [orderId]);
+  }, [fetchedOrderDetail, order, orderDetail, orderId]);
 
   if (!orderData) {
     return null;
@@ -209,6 +254,11 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
 
         {/* Scroll Container */}
         <div className="flex-1 overflow-y-auto pr-0.5 hide-scrollbar flex flex-col gap-4">
+          {isLoading ? (
+            <div className="flex min-h-[180px] items-center justify-center rounded-[12px] border border-[#efe6de] bg-[#faf9f6]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
+            </div>
+          ) : null}
           
           {/* Banner Image with overlaid badge */}
           <div className="relative h-[160px] w-full rounded-[12px] overflow-hidden border border-[#efe6de] shadow-[0_2px_8px_rgba(0,0,0,0.06)] shrink-0">
