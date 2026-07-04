@@ -78,7 +78,10 @@ function PasswordField({
 
 export default function SettingsAccountSecurityPanel({
   account,
+  bannerImage,
   businessName,
+  handleBannerImageUpload,
+  handleRemoveBannerImage,
   profileImage,
   handleProfileImageUpload,
   handleRemoveProfileImage,
@@ -92,6 +95,7 @@ export default function SettingsAccountSecurityPanel({
   fieldErrors,
   disabled = false,
 }) {
+  const bannerImageInputRef = useRef(null);
   const profileImageInputRef = useRef(null);
 
   return (
@@ -102,11 +106,17 @@ export default function SettingsAccountSecurityPanel({
       >
         <div className="mb-4 flex items-center gap-3 rounded-[10px] bg-[#fffaf4] p-3">
           <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[10px] border border-[#f0d5b7] bg-[#fff1d8]">
-            <img
-              alt={businessName || "Business"}
-              className="max-h-[42px] w-auto rounded-[8px] object-contain"
-              src={profileImage?.fileUrl || "/logo.png"}
-            />
+            {profileImage?.fileUrl ? (
+              <img
+                alt={businessName || "Business"}
+                className="max-h-[42px] w-auto rounded-[8px] object-contain"
+                src={profileImage.fileUrl}
+              />
+            ) : (
+              <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#9a7d62]">
+                No Logo
+              </span>
+            )}
           </div>
           <div className="min-w-0">
             <div className="mb-1 flex flex-wrap gap-2">
@@ -147,6 +157,68 @@ export default function SettingsAccountSecurityPanel({
             />
             <p className="text-[12px] font-bold text-[#211915]">{businessName || "Business profile"}</p>
             <p className="text-[10px] text-[#8c8075]">PNG, JPG up to 5 MB</p>
+          </div>
+        </div>
+
+        <div className="mb-4 rounded-[10px] bg-[#fffaf4] p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6d625a]">
+                Banner Image
+              </p>
+              <p className="text-[10px] text-[#8c8075]">PNG, JPG up to 5 MB</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="rounded-[6px] border border-[#d9cec7] bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#6d625a] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={disabled}
+                onClick={() => bannerImageInputRef.current?.click()}
+                type="button"
+              >
+                Add Banner
+              </button>
+              {bannerImage?.fileUrl ? (
+                <button
+                  className="rounded-[6px] border border-[#ead7cf] bg-[#fff7f3] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#b45e39] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={disabled}
+                  onClick={handleRemoveBannerImage}
+                  type="button"
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          <input
+            ref={bannerImageInputRef}
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            disabled={disabled}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+
+              if (file) {
+                handleBannerImageUpload(file);
+              }
+
+              event.target.value = "";
+            }}
+            type="file"
+          />
+
+          <div className="flex h-[120px] items-center justify-center overflow-hidden rounded-[12px] border border-[#f0d5b7] bg-white">
+            {bannerImage?.fileUrl ? (
+              <img
+                alt={businessName || "Banner"}
+                className="h-full w-full object-cover"
+                src={bannerImage.fileUrl}
+              />
+            ) : (
+              <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#9a7d62]">
+                No Banner
+              </span>
+            )}
           </div>
         </div>
 

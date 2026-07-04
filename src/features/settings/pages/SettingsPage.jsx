@@ -8,6 +8,7 @@ export default function SettingsPage() {
   const {
     activeTab,
     handleAccountFieldChange,
+    handleBannerImageUpload,
     handleBusinessHourChange,
     handleCancel,
     handleDeactivateStore,
@@ -17,6 +18,7 @@ export default function SettingsPage() {
     handleNotificationToggle,
     handlePasswordChange,
     handleProfileImageUpload,
+    handleRemoveBannerImage,
     handleRemoveProfileImage,
     handleResetAllSettings,
     handleSave,
@@ -62,11 +64,14 @@ export default function SettingsPage() {
       {activeTab === "security" ? (
         <SettingsAccountSecurityPanel
           account={settings.account}
+          bannerImage={settings.bannerImage}
           businessName={settings.businessName}
           disabled={isLoading || isSaving}
           handleAccountFieldChange={handleAccountFieldChange}
+          handleBannerImageUpload={handleBannerImageUpload}
           handlePasswordChange={handlePasswordChange}
           handleProfileImageUpload={handleProfileImageUpload}
+          handleRemoveBannerImage={handleRemoveBannerImage}
           handleRemoveProfileImage={handleRemoveProfileImage}
           profileImage={settings.profileImage}
           handleTogglePasswordVisibility={handleTogglePasswordVisibility}
