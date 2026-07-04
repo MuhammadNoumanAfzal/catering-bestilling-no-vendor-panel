@@ -116,13 +116,9 @@ function buildBackendDateFilters(selectedFilter, fromDate, toDate) {
 }
 
 function getBackendStatusFilter(activeTab, activeFilter) {
-  const preferredStatus = activeFilter || activeTab;
-
-  if (!preferredStatus || preferredStatus === "All" || preferredStatus === "Pending") {
-    return undefined;
-  }
-
-  return getStatusMutationValue(preferredStatus);
+  // Backend order status choices do not match the UI labels reliably.
+  // We load the full vendor order set and apply tab/chip status filters client-side.
+  return undefined;
 }
 
 export default function OrdersPage() {
@@ -132,7 +128,7 @@ export default function OrdersPage() {
   const [activeFilter, setActiveFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
-  const [selectedFilter, setSelectedFilter] = useState("Last Month");
+  const [selectedFilter, setSelectedFilter] = useState("All Time");
   const [fromDate, setFromDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() - 7);
@@ -197,6 +193,10 @@ export default function OrdersPage() {
   }, [backendQueryVariables]);
 
   const dateFilteredRows = useMemo(() => {
+    if (selectedFilter === "All Time") {
+      return orderRows;
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -294,13 +294,8 @@ export default function OrdersPage() {
     const nextTab = searchParams.get("tab");
     const nextFilter = searchParams.get("filter");
 
-    if (nextTab) {
-      setActiveTab(nextTab);
-    }
-
-    if (nextFilter) {
-      setActiveFilter(nextFilter);
-    }
+    setActiveTab(nextTab || "All");
+    setActiveFilter(nextFilter || "");
 
     if (nextTab || nextFilter) {
       setCurrentPage(1);

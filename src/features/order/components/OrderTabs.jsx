@@ -1,7 +1,13 @@
 import { ChevronDown, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-const filterOptions = ["Last 7 Days", "Last 14 Days", "Last Month", "Custom Date"];
+const filterOptions = [
+  "All Time",
+  "Last 7 Days",
+  "Last 14 Days",
+  "Last Month",
+  "Custom Date",
+];
 
 function formatCustomDate(value) {
   if (!value) {

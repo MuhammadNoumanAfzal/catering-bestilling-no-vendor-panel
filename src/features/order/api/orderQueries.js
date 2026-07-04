@@ -50,12 +50,6 @@ export const GET_VENDOR_ORDERS_QUERY = `
           eventName
           guestCount
           companyAllowance
-          availableActions
-          billingAddress {
-            address
-            city
-            postalCode
-          }
           orderCarts {
             edges {
               node {
@@ -98,30 +92,31 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
   query GetVendorOrderDetail($id: ID!) {
     order(id: $id) {
       id
-      version
       orderNumber
       status
+      statusLabel
+      statusTone
       createdOn
       placedAt
       deliveryDate
+      eventTime
       paymentType
       paymentStatus
       finalPrice
       companyAllowance
-      availableActions
       customerName
       eventName
       guestCount
+      deliveryAddress
+      deliverySuite
+      deliveryCity
+      deliveryPostalCode
+      deliveryAddressStr
       customerInfo {
         fullName
         email
         phone
         organization
-        city
-        postalCode
-      }
-      billingAddress {
-        address
         city
         postalCode
       }
@@ -234,7 +229,6 @@ export const UPDATE_VENDOR_ORDER_STATUS_MUTATION = `
       instance {
         id
         status
-        availableActions
       }
     }
   }
