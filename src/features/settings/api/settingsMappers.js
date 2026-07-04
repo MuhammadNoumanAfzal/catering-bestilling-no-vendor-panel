@@ -22,6 +22,7 @@ export const defaultSettingsState = {
   establishedYear: "",
   taxId: "",
   profileImage: null,
+  bannerImage: null,
   storeStatus: "",
   notifications: {
     newOrder: false,
@@ -199,6 +200,10 @@ export function mapVendorSettingsPage(result) {
       establishedYear: normalizeString(settings.businessProfile?.establishedYear),
       taxId: normalizeString(settings.businessProfile?.taxId),
       profileImage: settings.businessProfile?.profileImage || null,
+      bannerImage:
+        settings.businessProfile?.bannerImage ||
+        settings.businessProfile?.coverImage ||
+        null,
       storeStatus: normalizeString(settings.businessProfile?.storeStatus),
       notifications: {
         newOrder: Boolean(settings.notifications?.newOrder),

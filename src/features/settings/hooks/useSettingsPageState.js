@@ -299,12 +299,48 @@ export default function useSettingsPageState() {
     }
   }
 
+  async function handleBannerImageUpload(file) {
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      await showVendorErrorAlert("Please upload a PNG, JPG, or WEBP image.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      await showVendorErrorAlert("Please upload an image under 5MB.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const uploadedAsset = await uploadMenuImage(file);
+
+      setSettings((current) => ({
+        ...current,
+        bannerImage: uploadedAsset,
+      }));
+      setSaveMessage("Banner uploaded.");
+      await showVendorSuccessToast("Banner uploaded.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to upload the selected image.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   function handleRemoveProfileImage() {
     setSettings((current) => ({
       ...current,
       profileImage: null,
     }));
     setSaveMessage("Logo removed. Save changes to apply.");
+  }
+
+  function handleRemoveBannerImage() {
+    setSettings((current) => ({
+      ...current,
+      bannerImage: null,
+    }));
+    setSaveMessage("Banner removed.");
   }
 
   function handleTogglePasswordVisibility(field) {
@@ -773,7 +809,9 @@ export default function useSettingsPageState() {
     handleFieldChange,
     handleNotificationToggle,
     handlePasswordChange,
+    handleBannerImageUpload,
     handleProfileImageUpload,
+    handleRemoveBannerImage,
     handleRemoveProfileImage,
     handleResetAllSettings,
     handleSave,
