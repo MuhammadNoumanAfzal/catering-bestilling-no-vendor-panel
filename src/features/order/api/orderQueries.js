@@ -110,10 +110,8 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       customerName
       eventName
       guestCount
-      deliveryAddress
-      deliveryCity
-      deliveryPostalCode
-      deliveryAddressStr
+      deliveryType
+      deliveryWindow
       customerInfo {
         fullName
         email
