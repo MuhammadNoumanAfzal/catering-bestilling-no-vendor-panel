@@ -31,13 +31,21 @@ function parseAmount(value) {
 }
 
 function resolveGuestCount(node, fallbackValue = 0) {
-  return toNumber(
-    node?.personCount ??
-      node?.guestCount ??
-      node?.companyAllowance ??
-      node?.customerAllowance,
+  const candidates = [
+    node?.personCount,
+    node?.guestCount,
+    node?.companyAllowance,
+    node?.customerAllowance,
     fallbackValue,
-  );
+  ]
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+  if (candidates.length === 0) {
+    return 0;
+  }
+
+  return Math.max(...candidates);
 }
 
 export function normalizeBackendStatus(status) {
@@ -368,7 +376,12 @@ export function mapVendorOrderNode(node) {
     version: toNumber(node?.version, 0),
     id: formatOrderReference(node?.orderNumber, node?.id),
     customer:
-      firstNonEmpty(node?.customerName, fallback?.customer?.name, fallback?.customer) || "Customer unavailable",
+      firstNonEmpty(
+        node?.customerInfo?.fullName,
+        node?.customerName,
+        fallback?.customer?.name,
+        fallback?.customer,
+      ) || "Customer unavailable",
     event: firstNonEmpty(node?.eventName, primaryTitle, fallback?.event, fallback?.orderItem?.name) || "Order",
     guests: resolveGuestCount(node, fallback?.guests || 0),
     date: dateLabel,

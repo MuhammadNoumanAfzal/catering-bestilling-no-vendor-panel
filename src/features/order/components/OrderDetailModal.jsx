@@ -1,6 +1,5 @@
-import { ChevronDown, X, Calendar, Clock, MapPin, Users, MessageSquare, AlertTriangle } from "lucide-react";
+import { ChevronDown, X, Calendar, Clock, MapPin, Users, AlertTriangle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { ordersTableRows, orderDetailRecords } from "../data/orderData";
 import { getVendorOrderDetail } from "../api/orderApi";
 import { mapVendorOrderDetail } from "../api/orderMappers";
 import { showVendorErrorAlert } from "../../../utils/vendorAlerts";
@@ -47,39 +46,6 @@ function renderStatusBadge(status, statusTone) {
   );
 }
 
-const mockSubItems = [
-  {
-    name: "Grilled chicken",
-    image: "/heroBg.webp",
-    desc: "Juicy breast pieces marinaded in lemon herb seasoning and grilled over hot charcoal.",
-    allergens: "None",
-  },
-  {
-    name: "Fresh salad",
-    image: "/heroBg.webp",
-    desc: "Crisp cucumbers, vine-ripened tomatoes, red onions, and bell peppers tossed in house vinaigrette.",
-    allergens: "Gluten-Free, Vegan",
-  },
-  {
-    name: "Bread",
-    image: "/heroBg.webp",
-    desc: "Freshly baked warm pita flatbread served in a basket.",
-    allergens: "Gluten",
-  },
-  {
-    name: "Sauces",
-    image: "/heroBg.webp",
-    desc: "Signature garlic paste, spicy muhammara dip, and sesame tahini sauce.",
-    allergens: "Sesame, Nuts",
-  },
-  {
-    name: "Dessert",
-    image: "/heroBg.webp",
-    desc: "Assorted fresh mini doughnuts and sweet baklava pastries.",
-    allergens: "Dairy, Nuts, Gluten",
-  },
-];
-
 export default function OrderDetailModal({ orderId, onClose, order, orderDetail }) {
   const [expandedItem, setExpandedItem] = useState(null);
   const [fetchedOrderDetail, setFetchedOrderDetail] = useState(null);
@@ -125,92 +91,52 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
 
   const orderData = useMemo(() => {
     const detailSource = fetchedOrderDetail || orderDetail;
-
-    if (order || detailSource) {
-      const status = detailSource?.status || order?.status || "New";
-      const customer = detailSource?.customer?.name || order?.customer || "Customer unavailable";
-      const idVal = detailSource?.id || order?.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`);
-      const priceVal =
-        detailSource?.orderItem?.modalDetails?.price ||
-        detailSource?.financialSummary?.find?.((item) => item.label === "Order Total" || item.label === "Total")?.value ||
-        "kr 0.00";
-      const qtyVal = detailSource?.guests || order?.guests || 0;
-      const nameVal = detailSource?.orderItem?.modalDetails?.title || detailSource?.orderItem?.name || order?.event || "Order";
-      const dateVal = detailSource?.date || order?.date || "Not specified";
-      const timeVal = detailSource?.time || order?.time || "Not specified";
-      const addressVal = detailSource?.logistics?.deliveryAddress || "Not specified";
-      const noteVal = detailSource?.note || "";
-      const statusTone = detailSource?.statusTone || order?.statusTone || "is-new";
-
-      return {
-        status,
-        statusTone,
-        customer,
-        id: idVal,
-        price: priceVal,
-        qty: qtyVal,
-        name: nameVal,
-        date: dateVal,
-        time: timeVal,
-        address: addressVal,
-        note: noteVal,
-      };
+    if (!detailSource) {
+      return null;
     }
 
-    const savedOrdersRaw = window.localStorage.getItem("vendor-orders");
-    const currentOrders = savedOrdersRaw ? JSON.parse(savedOrdersRaw) : ordersTableRows;
-    const mainOrder = currentOrders.find(
-      (o) => o.id.replace("#", "") === orderId.replace("#", "")
-    );
-
-    const savedDetailsRaw = window.localStorage.getItem("vendor-order-details");
-    const currentDetails = savedDetailsRaw ? JSON.parse(savedDetailsRaw) : orderDetailRecords;
-    const cleanId = orderId.replace("#", "");
-    const detail = currentDetails[cleanId] ?? orderDetailRecords[cleanId];
-
-    const status = mainOrder ? mainOrder.status : (detail?.status || "New");
-    const customer = mainOrder ? mainOrder.customer : (detail?.customer?.name || "Thomas");
-    const idVal = orderId.startsWith("#") ? orderId : `#${orderId}`;
-
-    const priceVal = detail?.orderItem?.modalDetails?.price || "kr 435.00";
-    const qtyVal = detail?.guests || 15;
-    const nameVal = detail?.orderItem?.modalDetails?.title || "Tasty Super Star Package";
-
-    // Additional logistics details
-    const dateVal = detail?.date || mainOrder?.date || "Not specified";
-    const timeVal = detail?.time || mainOrder?.time || "Not specified";
-    const addressVal = detail?.logistics?.deliveryAddress || "Not specified";
-    const noteVal = detail?.note || "";
-
-    // Status tone mappings matching table
-    const statusToneMap = {
-      "New": "is-new",
-      "Accepted": "is-accepted",
-      "Preparing": "is-preparing",
-      "Ready": "is-ready",
-      "Out for delivery": "is-delivery",
-      "Out for Delivery": "is-delivery",
-      "Delivered": "is-delivered",
-      "Canceled": "is-canceled",
-      "Reject": "is-reject",
-      "Modified": "is-modified",
-    };
-    const statusTone = statusToneMap[status] || "is-new";
+    const carts = Array.isArray(detailSource?.raw?.orderCarts) ? detailSource.raw.orderCarts : [];
+    const items = carts.map((cart, index) => {
+      const item = cart?.item || {};
+      return {
+        key: cart?.id || item?.id || `${detailSource.id}-item-${index}`,
+        name: item?.name || "Item",
+        description: item?.description || "",
+        image: item?.coverImage?.fileUrl || "/heroBg.webp",
+        quantity: Number(cart?.quantity ?? 0) || 0,
+        price: cart?.totalPriceWithTax ?? cart?.priceWithTax ?? 0,
+      };
+    });
 
     return {
-      status,
-      statusTone,
-      customer,
-      id: idVal,
-      price: priceVal,
-      qty: qtyVal,
-      name: nameVal,
-      date: dateVal,
-      time: timeVal,
-      address: addressVal,
-      note: noteVal,
+      status: detailSource.status || order?.status || "New",
+      statusTone: detailSource.statusTone || order?.statusTone || "is-new",
+      customer: detailSource.customer?.name || "Customer unavailable",
+      id: detailSource.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`),
+      price:
+        detailSource.orderItem?.modalDetails?.price ||
+        detailSource.financialSummary?.find?.((item) => item.label === "Order Total" || item.label === "Total")?.value ||
+        "kr 0.00",
+      qty: detailSource.guests || 0,
+      name: detailSource.orderItem?.modalDetails?.title || detailSource.orderItem?.name || "Order",
+      date: detailSource.date || "Not specified",
+      time: detailSource.time || "Not specified",
+      address: detailSource.logistics?.deliveryAddress || "Not specified",
+      note: detailSource.note || "",
+      items,
+      bannerImage: items[0]?.image || "/heroBg.webp",
     };
-  }, [fetchedOrderDetail, order, orderDetail, orderId]);
+  }, [fetchedOrderDetail, order?.status, order?.statusTone, orderDetail, orderId]);
+
+  if (isLoading && !orderData) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]">
+        <div className="flex min-h-[220px] w-full max-w-[500px] items-center justify-center rounded-[16px] bg-white shadow-[0_24px_60px_rgba(0,0,0,0.22)]">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
 
   if (!orderData) {
     return null;
@@ -254,17 +180,11 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
 
         {/* Scroll Container */}
         <div className="flex-1 overflow-y-auto pr-0.5 hide-scrollbar flex flex-col gap-4">
-          {isLoading ? (
-            <div className="flex min-h-[180px] items-center justify-center rounded-[12px] border border-[#efe6de] bg-[#faf9f6]">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
-            </div>
-          ) : null}
-          
           {/* Banner Image with overlaid badge */}
           <div className="relative h-[160px] w-full rounded-[12px] overflow-hidden border border-[#efe6de] shadow-[0_2px_8px_rgba(0,0,0,0.06)] shrink-0">
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: 'url("/heroBg.webp")' }}
+              style={{ backgroundImage: `url("${orderData.bannerImage}")` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             
@@ -333,7 +253,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
 
             {/* Sub-items Accordion List */}
             <div className="flex flex-col gap-2 pl-2">
-              {mockSubItems.map((item) => {
+              {orderData.items.map((item) => {
                 const isExpanded = expandedItem === item.name;
 
                 return (
@@ -367,18 +287,23 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                     {/* Collapsible Body */}
                     {isExpanded && (
                       <div className="border-t border-[#f2ece6] bg-white px-3 py-2.5 text-[14px] leading-[1.45] text-[#5c5046] animate-[fadeIn_150ms_ease]">
-                        <p className="font-semibold m-0">{item.desc}</p>
-                        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                          <span className="text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
-                            Allergens:
-                          </span>
-                          {item.allergens.split(",").map(renderAllergenPill)}
+                        <p className="font-semibold m-0">
+                          {item.description || "No description available from API."}
+                        </p>
+                        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
+                          <span>Quantity: {item.quantity || 0}</span>
                         </div>
                       </div>
                     )}
                   </div>
                 );
               })}
+
+              {orderData.items.length === 0 ? (
+                <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] p-3 text-[14px] font-semibold text-[#5c5046]">
+                  No item details were returned by the API for this order.
+                </div>
+              ) : null}
             </div>
 
           </div>

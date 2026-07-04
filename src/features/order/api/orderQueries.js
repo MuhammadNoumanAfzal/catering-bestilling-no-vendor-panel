@@ -47,6 +47,10 @@ export const GET_VENDOR_ORDERS_QUERY = `
           paymentType
           paymentStatus
           customerName
+          customerInfo {
+            fullName
+            organization
+          }
           eventName
           guestCount
           companyAllowance
@@ -99,7 +103,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       createdOn
       placedAt
       deliveryDate
-      eventTime
       paymentType
       paymentStatus
       finalPrice
@@ -108,7 +111,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       eventName
       guestCount
       deliveryAddress
-      deliverySuite
       deliveryCity
       deliveryPostalCode
       deliveryAddressStr
@@ -119,18 +121,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         organization
         city
         postalCode
-      }
-      specialInstructions
-      addOns {
-        id
-        title
-        quantity
-        totalPrice
-      }
-      pricingLines {
-        label
-        amount
-        type
       }
       orderCarts {
         edges {
@@ -155,16 +145,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         id
         status
         note
-        createdOn
-      }
-      adjustments {
-        id
-        status
-        reason
-        vendorNote
-        customerResponse
-        proposedEventDate
-        proposedGuestCount
         createdOn
       }
     }
