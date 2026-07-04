@@ -265,8 +265,8 @@ function buildCustomerFromApi(node, fallbackDetail, addressFallback) {
   const fallbackCustomer = buildFallbackCustomer(fallbackDetail, addressFallback);
 
   return {
-    name: firstNonEmpty(customerInfo.fullName, node?.customerName, fallbackCustomer.name) || "Customer unavailable",
-    organization: firstNonEmpty(customerInfo.organization, fallbackCustomer.organization) || "Organization unavailable",
+    name: firstNonEmpty(customerInfo.fullName, node?.customerName) || fallbackCustomer.name || "Customer unavailable",
+    organization: firstNonEmpty(customerInfo.organization) || fallbackCustomer.organization || "Organization unavailable",
     postalCode:
       firstNonEmpty(
         customerInfo.postalCode,
@@ -495,13 +495,10 @@ export function mapVendorOrderDetail(data, orderId) {
   const fallback = getFallbackOrderByFriendlyId(friendlyId);
   const carts = getOrderCartsArray(node?.orderCarts);
   const deliveryAddress = {
-    address: node?.deliveryAddress,
-    addressLine1: node?.deliveryAddress,
-    addressLine2: node?.deliverySuite,
-    city: node?.deliveryCity,
-    postalCode: node?.deliveryPostalCode,
-    postCode: node?.deliveryPostalCode,
-    fullAddress: node?.deliveryAddressStr,
+    city: node?.customerInfo?.city,
+    postalCode: node?.customerInfo?.postalCode,
+    postCode: node?.customerInfo?.postalCode,
+    fullAddress: "",
   };
   const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
@@ -521,13 +518,7 @@ export function mapVendorOrderDetail(data, orderId) {
         }))
       : buildFinancialSummary(node, carts, fallback);
   const fallbackLogistics = fallback?.logistics || {};
-  const addOns = Array.isArray(node?.addOns) && node.addOns.length > 0
-    ? node.addOns.map((item) => {
-        const title = firstNonEmpty(item?.title) || "Add-on";
-        const quantity = toNumber(item?.quantity, 0);
-        return quantity > 0 ? `${title} x${quantity}` : title;
-      })
-    : fallback?.addOns || [];
+  const addOns = [];
 
   return {
     rawId: normalizeString(node?.id),
@@ -540,32 +531,30 @@ export function mapVendorOrderDetail(data, orderId) {
     customer,
     orderItem,
     addOns,
-    note: firstNonEmpty(node?.specialInstructions, fallback?.note),
+    note: "",
     logistics: {
       deliveryAddress:
-        normalizeString(deliveryAddress.fullAddress) ||
-        normalizeString(deliveryAddress?.address ?? deliveryAddress?.addressLine1) ||
-        normalizeString(fallbackLogistics.deliveryAddress) ||
-        "Address unavailable",
+        firstNonEmpty(customer.city, customer.postalCode) || "Address unavailable from API",
       eventDate: dateLabel,
-      deliveryWindow: firstNonEmpty(node?.eventTime, timeLabel) || "Time unavailable",
+      deliveryWindow: firstNonEmpty(node?.deliveryWindow, timeLabel) || "Time unavailable",
       fullAddress:
         [
-          normalizeString(deliveryAddress?.address ?? deliveryAddress?.addressLine1),
-          normalizeString(deliveryAddress?.addressLine2),
           normalizeString(deliveryAddress?.city),
           normalizeString(deliveryAddress?.postalCode ?? deliveryAddress?.postCode),
         ]
           .filter(Boolean)
-          .join(", ") || normalizeString(fallbackLogistics.fullAddress) || "Address unavailable",
+          .join(", ") || "Address unavailable from API",
       eventType: fallbackLogistics.eventType || orderItem.name || "Order",
-      serviceType: normalizeString(node?.paymentType) || fallbackLogistics.serviceType || "Service unavailable",
+      serviceType:
+        firstNonEmpty(node?.deliveryType, node?.paymentType) ||
+        fallbackLogistics.serviceType ||
+        "Service unavailable",
     },
     financialSummary,
     actions,
     availableActions: node?.availableActions || [],
     statuses: Array.isArray(node?.statuses) ? node.statuses : [],
-    adjustments: Array.isArray(node?.adjustments) ? node.adjustments : [],
+    adjustments: [],
     raw: {
       ...node,
       orderCarts: carts,
