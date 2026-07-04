@@ -19,6 +19,7 @@ import {
 } from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 20;
+const POLL_INTERVAL_MS = 30000;
 
 export default function useNotificationsPageState() {
   const [activeTab, setActiveTab] = useState("All");
@@ -44,8 +45,10 @@ export default function useNotificationsPageState() {
   useEffect(() => {
     let isCancelled = false;
 
-    async function loadNotifications() {
-      setIsLoading(true);
+    async function loadNotifications({ silent = false } = {}) {
+      if (!silent) {
+        setIsLoading(true);
+      }
 
       try {
         const result = await getVendorNotifications({
@@ -63,21 +66,41 @@ export default function useNotificationsPageState() {
         setTotalCount(mapped.totalCount);
         setUnreadCount(mapped.unreadCount);
       } catch (error) {
-        if (!isCancelled) {
+        if (!isCancelled && !silent) {
           await showVendorErrorAlert(
             error.message || "Unable to load notifications right now.",
             "Notifications unavailable",
           );
         }
       } finally {
-        if (!isCancelled) setIsLoading(false);
+        if (!isCancelled && !silent) {
+          setIsLoading(false);
+        }
       }
     }
 
     loadNotifications();
 
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadNotifications({ silent: true });
+      }
+    }, POLL_INTERVAL_MS);
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        loadNotifications({ silent: true });
+      }
+    }
+
+    window.addEventListener("focus", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       isCancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [activeTab, filterVariables]);
 

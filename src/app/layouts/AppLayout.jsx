@@ -11,11 +11,12 @@ import {
   Truck,
   Utensils,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { confirmVendorLogout } from "../../utils/vendorAlerts";
+import { getVendorNotificationCounts } from "../../features/notifications/api/notificationsApi";
 
 const sidebarItems = [
   { label: "Home", to: "/dashboard", icon: House },
@@ -29,7 +30,7 @@ const sidebarItems = [
   { label: "Settings", to: "/settings", icon: Settings },
 ];
 
-
+const NOTIFICATION_POLL_INTERVAL_MS = 30000;
 
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -43,6 +44,49 @@ export default function AppLayout() {
   const displayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Vendor User";
   const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadNotificationCounts() {
+      try {
+        const result = await getVendorNotificationCounts();
+
+        if (!isCancelled) {
+          setUnreadNotificationsCount(result?.vendorNotificationCounts?.unread || 0);
+        }
+      } catch {
+        if (!isCancelled) {
+          setUnreadNotificationsCount(0);
+        }
+      }
+    }
+
+    loadNotificationCounts();
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadNotificationCounts();
+      }
+    }, NOTIFICATION_POLL_INTERVAL_MS);
+
+    function handleRefreshCounts() {
+      if (document.visibilityState === "visible") {
+        loadNotificationCounts();
+      }
+    }
+
+    window.addEventListener("focus", handleRefreshCounts);
+    document.addEventListener("visibilitychange", handleRefreshCounts);
+
+    return () => {
+      isCancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleRefreshCounts);
+      document.removeEventListener("visibilitychange", handleRefreshCounts);
+    };
+  }, []);
 
   function handleSearchChange(e) {
     const val = e.target.value;
@@ -136,7 +180,14 @@ export default function AppLayout() {
               type="button"
             >
               <Bell size={18} />
-              <span className="absolute right-[9px] top-[9px] h-2 w-2 rounded-full bg-[#cf6e38]" />
+              {unreadNotificationsCount > 0 ? (
+                <>
+                  <span className="absolute right-[7px] top-[7px] h-2.5 w-2.5 rounded-full bg-[#cf6e38]" />
+                  <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[#cf6e38] px-1 text-[10px] font-bold leading-[18px] text-white">
+                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  </span>
+                </>
+              ) : null}
             </button>
 
             <button
@@ -163,11 +214,16 @@ export default function AppLayout() {
                 <img className="block h-auto w-32" src="/logo2.webp" alt="Catering bestilling.no" />
                 <div className="flex items-center gap-2">
                   <button
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
+                    className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
                     onClick={() => navigate("/notifications")}
                     type="button"
                   >
                     <Bell size={16} />
+                    {unreadNotificationsCount > 0 ? (
+                      <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold leading-[18px] text-[#cf6e38]">
+                        {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                      </span>
+                    ) : null}
                   </button>
                   <button
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
