@@ -21,74 +21,11 @@ export const GET_VENDOR_NOTIFICATIONS_QUERY = `
           type
           title
           message
-          actionLabel
           isRead
-          highlighted
           createdAt
-          dateGroupLabel
           orderId
           orderNumber
           reviewId
-          payoutId
-          payoutReceiptUrl
-          detailTitle
-          detailRows {
-            label
-            value
-          }
-          livePayload {
-            __typename
-            ... on OrderNotificationPayload {
-              order {
-                id
-                orderNumber
-                status
-                customerName
-                deliveryType
-                deliveryWindow
-                pickupTime
-                address
-                amount
-                currency
-                notes
-                coverImageUrl
-                itemsSummary
-                items {
-                  id
-                  name
-                  quantity
-                  price
-                  imageUrl
-                  description
-                  allergens
-                }
-              }
-            }
-            ... on ReviewNotificationPayload {
-              review {
-                id
-                customerName
-                rating
-                orderNumber
-                occasion
-                comment
-              }
-            }
-            ... on PayoutNotificationPayload {
-              payout {
-                id
-                transactionId
-                amount
-                currency
-                status
-                paidTo
-                bankName
-                reference
-                processedAt
-                receiptUrl
-              }
-            }
-          }
         }
         cursor
       }
@@ -109,74 +46,11 @@ export const GET_VENDOR_NOTIFICATION_DETAIL_QUERY = `
       type
       title
       message
-      actionLabel
       isRead
-      highlighted
       createdAt
-      dateGroupLabel
       orderId
       orderNumber
       reviewId
-      payoutId
-      payoutReceiptUrl
-      detailTitle
-      detailRows {
-        label
-        value
-      }
-      livePayload {
-        __typename
-        ... on OrderNotificationPayload {
-          order {
-            id
-            orderNumber
-            status
-            customerName
-            deliveryType
-            deliveryWindow
-            pickupTime
-            address
-            amount
-            currency
-            notes
-            coverImageUrl
-            itemsSummary
-            items {
-              id
-              name
-              quantity
-              price
-              imageUrl
-              description
-              allergens
-            }
-          }
-        }
-        ... on ReviewNotificationPayload {
-          review {
-            id
-            customerName
-            rating
-            orderNumber
-            occasion
-            comment
-          }
-        }
-        ... on PayoutNotificationPayload {
-          payout {
-            id
-            transactionId
-            amount
-            currency
-            status
-            paidTo
-            bankName
-            reference
-            processedAt
-            receiptUrl
-          }
-        }
-      }
     }
   }
 `;

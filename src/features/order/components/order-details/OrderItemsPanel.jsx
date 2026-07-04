@@ -4,6 +4,8 @@ import OrderDetailModal from "../OrderDetailModal";
 
 export default function OrderItemsPanel({ orderItem, note, addOns, orderId, order }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const heroImage = orderItem?.image || order?.raw?.orderCarts?.[0]?.item?.coverImage?.fileUrl || "";
+  const specialInstructions = note || "No special instructions were returned by the API.";
 
   return (
     <>
@@ -11,8 +13,8 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
         <div className="rounded-[10px] bg-[#f4f7fb] p-4">
           <div className="flex items-start gap-3">
             <div
-              className="h-[76px] w-[76px] shrink-0 rounded-[10px] bg-cover bg-center"
-              style={{ backgroundImage: 'url("/heroBg.webp")' }}
+              className="h-[76px] w-[76px] shrink-0 rounded-[10px] border border-[#e5ddd6] bg-[#fffdfb] bg-cover bg-center"
+              style={heroImage ? { backgroundImage: `url("${heroImage}")` } : undefined}
               aria-hidden="true"
             />
             <div className="min-w-0 flex-1">
@@ -70,7 +72,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
           SPECIAL INSTRUCTIONS
         </div>
         <div className="mt-2 rounded-md bg-[#ffc8b5] px-3 py-3 text-[14px] font-semibold uppercase leading-[1.5] italic text-[#c76d3f]">
-          {note}
+          {specialInstructions}
         </div>
       </DetailPanel>
 

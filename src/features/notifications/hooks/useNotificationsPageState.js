@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getVendorNotificationDetail,
   getVendorNotifications,
+  markVendorNotificationAsRead,
   markAllVendorNotificationsAsRead,
 } from "../api/notificationsApi";
 import {
@@ -146,21 +147,38 @@ export default function useNotificationsPageState() {
     setIsDetailLoading(true);
 
     try {
-      const result = await getVendorNotificationDetail(notification.id);
-      const nextNotification = mapNotificationNode(result?.vendorNotification || notification);
-      setSelectedNotification(nextNotification);
+      const [detailResult, markReadResult] = await Promise.all([
+        getVendorNotificationDetail(notification.id),
+        notification.isRead
+          ? Promise.resolve(null)
+          : markVendorNotificationAsRead(notification.id).catch(() => null),
+      ]);
+      const nextNotification = mapNotificationNode(
+        detailResult?.vendorNotification || notification,
+      );
+      const markedNotification = markReadResult?.notification;
+      const normalizedNotification = markedNotification
+        ? {
+            ...nextNotification,
+            isRead: Boolean(markedNotification.isRead),
+            highlighted: !markedNotification.isRead,
+          }
+        : nextNotification;
+      setSelectedNotification(normalizedNotification);
       setNotifications((current) => {
-        if (activeTab === "Unread" && nextNotification.isRead) {
-          return current.filter((item) => item.id !== nextNotification.id);
+        if (activeTab === "Unread" && normalizedNotification.isRead) {
+          return current.filter((item) => item.id !== normalizedNotification.id);
         }
 
         return current.map((item) =>
-          item.id === nextNotification.id ? nextNotification : item,
+          item.id === normalizedNotification.id ? normalizedNotification : item,
         );
       });
 
-      if (!notification.isRead && nextNotification.isRead) {
-        setUnreadCount((current) => Math.max(0, current - 1));
+      if (!notification.isRead && normalizedNotification.isRead) {
+        setUnreadCount((current) =>
+          markReadResult?.unreadCount ?? Math.max(0, current - 1),
+        );
       }
     } catch (error) {
       await showVendorErrorAlert(

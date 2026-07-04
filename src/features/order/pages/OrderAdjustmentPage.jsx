@@ -95,13 +95,13 @@ export default function OrderAdjustmentPage() {
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   
   // Form values
-  const [date, setDate] = useState("2026-03-25");
-  const [time, setTime] = useState("14:30");
-  const [personCount, setPersonCount] = useState(20);
-  const [address, setAddress] = useState("Åsane #1234, Norway");
-  const [apartment, setApartment] = useState("5");
-  const [city, setCity] = useState("Bergen");
-  const [postalCode, setPostalCode] = useState("1235");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [personCount, setPersonCount] = useState(1);
+  const [address, setAddress] = useState("");
+  const [apartment, setApartment] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
 
   useEffect(() => {
     let isCancelled = false;
@@ -117,10 +117,13 @@ export default function OrderAdjustmentPage() {
 
         const mappedOrder = mapVendorOrderDetail(result, decodedOrderId);
         setOrderDetail(mappedOrder);
-        setPersonCount(mappedOrder?.guests || 20);
-        setAddress(mappedOrder?.logistics?.deliveryAddress || "Asane #1234, Norway");
-        setCity(mappedOrder?.customer?.city || "Bergen");
-        setPostalCode(mappedOrder?.customer?.postalCode || "1235");
+        setDate(mappedOrder?.raw?.deliveryDate || "");
+        setTime(mappedOrder?.raw?.deliveryWindow?.start || mappedOrder?.raw?.eventTime || "");
+        setPersonCount(Math.max(1, mappedOrder?.guests || 1));
+        setAddress(mappedOrder?.logistics?.deliveryAddress || "");
+        setApartment(mappedOrder?.raw?.billingAddress?.unitFloor || "");
+        setCity(mappedOrder?.logistics?.city || mappedOrder?.customer?.city || "");
+        setPostalCode(mappedOrder?.logistics?.postalCode || mappedOrder?.customer?.postalCode || "");
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -254,7 +257,7 @@ export default function OrderAdjustmentPage() {
 
     try {
       const removedItems = (orderDetail?.raw?.orderCarts || [])
-        .filter((cart) => modifiedItems.includes(cart?.item?.title))
+        .filter((cart) => modifiedItems.includes(cart?.item?.title || cart?.item?.name))
         .map((cart) => cart?.item?.id)
         .filter(Boolean);
 
