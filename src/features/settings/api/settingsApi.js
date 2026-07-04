@@ -9,6 +9,7 @@ import {
   UPDATE_VENDOR_ACCOUNT_PROFILE_MUTATION,
   UPDATE_VENDOR_BUSINESS_HOURS_MUTATION,
   UPDATE_VENDOR_BUSINESS_PROFILE_MUTATION,
+  UPDATE_VENDOR_SETTINGS_IMAGES_MUTATION,
   UPDATE_VENDOR_NOTIFICATION_PREFERENCES_MUTATION,
   UPDATE_VENDOR_REGIONAL_PREFERENCES_MUTATION,
   UPSERT_VENDOR_SPECIAL_CLOSURE_MUTATION,
@@ -33,6 +34,18 @@ export async function updateVendorBusinessProfile(input) {
   );
 
   return result?.updateVendorBusinessProfile || createFallbackResult("Unable to save business profile.");
+}
+
+export async function updateVendorSettingsImages(input) {
+  const result = await executeProtectedGraphqlRequest(
+    UPDATE_VENDOR_SETTINGS_IMAGES_MUTATION,
+    { input },
+  );
+
+  return (
+    result?.vendorSettingsMutation ||
+    createFallbackResult("Unable to save vendor images.")
+  );
 }
 
 export async function updateVendorAccountProfile(input) {

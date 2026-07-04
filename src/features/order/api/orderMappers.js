@@ -1,5 +1,3 @@
-import { orderDetailRecords, ordersTableRows } from "../data/orderData";
-
 function normalizeString(value) {
   return value == null ? "" : String(value);
 }
@@ -30,14 +28,33 @@ function parseAmount(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function formatCurrency(value) {
+  const amount = parseAmount(value);
+  return `kr ${amount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function getOrderCartsArray(orderCarts) {
+  if (Array.isArray(orderCarts)) {
+    return orderCarts;
+  }
+
+  if (Array.isArray(orderCarts?.edges)) {
+    return orderCarts.edges.map((edge) => edge?.node).filter(Boolean);
+  }
+
+  return [];
+}
+
 function resolveGuestCount(node, fallbackValue = 0) {
-  const candidates = [
-    node?.personCount,
-    node?.guestCount,
-    node?.companyAllowance,
-    node?.customerAllowance,
-    fallbackValue,
-  ]
+  const cartQuantity = getOrderCartsArray(node?.orderCarts).reduce(
+    (sum, cart) => sum + toNumber(cart?.quantity, 0),
+    0,
+  );
+
+  const candidates = [node?.guestCount, node?.personCount, cartQuantity, fallbackValue]
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value) && value > 0);
 
@@ -48,11 +65,187 @@ function resolveGuestCount(node, fallbackValue = 0) {
   return Math.max(...candidates);
 }
 
+function formatDateParts(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return {
+      dateLabel: "Date unavailable",
+      timeLabel: "Time unavailable",
+    };
+  }
+
+  return {
+    dateLabel: date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    timeLabel: date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+}
+
+function formatDisplayId(id) {
+  const raw = normalizeString(id).trim();
+  if (!raw) return "#N/A";
+  return raw.startsWith("#") ? raw : `#${raw}`;
+}
+
+function formatOrderReference(orderNumber, id) {
+  return formatDisplayId(firstNonEmpty(orderNumber, id));
+}
+
+function normalizeDeliveryWindow(windowValue, eventTime, fallbackTimeLabel) {
+  if (windowValue && typeof windowValue === "object") {
+    const label = firstNonEmpty(windowValue.label);
+    const start = firstNonEmpty(windowValue.start, eventTime);
+    const end = firstNonEmpty(windowValue.end);
+
+    return {
+      start,
+      end,
+      label: label || [start, end].filter(Boolean).join(" - ") || fallbackTimeLabel,
+    };
+  }
+
+  const windowText = firstNonEmpty(windowValue, eventTime, fallbackTimeLabel);
+  return {
+    start: firstNonEmpty(eventTime, windowText),
+    end: "",
+    label: windowText || "Time unavailable",
+  };
+}
+
+function formatAddressParts(...parts) {
+  return parts.map((part) => normalizeString(part).trim()).filter(Boolean).join(", ");
+}
+
+function buildAddressFromNode(node) {
+  const billingAddress = node?.billingAddress || {};
+  const addressLine = firstNonEmpty(
+    node?.deliveryAddressStr,
+    node?.deliveryAddress,
+    billingAddress?.locationName,
+    formatAddressParts(billingAddress?.address, billingAddress?.unitFloor),
+  );
+
+  const city = firstNonEmpty(node?.deliveryCity, billingAddress?.city, node?.customerInfo?.city);
+  const postalCode = firstNonEmpty(
+    node?.deliveryPostalCode,
+    billingAddress?.postCode,
+    node?.customerInfo?.postalCode,
+  );
+
+  return {
+    addressLine,
+    city,
+    postalCode,
+    fullAddress:
+      firstNonEmpty(node?.deliveryAddressStr) ||
+      formatAddressParts(addressLine, city, postalCode),
+  };
+}
+
+function sanitizeOrganization(value) {
+  const normalized = normalizeString(value).trim();
+  return normalized || "-";
+}
+
+function buildCustomerFromApi(node) {
+  const customerInfo = node?.customerInfo || {};
+  const address = buildAddressFromNode(node);
+
+  return {
+    name:
+      firstNonEmpty(node?.customerName, customerInfo.fullName) ||
+      "Customer unavailable",
+    organization: sanitizeOrganization(customerInfo.organization),
+    postalCode: firstNonEmpty(customerInfo.postalCode, address.postalCode) || "-",
+    city: firstNonEmpty(customerInfo.city, address.city) || "-",
+    email: firstNonEmpty(customerInfo.email) || "-",
+    phone: firstNonEmpty(customerInfo.phone) || "-",
+    historyText: "Customer history is not available from the API yet.",
+    historyOrders: [],
+  };
+}
+
+function buildOrderItems(carts) {
+  const primaryCart = carts[0];
+  const primaryItem = primaryCart?.item || {};
+
+  const includedItems = carts
+    .map((cart) => {
+      const item = cart?.item || {};
+      const title = firstNonEmpty(item.title, item.name);
+      const quantity = toNumber(cart?.quantity, 0);
+      if (!title) return "";
+      return `${title}${quantity ? ` (x${quantity})` : ""}`;
+    })
+    .filter(Boolean);
+
+  const totalPrice = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
+
+  return {
+    name: firstNonEmpty(primaryItem.title, primaryItem.name) || "Order items unavailable",
+    quantity:
+      carts.length > 0
+        ? `${carts.length} item${carts.length > 1 ? "s" : ""} in this order.`
+        : "Item details unavailable",
+    description: "ORDER ITEMS",
+    includedItems,
+    image: primaryItem?.coverImage?.fileUrl || "",
+    modalDetails: {
+      title: firstNonEmpty(primaryItem.title, primaryItem.name) || "Order items",
+      price: formatCurrency(totalPrice),
+      facts: [],
+      items: includedItems.map((item) => item.replace(/\s+\((x\d+)\)$/, " $1")),
+      extras: [],
+    },
+  };
+}
+
+function buildFinancialSummary(order, carts) {
+  const cartSubtotal = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
+  const total = parseAmount(order?.finalPrice);
+  const subtotal = cartSubtotal || total;
+  const guestCount = resolveGuestCount(order);
+  const companyAllowance = parseAmount(order?.companyAllowance);
+  const customerAllowance = parseAmount(order?.customerAllowance);
+
+  const summary = [
+    {
+      label: `Subtotal${guestCount ? ` (${guestCount} guests)` : ""}`,
+      value: formatCurrency(subtotal),
+    },
+  ];
+
+  if (customerAllowance > 0 || companyAllowance > 0) {
+    summary.push({
+      label: "Customer Responsibility",
+      value: `${customerAllowance || 0}%`,
+    });
+    summary.push({
+      label: "Company Responsibility",
+      value: `${companyAllowance || 0}%`,
+    });
+  }
+
+  summary.push({
+    label: "Total",
+    value: formatCurrency(total || subtotal),
+  });
+
+  return summary;
+}
+
 export function normalizeBackendStatus(status) {
   const normalized = normalizeString(status).trim().toLowerCase().replace(/[_-]+/g, " ");
 
   if (!normalized) return "New";
-  if (normalized === "new") return "New";
+  if (normalized === "new" || normalized === "placed" || normalized === "pending") return "New";
   if (normalized === "accepted" || normalized === "confirmed") return "Accepted";
   if (normalized === "modified") return "Modified";
   if (normalized === "preparing" || normalized === "in preparation") return "Preparing";
@@ -83,35 +276,51 @@ export function getToneForStatus(status) {
 }
 
 function mapBackendTone(tone, status) {
-  const normalizedTone = normalizeString(tone).trim();
-  if (normalizedTone && normalizedTone.startsWith("is-")) {
+  const normalizedTone = normalizeString(tone).trim().toLowerCase();
+
+  if (normalizedTone.startsWith("is-")) {
     return normalizedTone;
+  }
+
+  if (normalizedTone === "success") {
+    return getToneForStatus(status);
   }
 
   return getToneForStatus(status);
 }
 
+function createAction(label, options = {}) {
+  return {
+    label,
+    tone: options.tone ?? "is-muted",
+    hasDropdown: Boolean(options.hasDropdown),
+    navigateToDetail: Boolean(options.navigateToDetail),
+    primary: Boolean(options.primary),
+    requestAdjustment: Boolean(options.requestAdjustment),
+  };
+}
+
 export function getDefaultActionsForStatus(status) {
   if (status === "New") {
     return [
-      { label: "Accept", tone: "is-primary", navigateToDetail: true },
-      { label: "Reject", tone: "is-muted" },
+      createAction("Accept", { tone: "is-primary", navigateToDetail: true, primary: true }),
+      createAction("Reject", { tone: "is-muted" }),
     ];
   }
   if (status === "Accepted" || status === "Modified") {
-    return [{ label: "Start preparing", tone: "is-primary", hasDropdown: true }];
+    return [createAction("Start preparing", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
   if (status === "Preparing") {
-    return [{ label: "Ready", tone: "is-primary", hasDropdown: true }];
+    return [createAction("Ready", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
   if (status === "Ready") {
-    return [{ label: "Out for delivery", tone: "is-primary", hasDropdown: true }];
+    return [createAction("Out for delivery", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
   if (status === "Out for delivery") {
-    return [{ label: "Delivered", tone: "is-primary", hasDropdown: true }];
+    return [createAction("Delivered", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
 
-  return [{ label: "View Details", tone: "is-muted", navigateToDetail: true }];
+  return [createAction("View Details", { tone: "is-muted", navigateToDetail: true })];
 }
 
 export function mapAvailableActionsToUi(availableActions, status) {
@@ -125,30 +334,32 @@ export function mapAvailableActionsToUi(availableActions, status) {
     .map((value) => {
       const normalized = value.trim().toLowerCase().replace(/[_-]+/g, " ");
 
-      if (normalized === "accept") {
-        return { label: "Accept", tone: "is-primary", navigateToDetail: true };
+      if (normalized === "accept" || normalized === "accept order") {
+        return createAction("Accept", { tone: "is-primary", navigateToDetail: true, primary: true });
       }
-      if (normalized === "reject" || normalized === "cancel") {
-        return { label: "Reject", tone: "is-muted" };
+      if (normalized === "reject" || normalized === "reject order" || normalized === "cancel") {
+        return createAction("Reject", { tone: "is-muted" });
+      }
+      if (normalized === "request changes" || normalized === "request change" || normalized === "adjust") {
+        return createAction("Request Changes", { tone: "is-muted", requestAdjustment: true });
       }
       if (normalized === "preparing" || normalized === "start preparing") {
-        return { label: "Start preparing", tone: "is-primary", hasDropdown: true };
+        return createAction("Preparing", { tone: "is-primary", primary: true });
       }
       if (normalized === "ready") {
-        return { label: "Ready", tone: "is-primary", hasDropdown: true };
+        return createAction("Ready", { tone: "is-primary", primary: true });
       }
       if (normalized === "out for delivery") {
-        return { label: "Out for delivery", tone: "is-primary", hasDropdown: true };
+        return createAction("Out for Delivery", { tone: "is-primary", primary: true });
       }
       if (normalized === "delivered" || normalized === "mark delivered") {
-        return { label: "Delivered", tone: "is-primary", hasDropdown: true };
+        return createAction("Delivered", { tone: "is-primary", primary: true });
       }
 
-      return {
-        label: value,
+      return createAction(value, {
         tone: "is-muted",
         navigateToDetail: true,
-      };
+      });
     });
 
   return actions.length ? actions : getDefaultActionsForStatus(status);
@@ -180,212 +391,25 @@ export function getStatusMutationValue(status) {
   return normalizedStatus.toUpperCase().replace(/\s+/g, "_");
 }
 
-function formatDisplayId(id) {
-  const raw = normalizeString(id).trim();
-  if (!raw) return "#N/A";
-  return raw.startsWith("#") ? raw : `#${raw}`;
-}
-
-function formatOrderReference(orderNumber, id) {
-  return formatDisplayId(firstNonEmpty(orderNumber, id));
-}
-
-function formatCurrency(value) {
-  const amount = parseAmount(value);
-  return `kr ${amount.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
-function formatDateParts(value) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return {
-      dateLabel: "Date unavailable",
-      timeLabel: "Time unavailable",
-    };
-  }
-
-  return {
-    dateLabel: date.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-    timeLabel: date.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  };
-}
-
-function getFallbackOrderByFriendlyId(orderId) {
-  const normalizedOrderId = normalizeString(orderId).replace(/^#/, "");
-
-  return (
-    ordersTableRows.find((order) => normalizeString(order.id).replace(/^#/, "") === normalizedOrderId) ||
-    orderDetailRecords[normalizedOrderId] ||
-    null
-  );
-}
-
-function getOrderCartsArray(orderCarts) {
-  if (Array.isArray(orderCarts)) {
-    return orderCarts;
-  }
-
-  if (Array.isArray(orderCarts?.edges)) {
-    return orderCarts.edges.map((edge) => edge?.node).filter(Boolean);
-  }
-
-  return [];
-}
-
-function buildFallbackCustomer(detail, addressFallback) {
-  const customer = detail?.customer || {};
-
-  return {
-    name: customer.name || "Customer unavailable",
-    organization: customer.organization || "Organization unavailable",
-    postalCode:
-      customer.postalCode ||
-      normalizeString(addressFallback?.postalCode ?? addressFallback?.postCode) ||
-      "-",
-    city: customer.city || normalizeString(addressFallback?.city) || "-",
-    email: customer.email || "Email unavailable",
-    historyText: customer.historyText || "Customer history is not available from the API yet.",
-    historyOrders: Array.isArray(customer.historyOrders) ? customer.historyOrders : [],
-  };
-}
-
-function buildCustomerFromApi(node, fallbackDetail, addressFallback) {
-  const customerInfo = node?.customerInfo || {};
-  const fallbackCustomer = buildFallbackCustomer(fallbackDetail, addressFallback);
-
-  return {
-    name: firstNonEmpty(customerInfo.fullName, node?.customerName) || fallbackCustomer.name || "Customer unavailable",
-    organization: firstNonEmpty(customerInfo.organization) || fallbackCustomer.organization || "Organization unavailable",
-    postalCode:
-      firstNonEmpty(
-        customerInfo.postalCode,
-        addressFallback?.postalCode,
-        addressFallback?.postCode,
-        fallbackCustomer.postalCode,
-      ) || "-",
-    city:
-      firstNonEmpty(customerInfo.city, addressFallback?.city, fallbackCustomer.city) || "-",
-    email: firstNonEmpty(customerInfo.email, fallbackCustomer.email) || "Email unavailable",
-    phone: firstNonEmpty(customerInfo.phone),
-    historyText: fallbackCustomer.historyText,
-    historyOrders: fallbackCustomer.historyOrders,
-  };
-}
-
-function buildOrderItems(orderCarts, fallbackDetail) {
-  const carts = Array.isArray(orderCarts) ? orderCarts : [];
-  const primaryCart = carts[0];
-  const fallbackItem = fallbackDetail?.orderItem;
-
-  const includedItems = carts
-    .map((cart) => {
-      const title = normalizeString(cart?.item?.title ?? cart?.item?.name);
-      const quantity = toNumber(cart?.quantity, 0);
-      if (!title) return "";
-      return `${title}${quantity ? ` (x${quantity})` : ""}`;
-    })
-    .filter(Boolean);
-
-  return {
-    name:
-      normalizeString(primaryCart?.item?.title ?? primaryCart?.item?.name) ||
-      normalizeString(fallbackItem?.name) ||
-      "Order items unavailable",
-    quantity:
-      carts.length > 0
-        ? `${carts.length} item${carts.length > 1 ? "s" : ""} in this order.`
-        : normalizeString(fallbackItem?.quantity) || "Item details unavailable",
-    description: normalizeString(fallbackItem?.description) || "ORDER ITEMS",
-    includedItems: includedItems.length ? includedItems : fallbackItem?.includedItems || [],
-    modalDetails: {
-      title:
-        normalizeString(primaryCart?.item?.title ?? primaryCart?.item?.name) ||
-        normalizeString(fallbackItem?.modalDetails?.title) ||
-        "Order items",
-      price:
-        carts.length > 0
-          ? formatCurrency(
-              carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0),
-            )
-          : normalizeString(fallbackItem?.modalDetails?.price) || "kr 0.00",
-      facts: fallbackItem?.modalDetails?.facts || [],
-      items:
-        carts.length > 0
-          ? carts
-              .map((cart) => {
-                const title = normalizeString(cart?.item?.title ?? cart?.item?.name);
-                const quantity = toNumber(cart?.quantity, 0);
-                if (!title) return "";
-                return `${title}${quantity ? ` x${quantity}` : ""}`;
-              })
-              .filter(Boolean)
-          : fallbackItem?.modalDetails?.items || [],
-      extras: fallbackItem?.modalDetails?.extras || [],
-    },
-  };
-}
-
-function buildFinancialSummary(order, carts, fallbackDetail) {
-  const cartSubtotal = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
-  const total = parseAmount(order?.finalPrice);
-  const subtotal = cartSubtotal || parseAmount(fallbackDetail?.financialSummary?.[0]?.value);
-  const guestCount = resolveGuestCount(order);
-
-  const summary = [
-    {
-      label: `Subtotal${subtotal && guestCount ? ` (${guestCount} guests)` : ""}`,
-      value: formatCurrency(subtotal),
-    },
-  ];
-
-  if (total && total !== subtotal) {
-    summary.push({
-      label: "Total",
-      value: formatCurrency(total),
-    });
-  } else {
-    summary.push({
-      label: "Total",
-      value: formatCurrency(subtotal),
-    });
-  }
-
-  return summary;
-}
-
 export function mapVendorOrderNode(node) {
-  const status = normalizeBackendStatus(node?.status);
-  const fallback = getFallbackOrderByFriendlyId(node?.id);
-  const { dateLabel, timeLabel } = formatDateParts(node?.deliveryDate || node?.placedAt || node?.createdOn);
+  const status = normalizeBackendStatus(node?.statusLabel || node?.status);
+  const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
+  const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const carts = getOrderCartsArray(node?.orderCarts);
-  const primaryTitle = normalizeString(carts[0]?.item?.title ?? carts[0]?.item?.name);
+  const primaryTitle = firstNonEmpty(carts[0]?.item?.title, carts[0]?.item?.name);
+  const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
 
   return {
     rawId: normalizeString(node?.id),
     version: toNumber(node?.version, 0),
     id: formatOrderReference(node?.orderNumber, node?.id),
     customer:
-      firstNonEmpty(
-        node?.customerInfo?.fullName,
-        node?.customerName,
-        fallback?.customer?.name,
-        fallback?.customer,
-      ) || "Customer unavailable",
-    event: firstNonEmpty(node?.eventName, primaryTitle, fallback?.event, fallback?.orderItem?.name) || "Order",
-    guests: resolveGuestCount(node, fallback?.guests || 0),
+      firstNonEmpty(node?.customerName, node?.customerInfo?.fullName) ||
+      "Customer unavailable",
+    event: firstNonEmpty(node?.eventName, primaryTitle) || "Order",
+    guests: resolveGuestCount(node, 0),
     date: dateLabel,
-    time: timeLabel,
+    time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
     status: firstNonEmpty(node?.statusLabel, status) || status,
     statusTone: mapBackendTone(node?.statusTone, status),
     actions: mapAvailableActionsToUi(node?.availableActions, status),
@@ -412,7 +436,10 @@ export function mapVendorOrderSummary(summary, rows = []) {
   return {
     total: toNumber(summaryObject.totalOrders ?? summaryObject.total_orders, rows.length),
     newOrders: toNumber(summaryObject.newOrders ?? summaryObject.new_orders, rowCount("New")),
-    accepted: toNumber(summaryObject.acceptedOrders ?? summaryObject.accepted_orders ?? summaryObject.accepted, rowCount("Accepted")),
+    accepted: toNumber(
+      summaryObject.acceptedOrders ?? summaryObject.accepted_orders ?? summaryObject.accepted,
+      rowCount("Accepted"),
+    ),
     preparing: toNumber(summaryObject.preparing, rowCount("Preparing")),
     ready: toNumber(summaryObject.ready, rowCount("Ready")),
     outForDelivery: toNumber(
@@ -491,68 +518,43 @@ export function mapVendorOrderDetail(data, orderId) {
     return null;
   }
 
-  const friendlyId = normalizeString(orderId || node?.id);
-  const fallback = getFallbackOrderByFriendlyId(friendlyId);
   const carts = getOrderCartsArray(node?.orderCarts);
-  const deliveryAddress = {
-    city: node?.customerInfo?.city,
-    postalCode: node?.customerInfo?.postalCode,
-    postCode: node?.customerInfo?.postalCode,
-    fullAddress: "",
-  };
   const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
-  const status = normalizeBackendStatus(node?.status);
+  const status = normalizeBackendStatus(node?.statusLabel || node?.status);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
-  const customer = buildCustomerFromApi(node, fallback, deliveryAddress);
-  const orderItem = buildOrderItems(carts, fallback);
-  const financialSummary =
-    Array.isArray(node?.pricingLines) && node.pricingLines.length > 0
-      ? node.pricingLines.map((line, index, allLines) => ({
-          label: firstNonEmpty(line?.label, `Line ${index + 1}`) || `Line ${index + 1}`,
-          value: formatCurrency(line?.amount),
-          type: normalizeString(line?.type),
-          isTotal:
-            normalizeString(line?.type).toLowerCase() === "total" ||
-            index === allLines.length - 1,
-        }))
-      : buildFinancialSummary(node, carts, fallback);
-  const fallbackLogistics = fallback?.logistics || {};
-  const addOns = [];
+  const customer = buildCustomerFromApi(node);
+  const orderItem = buildOrderItems(carts);
+  const address = buildAddressFromNode(node);
+  const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
 
   return {
     rawId: normalizeString(node?.id),
-    id: formatOrderReference(node?.orderNumber, node?.id),
+    version: toNumber(node?.version, 0),
+    id: formatOrderReference(node?.orderNumber, node?.id || orderId),
     date: dateLabel,
-    time: timeLabel,
-    guests: resolveGuestCount(node, fallback?.guests || 0),
+    time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
+    guests: resolveGuestCount(node, 0),
     status: firstNonEmpty(node?.statusLabel, status) || status,
     statusTone: mapBackendTone(node?.statusTone, status),
     customer,
     orderItem,
-    addOns,
+    addOns: [],
     note: "",
     logistics: {
-      deliveryAddress:
-        firstNonEmpty(customer.city, customer.postalCode) || "Address unavailable from API",
+      deliveryAddress: address.addressLine || "Address unavailable from API",
       eventDate: dateLabel,
-      deliveryWindow: firstNonEmpty(node?.deliveryWindow, timeLabel) || "Time unavailable",
-      fullAddress:
-        [
-          normalizeString(deliveryAddress?.city),
-          normalizeString(deliveryAddress?.postalCode ?? deliveryAddress?.postCode),
-        ]
-          .filter(Boolean)
-          .join(", ") || "Address unavailable from API",
-      eventType: fallbackLogistics.eventType || orderItem.name || "Order",
-      serviceType:
-        firstNonEmpty(node?.deliveryType, node?.paymentType) ||
-        fallbackLogistics.serviceType ||
-        "Service unavailable",
+      deliveryWindow: deliveryWindow.label || "Time unavailable",
+      fullAddress: address.fullAddress || address.addressLine || "Address unavailable from API",
+      eventType: firstNonEmpty(node?.eventName, orderItem.name) || "Order",
+      serviceType: firstNonEmpty(node?.deliveryType, node?.paymentType) || "Service unavailable",
+      city: address.city || "-",
+      postalCode: address.postalCode || "-",
+      billingAddress: node?.billingAddress || null,
     },
-    financialSummary,
+    financialSummary: buildFinancialSummary(node, carts),
     actions,
-    availableActions: node?.availableActions || [],
+    availableActions: Array.isArray(node?.availableActions) ? node.availableActions : [],
     statuses: Array.isArray(node?.statuses) ? node.statuses : [],
     adjustments: [],
     raw: {

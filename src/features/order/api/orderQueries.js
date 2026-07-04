@@ -43,42 +43,25 @@ export const GET_VENDOR_ORDERS_QUERY = `
           createdOn
           placedAt
           deliveryDate
+          deliveryType
+          deliveryWindow
+          eventTime
           finalPrice
           paymentType
           paymentStatus
           customerName
+          customerAllowance
           customerInfo {
             fullName
+            email
+            phone
             organization
+            city
+            postalCode
           }
           eventName
           guestCount
           companyAllowance
-          orderCarts {
-            edges {
-              node {
-                id
-                quantity
-                priceWithTax
-                totalPriceWithTax
-                item {
-                  id
-                  name
-                  priceWithTax
-                  description
-                  coverImage {
-                    fileUrl
-                  }
-                }
-              }
-            }
-          }
-          statuses {
-            id
-            status
-            note
-            createdOn
-          }
         }
       }
       pageInfo {
@@ -106,12 +89,18 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       paymentType
       paymentStatus
       finalPrice
+      customerAllowance
       companyAllowance
       customerName
       eventName
       guestCount
       deliveryType
       deliveryWindow
+      eventTime
+      deliveryAddress
+      deliveryCity
+      deliveryPostalCode
+      deliveryAddressStr
       customerInfo {
         fullName
         email
@@ -119,6 +108,15 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         organization
         city
         postalCode
+      }
+      billingAddress {
+        id
+        address
+        unitFloor
+        city
+        postCode
+        locationName
+        addressType
       }
       orderCarts {
         edges {
@@ -130,6 +128,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             item {
               id
               name
+              title
               priceWithTax
               description
               coverImage {
@@ -145,6 +144,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         note
         createdOn
       }
+      availableActions
     }
   }
 `;

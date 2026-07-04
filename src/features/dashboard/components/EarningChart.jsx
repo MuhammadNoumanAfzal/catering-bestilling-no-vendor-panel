@@ -1,12 +1,23 @@
-export default function EarningChart({ values, subtitle }) {
+export default function EarningChart({
+  values,
+  subtitle,
+  yAxisLabels = [],
+  emptyTitle = "No data available",
+  emptyMessage = "No earnings data is available for the selected range.",
+}) {
   if (!values || values.length === 0) {
     return (
       <div className="flex h-[230px] flex-col items-center justify-center rounded-[10px] border border-dashed border-[#ddd4cb] bg-[#faf8f6] p-4 text-center mt-6">
-        <p className="type-subpara text-[14px] font-bold text-[#8d7e72]">No Date Range Selected</p>
-        <p className="type-para mt-1 text-[12px] text-[#a49b92]">Select a start and end date above to view the earnings overview.</p>
+        <p className="type-subpara text-[14px] font-bold text-[#8d7e72]">{emptyTitle}</p>
+        <p className="type-para mt-1 text-[12px] text-[#a49b92]">{emptyMessage}</p>
       </div>
     );
   }
+
+  const displayYAxisLabels =
+    yAxisLabels.length === 5
+      ? yAxisLabels
+      : ["kr 10000", "kr 7500", "kr 5000", "kr 2500", "kr 0"];
 
   return (
     <>
@@ -14,11 +25,11 @@ export default function EarningChart({ values, subtitle }) {
       <div className="mt-[40px] grid grid-cols-[48px_minmax(0,1fr)] gap-[10px] items-start max-[720px]:grid-cols-1 max-[720px]:mt-8">
         {/* Y-axis Labels */}
         <div className="flex h-[182px] flex-col justify-between text-[#4e433a] max-[720px]:hidden">
-          <span className="type-subpara leading-none">kr 10000</span>
-          <span className="type-subpara leading-none">kr 7500</span>
-          <span className="type-subpara leading-none">kr 5000</span>
-          <span className="type-subpara leading-none">kr 2500</span>
-          <span className="type-subpara leading-none">kr 0</span>
+          {displayYAxisLabels.map((label) => (
+            <span key={label} className="type-subpara leading-none">
+              {label}
+            </span>
+          ))}
         </div>
 
         {/* Chart Body */}

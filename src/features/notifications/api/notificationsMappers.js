@@ -60,27 +60,101 @@ function formatMoney(amount, currency) {
     : numericAmount.toLocaleString("en-US");
 }
 
+function formatDateGroupLabel(value) {
+  if (!value) {
+    return "Older";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Older";
+  }
+
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfTarget = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round(
+    (startOfToday.getTime() - startOfTarget.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays <= 0) {
+    return "Today";
+  }
+
+  if (diffDays === 1) {
+    return "Yesterday";
+  }
+
+  return "Older";
+}
+
+function buildFallbackDetailTitle(type) {
+  if (type === "ORDER") {
+    return "Order notification";
+  }
+
+  if (type === "REVIEW") {
+    return "Review notification";
+  }
+
+  if (type === "PAYOUT") {
+    return "Payout notification";
+  }
+
+  return "Notification";
+}
+
+function buildFallbackDetailRows(node, type) {
+  const rows = [];
+
+  if (node?.orderNumber) {
+    rows.push({ label: "Order", value: node.orderNumber });
+  }
+
+  if (node?.orderId) {
+    rows.push({ label: "Order ID", value: node.orderId });
+  }
+
+  if (node?.reviewId) {
+    rows.push({ label: "Review ID", value: node.reviewId });
+  }
+
+  if (node?.createdAt) {
+    rows.push({
+      label: "Created",
+      value: new Date(node.createdAt).toLocaleString("en-GB"),
+    });
+  }
+
+  if (!rows.length) {
+    rows.push({ label: "Type", value: type });
+  }
+
+  return rows;
+}
+
 export function mapNotificationNode(node) {
+  const type = node.type || "ALERT";
+
   return {
     id: node.id,
-    type: node.type || "ALERT",
+    type,
     title: node.title || "Notification",
     message: node.message || "",
-    actionLabel:
-      node.actionLabel ||
-      (node.type === "PAYOUT" ? "View Receipt" : "View Detail"),
+    actionLabel: type === "PAYOUT" ? "View Receipt" : "View Detail",
     isRead: Boolean(node.isRead),
-    highlighted: Boolean(node.highlighted),
+    highlighted: !node.isRead,
     createdAt: node.createdAt || "",
-    dateGroupLabel: node.dateGroupLabel || "Older",
+    dateGroupLabel: formatDateGroupLabel(node.createdAt),
     orderId: node.orderId || "",
     orderNumber: node.orderNumber || "",
     reviewId: node.reviewId || "",
-    payoutId: node.payoutId || "",
-    payoutReceiptUrl: node.payoutReceiptUrl || "",
-    detailTitle: node.detailTitle || "",
-    detailRows: Array.isArray(node.detailRows) ? node.detailRows : [],
-    livePayload: node.livePayload || null,
+    payoutId: "",
+    payoutReceiptUrl: "",
+    detailTitle: buildFallbackDetailTitle(type),
+    detailRows: buildFallbackDetailRows(node, type),
+    livePayload: null,
     time: formatTime(node.createdAt),
   };
 }
@@ -173,7 +247,15 @@ export function deriveReceiptStatus(notification) {
 export function deriveOrderSummary(notification) {
   const order = notification?.livePayload?.order;
   if (!order) {
-    return null;
+    return {
+      orderId: notification.orderNumber || "--",
+      customer: "--",
+      status: "",
+      amount: "",
+      coverImageUrl: "",
+      itemsSummary: notification.message || "",
+      items: [],
+    };
   }
 
   return {

@@ -102,7 +102,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
         key: cart?.id || item?.id || `${detailSource.id}-item-${index}`,
         name: item?.name || "Item",
         description: item?.description || "",
-        image: item?.coverImage?.fileUrl || "/heroBg.webp",
+        image: item?.coverImage?.fileUrl || "",
         quantity: Number(cart?.quantity ?? 0) || 0,
         price: cart?.totalPriceWithTax ?? cart?.priceWithTax ?? 0,
       };
@@ -124,7 +124,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
       address: detailSource.logistics?.deliveryAddress || "Not specified",
       note: detailSource.note || "",
       items,
-      bannerImage: items[0]?.image || "/heroBg.webp",
+      bannerImage: items[0]?.image || "",
     };
   }, [fetchedOrderDetail, order?.status, order?.statusTone, orderDetail, orderId]);
 
@@ -183,8 +183,8 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
           {/* Banner Image with overlaid badge */}
           <div className="relative h-[160px] w-full rounded-[12px] overflow-hidden border border-[#efe6de] shadow-[0_2px_8px_rgba(0,0,0,0.06)] shrink-0">
             <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url("${orderData.bannerImage}")` }}
+              className="absolute inset-0 bg-cover bg-center bg-[#f7f2ec]"
+              style={orderData.bannerImage ? { backgroundImage: `url("${orderData.bannerImage}")` } : undefined}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             
@@ -268,11 +268,15 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                       type="button"
                     >
                       <div className="flex items-center gap-3">
-                        <img
-                          alt={item.name}
-                          className="h-9 w-[56px] shrink-0 rounded-[6px] object-cover border border-[#efe6de]"
-                          src={item.image}
-                        />
+                        {item.image ? (
+                          <img
+                            alt={item.name}
+                            className="h-9 w-[56px] shrink-0 rounded-[6px] object-cover border border-[#efe6de]"
+                            src={item.image}
+                          />
+                        ) : (
+                          <div className="h-9 w-[56px] shrink-0 rounded-[6px] border border-[#efe6de] bg-[#f7f2ec]" />
+                        )}
                         <span className="text-[14px] font-bold text-[#3a312a]">{item.name}</span>
                       </div>
                       <span

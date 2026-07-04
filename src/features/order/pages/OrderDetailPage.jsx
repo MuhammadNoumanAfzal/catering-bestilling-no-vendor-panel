@@ -138,6 +138,11 @@ export default function OrderDetailPage() {
 
   async function handleConfirmedActionClick(action) {
     try {
+      if (action?.requestAdjustment || /request changes/i.test(action?.label || "")) {
+        navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`);
+        return;
+      }
+
       const result = await confirmOrderStatusAction(action.label, orderDetail.id);
       if (!result.isConfirmed) {
         return;

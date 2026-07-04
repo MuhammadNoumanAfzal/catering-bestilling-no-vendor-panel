@@ -2,6 +2,10 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
   query GetVendorSettingsPage {
     vendorSettings {
       id
+      logoUrl
+      coverPhotoUrl
+      fileId
+      coverPhotoFileId
       businessProfile {
         businessName
         businessEmail
@@ -112,6 +116,22 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
       timeZones {
         value
         label
+      }
+    }
+  }
+`;
+
+export const UPDATE_VENDOR_SETTINGS_IMAGES_MUTATION = `
+  mutation VendorSettings($input: VendorSettingsInput!) {
+    vendorSettingsMutation(input: $input) {
+      success
+      message
+      instance {
+        id
+        logoUrl
+        coverPhotoUrl
+        fileId
+        coverPhotoFileId
       }
     }
   }

@@ -9,6 +9,7 @@ import {
   updateVendorAccountProfile,
   updateVendorBusinessHours,
   updateVendorBusinessProfile,
+  updateVendorSettingsImages,
   updateVendorNotificationPreferences,
   updateVendorRegionalPreferences,
   upsertVendorSpecialClosure,
@@ -17,6 +18,7 @@ import {
   buildAccountProfileInput,
   buildBusinessHoursInput,
   buildBusinessProfileInput,
+  buildVendorSettingsImagesInput,
   buildNotificationPreferencesInput,
   buildPasswordChangeInput,
   buildRegionalPreferencesInput,
@@ -398,6 +400,40 @@ export default function useSettingsPageState() {
       const confirmations = [];
 
       if (
+        JSON.stringify(comparableSaved.vendorImages) !==
+        JSON.stringify(comparableCurrent.vendorImages)
+      ) {
+        const result = await updateVendorSettingsImages(
+          buildVendorSettingsImagesInput(settings),
+        );
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to save vendor images.");
+          return;
+        }
+
+        nextSettings = {
+          ...nextSettings,
+          profileImage: result.instance?.logoUrl
+            ? {
+                fileUrl: result.instance.logoUrl,
+                fileId: result.instance?.fileId || nextSettings.profileImage?.fileId || "",
+              }
+            : null,
+          bannerImage: result.instance?.coverPhotoUrl
+            ? {
+                fileUrl: result.instance.coverPhotoUrl,
+                fileId:
+                  result.instance?.coverPhotoFileId ||
+                  nextSettings.bannerImage?.fileId ||
+                  "",
+              }
+            : null,
+        };
+        confirmations.push(result.message || "Vendor images saved.");
+      }
+
+      if (
         JSON.stringify(comparableSaved.businessProfile) !==
         JSON.stringify(comparableCurrent.businessProfile)
       ) {
@@ -409,6 +445,42 @@ export default function useSettingsPageState() {
           await showVendorErrorAlert(result.message || "Unable to save business profile.");
           return;
         }
+
+        nextSettings = {
+          ...nextSettings,
+          businessName:
+            result.businessProfile?.businessName || nextSettings.businessName,
+          businessEmail:
+            result.businessProfile?.businessEmail || nextSettings.businessEmail,
+          phoneNumber:
+            result.businessProfile?.phoneNumber || nextSettings.phoneNumber,
+          businessAddress:
+            result.businessProfile?.businessAddress || nextSettings.businessAddress,
+          businessDescription:
+            result.businessProfile?.businessDescription ??
+            nextSettings.businessDescription,
+          cuisineType:
+            result.businessProfile?.cuisineType?.id ||
+            result.businessProfile?.cuisineType?.slug ||
+            nextSettings.cuisineType,
+          customCuisineType:
+            result.businessProfile?.customCuisineType ??
+            nextSettings.customCuisineType,
+          businessType:
+            result.businessProfile?.businessType?.id ||
+            result.businessProfile?.businessType?.slug ||
+            nextSettings.businessType,
+          customBusinessType:
+            result.businessProfile?.customBusinessType ??
+            nextSettings.customBusinessType,
+          establishedYear:
+            result.businessProfile?.establishedYear != null
+              ? String(result.businessProfile.establishedYear)
+              : nextSettings.establishedYear,
+          taxId: result.businessProfile?.taxId ?? nextSettings.taxId,
+          profileImage:
+            result.businessProfile?.profileImage ?? nextSettings.profileImage,
+        };
 
         confirmations.push(result.message || "Business profile saved.");
       }

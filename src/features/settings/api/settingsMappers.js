@@ -70,6 +70,19 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function normalizeAssetFromUrl(fileUrl, fileId) {
+  const normalizedUrl = normalizeString(fileUrl).trim();
+
+  if (!normalizedUrl) {
+    return null;
+  }
+
+  return {
+    fileUrl: normalizedUrl,
+    fileId: normalizeString(fileId).trim(),
+  };
+}
+
 function buildTimeRange(openTime, closeTime) {
   const start = normalizeString(openTime).trim();
   const end = normalizeString(closeTime).trim();
@@ -199,11 +212,13 @@ export function mapVendorSettingsPage(result) {
       customBusinessType: normalizeString(settings.businessProfile?.customBusinessType),
       establishedYear: normalizeString(settings.businessProfile?.establishedYear),
       taxId: normalizeString(settings.businessProfile?.taxId),
-      profileImage: settings.businessProfile?.profileImage || null,
-      bannerImage:
-        settings.businessProfile?.bannerImage ||
-        settings.businessProfile?.coverImage ||
-        null,
+      profileImage:
+        settings.businessProfile?.profileImage ||
+        normalizeAssetFromUrl(settings.logoUrl, settings.fileId),
+      bannerImage: normalizeAssetFromUrl(
+        settings.coverPhotoUrl,
+        settings.coverPhotoFileId,
+      ),
       storeStatus: normalizeString(settings.businessProfile?.storeStatus),
       notifications: {
         newOrder: Boolean(settings.notifications?.newOrder),
@@ -267,7 +282,14 @@ export function buildBusinessProfileInput(settings) {
     customBusinessType: normalizeString(settings.customBusinessType).trim() || null,
     establishedYear: parseIntegerOrNull(settings.establishedYear),
     taxId: normalizeString(settings.taxId).trim() || null,
-    profileImageFileId: settings.profileImage?.fileId || null,
+  };
+}
+
+export function buildVendorSettingsImagesInput(settings) {
+  return {
+    logoUrl: settings.profileImage?.fileUrl || null,
+    coverPhotoUrl: settings.bannerImage?.fileUrl || null,
+    businessAddress: normalizeString(settings.businessAddress).trim() || null,
   };
 }
 
@@ -343,6 +365,7 @@ export function buildStorePasswordInput(password) {
 
 export function getComparableSettingsState(settings) {
   return {
+    vendorImages: buildVendorSettingsImagesInput(settings),
     businessProfile: buildBusinessProfileInput(settings),
     notifications: buildNotificationPreferencesInput(settings),
     regionalPreferences: buildRegionalPreferencesInput(settings),
