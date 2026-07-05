@@ -5,6 +5,7 @@ import {
   GET_VENDOR_ORDERS_QUERY,
   SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
   UPDATE_VENDOR_ORDER_STATUS_MUTATION,
+  GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY,
 } from "./orderQueries";
 
 const PAGE_SIZE = 100;
@@ -119,3 +120,11 @@ export async function searchVendorAdjustmentItems({ search, first = 10 }) {
       description: item.description || "",
     }));
 }
+
+export function getVendorCustomerOrderHistory({ orderId, customerId }) {
+  return executeProtectedGraphqlRequest(GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY, {
+    orderId,
+    customerId,
+  });
+}
+

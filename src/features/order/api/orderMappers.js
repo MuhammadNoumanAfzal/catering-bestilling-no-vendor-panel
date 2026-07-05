@@ -171,7 +171,7 @@ function buildCustomerFromApi(node) {
     phone: firstNonEmpty(customerInfo.phone) || "-",
     detailsVisible,
     historyText: detailsVisible
-      ? "Customer history is not available from the API yet."
+      ? "View this customer's previous order history."
       : "Customer contact details stay hidden until the order is accepted.",
     historyOrders: [],
   };

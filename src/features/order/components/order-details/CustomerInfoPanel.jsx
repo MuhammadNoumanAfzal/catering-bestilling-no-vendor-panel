@@ -1,8 +1,9 @@
 import { CircleAlert, UserRound, X } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DetailPanel from "./DetailPanel";
+import { getVendorCustomerOrderHistory } from "../../api/orderApi";
 
 function Field({ label, value, fullWidth = false }) {
   return (
@@ -30,8 +31,77 @@ function HistoryStatus({ status, tone }) {
   );
 }
 
-function OrderHistoryDrawer({ customer, onClose }) {
-  const historyOrders = Array.isArray(customer.historyOrders) ? customer.historyOrders : [];
+function OrderHistoryDrawer({ customer, orderId, onClose }) {
+  const [historyOrders, setHistoryOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadHistory() {
+      if (!orderId) {
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await getVendorCustomerOrderHistory({ orderId });
+        if (isCancelled) return;
+
+        const rawHistory = response?.vendorCustomerOrderHistory || [];
+        const mapped = rawHistory.map((item) => {
+          const dateObj = new Date(item.deliveryDate || item.placedAt);
+          const dateLabel = !Number.isNaN(dateObj.getTime())
+            ? dateObj.toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })
+            : "Date unavailable";
+
+          const statusVal = item.status || "";
+          const statusLabelVal = item.statusLabel || "";
+          const isCanceled =
+            /cancel/i.test(statusVal) ||
+            /reject/i.test(statusVal) ||
+            /cancel/i.test(statusLabelVal) ||
+            /reject/i.test(statusLabelVal);
+
+          return {
+            id: item.orderNumber || `#${item.id}`,
+            status: item.statusLabel || item.status || "Unknown",
+            statusTone: isCanceled ? "canceled" : "delivered",
+            title: item.eventName || "Order",
+            date: dateLabel,
+            guests: `${item.guestCount || 0} guest${item.guestCount !== 1 ? "s" : ""}`,
+            amount: `kr ${Number(item.finalPrice || 0).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
+          };
+        });
+
+        setHistoryOrders(mapped);
+      } catch (err) {
+        if (!isCancelled) {
+          setError(err.message || "Failed to load order history.");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadHistory();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [orderId]);
 
   return (
     <motion.div
@@ -66,32 +136,42 @@ function OrderHistoryDrawer({ customer, onClose }) {
         </div>
 
         <div className="mt-5 flex flex-col gap-3 overflow-y-auto pr-1">
-          {historyOrders.length > 0 ? historyOrders.map((order) => (
-            <article
-              key={order.id}
-              className="rounded-[10px] border border-[#cfc7bf] bg-white px-3 py-3 shadow-[0_1px_4px_rgba(38,23,14,0.04)]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-[#9a8f86]">
-                  {order.id}
-                </span>
-                <HistoryStatus status={order.status} tone={order.statusTone} />
-              </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
+            </div>
+          ) : error ? (
+            <div className="rounded-[12px] border border-red-200 bg-red-50 px-4 py-4 text-[13px] font-semibold leading-[1.5] text-red-700">
+              {error}
+            </div>
+          ) : historyOrders.length > 0 ? (
+            historyOrders.map((order) => (
+              <article
+                key={order.id}
+                className="rounded-[10px] border border-[#cfc7bf] bg-white px-3 py-3 shadow-[0_1px_4px_rgba(38,23,14,0.04)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-[#9a8f86]">
+                    {order.id}
+                  </span>
+                  <HistoryStatus status={order.status} tone={order.statusTone} />
+                </div>
 
-              <h4 className="mt-1.5 text-[20px] font-extrabold leading-[1.2] text-[#17120e]">
-                {order.title}
-              </h4>
+                <h4 className="mt-1.5 text-[20px] font-extrabold leading-[1.2] text-[#17120e]">
+                  {order.title}
+                </h4>
 
-              <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#8b8077]">
-                <span>{order.date}</span>
-                <span>{order.guests}</span>
-              </div>
+                <div className="mt-2 flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.03em] text-[#8b8077]">
+                  <span>{order.date}</span>
+                  <span>{order.guests}</span>
+                </div>
 
-              <div className="mt-2 text-[16px] font-extrabold text-[#17120e]">{order.amount}</div>
-            </article>
-          )) : (
+                <div className="mt-2 text-[16px] font-extrabold text-[#17120e]">{order.amount}</div>
+              </article>
+            ))
+          ) : (
             <div className="rounded-[12px] border border-[#e6ddd4] bg-[#faf7f4] px-4 py-4 text-[13px] font-semibold leading-[1.5] text-[#6d6259]">
-              Order history is not available from the API yet for this customer.
+              No previous orders found for this customer.
             </div>
           )}
         </div>
@@ -100,7 +180,7 @@ function OrderHistoryDrawer({ customer, onClose }) {
   );
 }
 
-export default function CustomerInfoPanel({ customer }) {
+export default function CustomerInfoPanel({ customer, orderId }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   return (
@@ -131,9 +211,14 @@ export default function CustomerInfoPanel({ customer }) {
 
       <AnimatePresence>
         {isHistoryOpen ? (
-          <OrderHistoryDrawer customer={customer} onClose={() => setIsHistoryOpen(false)} />
+          <OrderHistoryDrawer
+            customer={customer}
+            orderId={orderId}
+            onClose={() => setIsHistoryOpen(false)}
+          />
         ) : null}
       </AnimatePresence>
     </>
   );
 }
+
