@@ -31,6 +31,8 @@ function HistoryStatus({ status, tone }) {
 }
 
 function OrderHistoryDrawer({ customer, onClose }) {
+  const historyOrders = Array.isArray(customer.historyOrders) ? customer.historyOrders : [];
+
   return (
     <motion.div
       animate={{ opacity: 1 }}
@@ -64,7 +66,7 @@ function OrderHistoryDrawer({ customer, onClose }) {
         </div>
 
         <div className="mt-5 flex flex-col gap-3 overflow-y-auto pr-1">
-          {customer.historyOrders?.map((order) => (
+          {historyOrders.length > 0 ? historyOrders.map((order) => (
             <article
               key={order.id}
               className="rounded-[10px] border border-[#cfc7bf] bg-white px-3 py-3 shadow-[0_1px_4px_rgba(38,23,14,0.04)]"
@@ -87,7 +89,11 @@ function OrderHistoryDrawer({ customer, onClose }) {
 
               <div className="mt-2 text-[16px] font-extrabold text-[#17120e]">{order.amount}</div>
             </article>
-          ))}
+          )) : (
+            <div className="rounded-[12px] border border-[#e6ddd4] bg-[#faf7f4] px-4 py-4 text-[13px] font-semibold leading-[1.5] text-[#6d6259]">
+              Order history is not available from the API yet for this customer.
+            </div>
+          )}
         </div>
       </motion.aside>
     </motion.div>

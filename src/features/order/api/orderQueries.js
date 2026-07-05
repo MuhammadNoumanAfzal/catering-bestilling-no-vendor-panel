@@ -59,6 +59,7 @@ export const GET_VENDOR_ORDERS_QUERY = `
             city
             postalCode
           }
+          customerDetailsVisible
           eventName
           guestCount
           companyAllowance
@@ -109,8 +110,8 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         city
         postalCode
       }
+      customerDetailsVisible
       billingAddress {
-        id
         address
         unitFloor
         city
