@@ -115,7 +115,7 @@ export async function searchVendorAdjustmentItems({ search, first = 10 }) {
       name: item.name || item.title || "Item",
       serves: "",
       price: Number(item.priceWithTax ?? item.price) || 0,
-      image: item.coverImage?.fileUrl || item.photo || "/heroBg.webp",
+      image: item.coverImage?.fileUrl || item.photo || "",
       description: item.description || "",
     }));
 }

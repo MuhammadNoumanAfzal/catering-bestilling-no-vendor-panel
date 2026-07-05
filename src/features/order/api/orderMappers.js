@@ -157,6 +157,8 @@ function sanitizeOrganization(value) {
 function buildCustomerFromApi(node) {
   const customerInfo = node?.customerInfo || {};
   const address = buildAddressFromNode(node);
+  const detailsVisible =
+    Boolean(node?.customerDetailsVisible) || resolveOrderStatus(node) !== "New";
 
   return {
     name:
@@ -167,7 +169,10 @@ function buildCustomerFromApi(node) {
     city: firstNonEmpty(customerInfo.city, address.city) || "-",
     email: firstNonEmpty(customerInfo.email) || "-",
     phone: firstNonEmpty(customerInfo.phone) || "-",
-    historyText: "Customer history is not available from the API yet.",
+    detailsVisible,
+    historyText: detailsVisible
+      ? "Customer history is not available from the API yet."
+      : "Customer contact details stay hidden until the order is accepted.",
     historyOrders: [],
   };
 }
@@ -239,6 +244,21 @@ function buildFinancialSummary(order, carts) {
   });
 
   return summary;
+}
+
+function resolveOrderStatus(node) {
+  const statuses = Array.isArray(node?.statuses) ? node.statuses : [];
+  const latestStatus = [...statuses]
+    .filter((entry) => normalizeString(entry?.status))
+    .sort((left, right) => {
+      const leftTime = new Date(left?.createdOn || 0).getTime();
+      const rightTime = new Date(right?.createdOn || 0).getTime();
+      return rightTime - leftTime;
+    })[0];
+
+  return normalizeBackendStatus(
+    latestStatus?.status || node?.status || node?.statusLabel,
+  );
 }
 
 export function normalizeBackendStatus(status) {
@@ -392,7 +412,7 @@ export function getStatusMutationValue(status) {
 }
 
 export function mapVendorOrderNode(node) {
-  const status = normalizeBackendStatus(node?.statusLabel || node?.status);
+  const status = resolveOrderStatus(node);
   const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const carts = getOrderCartsArray(node?.orderCarts);
@@ -410,7 +430,7 @@ export function mapVendorOrderNode(node) {
     guests: resolveGuestCount(node, 0),
     date: dateLabel,
     time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
-    status: firstNonEmpty(node?.statusLabel, status) || status,
+    status,
     statusTone: mapBackendTone(node?.statusTone, status),
     actions: mapAvailableActionsToUi(node?.availableActions, status),
     raw: node,
@@ -521,7 +541,7 @@ export function mapVendorOrderDetail(data, orderId) {
   const carts = getOrderCartsArray(node?.orderCarts);
   const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
-  const status = normalizeBackendStatus(node?.statusLabel || node?.status);
+  const status = resolveOrderStatus(node);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
   const customer = buildCustomerFromApi(node);
   const orderItem = buildOrderItems(carts);
@@ -535,7 +555,7 @@ export function mapVendorOrderDetail(data, orderId) {
     date: dateLabel,
     time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
     guests: resolveGuestCount(node, 0),
-    status: firstNonEmpty(node?.statusLabel, status) || status,
+    status,
     statusTone: mapBackendTone(node?.statusTone, status),
     customer,
     orderItem,
