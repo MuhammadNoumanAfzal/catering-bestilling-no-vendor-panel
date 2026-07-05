@@ -57,8 +57,8 @@ export default function FinanceChartCard({ points }) {
       <div className="flex flex-1 rounded-[12px] border border-[#eee6de] bg-white p-3">
         <div className="grid min-h-[320px] w-full grid-cols-[42px_1fr] gap-3">
           <div className="flex h-full flex-col-reverse justify-between pb-9 text-[11px] font-medium text-[#7f7369]">
-            {axisLabels.map((label) => (
-              <span key={label}>{label}</span>
+            {axisLabels.map((label, index) => (
+              <span key={`${label}-${index}`}>{label}</span>
             ))}
           </div>
 
@@ -68,9 +68,9 @@ export default function FinanceChartCard({ points }) {
                 {axisLabels
                   .slice()
                   .reverse()
-                  .map((label) => (
+                  .map((label, index) => (
                     <span
-                      key={label}
+                      key={`${label}-${index}`}
                       className="block border-t border-[#ece4dc]"
                     />
                   ))}
