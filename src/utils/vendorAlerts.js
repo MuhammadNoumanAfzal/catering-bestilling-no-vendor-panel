@@ -30,6 +30,21 @@ export function showVendorSuccessToast(title) {
   );
 }
 
+export function showNewNotificationToast(title, message) {
+  return Swal.fire({
+    toast: true,
+    position: "top-end",
+    icon: "info",
+    title: title || "New Notification",
+    text: message || "You have received a new update.",
+    showConfirmButton: false,
+    timer: 4500,
+    timerProgressBar: true,
+    background: POPUP_BACKGROUND,
+    color: TEXT_COLOR,
+  });
+}
+
 export function showVendorErrorAlert(message, title = "Something went wrong") {
   return Swal.fire(
     withBaseOptions({

@@ -2,29 +2,24 @@ export const GET_VENDOR_NOTIFICATIONS_QUERY = `
   query GetVendorNotifications(
     $status: NotificationReadStatus
     $datePreset: NotificationDatePreset
-    $from: Date
-    $to: Date
     $first: Int = 20
     $after: String
   ) {
     vendorNotifications(
       status: $status
       datePreset: $datePreset
-      from: $from
-      to: $to
       first: $first
       after: $after
     ) {
       edges {
         node {
           id
-          type
+          notificationType
           title
           message
           isRead
           createdAt
           orderId
-          orderNumber
           reviewId
         }
         cursor
@@ -43,13 +38,12 @@ export const GET_VENDOR_NOTIFICATION_DETAIL_QUERY = `
   query GetVendorNotificationDetail($id: ID!) {
     vendorNotification(id: $id) {
       id
-      type
+      notificationType
       title
       message
       isRead
       createdAt
       orderId
-      orderNumber
       reviewId
     }
   }

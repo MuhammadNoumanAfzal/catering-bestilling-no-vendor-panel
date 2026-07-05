@@ -11,12 +11,15 @@ import {
   Truck,
   Utensils,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/hooks/useAuth";
-import { confirmVendorLogout } from "../../utils/vendorAlerts";
-import { getVendorNotificationCounts } from "../../features/notifications/api/notificationsApi";
+import { confirmVendorLogout, showNewNotificationToast } from "../../utils/vendorAlerts";
+import {
+  getVendorNotificationCounts,
+  getVendorNotifications,
+} from "../../features/notifications/api/notificationsApi";
 
 const sidebarItems = [
   { label: "Home", to: "/dashboard", icon: House },
@@ -45,6 +48,7 @@ export default function AppLayout() {
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Vendor User";
   const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const prevUnreadCountRef = useRef(null);
 
   useEffect(() => {
     let isCancelled = false;
@@ -52,9 +56,25 @@ export default function AppLayout() {
     async function loadNotificationCounts() {
       try {
         const result = await getVendorNotificationCounts();
+        const unreadCount = result?.vendorNotificationCounts?.unread || 0;
 
         if (!isCancelled) {
-          setUnreadNotificationsCount(result?.vendorNotificationCounts?.unread || 0);
+          setUnreadNotificationsCount(unreadCount);
+
+          if (prevUnreadCountRef.current !== null && unreadCount > prevUnreadCountRef.current) {
+            getVendorNotifications({ status: "UNREAD", first: 1 })
+              .then((notificationsRes) => {
+                if (isCancelled) return;
+                const latest = notificationsRes?.vendorNotifications?.edges?.[0]?.node;
+                const title = latest?.title || "New Notification";
+                const message = latest?.message || "You have received a new update.";
+                showNewNotificationToast(title, message);
+              })
+              .catch(() => {
+                showNewNotificationToast("New Notification", "You have received a new update.");
+              });
+          }
+          prevUnreadCountRef.current = unreadCount;
         }
       } catch {
         if (!isCancelled) {
@@ -290,7 +310,14 @@ export default function AppLayout() {
             }
             to={to}
           >
-            <Icon size={16} />
+            <div className="relative flex flex-col items-center">
+              <Icon size={16} />
+              {label === "Notifications" && unreadNotificationsCount > 0 && (
+                <span className="absolute -right-2.5 -top-1.5 inline-flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-[#d86c3d] text-[8px] font-bold text-white px-0.5 leading-[14px] border border-white">
+                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                </span>
+              )}
+            </div>
             <span>{label}</span>
           </NavLink>
         ))}
