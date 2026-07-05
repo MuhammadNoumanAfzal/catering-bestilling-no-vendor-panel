@@ -191,7 +191,7 @@ export default function OrderDetailPage() {
 
       <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(260px,0.95fr)] gap-3 max-[1180px]:grid-cols-1">
         <div className="flex flex-col gap-3">
-          <CustomerInfoPanel customer={orderDetail.customer} />
+          <CustomerInfoPanel customer={orderDetail.customer} orderId={orderDetail.rawId} />
           <OrderItemsPanel
             addOns={orderDetail.addOns}
             note={orderDetail.note}

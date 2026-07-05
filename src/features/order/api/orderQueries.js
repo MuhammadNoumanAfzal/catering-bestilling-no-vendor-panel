@@ -212,3 +212,21 @@ export const UPDATE_VENDOR_ORDER_STATUS_MUTATION = `
     }
   }
 `;
+
+export const GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY = `
+  query GetVendorCustomerOrderHistory($orderId: ID, $customerId: ID) {
+    vendorCustomerOrderHistory(orderId: $orderId, customerId: $customerId) {
+      id
+      orderNumber
+      status
+      statusLabel
+      statusTone
+      deliveryDate
+      placedAt
+      guestCount
+      finalPrice
+      eventName
+    }
+  }
+`;
+
