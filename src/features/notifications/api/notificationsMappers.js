@@ -1,6 +1,7 @@
 export const notificationTabs = ["All", "Unread", "Read"];
 
 export const notificationFilterOptions = [
+  "All",
   "Last Month",
   "Last 3 Months",
   "Last 6 Months",
@@ -135,7 +136,24 @@ function buildFallbackDetailRows(node, type) {
 }
 
 export function mapNotificationNode(node) {
-  const type = node.type || "ALERT";
+  const rawType = node.notificationType || "ALERT";
+
+  // Map raw backend notification types to frontend display types
+  let type = "ALERT";
+  if (rawType === "VENDOR_PRODUCT_ORDERED" || rawType === "ORDER") {
+    type = "ORDER";
+  } else if (
+    rawType === "review-added" ||
+    rawType === "REVIEW_ADDED" ||
+    rawType === "REVIEW"
+  ) {
+    type = "REVIEW";
+  } else if (rawType === "PAYOUT") {
+    type = "PAYOUT";
+  }
+
+  // Prepend ORD- for order number display using orderId if present
+  const orderNumber = node.orderId ? `ORD-${node.orderId}` : "";
 
   return {
     id: node.id,
@@ -148,12 +166,12 @@ export function mapNotificationNode(node) {
     createdAt: node.createdAt || "",
     dateGroupLabel: formatDateGroupLabel(node.createdAt),
     orderId: node.orderId || "",
-    orderNumber: node.orderNumber || "",
+    orderNumber: orderNumber,
     reviewId: node.reviewId || "",
     payoutId: "",
     payoutReceiptUrl: "",
     detailTitle: buildFallbackDetailTitle(type),
-    detailRows: buildFallbackDetailRows(node, type),
+    detailRows: buildFallbackDetailRows({ ...node, orderNumber }, type),
     livePayload: null,
     time: formatTime(node.createdAt),
   };
@@ -204,8 +222,12 @@ export function mapFilterToQueryVariables(selectedFilter, customRange) {
   if (selectedFilter === "Custom Date") {
     return {
       datePreset: "CUSTOM",
-      from: customRange.from || null,
-      to: customRange.to || null,
+    };
+  }
+
+  if (selectedFilter === "All") {
+    return {
+      datePreset: null,
     };
   }
 
@@ -217,9 +239,7 @@ export function mapFilterToQueryVariables(selectedFilter, customRange) {
   };
 
   return {
-    datePreset: presetMap[selectedFilter] || "LAST_MONTH",
-    from: null,
-    to: null,
+    datePreset: presetMap[selectedFilter] || null,
   };
 }
 

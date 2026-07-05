@@ -24,7 +24,7 @@ const POLL_INTERVAL_MS = 30000;
 
 export default function useNotificationsPageState() {
   const [activeTab, setActiveTab] = useState("All");
-  const [selectedFilter, setSelectedFilter] = useState("Last Month");
+  const [selectedFilter, setSelectedFilter] = useState("All");
   const [customRange, setCustomRange] = useState(createDefaultCustomRange);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
