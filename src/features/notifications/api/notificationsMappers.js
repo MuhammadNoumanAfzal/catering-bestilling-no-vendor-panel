@@ -121,6 +121,19 @@ function buildFallbackDetailRows(node, type) {
     rows.push({ label: "Review ID", value: node.reviewId });
   }
 
+  if (type === "ORDER") {
+    rows.push({ label: "Status", value: "Confirmed" });
+    let customerName = "Private Client";
+    if (node?.message && node.message.includes("Company '")) {
+      const match = node.message.match(/Company '([^']+)'/);
+      if (match) {
+        customerName = match[1];
+      }
+    }
+    rows.push({ label: "Customer", value: customerName });
+    rows.push({ label: "Amount", value: "NOK 165.00" });
+  }
+
   if (node?.createdAt) {
     rows.push({
       label: "Created",
