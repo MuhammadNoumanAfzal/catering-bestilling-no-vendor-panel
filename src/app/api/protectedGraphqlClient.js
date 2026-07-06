@@ -137,14 +137,6 @@ export async function executeProtectedGraphqlRequest(query, variables, options =
       accessToken,
     });
 
-    if (queryStr.includes("GetVendorOrderDetail")) {
-      fetch("http://localhost:8099/dump", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(result)
-      }).catch(() => {});
-    }
-
     return result;
   } catch (error) {
     if (error?.isAuthenticationError) {
