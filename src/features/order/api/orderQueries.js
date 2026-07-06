@@ -111,6 +111,17 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         postalCode
       }
       customerDetailsVisible
+      clientOrder {
+        edges {
+          node {
+            id
+            email
+            phone
+            orderNotes
+            addOns
+          }
+        }
+      }
       billingAddress {
         address
         unitFloor

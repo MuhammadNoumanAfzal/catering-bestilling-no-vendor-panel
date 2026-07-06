@@ -156,6 +156,8 @@ function sanitizeOrganization(value) {
 
 function buildCustomerFromApi(node) {
   const customerInfo = node?.customerInfo || {};
+  const clientOrderEdges = node?.clientOrder?.edges || [];
+  const clientOrder = clientOrderEdges[0]?.node || {};
   const address = buildAddressFromNode(node);
   const detailsVisible =
     Boolean(node?.customerDetailsVisible) || resolveOrderStatus(node) !== "New";
@@ -167,8 +169,8 @@ function buildCustomerFromApi(node) {
     organization: sanitizeOrganization(customerInfo.organization),
     postalCode: firstNonEmpty(customerInfo.postalCode, address.postalCode) || "-",
     city: firstNonEmpty(customerInfo.city, address.city) || "-",
-    email: firstNonEmpty(customerInfo.email) || "-",
-    phone: firstNonEmpty(customerInfo.phone) || "-",
+    email: firstNonEmpty(clientOrder.email, customerInfo.email) || "-",
+    phone: firstNonEmpty(clientOrder.phone, customerInfo.phone) || "-",
     detailsVisible,
     historyText: detailsVisible
       ? "View this customer's previous order history."
@@ -558,11 +560,16 @@ export function mapVendorOrderDetail(data, orderId) {
   const address = buildAddressFromNode(node);
   const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
 
-  const addOns = Array.isArray(node?.addOns)
+  const clientOrderEdges = node?.clientOrder?.edges || [];
+  const clientOrder = clientOrderEdges[0]?.node || {};
+
+  const addOns = Array.isArray(clientOrder.addOns)
+    ? clientOrder.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
+    : Array.isArray(node?.addOns)
     ? node.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
     : [];
 
-  const note = firstNonEmpty(node?.specialInstructions, node?.notes) || "";
+  const note = firstNonEmpty(clientOrder.orderNotes, node?.specialInstructions, node?.notes) || "";
 
   return {
     rawId: normalizeString(node?.id),
