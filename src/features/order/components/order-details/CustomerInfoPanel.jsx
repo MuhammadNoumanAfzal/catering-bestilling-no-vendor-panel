@@ -15,16 +15,23 @@ function Field({ label, value, fullWidth = false }) {
 }
 
 function HistoryStatus({ status, tone }) {
-  const toneClasses = {
-    delivered: "bg-[#dff7d9] text-[#248d32] border-[#b9ebb0]",
-    canceled: "bg-[#ffdede] text-[#d84a4a] border-[#f1b9b9]",
-  };
+  const norm = `${status ?? ""}`.toLowerCase();
+  
+  let bg = "bg-[#faf7f4] text-[#80766d] border-[#ebdcd0]";
+  
+  if (norm.includes("confirm") || norm.includes("accept")) {
+    bg = "bg-[#e2f7e3] text-[#218131] border-[#c0ebd1]";
+  } else if (norm.includes("prepar")) {
+    bg = "bg-[#fff3db] text-[#cf7d15] border-[#fde5bd]";
+  } else if (norm.includes("cancel") || norm.includes("reject") || tone === "canceled") {
+    bg = "bg-[#ffe6e6] text-[#cc3b3b] border-[#fcc8c8]";
+  } else if (norm.includes("deliver") || norm.includes("complet")) {
+    bg = "bg-[#e8f2ff] text-[#2968c9] border-[#cbe1ff]";
+  }
 
   return (
     <span
-      className={`inline-flex min-h-5 items-center rounded-full border px-2 text-[9px] font-extrabold ${
-        toneClasses[tone] ?? toneClasses.delivered
-      }`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase ${bg}`}
     >
       {status}
     </span>
@@ -140,7 +147,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
   return (
     <motion.div
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex justify-end bg-black/35"
+      className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-[3px]"
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
       onClick={onClose}
@@ -148,65 +155,67 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
     >
       <motion.aside
         animate={{ opacity: 1, x: 0 }}
-        className="flex h-full w-full max-w-[360px] flex-col bg-white px-4 pb-5 pt-3 shadow-[-8px_0_30px_rgba(0,0,0,0.12)]"
+        className="flex h-full w-full max-w-[420px] flex-col border-l border-[#efe8e0] bg-gradient-to-b from-[#fdfbf7] to-[#ffffff] p-6 shadow-[-10px_0_40px_rgba(26,20,16,0.15)]"
         exit={{ opacity: 0.95, x: 28 }}
         initial={{ opacity: 0.95, x: 28 }}
         onClick={(event) => event.stopPropagation()}
         transition={{ duration: 0.24, ease: "easeOut" }}
       >
-        <div className="flex items-start justify-between gap-3 px-1">
+        <div className="flex items-start justify-between gap-3 border-b border-[#ebdcd0]/60 pb-4">
           <div>
-            <h3 className="text-[20px] font-extrabold text-[#17120e]">Order History</h3>
-            <p className="mt-0.5 text-[13px] font-medium text-[#8a7a6d]">{customer.name}</p>
+            <h3 className="text-[22px] font-black tracking-tight text-[#1a120b]">Order History</h3>
+            <p className="mt-0.5 text-[13px] font-medium text-[#7a6f63]">{customer.name}</p>
           </div>
           <button
-            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#e6ddd4] bg-white text-[#6d6259] transition hover:bg-[#faf6f2]"
+            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e6ddd4] bg-white text-[#766c61] shadow-sm transition-all duration-200 hover:border-[#cf6e38]/60 hover:bg-[#faf6f2] hover:text-[#cf6e38] active:scale-95"
             onClick={onClose}
             type="button"
             aria-label="Close order history"
           >
-            <X size={15} />
+            <X size={16} />
           </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3.5 overflow-y-auto pr-1">
+        <div className="hide-scrollbar mt-5 flex flex-col gap-4 overflow-y-auto pr-1">
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
+            <div className="flex justify-center py-20">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
             </div>
           ) : error ? (
-            <div className="rounded-[12px] border border-red-200 bg-red-50 px-4 py-4 text-[13px] font-semibold leading-[1.5] text-red-700">
+            <div className="rounded-[16px] border border-red-200 bg-red-50 p-4 text-[13px] font-semibold leading-[1.6] text-red-700 shadow-sm">
               {error}
             </div>
           ) : historyOrders.length > 0 ? (
             historyOrders.map((order) => (
               <article
                 key={order.id}
-                className="rounded-[16px] border border-[#e8dfd7] bg-white p-4 shadow-[0_4px_16px_rgba(31,21,15,0.03)] transition hover:border-[#d4c8bd] hover:shadow-[0_6px_20px_rgba(31,21,15,0.06)]"
+                className="group relative rounded-[20px] border border-[#ebdcd0]/70 bg-white p-5 shadow-[0_4px_20px_rgba(40,28,18,0.03)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#cf6e38]/30 hover:shadow-[0_8px_30px_rgba(40,28,18,0.08)]"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] font-semibold tracking-[0.02em] text-[#76706a]">
+                  <span className="text-[11px] font-bold tracking-wider text-[#8a7f75] uppercase">
                     {order.id}
                   </span>
                   <HistoryStatus status={order.status} tone={order.statusTone} />
                 </div>
 
-                <h4 className="mt-2 text-[16px] font-bold leading-tight text-[#1f1f1f]">
+                <h4 className="mt-2.5 text-[16px] font-extrabold leading-snug text-[#1f1f1f] transition-colors group-hover:text-[#cf6e38]">
                   {order.title}
                 </h4>
 
-                <div className="mt-3.5 flex items-center justify-between gap-3 text-[12px] font-medium text-[#76706a]">
+                <div className="my-3.5 border-t border-[#f5ece4]/80" />
+
+                <div className="flex items-center justify-between gap-3 text-[12px] font-medium text-[#766c61]">
                   <span>{order.date}</span>
                   <span>{order.guests}</span>
                 </div>
 
-                <div className="mt-3 text-[16px] font-extrabold text-[#cf6e38]">
+                <div className="mt-3.5 text-[18px] font-black text-[#cf6e38]">
                   {order.amount}
                 </div>
               </article>
             ))
           ) : (
-            <div className="rounded-[12px] border border-[#e6ddd4] bg-[#faf7f4] px-4 py-4 text-[13px] font-semibold leading-[1.5] text-[#6d6259]">
+            <div className="rounded-[16px] border border-[#e6ddd4] bg-[#faf7f4] p-5 text-[13px] font-medium leading-[1.6] text-[#7a6f63] text-center">
               No previous orders found for this customer.
             </div>
           )}
