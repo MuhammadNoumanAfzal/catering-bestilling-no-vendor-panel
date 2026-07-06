@@ -146,6 +146,12 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         createdOn
       }
       availableActions
+      tableware {
+        napkins
+        utensils
+        platesBowls
+        instructions
+      }
     }
   }
 `;

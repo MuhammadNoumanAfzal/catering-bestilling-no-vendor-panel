@@ -577,6 +577,12 @@ export function mapVendorOrderDetail(data, orderId) {
     availableActions: Array.isArray(node?.availableActions) ? node.availableActions : [],
     statuses: Array.isArray(node?.statuses) ? node.statuses : [],
     adjustments: [],
+    tableware: node?.tableware ? {
+      napkins: Boolean(node.tableware.napkins),
+      utensils: Boolean(node.tableware.utensils),
+      platesBowls: Boolean(node.tableware.platesBowls),
+      instructions: node.tableware.instructions || "",
+    } : null,
     raw: {
       ...node,
       orderCarts: carts,

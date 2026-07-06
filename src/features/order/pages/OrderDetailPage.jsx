@@ -199,7 +199,7 @@ export default function OrderDetailPage() {
             orderId={decodedOrderId}
             orderItem={orderDetail.orderItem}
           />
-          <LogisticsPanel logistics={orderDetail.logistics} />
+          <LogisticsPanel logistics={orderDetail.logistics} tableware={orderDetail.tableware} />
         </div>
 
         <aside className="flex flex-col gap-3">
