@@ -225,9 +225,20 @@ function buildOrderItems(carts) {
 }
 
 function buildFinancialSummary(order, carts) {
-  const cartSubtotal = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
-  const total = parseAmount(order?.finalPrice);
-  const subtotal = cartSubtotal || total;
+  const clientOrderEdges = order?.clientOrder?.edges || [];
+  const clientOrder = clientOrderEdges[0]?.node || {};
+
+  const baseSubtotal = parseAmount(clientOrder.subtotal) || carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0) || parseAmount(order?.finalPrice);
+  const deliveryFee = parseAmount(clientOrder.deliveryFee);
+  const taxAmount = parseAmount(clientOrder.taxAmount);
+  const tipAmount = parseAmount(clientOrder.tipAmount);
+  const addOnsTotal = parseAmount(order?.addOnsTotal);
+  const subtotal = clientOrder.subtotal ? baseSubtotal + taxAmount : baseSubtotal;
+  
+  const grandTotal = clientOrder.grandTotal
+    ? parseAmount(clientOrder.grandTotal) + addOnsTotal
+    : subtotal + deliveryFee + tipAmount + addOnsTotal;
+
   const guestCount = resolveGuestCount(order);
   const companyAllowance = parseAmount(order?.companyAllowance);
   const customerAllowance = parseAmount(order?.customerAllowance);
@@ -238,6 +249,34 @@ function buildFinancialSummary(order, carts) {
       value: formatCurrency(subtotal),
     },
   ];
+
+  if (deliveryFee > 0) {
+    summary.push({
+      label: "Delivery Fee",
+      value: formatCurrency(deliveryFee),
+    });
+  }
+
+  if (taxAmount > 0) {
+    summary.push({
+      label: "Sales Tax",
+      value: formatCurrency(taxAmount),
+    });
+  }
+
+  if (addOnsTotal > 0) {
+    summary.push({
+      label: "Add-ons",
+      value: formatCurrency(addOnsTotal),
+    });
+  }
+
+  if (tipAmount > 0) {
+    summary.push({
+      label: "Tip",
+      value: formatCurrency(tipAmount),
+    });
+  }
 
   if (customerAllowance > 0 || companyAllowance > 0) {
     summary.push({
@@ -252,7 +291,7 @@ function buildFinancialSummary(order, carts) {
 
   summary.push({
     label: "Total",
-    value: formatCurrency(total || subtotal),
+    value: formatCurrency(grandTotal),
   });
 
   return summary;
