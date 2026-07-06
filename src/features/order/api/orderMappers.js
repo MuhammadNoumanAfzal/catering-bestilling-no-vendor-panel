@@ -181,15 +181,25 @@ function buildOrderItems(carts) {
   const primaryCart = carts[0];
   const primaryItem = primaryCart?.item || {};
 
-  const includedItems = carts
-    .map((cart) => {
-      const item = cart?.item || {};
-      const title = firstNonEmpty(item.title, item.name);
-      const quantity = toNumber(cart?.quantity, 0);
-      if (!title) return "";
-      return `${title}${quantity ? ` (x${quantity})` : ""}`;
-    })
-    .filter(Boolean);
+  const includedItems = [];
+  carts.forEach((cart) => {
+    const item = cart?.item || {};
+    const itemTitle = firstNonEmpty(item.title, item.name);
+
+    if (Array.isArray(item.menuItems) && item.menuItems.length > 0) {
+      item.menuItems.forEach((mi) => {
+        const title = mi.title || mi.name;
+        if (title) {
+          includedItems.push(title);
+        }
+      });
+    } else {
+      if (itemTitle) {
+        const quantity = toNumber(cart?.quantity, 0);
+        includedItems.push(`${itemTitle}${quantity ? ` (x${quantity})` : ""}`);
+      }
+    }
+  });
 
   const totalPrice = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
 
@@ -198,12 +208,12 @@ function buildOrderItems(carts) {
     quantity:
       carts.length > 0
         ? `${carts.length} item${carts.length > 1 ? "s" : ""} in this order.`
-        : "Item details unavailable",
-    description: "ORDER ITEMS",
+        : "No items",
+    description: primaryItem.description || "",
     includedItems,
     image: primaryItem?.coverImage?.fileUrl || "",
     modalDetails: {
-      title: firstNonEmpty(primaryItem.title, primaryItem.name) || "Order items",
+      title: firstNonEmpty(primaryItem.title, primaryItem.name),
       price: formatCurrency(totalPrice),
       facts: [],
       items: includedItems.map((item) => item.replace(/\s+\((x\d+)\)$/, " $1")),
@@ -548,6 +558,12 @@ export function mapVendorOrderDetail(data, orderId) {
   const address = buildAddressFromNode(node);
   const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
 
+  const addOns = Array.isArray(node?.addOns)
+    ? node.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
+    : [];
+
+  const note = firstNonEmpty(node?.specialInstructions, node?.notes) || "";
+
   return {
     rawId: normalizeString(node?.id),
     version: toNumber(node?.version, 0),
@@ -559,8 +575,8 @@ export function mapVendorOrderDetail(data, orderId) {
     statusTone: mapBackendTone(node?.statusTone, status),
     customer,
     orderItem,
-    addOns: [],
-    note: "",
+    addOns,
+    note,
     logistics: {
       deliveryAddress: address.addressLine || "Address unavailable from API",
       eventDate: dateLabel,

@@ -105,6 +105,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
         image: item?.coverImage?.fileUrl || "",
         quantity: Number(cart?.quantity ?? 0) || 0,
         price: cart?.totalPriceWithTax ?? cart?.priceWithTax ?? 0,
+        menuItems: item.menuItems || [],
       };
     });
 
@@ -322,6 +323,19 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
                           <span>Quantity: {item.quantity || 0}</span>
                         </div>
+                        {item.menuItems && item.menuItems.length > 0 && (
+                          <div className="mt-3 border-t border-[#efe6de] pt-2">
+                            <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#8a7a6d] mb-1">Included Items:</span>
+                            <div className="grid grid-cols-1 gap-1 pl-1">
+                              {item.menuItems.map((mi) => (
+                                <span key={mi.id || mi.title} className="flex items-center gap-1.5 text-[13px] text-[#4a3f35] font-semibold">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-[#9c8f82]" />
+                                  {mi.title || mi.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

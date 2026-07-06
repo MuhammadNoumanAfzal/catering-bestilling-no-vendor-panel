@@ -119,6 +119,18 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         locationName
         addressType
       }
+      notes
+      specialInstructions
+      addOns
+      items {
+        id
+        name
+        quantity
+        price
+        imageUrl
+        description
+        allergens
+      }
       orderCarts {
         edges {
           node {
@@ -134,6 +146,12 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
               description
               coverImage {
                 fileUrl
+              }
+              menuItems {
+                id
+                title
+                description
+                imageUrl
               }
             }
           }
