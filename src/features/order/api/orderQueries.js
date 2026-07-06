@@ -92,6 +92,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       finalPrice
       customerAllowance
       companyAllowance
+      addOnsTotal
       customerName
       eventName
       guestCount
@@ -119,6 +120,11 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             phone
             orderNotes
             addOns
+            subtotal
+            deliveryFee
+            taxAmount
+            tipAmount
+            grandTotal
             items {
               id
               productName
