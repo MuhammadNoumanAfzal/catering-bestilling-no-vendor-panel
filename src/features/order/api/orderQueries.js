@@ -277,6 +277,24 @@ export const GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY = `
       guestCount
       finalPrice
       eventName
+      clientOrder {
+        edges {
+          node {
+            id
+            grandTotal
+            tipAmount
+            items {
+              id
+              productName
+              quantity
+              unitPrice
+              totalPrice
+              selectedOptions
+              selectedAddons
+            }
+          }
+        }
+      }
     }
   }
 `;
