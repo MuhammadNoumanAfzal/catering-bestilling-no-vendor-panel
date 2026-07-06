@@ -130,36 +130,6 @@ export async function executeProtectedGraphqlRequest(query, variables, options =
     };
   }
 
-  if (queryStr.includes("GetVendorCustomerOrderHistory") || queryStr.includes("vendorCustomerOrderHistory")) {
-    return {
-      vendorCustomerOrderHistory: [
-        {
-          id: "8",
-          orderNumber: "ORD-8",
-          status: "Confirmed",
-          statusLabel: "Confirmed",
-          statusTone: "warning",
-          deliveryDate: "2026-07-04",
-          placedAt: "2026-07-04T10:00:00Z",
-          guestCount: 10,
-          finalPrice: "165.00",
-          eventName: "John's Lunch"
-        },
-        {
-          id: "9",
-          orderNumber: "ORD-9",
-          status: "Delivered",
-          statusLabel: "Delivered",
-          statusTone: "success",
-          deliveryDate: "2026-07-04",
-          placedAt: "2026-07-04T11:00:00Z",
-          guestCount: 20,
-          finalPrice: "330.00",
-          eventName: "Pizza Party"
-        }
-      ]
-    };
-  }
 
   try {
     return await executeGraphqlRequest(query, variables, {
