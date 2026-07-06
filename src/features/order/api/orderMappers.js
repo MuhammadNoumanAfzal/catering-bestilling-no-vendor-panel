@@ -562,14 +562,29 @@ export function mapVendorOrderDetail(data, orderId) {
 
   const clientOrderEdges = node?.clientOrder?.edges || [];
   const clientOrder = clientOrderEdges[0]?.node || {};
+  const clientOrderItems = Array.isArray(clientOrder.items) ? clientOrder.items : [];
 
-  const addOns = Array.isArray(clientOrder.addOns)
-    ? clientOrder.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
-    : Array.isArray(node?.addOns)
-    ? node.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
-    : [];
+  let addOns = clientOrderItems
+    .flatMap((item) => item.selectedAddons || [])
+    .map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || ""))
+    .filter(Boolean);
 
-  const note = firstNonEmpty(clientOrder.orderNotes, node?.specialInstructions, node?.notes) || "";
+  if (addOns.length === 0) {
+    addOns = Array.isArray(clientOrder.addOns)
+      ? clientOrder.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
+      : Array.isArray(node?.addOns)
+      ? node.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
+      : [];
+  }
+
+  const note =
+    clientOrderItems
+      .map((item) => item.specialInstructions)
+      .filter(Boolean)
+      .join("\n") ||
+    clientOrder.orderNotes ||
+    firstNonEmpty(node?.specialInstructions, node?.notes) ||
+    "";
 
   return {
     rawId: normalizeString(node?.id),
