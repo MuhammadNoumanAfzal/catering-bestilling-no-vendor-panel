@@ -132,10 +132,12 @@ export async function executeProtectedGraphqlRequest(query, variables, options =
 
 
   try {
-    return await executeGraphqlRequest(query, variables, {
+    const result = await executeGraphqlRequest(query, variables, {
       ...options,
       accessToken,
     });
+
+    return result;
   } catch (error) {
     if (error?.isAuthenticationError) {
       clearStoredAuthSession();

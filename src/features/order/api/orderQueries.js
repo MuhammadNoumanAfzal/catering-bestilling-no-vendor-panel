@@ -119,6 +119,16 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             phone
             orderNotes
             addOns
+            items {
+              id
+              productName
+              quantity
+              unitPrice
+              totalPrice
+              specialInstructions
+              selectedOptions
+              selectedAddons
+            }
           }
         }
       }
