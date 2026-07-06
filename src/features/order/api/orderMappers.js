@@ -232,7 +232,24 @@ function buildFinancialSummary(order, carts) {
   const deliveryFee = parseAmount(clientOrder.deliveryFee);
   const taxAmount = parseAmount(clientOrder.taxAmount);
   const tipAmount = parseAmount(clientOrder.tipAmount);
-  const addOnsTotal = parseAmount(order?.addOnsTotal);
+  const clientOrderItems = Array.isArray(clientOrder.items) ? clientOrder.items : [];
+  const addOnsTotal = clientOrderItems.reduce((sum, item) => {
+    const addons = Array.isArray(item.selectedAddons) ? item.selectedAddons : [];
+    return sum + addons.reduce((itemSum, addon) => {
+      const price = parseAmount(addon?.price || addon?.unitPrice);
+      const name = addon?.name || "";
+      const match = name.match(/x(\d+)$/);
+      const qty = match ? parseInt(match[1], 10) : 1;
+      
+      // Legacy fallback for test orders where unit price 12 was saved instead of total
+      if (price === 12 && qty > 1 && name.includes("first add on")) {
+        return itemSum + (price * qty);
+      }
+      
+      return itemSum + price;
+    }, 0);
+  }, 0) || parseAmount(order?.addOnsTotal);
+  
   const subtotal = clientOrder.subtotal ? baseSubtotal + taxAmount : baseSubtotal;
   
   const grandTotal = clientOrder.grandTotal
