@@ -22,7 +22,7 @@ import {
 } from "../../features/notifications/api/notificationsApi";
 
 const sidebarItems = [
-  { label: "Home", to: "/dashboard", icon: House },
+  { label: "Dashboard", to: "/dashboard", icon: House },
   { label: "Orders", to: "/orders", icon: ShoppingBasket },
   { label: "Menu", to: "/menu", icon: Utensils },
   { label: "Delivery", to: "/delivery", icon: Truck },
