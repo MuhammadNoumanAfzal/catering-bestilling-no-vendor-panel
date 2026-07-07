@@ -336,7 +336,13 @@ export function normalizeBackendStatus(status) {
   if (normalized === "new" || normalized === "placed" || normalized === "pending") return "New";
   if (normalized === "accepted" || normalized === "confirmed") return "Accepted";
   if (normalized === "modified") return "Modified";
-  if (normalized === "preparing" || normalized === "in preparation") return "Preparing";
+  if (
+    normalized === "preparing" ||
+    normalized === "in preparation" ||
+    normalized === "start preparing"
+  ) {
+    return "Preparing";
+  }
   if (normalized === "ready") return "Ready";
   if (normalized === "out for delivery" || normalized === "in transit") return "Out for delivery";
   if (normalized === "delivered" || normalized === "completed") return "Delivered";
