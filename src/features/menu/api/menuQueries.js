@@ -20,9 +20,12 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       slug
     }
     categories {
-      id
-      name
-      slug
+      edges {
+        node {
+          id
+          name
+        }
+      }
     }
     vendorAddOns(first: 100) {
       edges {
@@ -330,7 +333,6 @@ export const CREATE_VENDOR_CATEGORY_MUTATION = `
       instance {
         id
         name
-        slug
       }
     }
   }
@@ -361,9 +363,12 @@ export const DELETE_VENDOR_MENU_MUTATION = `
 export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
   query GetVendorAddOnFormBootstrap {
     categories {
-      id
-      name
-      slug
+      edges {
+        node {
+          id
+          name
+        }
+      }
     }
     menuStatusChoices
     pricingTypeChoices
