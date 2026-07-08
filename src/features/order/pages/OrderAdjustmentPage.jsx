@@ -297,12 +297,15 @@ export default function OrderAdjustmentPage() {
     setSubmitError("");
     setIsSubmitting(true);
 
+    let removedItems = [];
+    let addedItems = [];
+
     try {
-      const removedItems = modifiedItems
+      removedItems = modifiedItems
         .map((item) => item.itemId)
         .filter(Boolean);
 
-      const addedItems = suggestedList
+      addedItems = suggestedList
         .map((item) => item.backendId || item.id || null)
         .filter(Boolean);
 
@@ -326,7 +329,7 @@ export default function OrderAdjustmentPage() {
         : null;
 
       const payload = await createVendorOrderAdjustment({
-        orderId: decodedOrderId,
+        orderId: orderDetail?.rawId || decodedOrderId,
         reason: REASON_ENUM_MAP[reason] || "OTHER",
         vendorNote,
         proposedEventDate: date || null,
@@ -347,7 +350,8 @@ export default function OrderAdjustmentPage() {
         setFormErrors(mapErrorsByField(payload?.errors));
         const errMsg = payload?.message || "Unable to submit the order adjustment.";
         setSubmitError(errMsg);
-        await showVendorErrorAlert(errMsg, "Adjustment Rejected");
+        const debugInfo = `\n\n[Debug Info]\norderId: "${orderDetail?.rawId || decodedOrderId}"\nremovedItems: ${JSON.stringify(removedItems)}\naddedItems: ${JSON.stringify(addedItems)}`;
+        await showVendorErrorAlert(errMsg + debugInfo, "Adjustment Rejected");
         return;
       }
 
@@ -358,7 +362,8 @@ export default function OrderAdjustmentPage() {
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Unable to submit the order adjustment.";
       setSubmitError(errMsg);
-      await showVendorErrorAlert(errMsg, "Submission Error");
+      const debugInfo = `\n\n[Debug Info]\norderId: "${orderDetail?.rawId || decodedOrderId}"\nremovedItems: ${JSON.stringify(removedItems)}\naddedItems: ${JSON.stringify(addedItems)}`;
+      await showVendorErrorAlert(errMsg + debugInfo, "Submission Error");
     } finally {
       setIsSubmitting(false);
     }
