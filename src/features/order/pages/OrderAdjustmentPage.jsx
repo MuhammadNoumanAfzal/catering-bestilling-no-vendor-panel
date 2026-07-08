@@ -37,6 +37,32 @@ function createIdempotencyKey() {
   return `adj-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function extractTime24h(timeValue) {
+  if (!timeValue) return "";
+  const timeStr = String(timeValue).trim();
+  // Match standard HH:MM
+  const hhmmMatch = timeStr.match(/^([01]\d|2[0-3]):[0-5]\d/);
+  if (hhmmMatch) {
+    return hhmmMatch[0];
+  }
+  // Match HH:MM anywhere (e.g. from range "12:00 - 14:00" or datetime)
+  const rangeMatch = timeStr.match(/([01]\d|2[0-3]):[0-5]\d/);
+  if (rangeMatch) {
+    return rangeMatch[0];
+  }
+  return "";
+}
+
+function extractDateYMD(dateValue) {
+  if (!dateValue) return "";
+  const dateStr = String(dateValue).trim();
+  const ymdMatch = dateStr.match(/^\d{4}-\d{2}-\d{2}/);
+  if (ymdMatch) {
+    return ymdMatch[0];
+  }
+  return dateStr;
+}
+
 function mapErrorsByField(errors) {
   if (!Array.isArray(errors)) {
     return {};
@@ -131,8 +157,9 @@ export default function OrderAdjustmentPage() {
 
         const mappedOrder = mapVendorOrderDetail(result, decodedOrderId);
         setOrderDetail(mappedOrder);
-        setDate(mappedOrder?.raw?.deliveryDate || "");
-        setTime(mappedOrder?.raw?.deliveryWindow?.start || mappedOrder?.raw?.eventTime || "");
+        setDate(extractDateYMD(mappedOrder?.raw?.deliveryDate) || "");
+        const rawTimeVal = mappedOrder?.raw?.deliveryWindow || mappedOrder?.raw?.eventTime || "";
+        setTime(extractTime24h(rawTimeVal));
         setPersonCount(Math.max(1, mappedOrder?.guests || 1));
         setAddress(mappedOrder?.logistics?.deliveryAddress || "");
         setApartment(mappedOrder?.raw?.billingAddress?.unitFloor || "");
@@ -262,6 +289,7 @@ export default function OrderAdjustmentPage() {
   async function handleAdjustOrderSubmit() {
     if (!reason) {
       setFormErrors({ reason: "Please select a reason for the change." });
+      await showVendorErrorAlert("Please select a reason for the change.", "Validation Error");
       return;
     }
 
@@ -290,12 +318,19 @@ export default function OrderAdjustmentPage() {
         .filter(Boolean)
         .join("\n");
 
+      const cleanTime = (time || "").trim();
+      const proposedTime = cleanTime
+        ? cleanTime.split(":").length === 2
+          ? `${cleanTime}:00`
+          : cleanTime
+        : null;
+
       const payload = await createVendorOrderAdjustment({
         orderId: decodedOrderId,
         reason: REASON_ENUM_MAP[reason] || "OTHER",
         vendorNote,
         proposedEventDate: date || null,
-        proposedDeliveryWindowStart: time ? `${time}:00` : null,
+        proposedDeliveryWindowStart: proposedTime,
         proposedDeliveryWindowEnd: null,
         proposedGuestCount: personCount,
         proposedAddressLine1: address || null,
@@ -310,7 +345,9 @@ export default function OrderAdjustmentPage() {
 
       if (!payload?.success) {
         setFormErrors(mapErrorsByField(payload?.errors));
-        setSubmitError(payload?.message || "Unable to submit the order adjustment.");
+        const errMsg = payload?.message || "Unable to submit the order adjustment.";
+        setSubmitError(errMsg);
+        await showVendorErrorAlert(errMsg, "Adjustment Rejected");
         return;
       }
 
@@ -319,9 +356,9 @@ export default function OrderAdjustmentPage() {
       );
       navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : "Unable to submit the order adjustment.",
-      );
+      const errMsg = error instanceof Error ? error.message : "Unable to submit the order adjustment.";
+      setSubmitError(errMsg);
+      await showVendorErrorAlert(errMsg, "Submission Error");
     } finally {
       setIsSubmitting(false);
     }
