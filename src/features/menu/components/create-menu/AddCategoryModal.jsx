@@ -144,7 +144,7 @@ export default function AddCategoryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px] animate-fade-in">
-      <div className="relative w-full max-w-[380px] rounded-[18px] border border-[#e8dfd5] bg-[#fffdfa] p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
+      <div className="relative w-full max-w-[440px] rounded-[18px] border border-[#e8dfd5] bg-[#fffdfa] p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#f2ece6]">
           <h2 className="text-[18px] font-extrabold text-[#211913] m-0">
