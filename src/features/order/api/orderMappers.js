@@ -70,7 +70,10 @@ function resolveGuestCount(node, fallbackValue = 0) {
 }
 
 function formatDateParts(value) {
-  const date = new Date(value);
+  const rawValue = normalizeString(value).trim();
+  const normalizedValue =
+    /^\d{4}-\d{2}-\d{2}$/.test(rawValue) ? `${rawValue}T00:00:00` : rawValue;
+  const date = new Date(normalizedValue);
 
   if (Number.isNaN(date.getTime())) {
     return {
@@ -505,7 +508,7 @@ export function getStatusMutationValue(status) {
 
 export function mapVendorOrderNode(node) {
   const status = resolveOrderStatus(node);
-  const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
+  const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const carts = getOrderCartsArray(node?.orderCarts);
   const primaryTitle = firstNonEmpty(carts[0]?.item?.title, carts[0]?.item?.name);
