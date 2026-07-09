@@ -4,6 +4,7 @@ import {
   SEARCH_AVAILABLE_AREAS_QUERY,
   UPDATE_VENDOR_DELIVERY_SETTINGS_MUTATION,
   VALIDATE_VENDOR_DELIVERY_SETTINGS_MUTATION,
+  CREATE_VALID_AREA_MUTATION,
 } from "./deliveryQueries";
 
 export function getVendorDeliverySettings() {
@@ -43,5 +44,19 @@ export async function validateVendorDeliverySettings(input) {
     isValid: false,
     issues: [],
     errors: [],
+  };
+}
+
+export async function createValidArea({ name, postCode }) {
+  const result = await executeProtectedGraphqlRequest(
+    CREATE_VALID_AREA_MUTATION,
+    { input: { name: name.trim(), postCode: postCode.trim() } },
+  );
+
+  return result?.createValidArea || {
+    success: false,
+    message: "Unable to create service area.",
+    errors: [],
+    validArea: null,
   };
 }
