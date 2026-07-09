@@ -504,3 +504,31 @@ export const DELETE_VENDOR_ADD_ON_MUTATION = `
     }
   }
 `;
+
+export const DELETE_VENDOR_CATEGORY_MUTATION = `
+  mutation DeleteVendorCategory($id: ID!) {
+    vendorCategoryDelete(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+export const DELETE_FOOD_TYPE_MUTATION = `
+  mutation DeleteFoodType($id: ID!) {
+    foodTypeDelete(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+export const DELETE_OCCASION_MUTATION = `
+  mutation DeleteOccasion($id: ID!) {
+    occasionDelete(id: $id) {
+      success
+      message
+    }
+  }
+`;
+

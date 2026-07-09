@@ -6,6 +6,9 @@ import {
   CREATE_VENDOR_CATEGORY_MUTATION,
   DELETE_VENDOR_ADD_ON_MUTATION,
   DELETE_VENDOR_MENU_MUTATION,
+  DELETE_VENDOR_CATEGORY_MUTATION,
+  DELETE_FOOD_TYPE_MUTATION,
+  DELETE_OCCASION_MUTATION,
   GET_VENDOR_ADD_ON_DETAIL_QUERY,
   GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY,
   GET_VENDOR_ADD_ONS_QUERY,
@@ -170,4 +173,19 @@ export async function deleteVendorMenu(id) {
 export async function deleteVendorAddOn(id) {
   const result = await executeProtectedGraphqlRequest(DELETE_VENDOR_ADD_ON_MUTATION, { id });
   return unwrapSuccessfulResult(result, "vendorAddOnDelete", "Unable to delete the add-on.");
+}
+
+export async function deleteVendorCategory(id) {
+  const result = await executeProtectedGraphqlRequest(DELETE_VENDOR_CATEGORY_MUTATION, { id });
+  return unwrapSuccessfulResult(result, "vendorCategoryDelete", "Unable to delete the category.");
+}
+
+export async function deleteFoodType(id) {
+  const result = await executeProtectedGraphqlRequest(DELETE_FOOD_TYPE_MUTATION, { id });
+  return unwrapSuccessfulResult(result, "foodTypeDelete", "Unable to delete the food type.");
+}
+
+export async function deleteOccasion(id) {
+  const result = await executeProtectedGraphqlRequest(DELETE_OCCASION_MUTATION, { id });
+  return unwrapSuccessfulResult(result, "occasionDelete", "Unable to delete the occasion.");
 }
