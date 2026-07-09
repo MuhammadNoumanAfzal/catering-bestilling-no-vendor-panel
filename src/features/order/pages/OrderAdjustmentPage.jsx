@@ -37,6 +37,27 @@ function createIdempotencyKey() {
   return `adj-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function extractDatabaseId(id) {
+  if (!id) return null;
+  const strId = String(id).trim();
+
+  try {
+    let base64 = strId;
+    while (base64.length % 4 !== 0) {
+      base64 += "=";
+    }
+    const decoded = atob(base64);
+    if (decoded.includes(":")) {
+      const parts = decoded.split(":");
+      return parts[parts.length - 1];
+    }
+  } catch {
+    // Ignore error and return original id
+  }
+
+  return strId;
+}
+
 function extractTime24h(timeValue) {
   if (!timeValue) return "";
   const timeStr = String(timeValue).trim();
@@ -208,7 +229,7 @@ export default function OrderAdjustmentPage() {
         if (!isCancelled) {
           setAvailableSuggestions(items);
         }
-      } catch (error) {
+      } catch {
         if (!isCancelled) {
           setAvailableSuggestions([]);
         }
@@ -302,11 +323,11 @@ export default function OrderAdjustmentPage() {
 
     try {
       removedItems = modifiedItems
-        .map((item) => item.itemId)
+        .map((item) => extractDatabaseId(item.itemId))
         .filter(Boolean);
 
       addedItems = suggestedList
-        .map((item) => item.backendId || item.id || null)
+        .map((item) => extractDatabaseId(item.backendId || item.id || null))
         .filter(Boolean);
 
       const vendorNote = [
@@ -328,30 +349,58 @@ export default function OrderAdjustmentPage() {
           : cleanTime
         : null;
 
-      const payload = await createVendorOrderAdjustment({
-        orderId: orderDetail?.rawId || decodedOrderId,
+      const originalDate = extractDateYMD(orderDetail?.raw?.deliveryDate) || "";
+      const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
+      const originalTime = extractTime24h(rawTimeVal);
+      const originalGuests = Math.max(1, orderDetail?.guests || 1);
+      const originalAddress = orderDetail?.logistics?.deliveryAddress || "";
+      const originalApartment = orderDetail?.raw?.billingAddress?.unitFloor || "";
+      const originalCity = orderDetail?.logistics?.city || orderDetail?.customer?.city || "";
+      const originalPostalCode = orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
+
+      const mutationInput = {
+        orderId: extractDatabaseId(orderDetail?.rawId || decodedOrderId),
         reason: REASON_ENUM_MAP[reason] || "OTHER",
         vendorNote,
-        proposedEventDate: date || null,
-        proposedDeliveryWindowStart: proposedTime,
-        proposedDeliveryWindowEnd: null,
-        proposedGuestCount: personCount,
-        proposedAddressLine1: address || null,
-        proposedAddressLine2: apartment || null,
-        proposedCity: city || null,
-        proposedPostalCode: postalCode || null,
         removedItems,
         addedItems,
         ...(orderDetail?.version ? { version: orderDetail.version } : {}),
         idempotencyKey: createIdempotencyKey(),
-      });
+      };
+
+      if (date !== originalDate) {
+        mutationInput.proposedEventDate = date || null;
+      }
+      if (cleanTime !== originalTime) {
+        mutationInput.proposedDeliveryWindowStart = proposedTime;
+      }
+      if (personCount !== originalGuests) {
+        mutationInput.proposedGuestCount = personCount;
+      }
+      if (address !== originalAddress) {
+        mutationInput.proposedAddressLine1 = address || null;
+      }
+      if (apartment !== originalApartment) {
+        mutationInput.proposedAddressLine2 = apartment || null;
+      }
+      if (city !== originalCity) {
+        mutationInput.proposedCity = city || null;
+      }
+      if (postalCode !== originalPostalCode) {
+        mutationInput.proposedPostalCode = postalCode || null;
+      }
+
+      const payload = await createVendorOrderAdjustment(mutationInput);
 
       if (!payload?.success) {
         setFormErrors(mapErrorsByField(payload?.errors));
         const errMsg = payload?.message || "Unable to submit the order adjustment.";
         setSubmitError(errMsg);
-        const debugInfo = `\n\n[Debug Info]\norderId: "${orderDetail?.rawId || decodedOrderId}"\nremovedItems: ${JSON.stringify(removedItems)}\naddedItems: ${JSON.stringify(addedItems)}`;
-        await showVendorErrorAlert(errMsg + debugInfo, "Adjustment Rejected");
+        console.error("Order adjustment submission failed:", {
+          mutationInput,
+          errors: payload?.errors,
+        });
+        await showVendorErrorAlert(errMsg, "Adjustment Rejected");
         return;
       }
 
@@ -362,8 +411,12 @@ export default function OrderAdjustmentPage() {
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Unable to submit the order adjustment.";
       setSubmitError(errMsg);
-      const debugInfo = `\n\n[Debug Info]\norderId: "${orderDetail?.rawId || decodedOrderId}"\nremovedItems: ${JSON.stringify(removedItems)}\naddedItems: ${JSON.stringify(addedItems)}`;
-      await showVendorErrorAlert(errMsg + debugInfo, "Submission Error");
+      console.error("Order adjustment submit error:", error, {
+        orderId: extractDatabaseId(orderDetail?.rawId || decodedOrderId),
+        removedItems,
+        addedItems,
+      });
+      await showVendorErrorAlert(errMsg, "Submission Error");
     } finally {
       setIsSubmitting(false);
     }
