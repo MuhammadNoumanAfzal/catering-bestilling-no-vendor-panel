@@ -325,11 +325,6 @@ export const CREATE_VENDOR_CATEGORY_MUTATION = `
     vendorCategoryMutation(input: $input) {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
       instance {
         id
         name
