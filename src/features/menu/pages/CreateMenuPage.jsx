@@ -213,9 +213,10 @@ export default function CreateMenuPage() {
       />
 
       <AddCategoryModal
-        existingCategories={categoryOptions.map((option) => option.label)}
+        options={categoryOptions}
         isOpen={Boolean(formState.isAddCategoryModalOpen)}
         onAdd={actions.handleCreateCategory}
+        onEdit={actions.handleEditCategory}
         onClose={() => actions.setField("isAddCategoryModalOpen", false)}
         submitLabel="Add Category"
         submittingLabel="Adding..."
@@ -225,10 +226,11 @@ export default function CreateMenuPage() {
       <AddCategoryModal
         duplicateErrorMessage="This food type already exists."
         emptyErrorMessage="Food type name cannot be empty."
-        existingCategories={menuTypeOptions.map((option) => option.label)}
+        options={menuTypeOptions}
         fieldLabel="Food Type Name"
         isOpen={Boolean(formState.isAddMealTypeModalOpen)}
         onAdd={actions.handleCreateMealType}
+        onEdit={actions.handleEditMealType}
         onClose={() => actions.setField("isAddMealTypeModalOpen", false)}
         placeholder="e.g. Hot Meal, Desi Food"
         submitLabel="Add Food Type"
@@ -239,10 +241,11 @@ export default function CreateMenuPage() {
       <AddCategoryModal
         duplicateErrorMessage="This occasion already exists."
         emptyErrorMessage="Occasion name cannot be empty."
-        existingCategories={occasionOptions.map((option) => option.label)}
+        options={occasionOptions}
         fieldLabel="Occasion Name"
         isOpen={Boolean(formState.isAddOccasionModalOpen)}
         onAdd={actions.handleCreateOccasion}
+        onEdit={actions.handleEditOccasion}
         onClose={() => actions.setField("isAddOccasionModalOpen", false)}
         placeholder="e.g. Office Lunch, Birthday Party"
         submitLabel="Add Occasion"
@@ -253,10 +256,11 @@ export default function CreateMenuPage() {
       <AddCategoryModal
         duplicateErrorMessage="This allergen already exists."
         emptyErrorMessage="Allergen name cannot be empty."
-        existingCategories={allergenOptions.map((option) => option.label)}
+        options={allergenOptions}
         fieldLabel="Allergen Name"
         isOpen={Boolean(formState.isAddAllergenModalOpen)}
         onAdd={actions.handleCreateAllergen}
+        onEdit={actions.handleEditAllergen}
         onClose={() => actions.setField("isAddAllergenModalOpen", false)}
         placeholder="e.g. Shellfish, Mustard"
         submitLabel="Add Allergen"

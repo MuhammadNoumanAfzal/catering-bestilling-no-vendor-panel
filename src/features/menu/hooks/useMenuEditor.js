@@ -424,6 +424,23 @@ export function useMenuEditor() {
     await showVendorSuccessToast(result.message || "Category created.");
   }
 
+  async function handleEditCategory(id, newName) {
+    const result = await createVendorCategory({ id, name: newName });
+    const updatedOption = {
+      label: result.instance?.name || newName,
+      value: result.instance?.id || id,
+    };
+
+    setCategoryOptions((currentOptions) =>
+      currentOptions.map((opt) => (opt.value === id ? updatedOption : opt)),
+    );
+    setFormState((current) => ({
+      ...current,
+      category: current.category === id ? updatedOption.value : current.category,
+    }));
+    await showVendorSuccessToast(result.message || "Category updated successfully.");
+  }
+
   function handleAddMealTypeClick() {
     setField("isAddMealTypeModalOpen", true);
   }
@@ -444,6 +461,23 @@ export function useMenuEditor() {
       isAddMealTypeModalOpen: false,
     }));
     await showVendorSuccessToast(result.message || "Food type created.");
+  }
+
+  async function handleEditMealType(id, newName) {
+    const result = await createFoodType({ id, name: newName });
+    const updatedOption = {
+      label: result.instance?.name || newName,
+      value: result.instance?.id || result.instance?.slug || id,
+    };
+
+    setMenuTypeOptions((currentOptions) =>
+      currentOptions.map((opt) => (opt.value === id ? updatedOption : opt)),
+    );
+    setFormState((current) => ({
+      ...current,
+      menuTypes: current.menuTypes.map((val) => (val === id ? updatedOption.value : val)),
+    }));
+    await showVendorSuccessToast(result.message || "Food type updated successfully.");
   }
 
   function handleAddOccasionClick() {
@@ -468,6 +502,25 @@ export function useMenuEditor() {
     await showVendorSuccessToast(result.message || "Occasion created.");
   }
 
+  async function handleEditOccasion(id, newName) {
+    const result = await createOccasion({ id, name: newName });
+    const updatedOption = {
+      label: result.instance?.name || newName,
+      value: result.instance?.id || result.instance?.slug || id,
+    };
+
+    setOccasionOptions((currentOptions) =>
+      currentOptions.map((opt) => (opt.value === id ? updatedOption : opt)),
+    );
+    setFormState((current) => ({
+      ...current,
+      selectedOccasions: current.selectedOccasions.map((val) =>
+        val === id ? updatedOption.value : val,
+      ),
+    }));
+    await showVendorSuccessToast(result.message || "Occasion updated successfully.");
+  }
+
   function handleAddAllergenClick() {
     setField("isAddAllergenModalOpen", true);
   }
@@ -482,6 +535,28 @@ export function useMenuEditor() {
     setAllergenOptions((currentOptions) => [...currentOptions, nextOption]);
     setField("isAddAllergenModalOpen", false);
     await showVendorSuccessToast(result.message || "Allergen created.");
+  }
+
+  async function handleEditAllergen(id, newName) {
+    const result = await createAllergen({ id, name: newName });
+    const updatedOption = {
+      label: result.instance?.name || newName,
+      value: result.instance?.id || result.instance?.slug || id,
+    };
+
+    setAllergenOptions((currentOptions) =>
+      currentOptions.map((opt) => (opt.value === id ? updatedOption : opt)),
+    );
+    setFormState((current) => ({
+      ...current,
+      menuItems: current.menuItems.map((item) => ({
+        ...item,
+        allergens: (item.allergens || []).map((val) =>
+          val === id ? updatedOption.value : val,
+        ),
+      })),
+    }));
+    await showVendorSuccessToast(result.message || "Allergen updated successfully.");
   }
 
   const menuItemsForDisplay = formState.menuItems.map((item) => ({
@@ -519,6 +594,10 @@ export function useMenuEditor() {
       handleCreateCategory,
       handleCreateMealType,
       handleCreateOccasion,
+      handleEditAllergen,
+      handleEditCategory,
+      handleEditMealType,
+      handleEditOccasion,
       handleImageUpload,
       handleImportMenuItemsRequest,
       handlePublish,
