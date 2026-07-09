@@ -276,6 +276,23 @@ export function useAddOnEditor() {
     await showVendorSuccessToast(result.message || "Meal type created.");
   }
 
+  async function handleEditMealType(id, newName) {
+    const result = await createFoodType({ id, name: newName });
+    const updatedOption = {
+      label: result.instance?.name || newName,
+      value: result.instance?.id || result.instance?.slug || id,
+    };
+
+    setMealTypeOptions((currentOptions) =>
+      currentOptions.map((opt) => (opt.value === id ? updatedOption : opt)),
+    );
+    setFormState((current) => ({
+      ...current,
+      mealTypes: current.mealTypes.map((val) => (val === id ? updatedOption.value : val)),
+    }));
+    await showVendorSuccessToast(result.message || "Meal type updated successfully.");
+  }
+
   async function saveCurrentAddOn({ navigateAfterSave }) {
     setFieldErrors(emptyFieldErrors);
     const isValid = await validateAddOn();
@@ -348,6 +365,7 @@ export function useAddOnEditor() {
       handleAddMealTypeClick,
       handleCancel,
       handleCreateMealType,
+      handleEditMealType,
       handleImageUpload,
       handleSave,
       setField,

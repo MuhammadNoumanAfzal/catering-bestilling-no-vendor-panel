@@ -71,9 +71,14 @@ export async function saveVendorAddOn(variables) {
   return unwrapSuccessfulResult(result, "vendorAddOnMutation", "Unable to save the add-on.");
 }
 
-export async function createVendorCategory(name) {
+export async function createVendorCategory(input) {
+  const variables =
+    typeof input === "string"
+      ? { name: input }
+      : { id: input?.id || null, name: input?.name || "" };
+
   const result = await executeProtectedGraphqlRequest(CREATE_VENDOR_CATEGORY_MUTATION, {
-    input: { name },
+    input: variables,
   });
 
   return unwrapSuccessfulResult(
@@ -83,9 +88,14 @@ export async function createVendorCategory(name) {
   );
 }
 
-export async function createFoodType(name) {
+export async function createFoodType(input) {
+  const variables =
+    typeof input === "string"
+      ? { name: input }
+      : { id: input?.id || null, name: input?.name || "" };
+
   const result = await executeProtectedGraphqlRequest(CREATE_FOOD_TYPE_MUTATION, {
-    input: { name },
+    input: variables,
   });
 
   return unwrapSuccessfulResult(result, "foodTypeMutation", "Unable to create the meal type.");
@@ -113,9 +123,14 @@ export async function createOccasion(input) {
   return unwrapSuccessfulResult(result, "occasionMutation", "Unable to create the occasion.");
 }
 
-export async function createAllergen(name) {
+export async function createAllergen(input) {
+  const variables =
+    typeof input === "string"
+      ? { name: input }
+      : { id: input?.id || null, name: input?.name || "" };
+
   const result = await executeProtectedGraphqlRequest(CREATE_ALLERGEN_MUTATION, {
-    input: { name },
+    input: variables,
   });
 
   return unwrapSuccessfulResult(result, "allergenMutation", "Unable to create the allergen.");

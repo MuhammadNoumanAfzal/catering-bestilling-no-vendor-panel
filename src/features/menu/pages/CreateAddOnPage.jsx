@@ -122,7 +122,8 @@ export default function CreateAddOnPage() {
       <AddCategoryModal
         duplicateErrorMessage="This meal type already exists."
         emptyErrorMessage="Meal type name cannot be empty."
-        existingCategories={mealTypeOptions.map((option) => option.label)}
+        options={mealTypeOptions}
+        onEdit={actions.handleEditMealType}
         fieldLabel="Meal Type Name"
         isOpen={Boolean(formState.isAddMealTypeModalOpen)}
         onAdd={actions.handleCreateMealType}
