@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   createFoodType,
   createVendorCategory,
+  deleteFoodType,
   getVendorAddOnDetail,
   getVendorAddOnFormBootstrap,
   saveVendorAddOn,
@@ -293,6 +294,18 @@ export function useAddOnEditor() {
     await showVendorSuccessToast(result.message || "Meal type updated successfully.");
   }
 
+  async function handleDeleteMealType(id) {
+    const result = await deleteFoodType(id);
+    setMealTypeOptions((currentOptions) =>
+      currentOptions.filter((opt) => opt.value !== id),
+    );
+    setFormState((current) => ({
+      ...current,
+      mealTypes: current.mealTypes.filter((val) => val !== id),
+    }));
+    await showVendorSuccessToast(result.message || "Meal type deleted successfully.");
+  }
+
   async function saveCurrentAddOn({ navigateAfterSave }) {
     setFieldErrors(emptyFieldErrors);
     const isValid = await validateAddOn();
@@ -365,6 +378,7 @@ export function useAddOnEditor() {
       handleAddMealTypeClick,
       handleCancel,
       handleCreateMealType,
+      handleDeleteMealType,
       handleEditMealType,
       handleImageUpload,
       handleSave,

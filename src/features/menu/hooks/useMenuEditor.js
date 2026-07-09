@@ -6,6 +6,9 @@ import {
   createFoodType,
   createOccasion,
   createVendorCategory,
+  deleteVendorCategory,
+  deleteFoodType,
+  deleteOccasion,
   getVendorMenuDetail,
   getVendorMenuFormBootstrap,
   getVendorMenus,
@@ -559,6 +562,42 @@ export function useMenuEditor() {
     await showVendorSuccessToast(result.message || "Allergen updated successfully.");
   }
 
+  async function handleDeleteCategory(id) {
+    const result = await deleteVendorCategory(id);
+    setCategoryOptions((currentOptions) =>
+      currentOptions.filter((opt) => opt.value !== id),
+    );
+    setFormState((current) => ({
+      ...current,
+      category: current.category === id ? "" : current.category,
+    }));
+    await showVendorSuccessToast(result.message || "Category deleted successfully.");
+  }
+
+  async function handleDeleteMealType(id) {
+    const result = await deleteFoodType(id);
+    setMenuTypeOptions((currentOptions) =>
+      currentOptions.filter((opt) => opt.value !== id),
+    );
+    setFormState((current) => ({
+      ...current,
+      menuTypes: current.menuTypes.filter((val) => val !== id),
+    }));
+    await showVendorSuccessToast(result.message || "Food type deleted successfully.");
+  }
+
+  async function handleDeleteOccasion(id) {
+    const result = await deleteOccasion(id);
+    setOccasionOptions((currentOptions) =>
+      currentOptions.filter((opt) => opt.value !== id),
+    );
+    setFormState((current) => ({
+      ...current,
+      selectedOccasions: current.selectedOccasions.filter((val) => val !== id),
+    }));
+    await showVendorSuccessToast(result.message || "Occasion deleted successfully.");
+  }
+
   const menuItemsForDisplay = formState.menuItems.map((item) => ({
     ...item,
     image: resolveMediaUrl(item.image),
@@ -594,6 +633,9 @@ export function useMenuEditor() {
       handleCreateCategory,
       handleCreateMealType,
       handleCreateOccasion,
+      handleDeleteCategory,
+      handleDeleteMealType,
+      handleDeleteOccasion,
       handleEditAllergen,
       handleEditCategory,
       handleEditMealType,

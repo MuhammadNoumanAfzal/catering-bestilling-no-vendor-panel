@@ -1,4 +1,4 @@
-import { Pencil, X } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 export default function AddCategoryModal({
@@ -6,6 +6,7 @@ export default function AddCategoryModal({
   onClose,
   onAdd,
   onEdit,
+  onDelete,
   options,
   existingCategories,
   title = "Add New Category",
@@ -24,6 +25,9 @@ export default function AddCategoryModal({
   const [editName, setEditName] = useState("");
   const [isSubmittingInline, setIsSubmittingInline] = useState(false);
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   if (!isOpen) return null;
 
   const finalCategoriesList = options
@@ -35,6 +39,8 @@ export default function AddCategoryModal({
     setError("");
     setEditingId(null);
     setEditName("");
+    setDeleteConfirmId(null);
+    setIsDeleting(false);
     onClose();
   };
 
@@ -69,6 +75,7 @@ export default function AddCategoryModal({
   const handleStartEdit = (option) => {
     setEditingId(option.value);
     setEditName(option.label);
+    setDeleteConfirmId(null);
     if (error) setError("");
   };
 
@@ -109,6 +116,32 @@ export default function AddCategoryModal({
     }
   };
 
+  const handleStartDelete = (id) => {
+    setDeleteConfirmId(id);
+    setEditingId(null);
+    if (error) setError("");
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmId(null);
+    if (error) setError("");
+  };
+
+  const handleConfirmDelete = async (id) => {
+    try {
+      setIsDeleting(true);
+      if (onDelete) {
+        await onDelete(id);
+      }
+      setDeleteConfirmId(null);
+      setError("");
+    } catch (submitError) {
+      setError(submitError?.message || "Unable to delete the item.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px] animate-fade-in">
       <div className="relative w-full max-w-[380px] rounded-[18px] border border-[#e8dfd5] bg-[#fffdfa] p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
@@ -119,7 +152,7 @@ export default function AddCategoryModal({
           </h2>
           <button
             onClick={() => {
-              if (isSubmitting || isSubmittingInline) {
+              if (isSubmitting || isSubmittingInline || isDeleting) {
                 return;
               }
               handleCloseModal();
@@ -147,7 +180,7 @@ export default function AddCategoryModal({
                 setNewCategoryName(e.target.value);
                 if (error) setError("");
               }}
-              disabled={isSubmitting || isSubmittingInline}
+              disabled={isSubmitting || isSubmittingInline || isDeleting}
             />
             {error && (
               <span className="text-[12px] font-semibold text-red-500 mt-1 block">
@@ -160,20 +193,20 @@ export default function AddCategoryModal({
           <div className="pt-2 flex justify-end gap-2">
             <button
               onClick={() => {
-                if (isSubmitting || isSubmittingInline) {
+                if (isSubmitting || isSubmittingInline || isDeleting) {
                   return;
                 }
                 handleCloseModal();
               }}
               type="button"
-              disabled={isSubmitting || isSubmittingInline}
+              disabled={isSubmitting || isSubmittingInline || isDeleting}
               className="h-[36px] px-3.5 rounded-lg border border-[#d6cdc4] bg-white text-[13px] font-extrabold text-[#3a2e25] hover:bg-[#faf8f6] active:scale-95 transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || isSubmittingInline}
+              disabled={isSubmitting || isSubmittingInline || isDeleting}
               className="h-[36px] px-4.5 rounded-lg bg-[#cf6e38] text-[13px] font-extrabold text-white hover:bg-[#bf622f] active:scale-95 transition cursor-pointer"
             >
               {isSubmitting ? submittingLabel : submitLabel}
@@ -220,19 +253,53 @@ export default function AddCategoryModal({
                         Cancel
                       </button>
                     </div>
+                  ) : deleteConfirmId === option.value ? (
+                    <div className="flex w-full items-center justify-between gap-1.5 bg-red-50/50 p-1.5 rounded-lg border border-red-100 animate-pulse">
+                      <span className="text-[11.5px] font-bold text-red-600">Delete?</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleConfirmDelete(option.value)}
+                          className="rounded bg-red-600 px-2 py-0.5 text-[10.5px] font-bold text-white hover:bg-red-700 transition cursor-pointer"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? "..." : "Yes"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelDelete}
+                          className="rounded border border-red-200 bg-white px-2 py-0.5 text-[10.5px] font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          disabled={isDeleting}
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <>
                       <span className="text-[13.5px] font-medium text-[#211913] truncate">
                         {option.label}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => handleStartEdit(option)}
-                        disabled={isSubmitting || isSubmittingInline}
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e8dfd5] text-[#746a62] hover:bg-[#faf8f6] hover:text-[#cf6e38] transition cursor-pointer disabled:opacity-50"
-                      >
-                        <Pencil size={11} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(option)}
+                          disabled={isSubmitting || isSubmittingInline || isDeleting}
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e8dfd5] text-[#746a62] hover:bg-[#faf8f6] hover:text-[#cf6e38] transition cursor-pointer disabled:opacity-50"
+                        >
+                          <Pencil size={11} />
+                        </button>
+                        {onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => handleStartDelete(option.value)}
+                            disabled={isSubmitting || isSubmittingInline || isDeleting}
+                            className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e8dfd5] text-[#746a62] hover:bg-red-50 hover:text-red-500 transition cursor-pointer disabled:opacity-50"
+                          >
+                            <Trash2 size={11} />
+                          </button>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>

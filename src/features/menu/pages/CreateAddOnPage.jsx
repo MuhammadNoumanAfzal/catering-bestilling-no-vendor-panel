@@ -124,6 +124,7 @@ export default function CreateAddOnPage() {
         emptyErrorMessage="Meal type name cannot be empty."
         options={mealTypeOptions}
         onEdit={actions.handleEditMealType}
+        onDelete={actions.handleDeleteMealType}
         fieldLabel="Meal Type Name"
         isOpen={Boolean(formState.isAddMealTypeModalOpen)}
         onAdd={actions.handleCreateMealType}
