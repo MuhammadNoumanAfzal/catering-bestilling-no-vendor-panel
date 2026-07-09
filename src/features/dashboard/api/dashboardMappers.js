@@ -289,13 +289,13 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
   if (dateFilter === "Last 2 Days") {
     const start = new Date(end);
     start.setDate(end.getDate() - 1);
-    datePreset = "CUSTOM";
+    datePreset = "custom";
     dateFrom = formatAsIsoDate(start);
     dateTo = formatAsIsoDate(end);
   } else if (dateFilter === "Last 7 Days") {
-    datePreset = "LAST_7_DAYS";
+    datePreset = "7days";
   } else if (dateFilter === "Custom Date" && startDate && endDate) {
-    datePreset = "CUSTOM";
+    datePreset = "custom";
     dateFrom = startDate;
     dateTo = endDate;
   }
