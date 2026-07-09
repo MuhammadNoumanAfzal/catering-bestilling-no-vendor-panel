@@ -167,10 +167,6 @@ export const UPDATE_VENDOR_BUSINESS_PROFILE_MUTATION = `
         customBusinessType
         establishedYear
         taxId
-        profileImage {
-          fileId
-          fileUrl
-        }
         storeStatus
       }
     }
