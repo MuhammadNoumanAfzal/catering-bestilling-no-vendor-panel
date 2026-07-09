@@ -250,11 +250,6 @@ export const CREATE_FOOD_TYPE_MUTATION = `
     foodTypeMutation(input: $input) {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
       instance {
         id
         name
@@ -287,11 +282,6 @@ export const CREATE_OCCASION_MUTATION = `
     ) {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
       instance {
         id
         name
@@ -306,11 +296,6 @@ export const CREATE_ALLERGEN_MUTATION = `
     allergenMutation(input: $input) {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
       instance {
         id
         name
