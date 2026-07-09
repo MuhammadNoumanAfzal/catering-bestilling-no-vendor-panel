@@ -69,6 +69,8 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       id
       invoiceNumber
       status
+      email
+      phone
       eventDate
       eventTime
       personCount
@@ -79,6 +81,12 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       deliveryPostalCode
       deliveryAddressStr
       orderNotes
+      tableware {
+        napkins
+        utensils
+        platesBowls
+        instructions
+      }
       pricing {
         subtotal
         taxRate
@@ -109,6 +117,20 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
           unitPrice
           quantity
           totalPrice
+        }
+        product {
+          id
+          name
+          description
+          coverImage {
+            id
+            fileUrl
+          }
+          menuItems {
+            id
+            title
+            description
+          }
         }
       }
     }
