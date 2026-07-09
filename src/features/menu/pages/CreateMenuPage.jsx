@@ -184,16 +184,7 @@ export default function CreateMenuPage() {
             }
           />
 
-          {!isViewMode ? (
-            <div className="rounded-[18px] border border-[#e7dbd1] bg-[#fffaf6] px-4 py-4 shadow-[0_10px_24px_rgba(67,40,22,0.05)]">
-              <p className="m-0 text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#a06d4e]">
-                API Ready
-              </p>
-              <p className="mt-2 text-[13px] font-medium leading-[1.55] text-[#6e6259]">
-                Categories, food types, occasions, pricing modes, add-ons, menu details, and saves are now loaded from the vendor menu API.
-              </p>
-            </div>
-          ) : null}
+
         </div>
       </div>
 
