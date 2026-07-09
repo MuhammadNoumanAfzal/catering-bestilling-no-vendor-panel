@@ -14,12 +14,16 @@ export default function DeliveryPage() {
   const {
     activeDays,
     baseFee,
+    customAreaDraft,
+    customAreaErrors,
     customSlotDraft,
     fieldErrors,
     freeDelivery,
     handleAddServiceArea,
     handleCancelChanges,
     handleCloseAddSlotModal,
+    handleCreateCustomArea,
+    handleCustomAreaDraftChange,
     handleOpenAddSlotModal,
     handleRemoveTimeSlot,
     handleRemoveServiceArea,
@@ -31,6 +35,7 @@ export default function DeliveryPage() {
     handleToggleMode,
     hasUnsavedChanges,
     isAddSlotModalOpen,
+    isCreatingArea,
     isDeliveryDisabled,
     isLoading,
     isPickupOnly,
@@ -43,6 +48,7 @@ export default function DeliveryPage() {
     maxOrdersPerTimeSlot,
     pickupAddress,
     pickupInstructions,
+    resetCustomAreaDraft,
     serviceAreaResults,
     serviceAreaSearch,
     serviceAreas,
@@ -105,11 +111,17 @@ export default function DeliveryPage() {
           />
 
           <DeliveryAreasSection
+            customAreaDraft={customAreaDraft}
+            customAreaErrors={customAreaErrors}
             disabled={isPageDisabled || isDeliveryDisabled}
             error={fieldErrors.validAreaIds || fieldErrors.serviceAreas || ""}
+            isCreatingArea={isCreatingArea}
             isSearching={isSearchingAreas}
             onAddArea={handleAddServiceArea}
+            onCreateCustomArea={handleCreateCustomArea}
+            onCustomAreaDraftChange={handleCustomAreaDraftChange}
             onRemoveArea={handleRemoveServiceArea}
+            onResetCustomAreaDraft={resetCustomAreaDraft}
             onSearchChange={(event) => handleServiceAreaSearchChange(event.target.value)}
             searchResults={serviceAreaResults}
             searchValue={serviceAreaSearch}

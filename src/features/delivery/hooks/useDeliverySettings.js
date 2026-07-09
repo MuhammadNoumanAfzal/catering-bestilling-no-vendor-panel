@@ -4,6 +4,7 @@ import {
   searchAvailableAreas,
   updateVendorDeliverySettings,
   validateVendorDeliverySettings,
+  createValidArea,
 } from "../api/deliveryApi";
 import {
   buildDeliverySettingsInput,
@@ -58,6 +59,9 @@ export default function useDeliverySettings() {
   const [serviceAreaSearch, setServiceAreaSearch] = useState("");
   const [serviceAreaResults, setServiceAreaResults] = useState([]);
   const [isSearchingAreas, setIsSearchingAreas] = useState(false);
+  const [isCreatingArea, setIsCreatingArea] = useState(false);
+  const [customAreaDraft, setCustomAreaDraft] = useState({ name: "", postCode: "" });
+  const [customAreaErrors, setCustomAreaErrors] = useState({});
   const hasLoadedSettingsRef = useRef(false);
   const validationRequestIdRef = useRef(0);
   const areaSearchRequestIdRef = useRef(0);
@@ -308,6 +312,73 @@ export default function useDeliverySettings() {
     clearServiceAreaErrors();
   }
 
+  function handleCustomAreaDraftChange(field, value) {
+    setCustomAreaDraft((current) => ({ ...current, [field]: value }));
+    setCustomAreaErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function resetCustomAreaDraft() {
+    setCustomAreaDraft({ name: "", postCode: "" });
+    setCustomAreaErrors({});
+  }
+
+  async function handleCreateCustomArea() {
+    const name = customAreaDraft.name.trim();
+    const postCode = customAreaDraft.postCode.trim();
+
+    // Basic client-side validation
+    const nextErrors = {};
+    if (!name) nextErrors.name = "Area name is required.";
+    if (!postCode) nextErrors.postCode = "Post code is required.";
+    if (!/^\d+$/.test(postCode) && postCode) nextErrors.postCode = "Post code must be a valid number.";
+
+    if (Object.keys(nextErrors).length) {
+      setCustomAreaErrors(nextErrors);
+      return;
+    }
+
+    setIsCreatingArea(true);
+
+    try {
+      const result = await createValidArea({ name, postCode });
+
+      if (!result.success) {
+        // Map backend field errors (e.g. postCode invalid)
+        const fieldErrors = {};
+        (result.errors || []).forEach((err) => {
+          if (err.field) {
+            // Backend returns snake_case field; normalize to camelCase
+            const key = err.field === "post_code" ? "postCode" : err.field;
+            fieldErrors[key] = err.message;
+          }
+        });
+        if (Object.keys(fieldErrors).length) {
+          setCustomAreaErrors(fieldErrors);
+        } else {
+          await showVendorErrorAlert(result.message || "Could not create service area.");
+        }
+        return;
+      }
+
+      // success: true covers both "created" and "already exists" cases
+      const newArea = result.validArea;
+      if (newArea?.id) {
+        handleAddServiceArea(newArea);
+      }
+      resetCustomAreaDraft();
+      await showVendorSuccessToast(result.message || "Service area added.");
+    } catch (error) {
+      await showVendorErrorAlert(error.message || "Unable to create service area.");
+    } finally {
+      setIsCreatingArea(false);
+    }
+  }
+
   function handleToggleDay(dayValue) {
     setFormState((current) => ({
       ...current,
@@ -419,12 +490,16 @@ export default function useDeliverySettings() {
   return {
     activeDays: formState.activeDays,
     baseFee: formState.baseFee,
+    customAreaDraft,
+    customAreaErrors,
     customSlotDraft,
     fieldErrors,
     freeDelivery: formState.freeDelivery,
     handleAddServiceArea,
     handleCancelChanges,
     handleCloseAddSlotModal,
+    handleCreateCustomArea,
+    handleCustomAreaDraftChange,
     handleOpenAddSlotModal,
     handleRemoveTimeSlot,
     handleRemoveServiceArea,
@@ -436,6 +511,7 @@ export default function useDeliverySettings() {
     hasUnsavedChanges:
       JSON.stringify(currentComparable) !== JSON.stringify(savedComparable),
     isAddSlotModalOpen,
+    isCreatingArea,
     loadError,
     isDeliveryDisabled,
     isLoading,
@@ -449,6 +525,7 @@ export default function useDeliverySettings() {
     maxOrdersPerTimeSlot: formState.maxOrdersPerTimeSlot,
     pickupAddress: formState.pickupAddress,
     pickupInstructions: formState.pickupInstructions,
+    resetCustomAreaDraft,
     serviceAreaResults,
     serviceAreaSearch,
     serviceAreas: formState.serviceAreas,

@@ -104,3 +104,22 @@ export const VALIDATE_VENDOR_DELIVERY_SETTINGS_MUTATION = `
     }
   }
 `;
+
+export const CREATE_VALID_AREA_MUTATION = `
+  mutation CreateValidArea($input: ValidAreaInput!) {
+    createValidArea(input: $input) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      validArea {
+        id
+        name
+        postCode
+      }
+    }
+  }
+`;

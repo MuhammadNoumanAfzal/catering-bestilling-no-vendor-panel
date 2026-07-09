@@ -2,10 +2,12 @@ export const notificationTabs = ["All", "Unread", "Read"];
 
 export const notificationFilterOptions = [
   "All",
+  "Today",
+  "Yesterday",
+  "Last 7 Days",
+  "Last 30 Days",
+  "This Month",
   "Last Month",
-  "Last 3 Months",
-  "Last 6 Months",
-  "This Year",
   "Custom Date",
 ];
 
@@ -122,16 +124,9 @@ function buildFallbackDetailRows(node, type) {
   }
 
   if (type === "ORDER") {
-    rows.push({ label: "Status", value: "Confirmed" });
-    let customerName = "Private Client";
-    if (node?.message && node.message.includes("Company '")) {
-      const match = node.message.match(/Company '([^']+)'/);
-      if (match) {
-        customerName = match[1];
-      }
+    if (node?.orderId) {
+      rows.push({ label: "Order Ref", value: `ORD-${node.orderId}` });
     }
-    rows.push({ label: "Customer", value: customerName });
-    rows.push({ label: "Amount", value: "NOK 165.00" });
   }
 
   if (node?.createdAt) {
@@ -149,14 +144,19 @@ function buildFallbackDetailRows(node, type) {
 }
 
 export function mapNotificationNode(node) {
-  const rawType = node.notificationType || "ALERT";
+  const rawType = (node.notificationType || "ALERT").toUpperCase();
 
-  // Map raw backend notification types to frontend display types
+  // Map backend NotificationType enum values to frontend display types
   let type = "ALERT";
-  if (rawType === "VENDOR_PRODUCT_ORDERED" || rawType === "ORDER") {
+  if (
+    rawType === "NEW_ORDER" ||
+    rawType === "ORDER_UPDATE" ||
+    rawType === "VENDOR_PRODUCT_ORDERED" ||
+    rawType === "ORDER"
+  ) {
     type = "ORDER";
   } else if (
-    rawType === "review-added" ||
+    rawType === "REVIEW_RATING" ||
     rawType === "REVIEW_ADDED" ||
     rawType === "REVIEW"
   ) {
@@ -245,10 +245,12 @@ export function mapFilterToQueryVariables(selectedFilter, customRange) {
   }
 
   const presetMap = {
+    "Today": "TODAY",
+    "Yesterday": "YESTERDAY",
+    "Last 7 Days": "LAST_7_DAYS",
+    "Last 30 Days": "LAST_30_DAYS",
+    "This Month": "THIS_MONTH",
     "Last Month": "LAST_MONTH",
-    "Last 3 Months": "LAST_3_MONTHS",
-    "Last 6 Months": "LAST_6_MONTHS",
-    "This Year": "THIS_YEAR",
   };
 
   return {
