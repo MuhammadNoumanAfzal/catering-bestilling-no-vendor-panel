@@ -38,7 +38,7 @@ export async function getAllVendorOrders(variables = {}) {
       ...variables,
       after,
     });
-    const connection = result?.orders;
+    const connection = result?.vendorOrders || result?.orders;
     const edges = Array.isArray(connection?.edges) ? connection.edges : [];
 
     if (summary == null) {
@@ -65,7 +65,7 @@ export async function getAllVendorOrders(variables = {}) {
 }
 
 export function getVendorOrderDetail(id) {
-  return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, { id });
+  return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, { orderId: id });
 }
 
 export async function updateVendorOrderStatus({ id, status, note }) {
@@ -127,4 +127,3 @@ export function getVendorCustomerOrderHistory({ orderId, customerId }) {
     customerId,
   });
 }
-

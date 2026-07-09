@@ -95,19 +95,31 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
       return null;
     }
 
+    const rawItems = Array.isArray(detailSource?.raw?.items) ? detailSource.raw.items : [];
     const carts = Array.isArray(detailSource?.raw?.orderCarts) ? detailSource.raw.orderCarts : [];
-    const items = carts.map((cart, index) => {
-      const item = cart?.item || {};
-      return {
-        key: cart?.id || item?.id || `${detailSource.id}-item-${index}`,
-        name: item?.name || "Item",
-        description: item?.description || "",
-        image: item?.coverImage?.fileUrl || "",
-        quantity: Number(cart?.quantity ?? 0) || 0,
-        price: cart?.totalPriceWithTax ?? cart?.priceWithTax ?? 0,
-        menuItems: item.menuItems || [],
-      };
-    });
+    const items =
+      rawItems.length > 0
+        ? rawItems.map((item, index) => ({
+            key: item?.id || `${detailSource.id}-item-${index}`,
+            name: item?.productName || item?.name || "Item",
+            description: item?.description || "",
+            image: item?.imageUrl || item?.coverImage?.fileUrl || "",
+            quantity: Number(item?.quantity ?? 0) || 0,
+            price: item?.lineTotal ?? item?.price ?? 0,
+            menuItems: [],
+          }))
+        : carts.map((cart, index) => {
+            const item = cart?.item || {};
+            return {
+              key: cart?.id || item?.id || `${detailSource.id}-item-${index}`,
+              name: item?.name || "Item",
+              description: item?.description || "",
+              image: item?.coverImage?.fileUrl || "",
+              quantity: Number(cart?.quantity ?? 0) || 0,
+              price: cart?.totalPriceWithTax ?? cart?.priceWithTax ?? 0,
+              menuItems: item.menuItems || [],
+            };
+          });
 
     return {
       status: detailSource.status || order?.status || "New",

@@ -24,45 +24,24 @@ export const GET_VENDOR_ORDERS_QUERY = `
       canceled
       modified
     }
-    orders(
+    vendorOrders(
       first: $first
       after: $after
       search: $search
       status: $status
-      datePreset: $datePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
       edges {
         node {
           id
-          orderNumber
+          invoiceNumber
           status
-          statusLabel
-          statusTone
-          createdOn
-          placedAt
-          deliveryDate
-          deliveryType
-          deliveryWindow
           eventTime
-          finalPrice
-          paymentType
-          paymentStatus
           customerName
-          customerAllowance
-          customerInfo {
-            fullName
-            email
-            phone
-            organization
-            city
-            postalCode
-          }
-          customerDetailsVisible
           eventName
-          guestCount
-          companyAllowance
+          personCount
+          eventDate
           pricing {
             subtotal
             taxAmount
@@ -85,22 +64,21 @@ export const GET_VENDOR_ORDERS_QUERY = `
 `;
 
 export const GET_VENDOR_ORDER_DETAIL_QUERY = `
-  query GetVendorOrderDetail($id: ID!) {
-    order(id: $id) {
+  query GetVendorOrderDetail($orderId: ID!) {
+    vendorOrder(id: $orderId) {
       id
-      orderNumber
+      invoiceNumber
       status
-      statusLabel
-      statusTone
-      createdOn
-      placedAt
-      deliveryDate
-      paymentType
-      paymentStatus
-      finalPrice
-      customerAllowance
-      companyAllowance
-      addOnsTotal
+      eventDate
+      eventTime
+      personCount
+      customerName
+      eventName
+      deliveryAddress
+      deliveryCity
+      deliveryPostalCode
+      deliveryAddressStr
+      orderNotes
       pricing {
         subtotal
         taxRate
@@ -114,47 +92,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         amountPaid
         amountDue
       }
-      customerName
-      eventName
-      guestCount
-      deliveryType
-      deliveryWindow
-      eventTime
-      deliveryAddress
-      deliveryCity
-      deliveryPostalCode
-      deliveryAddressStr
-      customerInfo {
-        fullName
-        email
-        phone
-        organization
-        city
-        postalCode
-      }
-      customerDetailsVisible
-      clientOrder {
-        edges {
-          node {
-            id
-            email
-            phone
-            orderNotes
-            addOns
-          }
-        }
-      }
-      billingAddress {
-        address
-        unitFloor
-        city
-        postCode
-        locationName
-        addressType
-      }
-      notes
-      specialInstructions
-      addOns
       items {
         id
         productId
@@ -173,45 +110,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
           quantity
           totalPrice
         }
-      }
-      orderCarts {
-        edges {
-          node {
-            id
-            quantity
-            priceWithTax
-            totalPriceWithTax
-            item {
-              id
-              name
-              title
-              priceWithTax
-              description
-              coverImage {
-                fileUrl
-              }
-              menuItems {
-                id
-                title
-                description
-                imageUrl
-              }
-            }
-          }
-        }
-      }
-      statuses {
-        id
-        status
-        note
-        createdOn
-      }
-      availableActions
-      tableware {
-        napkins
-        utensils
-        platesBowls
-        instructions
       }
     }
   }

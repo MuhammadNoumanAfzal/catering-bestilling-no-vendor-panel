@@ -160,8 +160,6 @@ function sanitizeOrganization(value) {
 
 function buildCustomerFromApi(node) {
   const customerInfo = node?.customerInfo || {};
-  const clientOrderEdges = node?.clientOrder?.edges || [];
-  const clientOrder = clientOrderEdges[0]?.node || {};
   const address = buildAddressFromNode(node);
   const detailsVisible =
     Boolean(node?.customerDetailsVisible) || resolveOrderStatus(node) !== "New";
@@ -173,8 +171,8 @@ function buildCustomerFromApi(node) {
     organization: sanitizeOrganization(customerInfo.organization),
     postalCode: firstNonEmpty(customerInfo.postalCode, address.postalCode) || "-",
     city: firstNonEmpty(customerInfo.city, address.city) || "-",
-    email: firstNonEmpty(clientOrder.email, customerInfo.email) || "-",
-    phone: firstNonEmpty(clientOrder.phone, customerInfo.phone) || "-",
+    email: firstNonEmpty(node?.email, customerInfo.email) || "-",
+    phone: firstNonEmpty(node?.phone, customerInfo.phone) || "-",
     detailsVisible,
     historyText: detailsVisible
       ? "View this customer's previous order history."
@@ -183,41 +181,55 @@ function buildCustomerFromApi(node) {
   };
 }
 
-function buildOrderItems(carts) {
+function buildOrderItems(items = [], carts = []) {
+  const primaryOrderItem = Array.isArray(items) ? items[0] : null;
   const primaryCart = carts[0];
-  const primaryItem = primaryCart?.item || {};
+  const primaryItem = primaryOrderItem || primaryCart?.item || {};
 
   const includedItems = [];
-  carts.forEach((cart) => {
-    const item = cart?.item || {};
-    const itemTitle = firstNonEmpty(item.title, item.name);
-
-    if (Array.isArray(item.menuItems) && item.menuItems.length > 0) {
-      item.menuItems.forEach((mi) => {
-        const title = mi.title || mi.name;
-        if (title) {
-          includedItems.push(title);
-        }
-      });
-    } else {
+  if (Array.isArray(items) && items.length > 0) {
+    items.forEach((item) => {
+      const itemTitle = firstNonEmpty(item.productName, item.name);
       if (itemTitle) {
+        const quantity = toNumber(item?.quantity, 0);
+        includedItems.push(`${itemTitle}${quantity ? ` (x${quantity})` : ""}`);
+      }
+    });
+  } else {
+    carts.forEach((cart) => {
+      const item = cart?.item || {};
+      const itemTitle = firstNonEmpty(item.title, item.name);
+
+      if (Array.isArray(item.menuItems) && item.menuItems.length > 0) {
+        item.menuItems.forEach((mi) => {
+          const title = mi.title || mi.name;
+          if (title) {
+            includedItems.push(title);
+          }
+        });
+      } else if (itemTitle) {
         const quantity = toNumber(cart?.quantity, 0);
         includedItems.push(`${itemTitle}${quantity ? ` (x${quantity})` : ""}`);
       }
-    }
-  });
+    });
+  }
 
-  const totalPrice = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
+  const totalPrice =
+    Array.isArray(items) && items.length > 0
+      ? items.reduce((sum, item) => sum + parseAmount(item?.lineTotal), 0)
+      : carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
 
   return {
-    name: firstNonEmpty(primaryItem.title, primaryItem.name) || "Order items unavailable",
+    name:
+      firstNonEmpty(primaryItem.productName, primaryItem.title, primaryItem.name) ||
+      "Order items unavailable",
     quantity:
-      carts.length > 0
-        ? `${carts.length} item${carts.length > 1 ? "s" : ""} in this order.`
+      includedItems.length > 0
+        ? `${includedItems.length} item${includedItems.length > 1 ? "s" : ""} in this order.`
         : "No items",
     description: primaryItem.description || "",
     includedItems,
-    image: primaryItem?.coverImage?.fileUrl || "",
+    image: primaryItem?.coverImage?.fileUrl || primaryItem?.imageUrl || "",
     modalDetails: {
       title: firstNonEmpty(primaryItem.title, primaryItem.name),
       price: formatCurrency(totalPrice),
@@ -498,14 +510,14 @@ export function mapVendorOrderNode(node) {
   return {
     rawId: normalizeString(node?.id),
     version: toNumber(node?.version, 0),
-    id: formatOrderReference(node?.orderNumber, node?.id),
+    id: formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id),
     customer:
       firstNonEmpty(node?.customerName, node?.customerInfo?.fullName) ||
       "Customer unavailable",
     event: firstNonEmpty(node?.eventName, primaryTitle) || "Order",
     guests: resolveGuestCount(node, 0),
     date: dateLabel,
-    time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
+    time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
     status,
     statusTone: mapBackendTone(node?.statusTone, status),
@@ -515,7 +527,7 @@ export function mapVendorOrderNode(node) {
 }
 
 export function mapVendorOrdersResult(data) {
-  const connection = data?.orders;
+  const connection = data?.vendorOrders || data?.orders;
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];
   const rows = edges.map((edge) => mapVendorOrderNode(edge?.node)).filter((row) => row.rawId);
 
@@ -610,49 +622,38 @@ export function createOrderTabs(summary) {
 }
 
 export function mapVendorOrderDetail(data, orderId) {
-  const node = data?.order;
+  const node = data?.vendorOrder || data?.order;
   if (!node) {
     return null;
   }
 
   const carts = getOrderCartsArray(node?.orderCarts);
-  const deliveryDate = node?.deliveryDate || node?.placedAt || node?.createdOn;
+  const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const status = resolveOrderStatus(node);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
   const customer = buildCustomerFromApi(node);
-  const orderItem = buildOrderItems(carts);
+  const orderItems = Array.isArray(node?.items) ? node.items : [];
+  const orderItem = buildOrderItems(orderItems, carts);
   const address = buildAddressFromNode(node);
   const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
-
-  const clientOrderEdges = node?.clientOrder?.edges || [];
-  const clientOrder = clientOrderEdges[0]?.node || {};
-  const orderItems = Array.isArray(node?.items) ? node.items : [];
 
   let addOns = orderItems
     .flatMap((item) => item.selectedAddons || [])
     .map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || ""))
     .filter(Boolean);
 
-  if (addOns.length === 0) {
-    addOns = Array.isArray(clientOrder.addOns)
-      ? clientOrder.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
-      : Array.isArray(node?.addOns)
-      ? node.addOns.map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || "")).filter(Boolean)
-      : [];
-  }
-
   const note =
-    clientOrder.orderNotes ||
+    node?.orderNotes ||
     firstNonEmpty(node?.specialInstructions, node?.notes) ||
     "";
 
   return {
     rawId: normalizeString(node?.id),
     version: toNumber(node?.version, 0),
-    id: formatOrderReference(node?.orderNumber, node?.id || orderId),
+    id: formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id || orderId),
     date: dateLabel,
-    time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
+    time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     guests: resolveGuestCount(node, 0),
     status,
     statusTone: mapBackendTone(node?.statusTone, status),
@@ -663,7 +664,7 @@ export function mapVendorOrderDetail(data, orderId) {
     logistics: {
       deliveryAddress: address.addressLine || "Address unavailable from API",
       eventDate: dateLabel,
-      deliveryWindow: deliveryWindow.label || "Time unavailable",
+      deliveryWindow: firstNonEmpty(node?.eventTime, deliveryWindow.label) || "Time unavailable",
       fullAddress: address.fullAddress || address.addressLine || "Address unavailable from API",
       eventType: firstNonEmpty(node?.eventName, orderItem.name) || "Order",
       serviceType: firstNonEmpty(node?.deliveryType, node?.paymentType) || "Service unavailable",
