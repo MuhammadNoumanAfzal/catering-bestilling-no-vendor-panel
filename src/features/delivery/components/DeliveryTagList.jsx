@@ -21,29 +21,46 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
     return postCode ? `${name} (${postCode})` : name;
   }
 
+  function isItemInactive(item) {
+    if (typeof item === "string") return false;
+    return item.isActive === false;
+  }
+
   return (
     <div className="mt-3 flex flex-wrap gap-2">
-      {items.map((item) => (
-        <button
-          key={getItemId(item)}
-          className={`type-subpara inline-flex items-center gap-1 rounded-full border border-[#b9b1aa] bg-white px-3 py-[7px] text-[#2b221d] transition ${
-            disabled
-              ? "cursor-not-allowed bg-[#f6f3ef] text-[#8f8377]"
-              : "cursor-pointer hover:border-[#8d8176]"
-          }`}
-          disabled={disabled}
-          onClick={() => onRemove(getItemId(item))}
-          type="button"
-        >
-          <span>{getItemLabel(item)}</span>
-          <span
-            aria-hidden="true"
-            className="text-[13px] leading-none text-[#6e6259]"
+      {items.map((item) => {
+        const inactive = isItemInactive(item);
+        return (
+          <button
+            key={getItemId(item)}
+            className={`type-subpara inline-flex items-center gap-1.5 rounded-full border px-3 py-[7px] transition ${
+              disabled
+                ? "cursor-not-allowed border-[#d9d2cb] bg-[#f6f3ef] text-[#8f8377]"
+                : inactive
+                  ? "cursor-pointer border-[#d9c9bd] bg-[#fdf5f0] text-[#9b8678] hover:border-[#c4a898]"
+                  : "cursor-pointer border-[#b9b1aa] bg-white text-[#2b221d] hover:border-[#8d8176]"
+            }`}
+            disabled={disabled}
+            onClick={() => onRemove(getItemId(item))}
+            type="button"
+            title={inactive ? "This area is inactive and not visible to customers" : undefined}
           >
-            &times;
-          </span>
-        </button>
-      ))}
+            <span>{getItemLabel(item)}</span>
+            {inactive && !disabled ? (
+              <span className="rounded-full bg-[#f0d9cc] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#a0674a]">
+                Inactive
+              </span>
+            ) : null}
+            <span
+              aria-hidden="true"
+              className="text-[13px] leading-none text-[#6e6259]"
+            >
+              &times;
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
+
