@@ -63,6 +63,14 @@ export const GET_VENDOR_ORDERS_QUERY = `
           eventName
           guestCount
           companyAllowance
+          pricing {
+            subtotal
+            taxAmount
+            deliveryFee
+            addOnsTotal
+            tipAmount
+            grandTotal
+          }
         }
       }
       pageInfo {
@@ -93,6 +101,19 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       customerAllowance
       companyAllowance
       addOnsTotal
+      pricing {
+        subtotal
+        taxRate
+        taxAmount
+        deliveryFee
+        addOnsTotal
+        tipAmount
+        discountAmount
+        serviceFee
+        grandTotal
+        amountPaid
+        amountDue
+      }
       customerName
       eventName
       guestCount
@@ -120,21 +141,6 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             phone
             orderNotes
             addOns
-            subtotal
-            deliveryFee
-            taxAmount
-            tipAmount
-            grandTotal
-            items {
-              id
-              productName
-              quantity
-              unitPrice
-              totalPrice
-              specialInstructions
-              selectedOptions
-              selectedAddons
-            }
           }
         }
       }
@@ -151,12 +157,22 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       addOns
       items {
         id
-        name
+        productId
+        productName
+        pricingType
+        unitPrice
         quantity
-        price
-        imageUrl
-        description
-        allergens
+        serves
+        lineSubtotal
+        lineTax
+        lineTotal
+        selectedOptions
+        selectedAddons {
+          name
+          unitPrice
+          quantity
+          totalPrice
+        }
       }
       orderCarts {
         edges {
@@ -277,20 +293,23 @@ export const GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY = `
       guestCount
       finalPrice
       eventName
+      pricing {
+        grandTotal
+      }
       clientOrder {
         edges {
           node {
             id
-            grandTotal
-            tipAmount
             items {
               id
               productName
               quantity
-              unitPrice
-              totalPrice
-              selectedOptions
-              selectedAddons
+              selectedAddons {
+                name
+                unitPrice
+                quantity
+                totalPrice
+              }
             }
           }
         }
