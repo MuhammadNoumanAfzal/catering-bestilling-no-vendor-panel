@@ -227,9 +227,13 @@ function buildOrderItems(items = [], carts = []) {
       includedItems.length > 0
         ? `${includedItems.length} item${includedItems.length > 1 ? "s" : ""} in this order.`
         : "No items",
-    description: primaryItem.description || "",
+    description: primaryItem.description || primaryItem?.product?.description || "",
     includedItems,
-    image: primaryItem?.coverImage?.fileUrl || primaryItem?.imageUrl || "",
+    image:
+      primaryItem?.product?.coverImage?.fileUrl ||
+      primaryItem?.coverImage?.fileUrl ||
+      primaryItem?.imageUrl ||
+      "",
     modalDetails: {
       title: firstNonEmpty(primaryItem.title, primaryItem.name),
       price: formatCurrency(totalPrice),

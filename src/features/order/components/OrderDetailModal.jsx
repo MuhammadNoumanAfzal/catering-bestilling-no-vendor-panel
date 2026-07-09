@@ -102,8 +102,12 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
         ? rawItems.map((item, index) => ({
             key: item?.id || `${detailSource.id}-item-${index}`,
             name: item?.productName || item?.name || "Item",
-            description: item?.description || "",
-            image: item?.imageUrl || item?.coverImage?.fileUrl || "",
+            description: item?.description || item?.product?.description || "",
+            image:
+              item?.product?.coverImage?.fileUrl ||
+              item?.imageUrl ||
+              item?.coverImage?.fileUrl ||
+              "",
             quantity: Number(item?.quantity ?? 0) || 0,
             price: item?.lineTotal ?? item?.price ?? 0,
             lineSubtotal: item?.lineSubtotal ?? 0,
@@ -111,7 +115,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
             selectedOptions: item?.selectedOptions || {},
             selectedAddons: Array.isArray(item?.selectedAddons) ? item.selectedAddons : [],
             specialInstructions: item?.specialInstructions || "",
-            menuItems: [],
+            menuItems: Array.isArray(item?.product?.menuItems) ? item.product.menuItems : [],
           }))
         : carts.map((cart, index) => {
             const item = cart?.item || {};
