@@ -29,7 +29,7 @@ export default function OrderMetricCard({ label, value, helper, helperTone, icon
       </div>
       <p className="type-para mt-2 font-bold text-black leading-[1.25] ">{label}</p>
       <strong className="type-h2 mt-1.5 block text-[31px] leading-none text-[#19130f]">{value}</strong>
-      <p className="type-para mt-[7px] flex items-center gap-1 whitespace-nowrap text-[10px] text-[#6d6259]">
+      <p className="type-para mt-[7px] flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[10px] text-[#6d6259]">
         {helperTone === "is-positive" ? (
           <span className="inline-flex shrink-0 text-[#2fbe5b]">
             <ArrowUp size={11} strokeWidth={2.2} />
