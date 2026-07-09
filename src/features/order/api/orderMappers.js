@@ -36,6 +36,10 @@ function formatCurrency(value) {
   })}`;
 }
 
+function getPricingBlock(node) {
+  return node?.pricing && typeof node.pricing === "object" ? node.pricing : {};
+}
+
 function getOrderCartsArray(orderCarts) {
   if (Array.isArray(orderCarts)) {
     return orderCarts;
@@ -225,36 +229,20 @@ function buildOrderItems(carts) {
 }
 
 function buildFinancialSummary(order, carts) {
-  const clientOrderEdges = order?.clientOrder?.edges || [];
-  const clientOrder = clientOrderEdges[0]?.node || {};
-
-  const baseSubtotal = parseAmount(clientOrder.subtotal) || carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0) || parseAmount(order?.finalPrice);
-  const deliveryFee = parseAmount(clientOrder.deliveryFee);
-  const taxAmount = parseAmount(clientOrder.taxAmount);
-  const tipAmount = parseAmount(clientOrder.tipAmount);
-  const clientOrderItems = Array.isArray(clientOrder.items) ? clientOrder.items : [];
-  const addOnsTotal = clientOrderItems.reduce((sum, item) => {
-    const addons = Array.isArray(item.selectedAddons) ? item.selectedAddons : [];
-    return sum + addons.reduce((itemSum, addon) => {
-      const price = parseAmount(addon?.price || addon?.unitPrice);
-      const name = addon?.name || "";
-      const match = name.match(/x(\d+)$/);
-      const qty = match ? parseInt(match[1], 10) : 1;
-      
-      // Legacy fallback for test orders where unit price 12 was saved instead of total
-      if (price === 12 && qty > 1 && name.includes("first add on")) {
-        return itemSum + (price * qty);
-      }
-      
-      return itemSum + price;
-    }, 0);
-  }, 0) || parseAmount(order?.addOnsTotal);
-  
-  const subtotal = clientOrder.subtotal ? baseSubtotal + taxAmount : baseSubtotal;
-  
-  const grandTotal = clientOrder.grandTotal
-    ? parseAmount(clientOrder.grandTotal) + addOnsTotal
-    : subtotal + deliveryFee + tipAmount + addOnsTotal;
+  const pricing = getPricingBlock(order);
+  const baseSubtotal =
+    parseAmount(pricing.subtotal) ||
+    carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0) ||
+    parseAmount(order?.finalPrice);
+  const deliveryFee = parseAmount(pricing.deliveryFee);
+  const taxAmount = parseAmount(pricing.taxAmount);
+  const tipAmount = parseAmount(pricing.tipAmount);
+  const addOnsTotal = parseAmount(pricing.addOnsTotal || order?.addOnsTotal);
+  const discountAmount = parseAmount(pricing.discountAmount);
+  const serviceFee = parseAmount(pricing.serviceFee);
+  const grandTotal =
+    parseAmount(pricing.grandTotal) ||
+    baseSubtotal + deliveryFee + taxAmount + addOnsTotal + tipAmount + serviceFee - discountAmount;
 
   const guestCount = resolveGuestCount(order);
   const companyAllowance = parseAmount(order?.companyAllowance);
@@ -263,7 +251,7 @@ function buildFinancialSummary(order, carts) {
   const summary = [
     {
       label: `Subtotal${guestCount ? ` (${guestCount} guests)` : ""}`,
-      value: formatCurrency(subtotal),
+      value: formatCurrency(baseSubtotal),
     },
   ];
 
@@ -292,6 +280,20 @@ function buildFinancialSummary(order, carts) {
     summary.push({
       label: "Tip",
       value: formatCurrency(tipAmount),
+    });
+  }
+
+  if (serviceFee > 0) {
+    summary.push({
+      label: "Service Fee",
+      value: formatCurrency(serviceFee),
+    });
+  }
+
+  if (discountAmount > 0) {
+    summary.push({
+      label: "Discount",
+      value: `- ${formatCurrency(discountAmount)}`,
     });
   }
 
@@ -504,6 +506,7 @@ export function mapVendorOrderNode(node) {
     guests: resolveGuestCount(node, 0),
     date: dateLabel,
     time: firstNonEmpty(deliveryWindow.start, node?.eventTime, timeLabel) || timeLabel,
+    total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
     status,
     statusTone: mapBackendTone(node?.statusTone, status),
     actions: mapAvailableActionsToUi(node?.availableActions, status),
@@ -624,9 +627,9 @@ export function mapVendorOrderDetail(data, orderId) {
 
   const clientOrderEdges = node?.clientOrder?.edges || [];
   const clientOrder = clientOrderEdges[0]?.node || {};
-  const clientOrderItems = Array.isArray(clientOrder.items) ? clientOrder.items : [];
+  const orderItems = Array.isArray(node?.items) ? node.items : [];
 
-  let addOns = clientOrderItems
+  let addOns = orderItems
     .flatMap((item) => item.selectedAddons || [])
     .map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || ""))
     .filter(Boolean);
@@ -640,10 +643,6 @@ export function mapVendorOrderDetail(data, orderId) {
   }
 
   const note =
-    clientOrderItems
-      .map((item) => item.specialInstructions)
-      .filter(Boolean)
-      .join("\n") ||
     clientOrder.orderNotes ||
     firstNonEmpty(node?.specialInstructions, node?.notes) ||
     "";

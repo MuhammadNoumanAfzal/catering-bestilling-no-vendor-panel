@@ -77,39 +77,9 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
             /cancel/i.test(statusLabelVal) ||
             /reject/i.test(statusLabelVal);
 
-          const clientOrderEdges = item.clientOrder?.edges || [];
-          const clientOrder = clientOrderEdges[0]?.node || {};
-
-          const orderItems = Array.isArray(clientOrder.items) ? clientOrder.items : [];
-          const addOnsTotal = orderItems.reduce((sum, orderItem) => {
-            const addons = Array.isArray(orderItem.selectedAddons) ? orderItem.selectedAddons : [];
-            return sum + addons.reduce((itemSum, addon) => {
-              const price = parseFloat(addon?.price || addon?.unitPrice || 0);
-              const name = addon?.name || "";
-              const match = name.match(/x(\d+)$/);
-              const qty = match ? parseInt(match[1], 10) : 1;
-              
-              // Legacy fallback for test orders where unit price 12 was saved instead of total
-              if (price === 12 && qty > 1 && name.includes("first add on")) {
-                return itemSum + (price * qty);
-              }
-              
-              return itemSum + price;
-            }, 0);
-          }, 0);
-
-          const finalPrice = parseFloat(item.finalPrice || 0);
-          const tipAmount = parseFloat(clientOrder.tipAmount || 0);
-
-          // Legacy fallback for test orders where unit price 12 was saved instead of total
-          let calculatedAddOnsTotal = addOnsTotal;
-          if (calculatedAddOnsTotal === 0 && finalPrice === 135 && tipAmount === 31.20) {
-            calculatedAddOnsTotal = 36.00;
-          }
-
-          const calculatedGrandTotal = clientOrder.grandTotal
-            ? parseFloat(clientOrder.grandTotal) + calculatedAddOnsTotal
-            : finalPrice + tipAmount + calculatedAddOnsTotal;
+          const calculatedGrandTotal = parseFloat(
+            item.pricing?.grandTotal || item.finalPrice || 0,
+          );
 
           return {
             id: item.orderNumber || `#${item.id}`,
@@ -266,4 +236,3 @@ export default function CustomerInfoPanel({ customer, orderId }) {
     </>
   );
 }
-
