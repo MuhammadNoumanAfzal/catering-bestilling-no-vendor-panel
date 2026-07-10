@@ -119,15 +119,43 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function hasSameText(left, right) {
+  return normalizeString(left).trim() === normalizeString(right).trim();
+}
+
 function buildRemovableItems(orderDetail) {
+  const orderItems = Array.isArray(orderDetail?.raw?.items) ? orderDetail.raw.items : [];
   const carts = Array.isArray(orderDetail?.raw?.orderCarts) ? orderDetail.raw.orderCarts : [];
+
+  if (orderItems.length > 0) {
+    return orderItems.map((item, index) => {
+      const product = item?.product || {};
+      const selectedAddons = Array.isArray(item?.selectedAddons) ? item.selectedAddons : [];
+      const addonsLabel = selectedAddons
+        .map((addon) => addon?.name || addon?.title || "")
+        .filter(Boolean)
+        .join(", ");
+
+      return {
+        id: item?.id || product?.id || `order-item-${index}`,
+        itemId: item?.id || null,
+        productId: item?.productId || product?.id || null,
+        name: item?.productName || product?.name || item?.name || "Order item",
+        quantity: Number(item?.quantity ?? 0) || 0,
+        totalPrice: parseCurrencyValue(item?.lineTotal ?? item?.lineSubtotal ?? item?.unitPrice),
+        image: product?.coverImage?.fileUrl || "",
+        description: product?.description || item?.description || addonsLabel,
+      };
+    });
+  }
 
   return carts.map((cart, index) => {
     const item = cart?.item || {};
 
     return {
       id: cart?.id || item?.id || `cart-${index}`,
-      itemId: item?.id || null,
+      itemId: cart?.id || item?.id || null,
+      productId: item?.id || null,
       name: item?.title || item?.name || "Order item",
       quantity: Number(cart?.quantity ?? 0) || 0,
       totalPrice: parseCurrencyValue(cart?.totalPriceWithTax ?? cart?.priceWithTax),
@@ -278,6 +306,45 @@ export default function OrderAdjustmentPage() {
     [addedCost, oldTotal, removedCost],
   );
 
+  const hasFormChanges = useMemo(() => {
+    const originalDate = extractDateYMD(orderDetail?.raw?.deliveryDate) || "";
+    const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
+    const originalTime = extractTime24h(rawTimeVal);
+    const originalGuests = Math.max(1, orderDetail?.guests || 1);
+    const originalAddress = orderDetail?.logistics?.deliveryAddress || "";
+    const originalApartment = orderDetail?.raw?.billingAddress?.unitFloor || "";
+    const originalCity = orderDetail?.logistics?.city || orderDetail?.customer?.city || "";
+    const originalPostalCode =
+      orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
+
+    return (
+      Boolean(reason) ||
+      modifiedItemIds.length > 0 ||
+      suggestedList.length > 0 ||
+      !hasSameText(additionalDetails, "") ||
+      !hasSameText(date, originalDate) ||
+      !hasSameText(time, originalTime) ||
+      personCount !== originalGuests ||
+      !hasSameText(address, originalAddress) ||
+      !hasSameText(apartment, originalApartment) ||
+      !hasSameText(city, originalCity) ||
+      !hasSameText(postalCode, originalPostalCode)
+    );
+  }, [
+    additionalDetails,
+    address,
+    apartment,
+    city,
+    date,
+    modifiedItemIds.length,
+    orderDetail,
+    personCount,
+    postalCode,
+    reason,
+    suggestedList.length,
+    time,
+  ]);
+
   function toggleItem(itemId) {
     setModifiedItemIds((currentIds) =>
       currentIds.includes(itemId)
@@ -308,6 +375,14 @@ export default function OrderAdjustmentPage() {
   }
 
   async function handleAdjustOrderSubmit() {
+    if (!hasFormChanges) {
+      await showVendorErrorAlert(
+        "Please make at least one change before submitting the order adjustment.",
+        "Nothing to Submit",
+      );
+      return;
+    }
+
     if (!reason) {
       setFormErrors({ reason: "Please select a reason for the change." });
       await showVendorErrorAlert("Please select a reason for the change.", "Validation Error");
@@ -323,7 +398,7 @@ export default function OrderAdjustmentPage() {
 
     try {
       removedItems = modifiedItems
-        .map((item) => extractDatabaseId(item.itemId))
+        .map((item) => extractDatabaseId(item.itemId || item.productId))
         .filter(Boolean);
 
       addedItems = suggestedList
@@ -566,6 +641,11 @@ export default function OrderAdjustmentPage() {
                           <span className="text-[11px] font-semibold text-[#8a7a6d]">
                             Qty: {item.quantity}
                           </span>
+                          {item.description ? (
+                            <span className="text-[11px] font-semibold text-[#a18f81]">
+                              {item.description}
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                       <span className="text-[13px] font-bold text-[#8a7a6d]">
@@ -943,7 +1023,7 @@ export default function OrderAdjustmentPage() {
           </Link>
           <button
             className="h-10 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[13px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] transition hover:bg-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasFormChanges}
             onClick={handleAdjustOrderSubmit}
             type="button"
           >
