@@ -66,6 +66,46 @@ function parseOrderDateString(dateStr) {
   return new Date(Number.NaN);
 }
 
+function parseOrderDateTime(row) {
+  const rawDate =
+    row?.eventDateRaw ||
+    row?.raw?.eventDate ||
+    row?.raw?.deliveryDate ||
+    row?.raw?.placedAt ||
+    row?.raw?.createdOn ||
+    "";
+  const rawTime = row?.time || row?.raw?.eventTime || "";
+
+  if (rawDate) {
+    const normalizedTime = /^\d{2}:\d{2}(:\d{2})?$/.test(String(rawTime).trim())
+      ? String(rawTime).trim()
+      : "00:00:00";
+    const isoCandidate = `${rawDate}T${normalizedTime.length === 5 ? `${normalizedTime}:00` : normalizedTime}`;
+    const parsedIso = new Date(isoCandidate);
+
+    if (!Number.isNaN(parsedIso.getTime())) {
+      return parsedIso;
+    }
+  }
+
+  const fallbackDate = parseOrderDateString(row?.date);
+  if (Number.isNaN(fallbackDate.getTime())) {
+    return fallbackDate;
+  }
+
+  const timeMatch = String(rawTime || "").match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (timeMatch) {
+    fallbackDate.setHours(
+      Number.parseInt(timeMatch[1], 10),
+      Number.parseInt(timeMatch[2], 10),
+      Number.parseInt(timeMatch[3] || "0", 10),
+      0,
+    );
+  }
+
+  return fallbackDate;
+}
+
 function getStatusFromActionLabel(label) {
   return normalizeBackendStatus(label);
 }
@@ -261,7 +301,7 @@ export default function OrdersPage() {
       : chipFilteredRows;
 
     return [...searchedRows].sort((firstRow, secondRow) =>
-      parseOrderDateString(secondRow.date).getTime() - parseOrderDateString(firstRow.date).getTime(),
+      parseOrderDateTime(secondRow).getTime() - parseOrderDateTime(firstRow).getTime(),
     );
   }, [activeFilter, activeTab, dateFilteredRows, searchParams]);
 
