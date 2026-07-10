@@ -111,6 +111,14 @@ function buildFallbackDetailTitle(type) {
 function buildFallbackDetailRows(node, type) {
   const rows = [];
 
+  if (node?.title) {
+    rows.push({ label: "Title", value: node.title });
+  }
+
+  if (node?.message) {
+    rows.push({ label: "Message", value: node.message });
+  }
+
   if (node?.orderNumber) {
     rows.push({ label: "Order", value: node.orderNumber });
   }
@@ -121,12 +129,6 @@ function buildFallbackDetailRows(node, type) {
 
   if (node?.reviewId) {
     rows.push({ label: "Review ID", value: node.reviewId });
-  }
-
-  if (type === "ORDER") {
-    if (node?.orderId) {
-      rows.push({ label: "Order Ref", value: `ORD-${node.orderId}` });
-    }
   }
 
   if (node?.createdAt) {
@@ -165,8 +167,15 @@ export function mapNotificationNode(node) {
     type = "PAYOUT";
   }
 
-  // Prepend ORD- for order number display using orderId if present
-  const orderNumber = node.orderId ? `ORD-${node.orderId}` : "";
+  const orderNumber = node.orderNumber || node.orderId || "";
+  const livePayload = {
+    order: node?.order || null,
+    review: node?.review || null,
+    payout: node?.payout || null,
+  };
+
+  const payoutReceiptUrl = node?.payout?.receiptUrl || "";
+  const payoutId = node?.payout?.id || "";
 
   return {
     id: node.id,
@@ -181,11 +190,11 @@ export function mapNotificationNode(node) {
     orderId: node.orderId || "",
     orderNumber: orderNumber,
     reviewId: node.reviewId || "",
-    payoutId: "",
-    payoutReceiptUrl: "",
+    payoutId,
+    payoutReceiptUrl,
     detailTitle: buildFallbackDetailTitle(type),
     detailRows: buildFallbackDetailRows({ ...node, orderNumber }, type),
-    livePayload: null,
+    livePayload,
     time: formatTime(node.createdAt),
   };
 }
@@ -272,23 +281,23 @@ export function deriveReceiptUrl(notification) {
 
 export function deriveReceiptAmount(notification) {
   const payout = notification?.livePayload?.payout;
-  return formatMoney(payout?.amount, payout?.currency);
+  return payout ? formatMoney(payout?.amount, payout?.currency) : "";
 }
 
 export function deriveReceiptStatus(notification) {
-  return notification?.livePayload?.payout?.status || "Processed";
+  return notification?.livePayload?.payout?.status || "";
 }
 
 export function deriveOrderSummary(notification) {
   const order = notification?.livePayload?.order;
   if (!order) {
     return {
-      orderId: notification.orderNumber || "--",
-      customer: "--",
+      orderId: notification.orderNumber || notification.orderId || "",
+      customer: "",
       status: "",
       amount: "",
       coverImageUrl: "",
-      itemsSummary: notification.message || "",
+      itemsSummary: "",
       items: [],
     };
   }

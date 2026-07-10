@@ -45,6 +45,39 @@ export const GET_VENDOR_NOTIFICATION_DETAIL_QUERY = `
       createdAt
       orderId
       reviewId
+      order {
+        id
+        orderNumber
+        status
+        customerName
+        amount
+        currency
+        coverImageUrl
+        itemsSummary
+        items {
+          id
+          name
+          quantity
+          imageUrl
+          description
+          allergens
+        }
+      }
+      review {
+        id
+        customerName
+        rating
+        orderNumber
+        occasion
+        comment
+      }
+      payout {
+        id
+        amount
+        currency
+        status
+        receiptUrl
+      }
     }
   }
 `;
