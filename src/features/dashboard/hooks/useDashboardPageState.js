@@ -7,7 +7,8 @@ import {
   createEmptyDashboardState,
   mapDashboardResponse,
 } from "../api/dashboardMappers";
-import { updateVendorOrderStatus } from "../../order/api/orderApi";
+import { getAllVendorOrders, updateVendorOrderStatus } from "../../order/api/orderApi";
+import { mapVendorOrderSummary, mapVendorOrdersResult } from "../../order/api/orderMappers";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
@@ -59,16 +60,23 @@ export default function useDashboardPageState() {
       }
 
       try {
-        const result = await getVendorDashboard(queryVariables);
+        const [result, ordersResult] = await Promise.all([
+          getVendorDashboard(queryVariables),
+          getAllVendorOrders(),
+        ]);
 
         if (isCancelled) {
           return;
         }
 
+        const mappedOrders = mapVendorOrdersResult(ordersResult);
+        const kitchenSummary = mapVendorOrderSummary(null, mappedOrders.rows);
+
         setDashboard(
           mapDashboardResponse(result, {
             dateFilterLabel: dateFilter,
             customDateLabel,
+            kitchenSummary,
           }),
         );
       } catch (error) {
