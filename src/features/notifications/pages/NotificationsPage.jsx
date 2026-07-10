@@ -43,7 +43,7 @@ export default function NotificationsPage() {
           <div>
             <h1 className="type-h2 m-0 text-[#1c1510]">Notifications</h1>
             <p className="type-para mt-1 text-[#8b7f74]">
-              Track important operational updates and customer activity in real
+              Trackkk important operational updates and customer activity in real
               time.
             </p>
           </div>
