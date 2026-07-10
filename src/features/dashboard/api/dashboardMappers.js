@@ -138,7 +138,33 @@ export function createEmptyDashboardState() {
   };
 }
 
-export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel } = {}) {
+export function buildKitchenStatusFromSummary(summary = {}) {
+  return [
+    {
+      value: String(toNumber(summary?.preparing)),
+      label: "Preparing",
+      sublabel: "Orders",
+      tone: "is-blue",
+      icon: "chef",
+    },
+    {
+      value: String(toNumber(summary?.ready)),
+      label: "Ready",
+      sublabel: "Orders",
+      tone: "is-green",
+      icon: "check",
+    },
+    {
+      value: String(toNumber(summary?.outForDelivery ?? summary?.out_for_delivery)),
+      label: "Out for Delivery",
+      sublabel: "Orders",
+      tone: "is-amber",
+      icon: "delivery",
+    },
+  ];
+}
+
+export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel, kitchenSummary } = {}) {
   const me = data?.me || null;
   const summary = data?.vendorDashboardSummary || {};
   const currency = normalizeString(summary.currency || "NOK");
@@ -219,18 +245,13 @@ export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel } 
       };
     });
 
-  const kitchenStatusSource = data?.vendorKitchenStatus || {};
-  const kitchenStatus = [
-    { value: String(toNumber(kitchenStatusSource.preparing)), label: "Preparing", sublabel: "Orders", tone: "is-blue", icon: "chef" },
-    { value: String(toNumber(kitchenStatusSource.ready)), label: "Ready", sublabel: "Orders", tone: "is-green", icon: "check" },
-    {
-      value: String(toNumber(kitchenStatusSource.outForDelivery)),
-      label: "Out for Delivery",
-      sublabel: "Orders",
-      tone: "is-amber",
-      icon: "delivery",
-    },
-  ];
+  const dashboardKitchenSummary =
+    kitchenSummary ||
+    (data?.vendorOrderSummaryAllTime && typeof data.vendorOrderSummaryAllTime === "object"
+      ? data.vendorOrderSummaryAllTime
+      : null) ||
+    {};
+  const kitchenStatus = buildKitchenStatusFromSummary(dashboardKitchenSummary);
 
   const chartValues = chartPoints.map((point) => ({
     month: normalizeString(point?.label) || "--",

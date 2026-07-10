@@ -73,6 +73,22 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
       outForDelivery
     }
 
+    vendorOrderSummary(
+      datePreset: $summaryPreset
+      dateFrom: $dateFrom
+      dateTo: $dateTo
+    ) {
+      preparing
+      ready
+      outForDelivery
+    }
+
+    vendorOrderSummaryAllTime: vendorOrderSummary {
+      preparing
+      ready
+      outForDelivery
+    }
+
     vendorFinanceOverviewChart(
       dateFrom: $dateFrom
       dateTo: $dateTo
