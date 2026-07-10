@@ -2,6 +2,7 @@ import {
   BadgeDollarSign,
   Bell,
   ChevronDown,
+  CircleUserRound,
   House,
   LifeBuoy,
   LogOut,
@@ -49,6 +50,10 @@ export default function AppLayout() {
   const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const prevUnreadCountRef = useRef(null);
+  const [isDesktopProfileMenuOpen, setIsDesktopProfileMenuOpen] = useState(false);
+  const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
+  const desktopProfileMenuRef = useRef(null);
+  const mobileProfileMenuRef = useRef(null);
 
   useEffect(() => {
     let isCancelled = false;
@@ -108,6 +113,30 @@ export default function AppLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        desktopProfileMenuRef.current &&
+        !desktopProfileMenuRef.current.contains(event.target)
+      ) {
+        setIsDesktopProfileMenuOpen(false);
+      }
+
+      if (
+        mobileProfileMenuRef.current &&
+        !mobileProfileMenuRef.current.contains(event.target)
+      ) {
+        setIsMobileProfileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   function handleSearchChange(e) {
     const val = e.target.value;
     setHeaderSearch(val);
@@ -131,8 +160,22 @@ export default function AppLayout() {
     const result = await confirmVendorLogout();
 
     if (result.isConfirmed) {
+      setIsDesktopProfileMenuOpen(false);
+      setIsMobileProfileMenuOpen(false);
       logout();
     }
+  }
+
+  function handleOpenSettings() {
+    setIsDesktopProfileMenuOpen(false);
+    setIsMobileProfileMenuOpen(false);
+    navigate("/settings");
+  }
+
+  function handleOpenNotifications() {
+    setIsDesktopProfileMenuOpen(false);
+    setIsMobileProfileMenuOpen(false);
+    navigate("/notifications");
   }
 
   return (
@@ -195,7 +238,7 @@ export default function AppLayout() {
 
           <div className="flex items-center gap-2.5 max-[960px]:hidden">
             <button
-              onClick={() => navigate("/notifications")}
+              onClick={handleOpenNotifications}
               className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e4d9cf] bg-white text-[#241913] hover:bg-[#fcfaf5] transition shadow-[0_4px_12px_rgba(38,23,14,0.04)]"
               type="button"
             >
@@ -210,22 +253,65 @@ export default function AppLayout() {
               ) : null}
             </button>
 
-            <button
-              onClick={() => navigate("/settings")}
-              className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_6px_18px_rgba(38,23,14,0.06)]"
-              type="button"
-            >
-              <img
-                className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
-                src="/heroBg.webp"
-                alt={displayName}
-              />
-              <span className="flex flex-col items-start leading-[1.15]">
-                <strong className="type-subpara">{displayName}</strong>
-                <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
-              </span>
-              <ChevronDown size={14} />
-            </button>
+            <div className="relative" ref={desktopProfileMenuRef}>
+              <button
+                onClick={() => setIsDesktopProfileMenuOpen((current) => !current)}
+                className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_6px_18px_rgba(38,23,14,0.06)]"
+                type="button"
+              >
+                <img
+                  className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
+                  src="/heroBg.webp"
+                  alt={displayName}
+                />
+                <span className="flex flex-col items-start leading-[1.15]">
+                  <strong className="type-subpara">{displayName}</strong>
+                  <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform ${
+                    isDesktopProfileMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isDesktopProfileMenuOpen ? (
+                <div className="absolute right-0 top-[calc(100%+10px)] z-30 min-w-[220px] rounded-[18px] border border-[#eadfd5] bg-white p-2 shadow-[0_18px_34px_rgba(38,23,14,0.12)]">
+                  <div className="rounded-[14px] bg-[#faf6f2] px-3 py-3">
+                    <p className="text-[13px] font-extrabold text-[#211915]">{displayName}</p>
+                    <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{displayRole}</p>
+                  </div>
+
+                  <div className="mt-2 flex flex-col gap-1">
+                    <button
+                      className="flex cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#2b221d] transition hover:bg-[#faf6f2]"
+                      onClick={handleOpenSettings}
+                      type="button"
+                    >
+                      <CircleUserRound size={15} />
+                      <span>Account settings</span>
+                    </button>
+                    <button
+                      className="flex cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#2b221d] transition hover:bg-[#faf6f2]"
+                      onClick={handleOpenNotifications}
+                      type="button"
+                    >
+                      <Bell size={15} />
+                      <span>Notifications</span>
+                    </button>
+                    <button
+                      className="flex cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
+                      onClick={handleLogout}
+                      type="button"
+                    >
+                      <LogOut size={15} />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="hidden flex-col gap-3 max-[960px]:flex">
@@ -256,22 +342,58 @@ export default function AppLayout() {
               </div>
 
               <div className="mt-3 flex items-center justify-between gap-3 max-[480px]:flex-col max-[480px]:items-stretch">
-                <button
-                  onClick={() => navigate("/settings")}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_10px_20px_rgba(38,23,14,0.08)] max-[480px]:w-full justify-between"
-                  type="button"
-                >
-                  <img
-                    className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
-                    src="/heroBg.webp"
-                    alt={displayName}
-                  />
-                  <span className="flex flex-col items-start leading-[1.15]">
-                    <strong className="type-subpara">{displayName}</strong>
-                    <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
-                  </span>
-                  <ChevronDown size={14} />
-                </button>
+                <div className="relative max-[480px]:w-full" ref={mobileProfileMenuRef}>
+                  <button
+                    onClick={() => setIsMobileProfileMenuOpen((current) => !current)}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_10px_20px_rgba(38,23,14,0.08)] max-[480px]:w-full justify-between"
+                    type="button"
+                  >
+                    <img
+                      className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
+                      src="/heroBg.webp"
+                      alt={displayName}
+                    />
+                    <span className="flex flex-col items-start leading-[1.15]">
+                      <strong className="type-subpara">{displayName}</strong>
+                      <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform ${
+                        isMobileProfileMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isMobileProfileMenuOpen ? (
+                    <div className="absolute right-0 top-[calc(100%+10px)] z-30 min-w-[220px] rounded-[18px] border border-[#eadfd5] bg-white p-2 text-[#241913] shadow-[0_18px_34px_rgba(38,23,14,0.12)] max-[480px]:left-0">
+                      <button
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#faf6f2]"
+                        onClick={handleOpenSettings}
+                        type="button"
+                      >
+                        <CircleUserRound size={15} />
+                        <span>Account settings</span>
+                      </button>
+                      <button
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#faf6f2]"
+                        onClick={handleOpenNotifications}
+                        type="button"
+                      >
+                        <Bell size={15} />
+                        <span>Notifications</span>
+                      </button>
+                      <button
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
+                        onClick={handleLogout}
+                        type="button"
+                      >
+                        <LogOut size={15} />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
 
