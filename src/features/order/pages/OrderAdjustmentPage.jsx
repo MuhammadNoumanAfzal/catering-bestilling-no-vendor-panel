@@ -8,6 +8,7 @@ import {
   searchVendorAdjustmentItems,
 } from "../api/orderApi";
 import { mapVendorOrderDetail } from "../api/orderMappers";
+import { savePendingAdjustment } from "../utils/pendingAdjustments";
 
 const REASON_OPTIONS = [
   "Item unavailable",
@@ -478,6 +479,27 @@ export default function OrderAdjustmentPage() {
         await showVendorErrorAlert(errMsg, "Adjustment Rejected");
         return;
       }
+
+      savePendingAdjustment(orderDetail?.rawId || decodedOrderId, {
+        id: payload?.adjustment?.id || createIdempotencyKey(),
+        status: payload?.adjustment?.status || "PENDING",
+        reason,
+        vendorNote,
+        removedItems,
+        addedItems,
+        removedItemNames: modifiedItems.map((item) => item.name),
+        addedItemNames: suggestedList.map((item) => item.name),
+        proposedEventDate: mutationInput.proposedEventDate || null,
+        proposedDeliveryWindowStart: mutationInput.proposedDeliveryWindowStart || null,
+        proposedGuestCount: mutationInput.proposedGuestCount || null,
+        proposedAddressLine1: mutationInput.proposedAddressLine1 || null,
+        proposedAddressLine2: mutationInput.proposedAddressLine2 || null,
+        proposedCity: mutationInput.proposedCity || null,
+        proposedPostalCode: mutationInput.proposedPostalCode || null,
+        oldTotal,
+        newTotal,
+        createdOn: payload?.adjustment?.createdOn || new Date().toISOString(),
+      });
 
       await showOrderStatusUpdated(
         `Order ${orderDetail?.id || decodedOrderId} adjustment submitted successfully.`,

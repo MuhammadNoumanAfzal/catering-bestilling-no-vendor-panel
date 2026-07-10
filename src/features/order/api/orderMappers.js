@@ -1,3 +1,5 @@
+import { getPendingAdjustment } from "../utils/pendingAdjustments";
+
 function normalizeString(value) {
   return value == null ? "" : String(value);
 }
@@ -507,7 +509,8 @@ export function getStatusMutationValue(status) {
 }
 
 export function mapVendorOrderNode(node) {
-  const status = resolveOrderStatus(node);
+  const pendingAdjustment = getPendingAdjustment(node?.id);
+  const status = pendingAdjustment ? "Modified" : resolveOrderStatus(node);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const carts = getOrderCartsArray(node?.orderCarts);
@@ -527,7 +530,7 @@ export function mapVendorOrderNode(node) {
     time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
     status,
-    statusTone: mapBackendTone(node?.statusTone, status),
+    statusTone: pendingAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
     actions: mapAvailableActionsToUi(node?.availableActions, status),
     raw: node,
   };
@@ -634,10 +637,11 @@ export function mapVendorOrderDetail(data, orderId) {
     return null;
   }
 
+  const pendingAdjustment = getPendingAdjustment(node?.id || orderId);
   const carts = getOrderCartsArray(node?.orderCarts);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
-  const status = resolveOrderStatus(node);
+  const status = pendingAdjustment ? "Modified" : resolveOrderStatus(node);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
   const customer = buildCustomerFromApi(node);
   const orderItems = Array.isArray(node?.items) ? node.items : [];
@@ -663,7 +667,7 @@ export function mapVendorOrderDetail(data, orderId) {
     time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     guests: resolveGuestCount(node, 0),
     status,
-    statusTone: mapBackendTone(node?.statusTone, status),
+    statusTone: pendingAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
     customer,
     orderItem,
     addOns,
@@ -683,7 +687,7 @@ export function mapVendorOrderDetail(data, orderId) {
     actions,
     availableActions: Array.isArray(node?.availableActions) ? node.availableActions : [],
     statuses: Array.isArray(node?.statuses) ? node.statuses : [],
-    adjustments: [],
+    adjustments: pendingAdjustment ? [pendingAdjustment] : [],
     tableware: node?.tableware ? {
       napkins: Boolean(node.tableware.napkins),
       utensils: Boolean(node.tableware.utensils),
