@@ -12,6 +12,7 @@ import {
   mapVendorOrderDetail,
   normalizeBackendStatus,
 } from "../api/orderMappers";
+import { clearPendingAdjustment } from "../utils/pendingAdjustments";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
@@ -77,6 +78,10 @@ export default function OrderDetailPage() {
       note: "",
     });
 
+    if (nextStatus !== "Modified") {
+      clearPendingAdjustment(decodedOrderId);
+    }
+
     await refreshOrderDetail();
     await showOrderStatusUpdated(message);
   }
@@ -107,6 +112,7 @@ export default function OrderDetailPage() {
   const confirmedLifecycleActions = isAcceptedView
     ? orderDetail.actions.filter((action) => action.label !== "View Details")
     : [];
+  const latestAdjustment = Array.isArray(orderDetail.adjustments) ? orderDetail.adjustments[0] : null;
 
   async function handleLifecycleActionClick(action) {
     try {
@@ -188,6 +194,105 @@ export default function OrderDetailPage() {
           </p>
         </div>
       </header>
+
+      {latestAdjustment ? (
+        <div className="rounded-[14px] border border-[#f8d9c4] bg-[linear-gradient(180deg,#fff8f3_0%,#fffdfb_100%)] p-4 shadow-[0_6px_18px_rgba(42,27,18,0.06)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#cf6e38]">
+                Adjustment Pending
+              </p>
+              <h2 className="m-0 text-[18px] font-extrabold text-[#1c1510]">
+                Customer-facing change request has been submitted for this order.
+              </h2>
+              <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">
+                The original order stays visible until the adjustment is accepted and applied.
+              </p>
+            </div>
+            <div className="rounded-full bg-[#fff1e8] px-3 py-1 text-[12px] font-extrabold text-[#cf6e38]">
+              {latestAdjustment.status || "PENDING"}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-[10px] border border-[#efe6de] bg-white p-3">
+              <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                Removed Items
+              </p>
+              <p className="mt-2 text-[14px] font-semibold leading-[1.5] text-[#2b231e]">
+                {latestAdjustment.removedItemNames?.length
+                  ? latestAdjustment.removedItemNames.join(", ")
+                  : "No item removals proposed."}
+              </p>
+            </div>
+            <div className="rounded-[10px] border border-[#efe6de] bg-white p-3">
+              <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                Added Items
+              </p>
+              <p className="mt-2 text-[14px] font-semibold leading-[1.5] text-[#2b231e]">
+                {latestAdjustment.addedItemNames?.length
+                  ? latestAdjustment.addedItemNames.join(", ")
+                  : "No replacement items proposed."}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            {latestAdjustment.proposedEventDate ? (
+              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                  Proposed Date
+                </span>
+                {latestAdjustment.proposedEventDate}
+              </div>
+            ) : null}
+            {latestAdjustment.proposedDeliveryWindowStart ? (
+              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                  Proposed Time
+                </span>
+                {latestAdjustment.proposedDeliveryWindowStart}
+              </div>
+            ) : null}
+            {latestAdjustment.proposedGuestCount ? (
+              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                  Proposed Guests
+                </span>
+                {latestAdjustment.proposedGuestCount}
+              </div>
+            ) : null}
+          </div>
+
+          {typeof latestAdjustment.oldTotal === "number" || typeof latestAdjustment.newTotal === "number" ? (
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                  Current Total
+                </span>
+                kr {Number(latestAdjustment.oldTotal || 0).toFixed(2)}
+              </div>
+              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#cf6e38]">
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                  Proposed Total
+                </span>
+                kr {Number(latestAdjustment.newTotal || 0).toFixed(2)}
+              </div>
+            </div>
+          ) : null}
+
+          {latestAdjustment.vendorNote ? (
+            <div className="mt-3 rounded-[10px] border border-[#efe6de] bg-white p-3">
+              <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
+                Vendor Note
+              </span>
+              <p className="mt-2 whitespace-pre-line text-[13px] font-semibold leading-[1.6] text-[#2b231e]">
+                {latestAdjustment.vendorNote}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(260px,0.95fr)] gap-3 max-[1180px]:grid-cols-1">
         <div className="flex flex-col gap-3">

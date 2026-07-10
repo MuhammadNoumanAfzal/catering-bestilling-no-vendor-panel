@@ -17,6 +17,7 @@ import {
   mapVendorOrdersResult,
   normalizeBackendStatus,
 } from "../api/orderMappers";
+import { clearPendingAdjustment } from "../utils/pendingAdjustments";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
@@ -366,6 +367,10 @@ export default function OrdersPage() {
       status: getStatusMutationValue(nextStatus),
       note: "",
     });
+
+    if (nextStatus !== "Modified") {
+      clearPendingAdjustment(row.rawId);
+    }
 
     setOrderRows((currentRows) =>
       currentRows.map((currentRow) =>
