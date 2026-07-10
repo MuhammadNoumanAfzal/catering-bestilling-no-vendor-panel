@@ -23,6 +23,7 @@ import {
   showOrderStatusUpdated,
   showVendorErrorAlert,
 } from "../../../utils/vendorAlerts";
+import { getEarlyDeliveryBlockMessage } from "../utils/orderSchedule";
 
 const PAGE_SIZE = 10;
 
@@ -398,9 +399,17 @@ export default function OrdersPage() {
   async function handleActionClick(row, action) {
     try {
       const actionLabel = action?.label || "";
+      const nextStatus = getStatusFromActionLabel(actionLabel);
+
+      if (nextStatus === "Delivered") {
+        const blockedMessage = getEarlyDeliveryBlockMessage(row);
+        if (blockedMessage) {
+          await showVendorErrorAlert(blockedMessage, "Delivery not available yet");
+          return;
+        }
+      }
 
       if (action.fromDropdown) {
-        const nextStatus = getStatusFromActionLabel(actionLabel);
         await commitStatusChange(row, nextStatus, `Status updated to ${nextStatus} for ${row.id}.`);
         return;
       }

@@ -18,6 +18,7 @@ import {
   showOrderStatusUpdated,
   showVendorErrorAlert,
 } from "../../../utils/vendorAlerts";
+import { getEarlyDeliveryBlockMessage } from "../utils/orderSchedule";
 
 function getStatusFromActionLabel(label) {
   return normalizeBackendStatus(label);
@@ -149,12 +150,20 @@ export default function OrderDetailPage() {
         return;
       }
 
+      const nextStatus = getStatusFromActionLabel(action.label);
+      if (nextStatus === "Delivered") {
+        const blockedMessage = getEarlyDeliveryBlockMessage(orderDetail);
+        if (blockedMessage) {
+          await showVendorErrorAlert(blockedMessage, "Delivery not available yet");
+          return;
+        }
+      }
+
       const result = await confirmOrderStatusAction(action.label, orderDetail.id);
       if (!result.isConfirmed) {
         return;
       }
 
-      const nextStatus = getStatusFromActionLabel(action.label);
       await updateOrderStatus(
         nextStatus,
         `${orderDetail.id} updated to ${action.label.toLowerCase()}.`,
@@ -168,6 +177,14 @@ export default function OrderDetailPage() {
 
   async function handleManualStatusSelect(nextStatus) {
     try {
+      if (nextStatus === "Delivered") {
+        const blockedMessage = getEarlyDeliveryBlockMessage(orderDetail);
+        if (blockedMessage) {
+          await showVendorErrorAlert(blockedMessage, "Delivery not available yet");
+          return;
+        }
+      }
+
       await updateOrderStatus(
         nextStatus,
         `${orderDetail.id} updated to ${nextStatus.toLowerCase()}.`,
