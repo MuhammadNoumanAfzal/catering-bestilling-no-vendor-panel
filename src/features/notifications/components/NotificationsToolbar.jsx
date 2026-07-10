@@ -18,7 +18,7 @@ export default function NotificationsToolbar({
   tabs,
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#e2d8d0] bg-white px-3 py-2 shadow-[0_2px_10px_rgba(45,31,20,0.04)] max-[640px]:flex-col max-[640px]:items-stretch">
+    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-[#e8ddd4] bg-white px-3 py-3 shadow-[0_10px_24px_rgba(45,31,20,0.05)] max-[760px]:flex-col max-[760px]:items-stretch">
       <div className="flex flex-wrap items-center gap-2">
         {tabs.map((tab) => {
           const isActive = activeTab === tab;
@@ -26,10 +26,10 @@ export default function NotificationsToolbar({
           return (
             <button
               key={tab}
-              className={`type-h6 rounded-[9px] px-3 py-[7px] transition ${
+              className={`rounded-full px-3.5 py-2 text-[13px] font-semibold transition ${
                 isActive
-                  ? "bg-[#d86f39] text-white shadow-[0_6px_16px_rgba(216,111,57,0.22)]"
-                  : "border border-[#e2d8d0] bg-white"
+                  ? "bg-[#cf6e38] text-white shadow-[0_8px_18px_rgba(207,110,56,0.22)]"
+                  : "border border-[#e4d8cf] bg-[#fffdfa] text-[#5d5147] hover:border-[#d7c8bc] hover:bg-[#faf5f0]"
               }`}
               onClick={() => onTabChange(tab)}
               type="button"
@@ -40,7 +40,7 @@ export default function NotificationsToolbar({
         })}
       </div>
 
-      <div className="flex items-center gap-2 max-[640px]:justify-between">
+      <div className="flex items-center gap-2 max-[760px]:justify-between">
         <NotificationFilterDropdown
           customRange={customRange}
           filterLabel={filterLabel}
@@ -54,7 +54,7 @@ export default function NotificationsToolbar({
         />
 
         <button
-          className="type-subpara rounded-[9px] border border-[#e2d8d0] bg-white px-3 py-[9px] text-[#453930] disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full border border-[#e4d8cf] bg-[#fffdfa] px-4 py-2 text-[13px] font-semibold text-[#453930] transition hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-50"
           disabled={isMarkingAllRead || !unreadCount}
           onClick={onMarkAllRead}
           type="button"
