@@ -171,17 +171,59 @@ export function mapTransactionDetail(node) {
   };
 }
 
+function toYmd(date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function createDateAtStartOfDay(baseDate = new Date()) {
+  const nextDate = new Date(baseDate);
+  nextDate.setHours(0, 0, 0, 0);
+  return nextDate;
+}
+
 export function getFinanceRangeVariables({ rangePreset, customFrom, customTo }) {
   if (rangePreset === "custom" && customFrom && customTo) {
     return {
-      rangePreset: "custom",
       dateFrom: customFrom,
       dateTo: customTo,
     };
   }
 
+  const today = createDateAtStartOfDay(new Date());
+  const dateTo = toYmd(today);
+  const dateFromDate = new Date(today);
+
+  switch (rangePreset) {
+    case "7days":
+      dateFromDate.setDate(today.getDate() - 6);
+      break;
+    case "30days":
+      dateFromDate.setDate(today.getDate() - 29);
+      break;
+    case "thisMonth":
+      dateFromDate.setDate(1);
+      break;
+    case "lastMonth":
+      dateFromDate.setMonth(today.getMonth() - 1, 1);
+      today.setDate(0);
+      return {
+        dateFrom: toYmd(dateFromDate),
+        dateTo: toYmd(today),
+      };
+    case "thisYear":
+      dateFromDate.setMonth(0, 1);
+      break;
+    default:
+      dateFromDate.setDate(today.getDate() - 29);
+      break;
+  }
+
   return {
-    rangePreset,
+    dateFrom: toYmd(dateFromDate),
+    dateTo,
   };
 }
 
