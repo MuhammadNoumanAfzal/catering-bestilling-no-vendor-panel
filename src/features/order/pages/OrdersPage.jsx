@@ -129,7 +129,7 @@ function buildBackendDateFilters(selectedFilter, fromDate, toDate) {
 
   if (selectedFilter === "Last 7 Days") {
     const start = new Date(today);
-    start.setDate(today.getDate() - 7);
+    start.setDate(today.getDate() - 6);
     return {
       dateFrom: toIsoDateString(start),
       dateTo: toIsoDateString(today),
@@ -138,7 +138,7 @@ function buildBackendDateFilters(selectedFilter, fromDate, toDate) {
 
   if (selectedFilter === "Last 14 Days") {
     const start = new Date(today);
-    start.setDate(today.getDate() - 14);
+    start.setDate(today.getDate() - 13);
     return {
       dateFrom: toIsoDateString(start),
       dateTo: toIsoDateString(today),
@@ -234,47 +234,16 @@ export default function OrdersPage() {
     };
   }, [backendQueryVariables]);
 
-  const dateFilteredRows = useMemo(() => {
-    if (selectedFilter === "All Time") {
-      return orderRows;
-    }
+  const dateFilteredRows = orderRows;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const rangeAwareSummary = useMemo(() => {
+    const modifiedCount = dateFilteredRows.filter((row) => row.status === "Modified").length;
 
-    return orderRows.filter((row) => {
-      const rowDate = parseOrderDateString(row.date);
-      if (Number.isNaN(rowDate.getTime())) return true;
-
-      rowDate.setHours(0, 0, 0, 0);
-
-      if (selectedFilter === "Last 7 Days") {
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 7);
-        return rowDate >= sevenDaysAgo && rowDate <= today;
-      }
-      if (selectedFilter === "Last 14 Days") {
-        const fourteenDaysAgo = new Date(today);
-        fourteenDaysAgo.setDate(today.getDate() - 14);
-        return rowDate >= fourteenDaysAgo && rowDate <= today;
-      }
-      if (selectedFilter === "Last Month") {
-        const oneMonthAgo = new Date(today);
-        oneMonthAgo.setMonth(today.getMonth() - 1);
-        return rowDate >= oneMonthAgo && rowDate <= today;
-      }
-      if (selectedFilter === "Custom Date") {
-        if (!fromDate || !toDate) return true;
-        const start = new Date(fromDate);
-        const end = new Date(toDate);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        return rowDate >= start && rowDate <= end;
-      }
-
-      return true;
-    });
-  }, [fromDate, orderRows, selectedFilter, toDate]);
+    return {
+      ...summaryCounts,
+      modified: Math.max(summaryCounts.modified || 0, modifiedCount),
+    };
+  }, [dateFilteredRows, summaryCounts]);
 
   const filteredRows = useMemo(() => {
     const baseRows =
@@ -308,22 +277,19 @@ export default function OrdersPage() {
   }, [activeFilter, activeTab, dateFilteredRows, searchParams]);
 
   const dynamicMetrics = useMemo(() => {
-    const filteredSummary = mapVendorOrderSummary(null, dateFilteredRows);
-    return createOrderMetrics({
-      ...summaryCounts,
-      ...filteredSummary,
-      total: dateFilteredRows.length,
-    });
-  }, [dateFilteredRows, summaryCounts]);
+    return createOrderMetrics(rangeAwareSummary).map((metric) =>
+      metric.label === "Total Orders"
+        ? {
+            ...metric,
+            helper: selectedFilter === "All Time" ? "All orders" : "Orders in current range",
+          }
+        : metric,
+    );
+  }, [rangeAwareSummary, selectedFilter]);
 
   const orderTabs = useMemo(() => {
-    const filteredSummary = mapVendorOrderSummary(null, dateFilteredRows);
-    return createOrderTabs({
-      ...summaryCounts,
-      ...filteredSummary,
-      total: dateFilteredRows.length,
-    });
-  }, [dateFilteredRows, summaryCounts]);
+    return createOrderTabs(rangeAwareSummary);
+  }, [rangeAwareSummary]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
