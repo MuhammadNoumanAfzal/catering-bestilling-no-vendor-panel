@@ -1,6 +1,8 @@
 export const GET_VENDOR_DASHBOARD_QUERY = `
   query GetVendorDashboard(
-    $datePreset: String
+    $summaryPreset: String
+    $urgentPreset: String
+    $reviewsPreset: String
     $dateFrom: Date
     $dateTo: Date
     $urgentFirst: Int = 5
@@ -15,7 +17,7 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
     }
 
     vendorDashboardSummary(
-      datePreset: $datePreset
+      datePreset: $summaryPreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
@@ -36,7 +38,7 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
 
     vendorUrgentOrders(
       first: $urgentFirst
-      datePreset: $datePreset
+      datePreset: $urgentPreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
@@ -62,7 +64,7 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
     }
 
     vendorKitchenStatus(
-      datePreset: $datePreset
+      datePreset: $summaryPreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
@@ -72,7 +74,6 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
     }
 
     vendorFinanceOverviewChart(
-      rangePreset: $datePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
       groupBy: $chartGroupBy
@@ -86,7 +87,7 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
 
     vendorReviews(
       first: $reviewsFirst
-      datePreset: $datePreset
+      datePreset: $reviewsPreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {

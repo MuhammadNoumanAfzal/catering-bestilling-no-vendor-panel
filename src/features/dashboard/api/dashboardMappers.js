@@ -282,20 +282,26 @@ function formatAsIsoDate(date) {
 export function buildDashboardQueryVariables({ dateFilter, startDate, endDate }) {
   const today = new Date();
   const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  let datePreset = null;
+  let summaryPreset = null;
+  let urgentPreset = null;
+  let reviewsPreset = null;
   let dateFrom = null;
   let dateTo = null;
 
   if (dateFilter === "Last 2 Days") {
     const start = new Date(end);
     start.setDate(end.getDate() - 1);
-    datePreset = "custom";
     dateFrom = formatAsIsoDate(start);
     dateTo = formatAsIsoDate(end);
   } else if (dateFilter === "Last 7 Days") {
-    datePreset = "7days";
+    const start = new Date(end);
+    start.setDate(end.getDate() - 6);
+    summaryPreset = "last-7-days";
+    urgentPreset = "this_week";
+    reviewsPreset = "lastMonth";
+    dateFrom = formatAsIsoDate(start);
+    dateTo = formatAsIsoDate(end);
   } else if (dateFilter === "Custom Date" && startDate && endDate) {
-    datePreset = "custom";
     dateFrom = startDate;
     dateTo = endDate;
   }
@@ -311,7 +317,9 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
       : 7;
 
   return {
-    datePreset,
+    summaryPreset,
+    urgentPreset,
+    reviewsPreset,
     dateFrom,
     dateTo,
     urgentFirst: 5,
