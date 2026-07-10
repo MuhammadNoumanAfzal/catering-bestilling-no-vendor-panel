@@ -60,6 +60,13 @@ export default function SettingsBusinessProfilePanel({
               placeholder="Enter business address"
               value={settings.businessAddress}
             />
+            <SettingsTextField
+              disabled
+              label="Postal Code"
+              onChange={handleFieldChange("postalCode")}
+              placeholder="Enter postal code"
+              value={settings.postalCode}
+            />
           </div>
 
           <div className="mt-3">

@@ -63,11 +63,7 @@ export default function CreateMenuPricingSection({
             })}
           </div>
         </div>
-      ) : (
-        <div className="rounded-[10px] border border-dashed border-[#dfd5cb] bg-[#faf7f4] px-3 py-2 text-[12px] font-medium text-[#8a7c70]">
-          Pricing type is not available from the API right now.
-        </div>
-      )}
+      ) : null}
 
       <div className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
         <div>
