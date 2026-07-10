@@ -1,11 +1,9 @@
 export const GET_VENDOR_FINANCE_SUMMARY_QUERY = `
   query GetVendorFinanceSummary(
-    $rangePreset: String
     $dateFrom: Date
     $dateTo: Date
   ) {
     vendorFinanceSummary(
-      rangePreset: $rangePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
@@ -23,13 +21,11 @@ export const GET_VENDOR_FINANCE_SUMMARY_QUERY = `
 
 export const GET_VENDOR_FINANCE_OVERVIEW_CHART_QUERY = `
   query GetVendorFinanceOverviewChart(
-    $rangePreset: String
     $dateFrom: Date
     $dateTo: Date
     $groupBy: String
   ) {
     vendorFinanceOverviewChart(
-      rangePreset: $rangePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
       groupBy: $groupBy
@@ -76,7 +72,6 @@ export const GET_VENDOR_FINANCE_TRANSACTIONS_QUERY = `
     $first: Int = 10
     $after: String
     $status: String
-    $rangePreset: String
     $dateFrom: Date
     $dateTo: Date
   ) {
@@ -84,7 +79,6 @@ export const GET_VENDOR_FINANCE_TRANSACTIONS_QUERY = `
       first: $first
       after: $after
       status: $status
-      rangePreset: $rangePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
@@ -135,14 +129,12 @@ export const GET_VENDOR_FINANCE_TRANSACTION_DETAIL_QUERY = `
 export const EXPORT_VENDOR_FINANCE_TRANSACTIONS_MUTATION = `
   mutation ExportVendorFinanceTransactions(
     $status: String
-    $rangePreset: String
     $dateFrom: Date
     $dateTo: Date
     $format: String!
   ) {
     exportVendorFinanceTransactions(
       status: $status
-      rangePreset: $rangePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
       format: $format
