@@ -36,12 +36,19 @@ export const GET_VENDOR_ORDERS_QUERY = `
         node {
           id
           invoiceNumber
+          orderNumber
           status
+          createdOn
           eventTime
           customerName
           eventName
           personCount
           eventDate
+          availableActions
+          statuses {
+            status
+            createdOn
+          }
           pricing {
             subtotal
             taxAmount

@@ -5,7 +5,10 @@ import OrderDetailModal from "../OrderDetailModal";
 export default function OrderItemsPanel({ orderItem, note, addOns, orderId, order }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const heroImage = orderItem?.image || order?.raw?.orderCarts?.[0]?.item?.coverImage?.fileUrl || "";
-  const specialInstructions = note || "No special instructions were returned by the API.";
+  const hasSpecialInstructions = Boolean(`${note ?? ""}`.trim());
+  const specialInstructions = hasSpecialInstructions
+    ? note
+    : "No special instructions were added for this order.";
 
   return (
     <>
@@ -71,7 +74,13 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
         <div className="mt-4 text-[16px] font-extrabold tracking-[0.04em] text-[#8a7a6d]">
           SPECIAL INSTRUCTIONS
         </div>
-        <div className="mt-2 rounded-md bg-[#ffc8b5] px-3 py-3 text-[14px] font-semibold uppercase leading-[1.5] italic text-[#c76d3f]">
+        <div
+          className={`mt-2 rounded-md px-3 py-3 text-[14px] font-semibold leading-[1.5] ${
+            hasSpecialInstructions
+              ? "bg-[#ffc8b5] uppercase italic text-[#c76d3f]"
+              : "border border-[#efe3d7] bg-[#fffaf6] text-[#7d6f63]"
+          }`}
+        >
           {specialInstructions}
         </div>
       </DetailPanel>
