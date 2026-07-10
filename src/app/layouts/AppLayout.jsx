@@ -21,6 +21,7 @@ import {
   getVendorNotificationCounts,
   getVendorNotifications,
 } from "../../features/notifications/api/notificationsApi";
+import { getVendorSettingsPage } from "../../features/settings/api/settingsApi";
 
 const sidebarItems = [
   { label: "Dashboard", to: "/dashboard", icon: House },
@@ -36,6 +37,20 @@ const sidebarItems = [
 
 const NOTIFICATION_POLL_INTERVAL_MS = 30000;
 
+function getInitials(name) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!parts.length) {
+    return "V";
+  }
+
+  return parts.map((part) => part.charAt(0).toUpperCase()).join("");
+}
+
 export default function AppLayout() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
@@ -48,12 +63,44 @@ export default function AppLayout() {
   const displayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Vendor User";
   const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
+  const [profileImageUrl, setProfileImageUrl] = useState("");
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const prevUnreadCountRef = useRef(null);
   const [isDesktopProfileMenuOpen, setIsDesktopProfileMenuOpen] = useState(false);
   const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
   const desktopProfileMenuRef = useRef(null);
   const mobileProfileMenuRef = useRef(null);
+  const profileInitials = getInitials(displayName);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadProfileImage() {
+      try {
+        const result = await getVendorSettingsPage();
+        const settings = result?.vendorSettings;
+        const nextProfileImageUrl =
+          settings?.account?.avatar?.fileUrl ||
+          settings?.businessProfile?.profileImage?.fileUrl ||
+          settings?.logoUrl ||
+          "";
+
+        if (!isCancelled) {
+          setProfileImageUrl(nextProfileImageUrl);
+        }
+      } catch {
+        if (!isCancelled) {
+          setProfileImageUrl("");
+        }
+      }
+    }
+
+    loadProfileImage();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -178,6 +225,27 @@ export default function AppLayout() {
     navigate("/notifications");
   }
 
+  function renderProfileAvatar(sizeClass = "h-7 w-7", textClass = "text-[11px]") {
+    if (profileImageUrl) {
+      return (
+        <img
+          className={`${sizeClass} rounded-full object-cover ring-2 ring-[#f2ebe4]`}
+          src={profileImageUrl}
+          alt={displayName}
+        />
+      );
+    }
+
+    return (
+      <div
+        className={`${sizeClass} inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#cf6e38_0%,#e38a55_100%)] font-extrabold text-white ring-2 ring-[#f2ebe4] ${textClass}`}
+        aria-label={displayName}
+      >
+        {profileInitials}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#f4f0ea] text-[#201914] max-[960px]:flex-col">
       <aside className="relative flex w-[252px] shrink-0 flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#d86c3d_0%,#cb6134_52%,#b95028_100%)] p-4 text-[#fff8f3] shadow-[8px_0_24px_rgba(121,61,23,0.16)] max-[960px]:hidden">
@@ -225,7 +293,7 @@ export default function AppLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9]/95 px-5 py-3 backdrop-blur-sm max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
+        <header className="relative z-40 flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9]/95 px-5 py-3 backdrop-blur-sm max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
           <div className="max-w-[480px] flex-1 max-[960px]:hidden">
             <input
               className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
@@ -259,11 +327,7 @@ export default function AppLayout() {
                 className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_6px_18px_rgba(38,23,14,0.06)]"
                 type="button"
               >
-                <img
-                  className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
-                  src="/heroBg.webp"
-                  alt={displayName}
-                />
+                {renderProfileAvatar()}
                 <span className="flex flex-col items-start leading-[1.15]">
                   <strong className="type-subpara">{displayName}</strong>
                   <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
@@ -277,10 +341,13 @@ export default function AppLayout() {
               </button>
 
               {isDesktopProfileMenuOpen ? (
-                <div className="absolute right-0 top-[calc(100%+10px)] z-30 min-w-[220px] rounded-[18px] border border-[#eadfd5] bg-white p-2 shadow-[0_18px_34px_rgba(38,23,14,0.12)]">
-                  <div className="rounded-[14px] bg-[#faf6f2] px-3 py-3">
-                    <p className="text-[13px] font-extrabold text-[#211915]">{displayName}</p>
-                    <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{displayRole}</p>
+                <div className="absolute right-0 top-[calc(100%+10px)] z-50 min-w-[220px] rounded-[18px] border border-[#eadfd5] bg-white p-2 shadow-[0_18px_34px_rgba(38,23,14,0.12)]">
+                  <div className="flex items-center gap-3 rounded-[14px] bg-[#faf6f2] px-3 py-3">
+                    {renderProfileAvatar("h-11 w-11", "text-[14px]")}
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-extrabold text-[#211915]">{displayName}</p>
+                      <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{displayRole}</p>
+                    </div>
                   </div>
 
                   <div className="mt-2 flex flex-col gap-1">
@@ -348,11 +415,7 @@ export default function AppLayout() {
                     className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_10px_20px_rgba(38,23,14,0.08)] max-[480px]:w-full justify-between"
                     type="button"
                   >
-                    <img
-                      className="h-7 w-7 rounded-full object-cover ring-2 ring-[#f2ebe4]"
-                      src="/heroBg.webp"
-                      alt={displayName}
-                    />
+                    {renderProfileAvatar()}
                     <span className="flex flex-col items-start leading-[1.15]">
                       <strong className="type-subpara">{displayName}</strong>
                       <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
@@ -366,7 +429,14 @@ export default function AppLayout() {
                   </button>
 
                   {isMobileProfileMenuOpen ? (
-                    <div className="absolute right-0 top-[calc(100%+10px)] z-30 min-w-[220px] rounded-[18px] border border-[#eadfd5] bg-white p-2 text-[#241913] shadow-[0_18px_34px_rgba(38,23,14,0.12)] max-[480px]:left-0">
+                    <div className="absolute right-0 top-[calc(100%+10px)] z-50 min-w-[220px] rounded-[18px] border border-[#eadfd5] bg-white p-2 text-[#241913] shadow-[0_18px_34px_rgba(38,23,14,0.12)] max-[480px]:left-0">
+                      <div className="mb-2 flex items-center gap-3 rounded-[14px] bg-[#faf6f2] px-3 py-3">
+                        {renderProfileAvatar("h-11 w-11", "text-[14px]")}
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-extrabold text-[#211915]">{displayName}</p>
+                          <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{displayRole}</p>
+                        </div>
+                      </div>
                       <button
                         className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#faf6f2]"
                         onClick={handleOpenSettings}
