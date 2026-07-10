@@ -25,47 +25,6 @@ export async function executeProtectedGraphqlRequest(query, variables, options =
 
   const queryStr = String(query || "");
 
-
-
-  if (queryStr.includes("vendorNotificationCounts")) {
-    return {
-      vendorNotificationCounts: {
-        total: 1,
-        unread: 1,
-        read: 0
-      }
-    };
-  }
-
-  if (queryStr.includes("GetVendorNotifications") || queryStr.includes("vendorNotifications")) {
-    return {
-      vendorNotifications: {
-        edges: [
-          {
-            node: {
-              id: "1",
-              notificationType: "VENDOR_PRODUCT_ORDERED",
-              title: "Product added",
-              message: "Company 'Private Client' ordered your product -> 'Special Vendor Pizza'",
-              isRead: false,
-              createdAt: new Date().toISOString(),
-              orderId: "36",
-              reviewId: null
-            },
-            cursor: "MS=="
-          }
-        ],
-        totalCount: 1,
-        unreadCount: 1,
-        pageInfo: {
-          hasNextPage: false,
-          endCursor: "MS=="
-        }
-      }
-    };
-  }
-
-
   try {
     console.log("[GraphQL Request] Query:", queryStr.slice(0, 100).replace(/\s+/g, ' '), "Variables:", JSON.stringify(variables));
     const result = await executeGraphqlRequest(query, variables, {

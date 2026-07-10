@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  getVendorNotificationDetail,
   getVendorNotifications,
   markVendorNotificationAsRead,
   markAllVendorNotificationsAsRead,
@@ -23,6 +23,7 @@ const PAGE_SIZE = 20;
 const POLL_INTERVAL_MS = 30000;
 
 export default function useNotificationsPageState() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [customRange, setCustomRange] = useState(createDefaultCustomRange);
@@ -34,10 +35,6 @@ export default function useNotificationsPageState() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState(null);
-  const [selectedModalType, setSelectedModalType] = useState(null);
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
-
   const filterVariables = useMemo(
     () => mapFilterToQueryVariables(selectedFilter, customRange),
     [selectedFilter, customRange],
@@ -141,51 +138,71 @@ export default function useNotificationsPageState() {
     }
   }
 
+  function getNotificationTarget(notification) {
+    const rawType = `${notification?.type ?? ""}`.toUpperCase();
+
+    if (rawType === "ORDER" && notification?.orderId) {
+      return `/orders/${encodeURIComponent(notification.orderId)}`;
+    }
+
+    if (rawType === "REVIEW") {
+      return "/reviews";
+    }
+
+    if (rawType === "PAYOUT") {
+      return "/finance";
+    }
+
+    return null;
+  }
+
   async function handleOpenNotification(notification) {
-    setSelectedModalType(notification.type === "PAYOUT" ? "receipt" : "detail");
-    setSelectedNotification(notification);
-    setIsDetailLoading(true);
+    const targetPath = getNotificationTarget(notification);
+
+    if (!notification.isRead) {
+      setNotifications((current) =>
+        activeTab === "Unread"
+          ? current.filter((item) => item.id !== notification.id)
+          : current.map((item) =>
+              item.id === notification.id
+                ? { ...item, isRead: true, highlighted: false }
+                : item,
+            ),
+      );
+      setUnreadCount((current) => Math.max(0, current - 1));
+    }
 
     try {
-      const [detailResult, markReadResult] = await Promise.all([
-        getVendorNotificationDetail(notification.id),
-        notification.isRead
-          ? Promise.resolve(null)
-          : markVendorNotificationAsRead(notification.id).catch(() => null),
-      ]);
-      const nextNotification = mapNotificationNode(
-        detailResult?.vendorNotification || notification,
-      );
-      const markedNotification = markReadResult?.notification;
-      const normalizedNotification = markedNotification
-        ? {
-            ...nextNotification,
-            isRead: Boolean(markedNotification.isRead),
-            highlighted: !markedNotification.isRead,
-          }
-        : nextNotification;
-      setSelectedNotification(normalizedNotification);
-      setNotifications((current) => {
-        if (activeTab === "Unread" && normalizedNotification.isRead) {
-          return current.filter((item) => item.id !== normalizedNotification.id);
+      if (!notification.isRead) {
+        const markReadResult = await markVendorNotificationAsRead(notification.id).catch(() => null);
+
+        if (markReadResult?.notification) {
+          const nextIsRead = Boolean(markReadResult.notification.isRead);
+
+          setNotifications((current) =>
+            current.map((item) =>
+              item.id === notification.id
+                ? { ...item, isRead: nextIsRead, highlighted: !nextIsRead }
+                : item,
+            ),
+          );
         }
 
-        return current.map((item) =>
-          item.id === normalizedNotification.id ? normalizedNotification : item,
-        );
-      });
-
-      if (!notification.isRead && normalizedNotification.isRead) {
-        setUnreadCount((current) =>
-          markReadResult?.unreadCount ?? Math.max(0, current - 1),
-        );
+        if (typeof markReadResult?.unreadCount === "number") {
+          setUnreadCount(markReadResult.unreadCount);
+        }
       }
-    } catch (error) {
-      await showVendorErrorAlert(
-        error.message || "Unable to load the notification details.",
-      );
-    } finally {
-      setIsDetailLoading(false);
+    } catch {
+      // Navigation should still continue even if mark-as-read fails.
+    }
+
+    if (targetPath) {
+      navigate(targetPath, {
+        state:
+          notification.type === "REVIEW" && notification.reviewId
+            ? { reviewId: notification.reviewId }
+            : undefined,
+      });
     }
   }
 
@@ -246,17 +263,13 @@ export default function useNotificationsPageState() {
     activeTab,
     customRange,
     filterLabel,
-    handleCloseModal: () => {
-      setSelectedNotification(null);
-      setSelectedModalType(null);
-      setIsDetailLoading(false);
-    },
+    handleCloseModal: () => {},
     handleCustomRangeChange,
     handleLoadMore,
     handleMarkAllRead,
     handleOpenNotification,
     handleSelectFilter,
-    isDetailLoading,
+    isDetailLoading: false,
     isFilterOpen,
     isLoading,
     isLoadingMore,
@@ -265,8 +278,8 @@ export default function useNotificationsPageState() {
     pageInfo,
     sections,
     selectedFilter,
-    selectedModalType,
-    selectedNotification,
+    selectedModalType: null,
+    selectedNotification: null,
     setActiveTab,
     setIsFilterOpen,
     totalCount,
