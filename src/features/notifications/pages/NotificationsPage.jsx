@@ -1,5 +1,3 @@
-import NotificationDetailModal from "../components/NotificationDetailModal";
-import NotificationReceiptModal from "../components/NotificationReceiptModal";
 import NotificationSection from "../components/NotificationSection";
 import NotificationsToolbar from "../components/NotificationsToolbar";
 import {
@@ -13,13 +11,11 @@ export default function NotificationsPage() {
     activeTab,
     customRange,
     filterLabel,
-    handleCloseModal,
     handleCustomRangeChange,
     handleLoadMore,
     handleMarkAllRead,
     handleOpenNotification,
     handleSelectFilter,
-    isDetailLoading,
     isFilterOpen,
     isLoading,
     isLoadingMore,
@@ -28,8 +24,6 @@ export default function NotificationsPage() {
     pageInfo,
     sections,
     selectedFilter,
-    selectedModalType,
-    selectedNotification,
     setActiveTab,
     setIsFilterOpen,
     totalCount,
@@ -118,18 +112,6 @@ export default function NotificationsPage() {
           </button>
         </div>
       ) : null}
-
-      <NotificationDetailModal
-        isLoading={isDetailLoading}
-        notification={selectedModalType === "detail" ? selectedNotification : null}
-        onClose={handleCloseModal}
-      />
-
-      <NotificationReceiptModal
-        isLoading={isDetailLoading}
-        notification={selectedModalType === "receipt" ? selectedNotification : null}
-        onClose={handleCloseModal}
-      />
     </section>
   );
 }

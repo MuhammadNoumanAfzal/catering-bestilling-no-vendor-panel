@@ -38,11 +38,42 @@ function formatTime(value) {
   }
 
   try {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) {
+      return "Just now";
+    }
+
+    if (diffMinutes < 60) {
+      return `${diffMinutes} min${diffMinutes === 1 ? "" : "s"} ago`;
+    }
+
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+    }
+
+    if (diffDays === 1) {
+      return "Yesterday";
+    }
+
+    if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    }
+
     return new Intl.DateTimeFormat("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(new Date(value));
+      day: "numeric",
+      month: "short",
+    }).format(date);
   } catch {
     return "";
   }
@@ -237,7 +268,7 @@ export function groupNotificationsByLabel(items) {
 export function mapTabToStatus(tab) {
   if (tab === "Unread") return "UNREAD";
   if (tab === "Read") return "READ";
-  return "ALL";
+  return null;
 }
 
 export function mapFilterToQueryVariables(selectedFilter, customRange) {
