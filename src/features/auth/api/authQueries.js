@@ -9,6 +9,7 @@ export const LOGIN_USER_MUTATION = `
         firstName
         lastName
         phone
+        postCode
         role
         isActive
       }

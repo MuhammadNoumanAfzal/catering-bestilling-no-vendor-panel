@@ -14,6 +14,7 @@ export const defaultSettingsState = {
   businessEmail: "",
   phoneNumber: "",
   businessAddress: "",
+  postalCode: "",
   businessDescription: "",
   cuisineType: "",
   customCuisineType: "",
@@ -182,9 +183,10 @@ function mapSpecialClosures(closures = []) {
   }));
 }
 
-export function mapVendorSettingsPage(result) {
+export function mapVendorSettingsPage(result, options = {}) {
   const settings = result?.vendorSettings;
   const bootstrap = result?.vendorSettingsBootstrap;
+  const authUser = options?.authUser || null;
 
   if (!settings) {
     return {
@@ -199,6 +201,7 @@ export function mapVendorSettingsPage(result) {
       businessEmail: normalizeString(settings.businessProfile?.businessEmail),
       phoneNumber: normalizeString(settings.businessProfile?.phoneNumber),
       businessAddress: normalizeString(settings.businessProfile?.businessAddress),
+      postalCode: normalizeString(authUser?.postCode),
       businessDescription: normalizeString(settings.businessProfile?.businessDescription),
       cuisineType:
         settings.businessProfile?.cuisineType?.id ||

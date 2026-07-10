@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { loadStoredAuthSession } from "../../auth/store/authStorage";
 import {
   changeVendorPassword,
   deactivateVendorStore,
@@ -108,6 +109,10 @@ function mapApiHoursToState(hours = []) {
 }
 
 export default function useSettingsPageState() {
+  const authUser = useMemo(() => {
+    const authSession = loadStoredAuthSession();
+    return authSession?.user || null;
+  }, []);
   const [activeTab, setActiveTab] = useState("business");
   const [savedSettings, setSavedSettings] = useState(defaultSettingsState);
   const [settings, setSettings] = useState(defaultSettingsState);
@@ -136,7 +141,7 @@ export default function useSettingsPageState() {
           return;
         }
 
-        const mappedPage = mapVendorSettingsPage(result);
+        const mappedPage = mapVendorSettingsPage(result, { authUser });
         setSavedSettings(mappedPage.settings);
         setSettings(mappedPage.settings);
         setSettingsOptions(mappedPage.options);
@@ -159,7 +164,7 @@ export default function useSettingsPageState() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [authUser]);
 
   useEffect(() => {
     if (!saveMessage) {
