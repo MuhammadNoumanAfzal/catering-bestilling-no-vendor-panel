@@ -550,24 +550,34 @@ export function mapVendorOrdersResult(data) {
 
 export function mapVendorOrderSummary(summary, rows = []) {
   const summaryObject = summary && typeof summary === "object" ? summary : {};
-  const rowCount = (statusLabel) => rows.filter((row) => row.status === statusLabel).length;
+  const rowCount = (...statusLabels) =>
+    rows.filter((row) => statusLabels.includes(row.status)).length;
+  const hasRows = rows.length > 0;
+  const resolveCount = (summaryValue, fallback) =>
+    hasRows ? fallback : toNumber(summaryValue, fallback);
 
   return {
-    total: toNumber(summaryObject.totalOrders ?? summaryObject.total_orders, rows.length),
-    newOrders: toNumber(summaryObject.newOrders ?? summaryObject.new_orders, rowCount("New")),
-    accepted: toNumber(
+    total: resolveCount(summaryObject.totalOrders ?? summaryObject.total_orders, rows.length),
+    newOrders: resolveCount(
+      summaryObject.newOrders ?? summaryObject.new_orders,
+      rowCount("New"),
+    ),
+    accepted: resolveCount(
       summaryObject.acceptedOrders ?? summaryObject.accepted_orders ?? summaryObject.accepted,
       rowCount("Accepted"),
     ),
-    preparing: toNumber(summaryObject.preparing, rowCount("Preparing")),
-    ready: toNumber(summaryObject.ready, rowCount("Ready")),
-    outForDelivery: toNumber(
+    preparing: resolveCount(summaryObject.preparing, rowCount("Preparing")),
+    ready: resolveCount(summaryObject.ready, rowCount("Ready")),
+    outForDelivery: resolveCount(
       summaryObject.outForDelivery ?? summaryObject.out_for_delivery,
-      rowCount("Out for delivery"),
+      rowCount("Out for delivery", "Out for Delivery"),
     ),
-    delivered: toNumber(summaryObject.delivered, rowCount("Delivered")),
-    canceled: toNumber(summaryObject.canceled ?? summaryObject.cancelled, rowCount("Canceled")),
-    modified: toNumber(summaryObject.modified, rowCount("Modified")),
+    delivered: resolveCount(summaryObject.delivered, rowCount("Delivered")),
+    canceled: resolveCount(
+      summaryObject.canceled ?? summaryObject.cancelled,
+      rowCount("Canceled"),
+    ),
+    modified: resolveCount(summaryObject.modified, rowCount("Modified")),
   };
 }
 
