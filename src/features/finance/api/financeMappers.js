@@ -26,6 +26,107 @@ function formatDateLabel(dateValue) {
   });
 }
 
+function normalizeLookupKey(value) {
+  return normalizeString(value).trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function getTrailingDigits(value) {
+  const match = normalizeString(value).match(/(\d+)\D*$/);
+  return match ? match[1] : "";
+}
+
+function createLookupKeys(...values) {
+  const keys = new Set();
+
+  values.forEach((value) => {
+    const normalized = normalizeString(value).trim();
+    if (!normalized) {
+      return;
+    }
+
+    const compactKey = normalizeLookupKey(normalized);
+    if (compactKey) {
+      keys.add(compactKey);
+    }
+
+    const trailingDigits = getTrailingDigits(normalized);
+    if (trailingDigits) {
+      keys.add(trailingDigits);
+    }
+  });
+
+  return [...keys];
+}
+
+export function buildFinanceOrderTotalsLookup(ordersResult) {
+  const connection = ordersResult?.orders || ordersResult?.vendorOrders;
+  const edges = Array.isArray(connection?.edges) ? connection.edges : [];
+  const lookup = new Map();
+
+  edges
+    .map((edge) => edge?.node)
+    .filter(Boolean)
+    .forEach((node) => {
+      const grandTotal = parseNumber(node?.pricing?.grandTotal ?? node?.finalPrice);
+      const currency = normalizeString(node?.currency || "NOK");
+
+      if (grandTotal <= 0) {
+        return;
+      }
+
+      createLookupKeys(node?.id, node?.invoiceNumber, node?.orderNumber).forEach((key) => {
+        lookup.set(key, {
+          grandTotal,
+          currency,
+        });
+      });
+    });
+
+  return lookup;
+}
+
+function resolveTransactionAmounts(node, orderTotalsLookup) {
+  const grossAmount = parseNumber(node?.grossAmount);
+  const commissionAmount = parseNumber(node?.commissionAmount);
+  const netAmount = parseNumber(node?.netAmount);
+
+  if (!(orderTotalsLookup instanceof Map) || orderTotalsLookup.size === 0) {
+    return {
+      grossAmount,
+      commissionAmount,
+      netAmount,
+      currency: normalizeString(node?.currency),
+    };
+  }
+
+  const matchedOrder = createLookupKeys(node?.orderId, node?.id)
+    .map((key) => orderTotalsLookup.get(key))
+    .find(Boolean);
+
+  if (!matchedOrder || matchedOrder.grandTotal <= grossAmount) {
+    return {
+      grossAmount,
+      commissionAmount,
+      netAmount,
+      currency: normalizeString(node?.currency || matchedOrder?.currency),
+    };
+  }
+
+  const resolvedGrossAmount = matchedOrder.grandTotal;
+  const resolvedNetAmount =
+    commissionAmount > 0
+      ? Math.max(0, resolvedGrossAmount - commissionAmount)
+      : resolvedGrossAmount;
+
+  return {
+    grossAmount: resolvedGrossAmount,
+    commissionAmount,
+    netAmount:
+      netAmount > 0 && Math.abs(netAmount - grossAmount) > 0.01 ? netAmount : resolvedNetAmount,
+    currency: normalizeString(node?.currency || matchedOrder.currency),
+  };
+}
+
 export function mapFinanceSummaryCards(data) {
   const summary = data?.vendorFinanceSummary;
   const currency = normalizeString(summary?.currency || "kr");
@@ -120,7 +221,7 @@ export function mapPayoutStatusItems(data) {
   ].filter(Boolean);
 }
 
-export function mapTransactionsConnection(data) {
+export function mapTransactionsConnection(data, orderTotalsLookup = null) {
   const connection = data?.vendorFinanceTransactions;
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];
 
@@ -128,19 +229,23 @@ export function mapTransactionsConnection(data) {
     rows: edges
       .map((edge) => edge?.node)
       .filter(Boolean)
-      .map((node) => ({
-        id: normalizeString(node.id),
-        orderId: normalizeString(node.orderId),
-        customerName: normalizeString(node.customerName),
-        eventType: normalizeString(node.eventType),
-        eventDate: normalizeString(node.eventDate),
-        grossAmount: formatCurrency(node.grossAmount, node.currency),
-        commissionAmount: `-${formatCurrency(node.commissionAmount, node.currency)}`,
-        netAmount: formatCurrency(node.netAmount, node.currency),
-        currency: normalizeString(node.currency),
-        payoutStatus: normalizeString(node.payoutStatus),
-        createdOn: normalizeString(node.createdOn),
-      })),
+      .map((node) => {
+        const amounts = resolveTransactionAmounts(node, orderTotalsLookup);
+
+        return {
+          id: normalizeString(node.id),
+          orderId: normalizeString(node.orderId),
+          customerName: normalizeString(node.customerName),
+          eventType: normalizeString(node.eventType),
+          eventDate: normalizeString(node.eventDate),
+          grossAmount: formatCurrency(amounts.grossAmount, amounts.currency),
+          commissionAmount: `-${formatCurrency(amounts.commissionAmount, amounts.currency)}`,
+          netAmount: formatCurrency(amounts.netAmount, amounts.currency),
+          currency: normalizeString(amounts.currency),
+          payoutStatus: normalizeString(node.payoutStatus),
+          createdOn: normalizeString(node.createdOn),
+        };
+      }),
     pageInfo: {
       hasNextPage: Boolean(connection?.pageInfo?.hasNextPage),
       endCursor: normalizeString(connection?.pageInfo?.endCursor),
@@ -149,10 +254,12 @@ export function mapTransactionsConnection(data) {
   };
 }
 
-export function mapTransactionDetail(node) {
+export function mapTransactionDetail(node, orderTotalsLookup = null) {
   if (!node) {
     return null;
   }
+
+  const amounts = resolveTransactionAmounts(node, orderTotalsLookup);
 
   return {
     id: normalizeString(node.id),
@@ -160,10 +267,10 @@ export function mapTransactionDetail(node) {
     customerName: normalizeString(node.customerName),
     eventType: normalizeString(node.eventType),
     eventDate: normalizeString(node.eventDate),
-    grossAmount: formatCurrency(node.grossAmount, node.currency),
-    commissionAmount: `-${formatCurrency(node.commissionAmount, node.currency)}`,
-    netAmount: formatCurrency(node.netAmount, node.currency),
-    currency: normalizeString(node.currency),
+    grossAmount: formatCurrency(amounts.grossAmount, amounts.currency),
+    commissionAmount: `-${formatCurrency(amounts.commissionAmount, amounts.currency)}`,
+    netAmount: formatCurrency(amounts.netAmount, amounts.currency),
+    currency: normalizeString(amounts.currency),
     payoutStatus: normalizeString(node.payoutStatus),
     payoutDate: normalizeString(node.payoutDate),
     createdOn: normalizeString(node.createdOn),

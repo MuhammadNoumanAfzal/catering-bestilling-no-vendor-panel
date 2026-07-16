@@ -8,6 +8,7 @@ import {
   getVendorPayoutStatus,
 } from "../api/financeApi";
 import {
+  buildFinanceOrderTotalsLookup,
   getChartGroupBy,
   getFinanceRangeVariables,
   mapFinanceChartPoints,
@@ -16,6 +17,7 @@ import {
   mapTransactionDetail,
   mapTransactionsConnection,
 } from "../api/financeMappers";
+import { getAllVendorOrders } from "../../order/api/orderApi";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
@@ -47,6 +49,7 @@ export default function useFinancePageState() {
   const [chartPoints, setChartPoints] = useState([]);
   const [payoutStatuses, setPayoutStatuses] = useState([]);
   const [pageCache, setPageCache] = useState({});
+  const [orderTotalsLookup, setOrderTotalsLookup] = useState(() => new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -124,17 +127,22 @@ export default function useFinancePageState() {
       setIsLoading(true);
 
       try {
-        const result = await getVendorFinanceTransactions({
-          first: PAGE_SIZE,
-          ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
-          ...ordersRangeVariables,
-        });
+        const [result, ordersResult] = await Promise.all([
+          getVendorFinanceTransactions({
+            first: PAGE_SIZE,
+            ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
+            ...ordersRangeVariables,
+          }),
+          getAllVendorOrders(ordersRangeVariables),
+        ]);
 
         if (isCancelled) {
           return;
         }
 
-        const mapped = mapTransactionsConnection(result);
+        const nextOrderTotalsLookup = buildFinanceOrderTotalsLookup(ordersResult);
+        const mapped = mapTransactionsConnection(result, nextOrderTotalsLookup);
+        setOrderTotalsLookup(nextOrderTotalsLookup);
         setPageCache({ 1: mapped });
         setCurrentPage(1);
       } catch (error) {
@@ -221,7 +229,7 @@ export default function useFinancePageState() {
           ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
           ...ordersRangeVariables,
         });
-        nextCache[lastKnownPage + 1] = mapTransactionsConnection(result);
+        nextCache[lastKnownPage + 1] = mapTransactionsConnection(result, orderTotalsLookup);
         lastKnownPage += 1;
       }
 
@@ -275,7 +283,7 @@ export default function useFinancePageState() {
 
   async function handleRequestTransactionDetail(id) {
     const result = await getVendorFinanceTransactionDetail(id);
-    return mapTransactionDetail(result?.vendorFinanceTransaction);
+    return mapTransactionDetail(result?.vendorFinanceTransaction, orderTotalsLookup);
   }
 
   async function handleExport(format) {
