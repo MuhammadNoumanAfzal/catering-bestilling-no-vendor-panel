@@ -1,5 +1,15 @@
 import { X } from "lucide-react";
 
+function normalizeTimeDraft(value) {
+  const digits = String(value || "").replace(/\D/g, "").slice(0, 4);
+
+  if (digits.length <= 2) {
+    return digits;
+  }
+
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
 export default function DeliveryAddSlotModal({
   draftSlot,
   onClose,
@@ -42,22 +52,30 @@ export default function DeliveryAddSlotModal({
               className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
                 error ? "border-[#d25545]" : "border-[#cec5bd]"
               }`}
+              inputMode="numeric"
+              maxLength={5}
               onChange={(event) => onDraftChange({
                 ...draftSlot,
-                start: event.target.value,
+                start: normalizeTimeDraft(event.target.value),
               })}
-              type="time"
+              pattern="[0-2][0-9]:[0-5][0-9]"
+              placeholder="HH:MM"
+              type="text"
               value={draftSlot.start}
             />
             <input
               className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
                 error ? "border-[#d25545]" : "border-[#cec5bd]"
               }`}
+              inputMode="numeric"
+              maxLength={5}
               onChange={(event) => onDraftChange({
                 ...draftSlot,
-                end: event.target.value,
+                end: normalizeTimeDraft(event.target.value),
               })}
-              type="time"
+              pattern="[0-2][0-9]:[0-5][0-9]"
+              placeholder="HH:MM"
+              type="text"
               value={draftSlot.end}
             />
           </div>
