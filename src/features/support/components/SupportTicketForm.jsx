@@ -11,7 +11,6 @@ export default function SupportTicketForm() {
     form,
     handleAttachmentChange,
     handleAttachmentRemove,
-    handleCategoryChange,
     handleFieldChange,
     handleSubmit,
     isReadyToSubmit,
@@ -31,38 +30,6 @@ export default function SupportTicketForm() {
 
       <form className="mt-4" onSubmit={handleSubmit}>
         <div className="grid gap-4">
-          <div>
-            <p className="text-[14px] font-bold text-[#2a211b]">I am a</p>
-            <div className="mt-2 flex items-center gap-4">
-              {[
-                { id: "customer", label: "Customer" },
-                { id: "vendor", label: "Vendor" },
-              ].map((option) => {
-                const isChecked = form.category === option.id;
-
-                return (
-                  <button
-                    key={option.id}
-                    className="inline-flex cursor-pointer items-center gap-2 text-[14px] font-semibold text-[#3c322b]"
-                    onClick={() => handleCategoryChange(option.id)}
-                    type="button"
-                  >
-                    <span
-                      className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border ${
-                        isChecked ? "border-[#d96e39]" : "border-[#bdb2a9]"
-                      }`}
-                    >
-                      {isChecked ? (
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#d96e39]" />
-                      ) : null}
-                    </span>
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
             <SupportFieldSelect
               label="Subject Issue Type"
