@@ -9,6 +9,8 @@ import {
 } from "../api/dashboardMappers";
 import { getAllVendorOrders, updateVendorOrderStatus } from "../../order/api/orderApi";
 import { mapVendorOrderSummary, mapVendorOrdersResult } from "../../order/api/orderMappers";
+import { getVendorSettingsPage } from "../../settings/api/settingsApi";
+import { mapVendorSettingsPage } from "../../settings/api/settingsMappers";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
@@ -30,12 +32,63 @@ const quickActions = [
   },
 ];
 
+const BUSINESS_PROFILE_CHECKS = [
+  { key: "businessName", label: "business name" },
+  { key: "businessEmail", label: "business email" },
+  { key: "phoneNumber", label: "phone number" },
+  { key: "businessAddress", label: "business address" },
+  { key: "businessType", label: "business type" },
+  { key: "cuisineType", label: "cuisine type" },
+  { key: "businessDescription", label: "business description" },
+];
+
+function normalizeString(value) {
+  return value == null ? "" : String(value).trim();
+}
+
+function buildBusinessProfilePrompt(settings) {
+  if (!settings) {
+    return {
+      isVisible: false,
+      missingCount: 0,
+      missingLabels: [],
+    };
+  }
+
+  const missingLabels = BUSINESS_PROFILE_CHECKS.filter(
+    (item) => !normalizeString(settings[item.key]),
+  ).map((item) => item.label);
+
+  if (!settings.profileImage?.fileUrl) {
+    missingLabels.push("logo");
+  }
+
+  if (!settings.bannerImage?.fileUrl) {
+    missingLabels.push("cover photo");
+  }
+
+  if (!settings.hours?.some((item) => item.enabled && item.open !== "Closed" && item.close !== "Closed")) {
+    missingLabels.push("business hours");
+  }
+
+  return {
+    isVisible: missingLabels.length > 0,
+    missingCount: missingLabels.length,
+    missingLabels,
+  };
+}
+
 export default function useDashboardPageState() {
   const navigate = useNavigate();
   const [dateFilter, setDateFilter] = useState("Last 7 Days");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [dashboard, setDashboard] = useState(createEmptyDashboardState);
+  const [businessProfilePrompt, setBusinessProfilePrompt] = useState({
+    isVisible: false,
+    missingCount: 0,
+    missingLabels: [],
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -60,9 +113,10 @@ export default function useDashboardPageState() {
       }
 
       try {
-        const [result, ordersResult] = await Promise.all([
+        const [result, ordersResult, settingsResult] = await Promise.all([
           getVendorDashboard(queryVariables),
           getAllVendorOrders(),
+          getVendorSettingsPage(),
         ]);
 
         if (isCancelled) {
@@ -79,6 +133,9 @@ export default function useDashboardPageState() {
             kitchenSummary,
           }),
         );
+
+        const mappedSettingsPage = mapVendorSettingsPage(settingsResult);
+        setBusinessProfilePrompt(buildBusinessProfilePrompt(mappedSettingsPage.settings));
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -189,6 +246,7 @@ export default function useDashboardPageState() {
     isLoading,
     isRefreshing,
     overviewCards: dashboard.overviewCards,
+    businessProfilePrompt,
     reviews: dashboard.reviews,
     startDate,
     urgentOrders: dashboard.urgentOrders,
