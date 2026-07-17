@@ -102,8 +102,7 @@ export function mapVendorDeliverySettingsToForm(settingsPayload) {
     pickupInstructions: normalizeString(settings.pickupInstructions),
     baseFee: normalizeString(settings.baseDeliveryFee || "0.00"),
     freeDelivery: normalizeNullableString(settings.freeDeliveryOver),
-    sameFeeAllDistances:
-      settings.sameFeeAllDistances == null ? true : Boolean(settings.sameFeeAllDistances),
+    sameFeeAllDistances: true,
     activeDays: Array.isArray(settings.deliveryDays) && settings.deliveryDays.length
       ? settings.deliveryDays
       : DEFAULT_DELIVERY_DAYS,
@@ -179,7 +178,7 @@ export function buildDeliverySettingsInput(formState) {
     pickupInstructions: normalizeNullableString(formState.pickupInstructions) || null,
     baseDeliveryFee: parseDecimalOrNull(formState.baseFee),
     freeDeliveryOver: parseDecimalOrNull(formState.freeDelivery),
-    sameFeeAllDistances: Boolean(formState.sameFeeAllDistances),
+    sameFeeAllDistances: true,
     deliveryDays: Array.isArray(formState.activeDays) ? formState.activeDays : [],
     deliveryTimeSlots,
     maxDeliveriesPerDay: parseIntegerOrNull(formState.maxDeliveriesPerDay),
@@ -200,7 +199,7 @@ export function getComparableDeliverySettings(formState) {
     pickupInstructions: normalizeNullableString(formState.pickupInstructions),
     baseFee: normalizeNullableString(formState.baseFee),
     freeDelivery: normalizeNullableString(formState.freeDelivery),
-    sameFeeAllDistances: Boolean(formState.sameFeeAllDistances),
+    sameFeeAllDistances: true,
     activeDays: [...(formState.activeDays || [])].sort(),
     timeSlots: [...(formState.timeSlots || [])],
     maxDeliveriesPerDay: normalizeNullableString(formState.maxDeliveriesPerDay),
