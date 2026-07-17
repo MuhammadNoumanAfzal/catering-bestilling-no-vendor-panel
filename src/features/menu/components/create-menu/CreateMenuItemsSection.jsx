@@ -55,6 +55,20 @@ export default function CreateMenuItemsSection({
               />
 
               <div className="mt-3">
+                <Label>Description</Label>
+                <textarea
+                  disabled={disabled}
+                  onChange={(event) =>
+                    updateMenuItem(item.id, "description", event.target.value)
+                  }
+                  placeholder="Add a short description for this item"
+                  rows={3}
+                  value={item.description || ""}
+                  className="min-h-[96px] w-full rounded-[8px] border border-[#ded4cb] bg-white px-3 py-2.5 text-[14px] text-[#211913] outline-none placeholder:text-[#a59689] disabled:cursor-not-allowed disabled:bg-[#f6f1ec] disabled:text-[#8c7f73]"
+                />
+              </div>
+
+              <div className="mt-3">
                 <div className="flex items-center justify-between">
                   <Label>Allergens</Label>
                   {!disabled && !allergenFeatureUnavailable ? (
@@ -84,7 +98,6 @@ export default function CreateMenuItemsSection({
                   </p>
                 ) : null}
               </div>
-
             </div>
           </div>
         ))}

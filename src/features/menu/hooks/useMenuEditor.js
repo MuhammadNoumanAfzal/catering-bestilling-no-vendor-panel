@@ -271,6 +271,7 @@ export function useMenuEditor() {
       const isSingleEmpty =
         current.menuItems.length === 1 &&
         !current.menuItems[0].title &&
+        !current.menuItems[0].description &&
         !current.menuItems[0].allergens?.length &&
         !current.menuItems[0].image;
 
@@ -310,6 +311,7 @@ export function useMenuEditor() {
     return menuItems.map((item) => ({
       id: item.id,
       title: item.title || "",
+      description: item.description || "",
       image: item.imageUrl || "",
       allergens: item.allergens || [],
     }));
