@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   createFoodType,
-  createVendorCategory,
   deleteFoodType,
   getVendorAddOnDetail,
   getVendorAddOnFormBootstrap,
@@ -27,7 +26,6 @@ const emptyFieldErrors = {
   addOnName: "",
   price: "",
   category: "",
-  customCategory: "",
   mealTypes: "",
 };
 
@@ -134,18 +132,11 @@ export function useAddOnEditor() {
     };
   }, [editId, isDuplicateMode, navigate]);
 
-  const resolvedCategory = useMemo(
-    () => formState.customCategory.trim() || formState.category,
-    [formState.category, formState.customCategory],
-  );
+  const resolvedCategory = useMemo(() => formState.category, [formState.category]);
 
   const selectedCategoryLabel = useMemo(() => {
-    if (formState.customCategory.trim()) {
-      return formState.customCategory.trim();
-    }
-
     return categoryOptions.find((option) => option.value === formState.category)?.label || "";
-  }, [categoryOptions, formState.category, formState.customCategory]);
+  }, [categoryOptions, formState.category]);
 
   function setField(field, value) {
     setFieldErrors((current) => ({
@@ -217,42 +208,13 @@ export function useAddOnEditor() {
     if (!resolvedCategory) {
       setFieldErrors((current) => ({
         ...current,
-        category: "Please choose or create a category.",
-        customCategory: "Please choose or create a category.",
+        category: "Please choose a category.",
       }));
-      await showVendorErrorAlert("Please choose or create a category.");
+      await showVendorErrorAlert("Please choose a category.");
       return false;
     }
 
     return true;
-  }
-
-  async function resolveCategoryId() {
-    if (formState.customCategory.trim()) {
-      const result = await createVendorCategory(formState.customCategory.trim());
-      const nextOption = {
-        label: result.instance?.name || formState.customCategory.trim(),
-        value: result.instance?.id || formState.customCategory.trim(),
-      };
-
-      setCategoryOptions((currentOptions) => {
-        if (currentOptions.some((option) => option.value === nextOption.value)) {
-          return currentOptions;
-        }
-
-        return [...currentOptions, nextOption];
-      });
-
-      setFormState((current) => ({
-        ...current,
-        category: nextOption.value,
-        customCategory: "",
-      }));
-
-      return nextOption.value;
-    }
-
-    return formState.category;
   }
 
   function handleAddMealTypeClick() {
@@ -314,7 +276,7 @@ export function useAddOnEditor() {
       return;
     }
 
-    const resolvedCategoryId = await resolveCategoryId();
+    const resolvedCategoryId = formState.category;
 
     try {
       setIsSaving(true);
