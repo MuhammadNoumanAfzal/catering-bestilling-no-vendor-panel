@@ -14,7 +14,7 @@ export default function DeliveryScheduleSection({
 }) {
   return (
     <DeliverySectionCard
-      description="Choose days and time slots when you deliver."
+      description="Choose the exact days and time slots customers can book for delivery."
       disabled={disabled}
       title="Delivery Schedule"
     >
@@ -70,7 +70,7 @@ export default function DeliveryScheduleSection({
       ) : null}
 
       <DeliveryInfoNote>
-        Orders will be accepted only in the time slots you define.
+        This section controls customer-facing delivery slot selection. It is separate from your general business hours.
       </DeliveryInfoNote>
     </DeliverySectionCard>
   );

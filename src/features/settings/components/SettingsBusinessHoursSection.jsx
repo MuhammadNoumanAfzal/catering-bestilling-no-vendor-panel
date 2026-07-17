@@ -28,7 +28,7 @@ export default function SettingsBusinessHoursSection({
 }) {
   return (
     <SettingsSectionCard
-      description="Set your general business hours. These will show to customers."
+      description="Set your general store opening hours. These are shown on your profile and do not control customer delivery slot selection."
       title="Business Hours"
     >
       <div className="divide-y divide-[#eee7df]">
