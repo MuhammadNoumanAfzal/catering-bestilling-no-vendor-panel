@@ -273,6 +273,7 @@ export function mapVendorMenuDetailToForm(menu) {
     menuItems: safeArray(menu.menuItems).map((item, index) => ({
       id: item.id || `menu-item-${index + 1}`,
       title: item.title || "",
+      description: item.description || "",
       allergens: safeArray(item.allergens)
         .map((allergen) => {
           if (typeof allergen === "string") {
@@ -350,6 +351,7 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
     .map((item, index) => {
       const nextItem = {
         title: item.title.trim(),
+        description: item.description?.trim() || "",
         order: index + 1,
       };
 

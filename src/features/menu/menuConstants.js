@@ -23,7 +23,7 @@ export const availabilityDays = [
 ];
 
 export const initialCreateMenuItems = [
-  { id: "draft-item-1", title: "", allergens: [], image: null },
+  { id: "draft-item-1", title: "", description: "", allergens: [], image: null },
 ];
 
 export const statusLabelMap = {

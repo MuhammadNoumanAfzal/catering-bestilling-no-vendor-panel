@@ -4,6 +4,7 @@ export function createEmptyMenuItem() {
   return {
     id: `draft-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     title: "",
+    description: "",
     allergens: [],
     image: null,
   };
@@ -55,6 +56,7 @@ export function toImportedMenuItem(item, index) {
   return {
     id: `imported-item-${Date.now()}-${index}`,
     title: item.title || "",
+    description: item.description || "",
     allergens: Array.isArray(item.allergens)
       ? item.allergens
           .map((allergen) => {
