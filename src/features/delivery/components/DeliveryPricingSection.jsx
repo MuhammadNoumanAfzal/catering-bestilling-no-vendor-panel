@@ -1,7 +1,6 @@
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
-import DeliveryToggleRow from "./DeliveryToggleRow";
 
 function formatCurrencyValue(value) {
   const trimmedValue = value.trim();
@@ -24,8 +23,6 @@ export default function DeliveryPricingSection({
   freeDelivery,
   onBaseFeeChange,
   onFreeDeliveryChange,
-  sameFeeAllDistances,
-  onSameFeeAllDistancesChange,
   disabled = false,
   errors = {},
 }) {
@@ -69,15 +66,6 @@ export default function DeliveryPricingSection({
           />
           <p className="type-subpara mt-1">Large order only mode</p>
         </div>
-      </div>
-      <div className="mt-3">
-        <DeliveryToggleRow
-          checked={sameFeeAllDistances}
-          description="Keep the same delivery fee for every distance band."
-          disabled={disabled}
-          label="Same fee across all distances"
-          onChange={onSameFeeAllDistancesChange}
-        />
       </div>
       <DeliveryInfoNote>{pricingNote}</DeliveryInfoNote>
     </DeliverySectionCard>

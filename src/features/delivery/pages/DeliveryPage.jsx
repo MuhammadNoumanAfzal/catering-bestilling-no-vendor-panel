@@ -52,7 +52,6 @@ export default function DeliveryPage() {
     serviceAreaResults,
     serviceAreaSearch,
     serviceAreas,
-    sameFeeAllDistances,
     saveMessage,
     selectedModes,
     retryLoad,
@@ -65,7 +64,6 @@ export default function DeliveryPage() {
     setMaxOrdersPerTimeSlot,
     setPickupAddress,
     setPickupInstructions,
-    setSameFeeAllDistances,
     slotDraftError,
     timeSlots,
     validationState,
@@ -144,8 +142,6 @@ export default function DeliveryPage() {
             freeDelivery={freeDelivery}
             onBaseFeeChange={(event) => setBaseFee(event.target.value)}
             onFreeDeliveryChange={(event) => setFreeDelivery(event.target.value)}
-            onSameFeeAllDistancesChange={setSameFeeAllDistances}
-            sameFeeAllDistances={sameFeeAllDistances}
           />
 
           <DeliveryScheduleSection
