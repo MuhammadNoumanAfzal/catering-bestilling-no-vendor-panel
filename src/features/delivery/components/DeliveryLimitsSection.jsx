@@ -16,7 +16,7 @@ export default function DeliveryLimitsSection({
 }) {
   return (
     <DeliverySectionCard
-      description="Set operational limits and expected delivery window timings."
+      description="Set delivery estimates and capacity limits. These values do not define customer bookable slots."
       disabled={disabled}
       title="Limits & Delivery Window"
     >
@@ -75,7 +75,7 @@ export default function DeliveryLimitsSection({
         </div>
       </div>
       <DeliveryInfoNote>
-        These limits help avoid overbooking and set realistic delivery expectations.
+        Use Delivery Schedule above to control selectable delivery days and time slots. Use these limits for estimates and capacity only.
       </DeliveryInfoNote>
     </DeliverySectionCard>
   );
