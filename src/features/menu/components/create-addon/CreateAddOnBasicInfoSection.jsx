@@ -19,7 +19,6 @@ export default function CreateAddOnBasicInfoSection({
   addOnName,
   category,
   categoryOptions,
-  customCategory,
   description,
   disabled = false,
   fieldErrors,
@@ -28,7 +27,6 @@ export default function CreateAddOnBasicInfoSection({
   mealTypes,
   onAddOnNameChange,
   onCategorySelect,
-  onCustomCategoryChange,
   onDescriptionChange,
   onImageSelect,
   onMealTypesChange,
@@ -130,19 +128,6 @@ export default function CreateAddOnBasicInfoSection({
               })}
             </div>
             <FieldError message={fieldErrors?.category} />
-
-            <div className="mt-4 border-t border-[#e6dbd2] pt-3">
-              <span className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
-                Or create a new category
-              </span>
-              <TextInput
-                disabled={disabled}
-                onChange={onCustomCategoryChange}
-                placeholder="Enter category name (e.g. Sauces, Premium Items)"
-                value={customCategory}
-              />
-              <FieldError message={fieldErrors?.customCategory} />
-            </div>
           </div>
         </div>
       </CreateMenuSectionCard>

@@ -62,7 +62,6 @@ export default function CreateAddOnPage() {
           addOnName={formState.addOnName}
           category={formState.category}
           categoryOptions={categoryOptions}
-          customCategory={formState.customCategory}
           description={formState.description}
           disabled={isSaving}
           fieldErrors={fieldErrors}
@@ -71,7 +70,6 @@ export default function CreateAddOnPage() {
           mealTypes={formState.mealTypes}
           onAddOnNameChange={(event) => actions.setField("addOnName", event.target.value)}
           onCategorySelect={(value) => actions.setField("category", value)}
-          onCustomCategoryChange={(event) => actions.setField("customCategory", event.target.value)}
           onDescriptionChange={(event) => actions.setField("description", event.target.value)}
           onImageSelect={actions.handleImageUpload}
           onMealTypesChange={(value) => actions.setField("mealTypes", value)}
