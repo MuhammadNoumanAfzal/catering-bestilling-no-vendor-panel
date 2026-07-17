@@ -67,6 +67,38 @@ function mapTrendDirection(value) {
   return "none";
 }
 
+function shouldShowTrend(value, trendValue, timeLabel) {
+  const numericValue = toNumber(value);
+  const numericTrend = toNumber(trendValue);
+  const normalizedTimeLabel = normalizeString(timeLabel).trim();
+
+  if (!normalizedTimeLabel) {
+    return false;
+  }
+
+  if (numericValue <= 0) {
+    return false;
+  }
+
+  return numericTrend !== 0;
+}
+
+function buildTrendMeta(value, trendValue, timeLabel) {
+  if (!shouldShowTrend(value, trendValue, timeLabel)) {
+    return {
+      trend: null,
+      trendValue: "",
+      timeLabel: "",
+    };
+  }
+
+  return {
+    trend: mapTrendDirection(trendValue),
+    trendValue: formatTrendValue(trendValue),
+    timeLabel: normalizeString(timeLabel),
+  };
+}
+
 function buildCapacityHelper(capacityPercent) {
   if (capacityPercent >= 75) {
     return "High - plan your schedule";
@@ -176,35 +208,58 @@ export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel, k
     (highest, point) => Math.max(highest, toNumber(point?.earnings)),
     0,
   );
+  const totalOrders = toNumber(summary.totalOrders);
+  const upcomingOrders = toNumber(summary.upcomingOrders);
+  const urgentOrdersCount = toNumber(summary.urgentOrders);
+  const totalOrdersTrendMeta = buildTrendMeta(
+    totalOrders,
+    summary.totalOrdersTrend,
+    summary.totalOrdersTimeLabel,
+  );
+  const upcomingOrdersTrendMeta = buildTrendMeta(
+    upcomingOrders,
+    summary.upcomingOrdersTrend,
+    summary.upcomingOrdersTimeLabel,
+  );
+  const urgentOrdersTrendMeta = buildTrendMeta(
+    urgentOrdersCount,
+    summary.urgentOrdersTrend,
+    summary.urgentOrdersTimeLabel,
+  );
+  const capacityTrendMeta = buildTrendMeta(
+    capacityPercent,
+    summary.capacityTrend,
+    summary.capacityTimeLabel,
+  );
 
   const overviewCards = [
     {
       label: "Total Orders",
-      value: String(toNumber(summary.totalOrders)),
+      value: String(totalOrders),
       helper: "Orders in selected range",
-      helperTone: toNumber(summary.totalOrdersTrend) > 0 ? "is-positive" : "",
+      helperTone: totalOrdersTrendMeta.trend === "up" ? "is-positive" : "",
       icon: "calendar",
-      trend: mapTrendDirection(summary.totalOrdersTrend),
-      trendValue: formatTrendValue(summary.totalOrdersTrend),
-      timeLabel: normalizeString(summary.totalOrdersTimeLabel),
+      trend: totalOrdersTrendMeta.trend,
+      trendValue: totalOrdersTrendMeta.trendValue,
+      timeLabel: totalOrdersTrendMeta.timeLabel,
     },
     {
       label: "Upcoming (Next 4 hrs)",
-      value: String(toNumber(summary.upcomingOrders)),
+      value: String(upcomingOrders),
       helper: "Scheduled soon",
       icon: "clipboard",
-      trend: mapTrendDirection(summary.upcomingOrdersTrend),
-      trendValue: formatTrendValue(summary.upcomingOrdersTrend),
-      timeLabel: normalizeString(summary.upcomingOrdersTimeLabel),
+      trend: upcomingOrdersTrendMeta.trend,
+      trendValue: upcomingOrdersTrendMeta.trendValue,
+      timeLabel: upcomingOrdersTrendMeta.timeLabel,
     },
     {
       label: "Urgent Orders",
-      value: String(toNumber(summary.urgentOrders)).padStart(2, "0"),
+      value: String(urgentOrdersCount).padStart(2, "0"),
       helper: "Require attention",
       icon: "alert",
-      trend: mapTrendDirection(summary.urgentOrdersTrend),
-      trendValue: formatTrendValue(summary.urgentOrdersTrend),
-      timeLabel: normalizeString(summary.urgentOrdersTimeLabel),
+      trend: urgentOrdersTrendMeta.trend,
+      trendValue: urgentOrdersTrendMeta.trendValue,
+      timeLabel: urgentOrdersTrendMeta.timeLabel,
     },
     {
       label: "Capacity Utilization",
@@ -213,9 +268,9 @@ export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel, k
       icon: "gauge",
       variant: "capacity",
       progress: capacityPercent,
-      trend: mapTrendDirection(summary.capacityTrend),
-      trendValue: formatTrendValue(summary.capacityTrend),
-      timeLabel: normalizeString(summary.capacityTimeLabel),
+      trend: capacityTrendMeta.trend,
+      trendValue: capacityTrendMeta.trendValue,
+      timeLabel: capacityTrendMeta.timeLabel,
     },
   ];
 
