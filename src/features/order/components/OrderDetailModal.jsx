@@ -150,7 +150,6 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
       time: detailSource.time || "Not specified",
       address: detailSource.logistics?.deliveryAddress || "Not specified",
       note: detailSource.note || "",
-      tableware: detailSource.tableware || null,
       items,
       bannerImage: items[0]?.image || "",
     };
@@ -251,30 +250,6 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
               <span>Delivery Address: <strong className="font-bold text-[#2b231e]">{orderData.address}</strong></span>
             </div>
           </div>
-
-          {/* Tableware Section */}
-          {orderData.tableware && (
-            <div className="p-3.5 rounded-[12px] border border-[#f2ece6] bg-[#faf9f6] flex flex-col gap-2">
-              <span className="text-[14px] font-bold text-[#8a7a6d] border-b border-[#f2ece6] pb-1">Tableware Selection</span>
-              <div className="flex flex-wrap gap-2.5 mt-1">
-                <span className={`rounded-[4px] px-2 py-0.5 text-[12px] font-extrabold ${orderData.tableware.napkins ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#f2ece6] text-[#7a6d63]"}`}>
-                  Napkins: {orderData.tableware.napkins ? "Yes" : "No"}
-                </span>
-                <span className={`rounded-[4px] px-2 py-0.5 text-[12px] font-extrabold ${orderData.tableware.utensils ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#f2ece6] text-[#7a6d63]"}`}>
-                  Utensils: {orderData.tableware.utensils ? "Yes" : "No"}
-                </span>
-                <span className={`rounded-[4px] px-2 py-0.5 text-[12px] font-extrabold ${orderData.tableware.platesBowls ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#f2ece6] text-[#7a6d63]"}`}>
-                  Plates/Bowls: {orderData.tableware.platesBowls ? "Yes" : "No"}
-                </span>
-              </div>
-              {orderData.tableware.instructions && (
-                <div className="mt-1 text-[13px] bg-[#fffbf0] border border-[#fef08a] rounded-[6px] p-2 text-[#854d0e] font-semibold leading-[1.3]">
-                  <strong className="block text-[10px] uppercase tracking-wider text-[#a16207]/75">Instructions:</strong>
-                  {orderData.tableware.instructions}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Customer Special Note Banner */}
           {orderData.note && (
