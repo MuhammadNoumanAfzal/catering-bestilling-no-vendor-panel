@@ -27,6 +27,7 @@ export default function OverviewCard({
   timeLabel,
 }) {
   const Icon = iconMap[icon];
+  const hasTrendBadge = trendValue && (trend === "up" || trend === "down");
 
   return (
     <button
@@ -40,20 +41,23 @@ export default function OverviewCard({
         {Icon ? <Icon className="text-[#d66c3a]" size={24} strokeWidth={2.2} /> : null}
       </div>
       <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] ">{label}</p>
-      
+
       <div className="mt-2 flex items-baseline justify-between gap-2">
-        <strong className="type-h2 block text-[34px] leading-none text-[#16110d] max-[720px]:text-[28px]">{value}</strong>
-        {trend && (
-          <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-[2px] text-[10px] font-bold ${
-            trend === "up"
-              ? "bg-[#eafbf0] text-[#2ebd5e]"
-              : trend === "down"
-                ? "bg-[#fdf2f1] text-[#e54a3b]"
-                : "bg-[#f5f5f5] text-[#7d7064]"
-          }`}>
-            {trend === "up" ? "↑ " : trend === "down" ? "↓ " : ""}{trendValue}
+        <strong className="type-h2 block text-[34px] leading-none text-[#16110d] max-[720px]:text-[28px]">
+          {value}
+        </strong>
+        {hasTrendBadge ? (
+          <span
+            className={`inline-flex items-center gap-0.5 rounded-full px-2 py-[2px] text-[10px] font-bold ${
+              trend === "up"
+                ? "bg-[#eafbf0] text-[#2ebd5e]"
+                : "bg-[#fdf2f1] text-[#e54a3b]"
+            }`}
+          >
+            {trend === "up" ? "↑ " : "↓ "}
+            {trendValue}
           </span>
-        )}
+        ) : null}
       </div>
 
       {variant === "capacity" ? (
@@ -79,11 +83,11 @@ export default function OverviewCard({
         </p>
       )}
 
-      {timeLabel && (
-        <p className="type-para mt-1 text-[11px] text-[#8d7e72] font-semibold flex items-center gap-1">
+      {timeLabel ? (
+        <p className="type-para mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#8d7e72]">
           <span className="text-[8px]">•</span> {timeLabel}
         </p>
-      )}
+      ) : null}
     </button>
   );
 }
