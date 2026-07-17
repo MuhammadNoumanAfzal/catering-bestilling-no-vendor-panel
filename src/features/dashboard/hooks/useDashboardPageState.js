@@ -131,6 +131,7 @@ export default function useDashboardPageState() {
             dateFilterLabel: dateFilter,
             customDateLabel,
             kitchenSummary,
+            totalOrdersOverride: mappedOrders.totalCount || kitchenSummary.total || 0,
           }),
         );
 

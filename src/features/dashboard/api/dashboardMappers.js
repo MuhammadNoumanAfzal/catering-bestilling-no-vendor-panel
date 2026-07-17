@@ -196,7 +196,10 @@ export function buildKitchenStatusFromSummary(summary = {}) {
   ];
 }
 
-export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel, kitchenSummary } = {}) {
+export function mapDashboardResponse(
+  data,
+  { dateFilterLabel, customDateLabel, kitchenSummary, totalOrdersOverride } = {},
+) {
   const me = data?.me || null;
   const summary = data?.vendorDashboardSummary || {};
   const currency = normalizeString(summary.currency || "NOK");
@@ -208,7 +211,10 @@ export function mapDashboardResponse(data, { dateFilterLabel, customDateLabel, k
     (highest, point) => Math.max(highest, toNumber(point?.earnings)),
     0,
   );
-  const totalOrders = toNumber(summary.totalOrders);
+  const totalOrders = Math.max(
+    toNumber(summary.totalOrders),
+    toNumber(totalOrdersOverride),
+  );
   const upcomingOrders = toNumber(summary.upcomingOrders);
   const urgentOrdersCount = toNumber(summary.urgentOrders);
   const totalOrdersTrendMeta = buildTrendMeta(
