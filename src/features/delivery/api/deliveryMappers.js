@@ -12,8 +12,8 @@ export const defaultDeliverySettings = {
   sameFeeAllDistances: true,
   activeDays: DEFAULT_DELIVERY_DAYS,
   timeSlots: DEFAULT_TIME_SLOTS,
-  maxDeliveriesPerDay: "0",
-  maxOrdersPerTimeSlot: "0",
+  maxDeliveriesPerDay: "",
+  maxOrdersPerTimeSlot: "",
   minDeliveryTime: "",
   maxDeliveryTime: "",
   liveValidation: {
@@ -30,6 +30,17 @@ function normalizeString(value) {
 function normalizeNullableString(value) {
   const nextValue = normalizeString(value).trim();
   return nextValue || "";
+}
+
+function normalizePositiveIntegerString(value) {
+  const normalizedValue = normalizeNullableString(value);
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  const numericValue = Number(normalizedValue);
+  return Number.isFinite(numericValue) && numericValue > 0 ? normalizedValue : "";
 }
 
 export function deriveSelectedModes({
@@ -110,8 +121,8 @@ export function mapVendorDeliverySettingsToForm(settingsPayload) {
       Array.isArray(settings.deliveryTimeSlots) && settings.deliveryTimeSlots.length
         ? settings.deliveryTimeSlots.map((slot) => `${slot.start} - ${slot.end}`)
         : DEFAULT_TIME_SLOTS,
-    maxDeliveriesPerDay: normalizeString(settings.maxDeliveriesPerDay ?? "0"),
-    maxOrdersPerTimeSlot: normalizeString(settings.maxOrdersPerTimeSlot ?? "0"),
+    maxDeliveriesPerDay: normalizePositiveIntegerString(settings.maxDeliveriesPerDay),
+    maxOrdersPerTimeSlot: normalizePositiveIntegerString(settings.maxOrdersPerTimeSlot),
     minDeliveryTime: normalizeNullableString(settings.minDeliveryTime),
     maxDeliveryTime: normalizeNullableString(settings.maxDeliveryTime),
     liveValidation: {
@@ -144,6 +155,16 @@ function parseIntegerOrNull(value) {
 
   const normalized = trimmedValue.replace(/[^\d-]/g, "");
   return normalized ? Number(normalized) : null;
+}
+
+function parsePositiveIntegerOrNull(value) {
+  const parsedValue = parseIntegerOrNull(value);
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return null;
+  }
+
+  return parsedValue;
 }
 
 export function parseTimeSlotLabel(slotLabel) {
@@ -181,8 +202,8 @@ export function buildDeliverySettingsInput(formState) {
     sameFeeAllDistances: true,
     deliveryDays: Array.isArray(formState.activeDays) ? formState.activeDays : [],
     deliveryTimeSlots,
-    maxDeliveriesPerDay: parseIntegerOrNull(formState.maxDeliveriesPerDay),
-    maxOrdersPerTimeSlot: parseIntegerOrNull(formState.maxOrdersPerTimeSlot),
+    maxDeliveriesPerDay: parsePositiveIntegerOrNull(formState.maxDeliveriesPerDay),
+    maxOrdersPerTimeSlot: parsePositiveIntegerOrNull(formState.maxOrdersPerTimeSlot),
     minDeliveryTime: parseIntegerOrNull(formState.minDeliveryTime),
     maxDeliveryTime: parseIntegerOrNull(formState.maxDeliveryTime),
   };
