@@ -42,14 +42,6 @@ export default function useSupportTicketForm() {
     };
   }
 
-  function handleCategoryChange(category) {
-    setSubmitted(false);
-    setForm((current) => ({
-      ...current,
-      category,
-    }));
-  }
-
   function handleAttachmentChange(event) {
     const nextFile = event.target.files?.[0] || null;
     setSubmitted(false);
@@ -99,7 +91,7 @@ export default function useSupportTicketForm() {
         || form.issueType;
 
       const result = await createSupportTicket({
-        userRole: form.category,
+        userRole: "vendor",
         subject: selectedIssueLabel,
         relatedOrderId: form.relatedOrder,
         description: form.description,
@@ -130,7 +122,6 @@ export default function useSupportTicketForm() {
     form,
     handleAttachmentChange,
     handleAttachmentRemove,
-    handleCategoryChange,
     handleFieldChange,
     handleSubmit,
     isReadyToSubmit,
