@@ -3,6 +3,7 @@ import {
   Bell,
   ChevronDown,
   CircleUserRound,
+  X,
   House,
   LifeBuoy,
   LogOut,
@@ -236,6 +237,17 @@ export default function AppLayout() {
     }
   }
 
+  function handleClearSearch() {
+    setHeaderSearch("");
+
+    if (isSearchablePage) {
+      const nextParams = Object.fromEntries(searchParams.entries());
+      delete nextParams.search;
+      setSearchParams(nextParams);
+      return;
+    }
+  }
+
   async function handleLogout() {
     const result = await confirmVendorLogout();
 
@@ -328,13 +340,25 @@ export default function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="relative z-40 flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9]/95 px-5 py-3 backdrop-blur-sm max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
           <div className="max-w-[480px] flex-1 max-[960px]:hidden">
-            <input
-              className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-              placeholder="Search order, menu item or customer"
-              type="text"
-              value={localSearch}
-              onChange={handleSearchChange}
-            />
+            <div className="relative">
+              <input
+                className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] pr-11 text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+                placeholder="Search order, menu item or customer"
+                type="text"
+                value={localSearch}
+                onChange={handleSearchChange}
+              />
+              {localSearch ? (
+                <button
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#8f7f73] transition hover:bg-[#f6efe8] hover:text-[#241913]"
+                  onClick={handleClearSearch}
+                  type="button"
+                >
+                  <X size={16} />
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 max-[960px]:hidden">
@@ -500,13 +524,25 @@ export default function AppLayout() {
               </div>
             </div>
 
-            <input
-              className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-              placeholder="Search order, menu item or customer"
-              type="text"
-              value={localSearch}
-              onChange={handleSearchChange}
-            />
+            <div className="relative">
+              <input
+                className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] pr-11 text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+                placeholder="Search order, menu item or customer"
+                type="text"
+                value={localSearch}
+                onChange={handleSearchChange}
+              />
+              {localSearch ? (
+                <button
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#8f7f73] transition hover:bg-[#f6efe8] hover:text-[#241913]"
+                  onClick={handleClearSearch}
+                  type="button"
+                >
+                  <X size={16} />
+                </button>
+              ) : null}
+            </div>
           </div>
         </header>
 
