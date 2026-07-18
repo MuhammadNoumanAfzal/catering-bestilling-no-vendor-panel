@@ -63,7 +63,7 @@ export default function SettingsSpecialClosuresSection({
       description="Block delivery and pickup on specific dates or date ranges. Customers will not be able to schedule orders on closed dates."
       title="Special Closures & Exceptions"
     >
-      <div className="grid grid-cols-4 gap-3 max-[960px]:grid-cols-2 max-[480px]:grid-cols-1">
+      <div className="grid min-w-0 grid-cols-4 gap-3 max-[960px]:grid-cols-2 max-[480px]:grid-cols-1">
         <SettingsSelectField
           disabled={disabled}
           label="Closure type"
@@ -73,11 +73,11 @@ export default function SettingsSpecialClosuresSection({
           value={closureType}
         />
 
-        <label className="flex flex-col gap-1">
+        <label className="flex min-w-0 flex-col gap-1">
           <span className="text-[13px] font-bold text-[#2a211b]">Start date</span>
-          <div className="relative">
+          <div className="relative min-w-0 w-full">
             <input
-              className="type-subpara h-[38px] w-full rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
+              className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
               disabled={disabled}
               type="date"
               value={startDate}
@@ -90,11 +90,11 @@ export default function SettingsSpecialClosuresSection({
           </div>
         </label>
 
-        <label className="flex flex-col gap-1">
+        <label className="flex min-w-0 flex-col gap-1">
           <span className="text-[13px] font-bold text-[#2a211b]">End date</span>
-          <div className="relative">
+          <div className="relative min-w-0 w-full">
             <input
-              className="type-subpara h-[38px] w-full rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
+              className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
               disabled={disabled}
               type="date"
               value={endDate}
@@ -116,9 +116,9 @@ export default function SettingsSpecialClosuresSection({
         />
       </div>
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-3 flex justify-end max-[480px]:justify-stretch">
         <button
-          className={`rounded-lg bg-[#cf6e38] px-5 py-2 text-[13px] font-bold text-white transition ${
+          className={`rounded-lg bg-[#cf6e38] px-5 py-2 text-[13px] font-bold text-white transition max-[480px]:w-full ${
             disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-[#bf622f] active:scale-95"
           }`}
           disabled={disabled}

@@ -26,7 +26,7 @@ export default function SettingsBusinessProfilePanel({
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(260px,0.78fr)] gap-4 max-[1120px]:grid-cols-1">
-      <div className="flex flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3">
         <SettingsSectionCard
           description="Update how your brand and customers see your business."
           title="Business Information"
@@ -159,7 +159,7 @@ export default function SettingsBusinessProfilePanel({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3">
         <SettingsSectionCard
           description="Choose which alerts and updates you want to receive."
           title="Notification Preferences"
