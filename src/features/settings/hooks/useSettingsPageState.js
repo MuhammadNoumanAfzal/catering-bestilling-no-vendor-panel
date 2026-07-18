@@ -39,6 +39,7 @@ import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
+import { dispatchVendorProfileUpdated } from "../../../utils/vendorProfileEvents";
 import { uploadMenuImage } from "../../menu/api/menuUploadApi";
 
 const emptyPasswordForm = {
@@ -106,6 +107,24 @@ function mapApiHoursToState(hours = []) {
     open: item.enabled ? item.openTime : "Closed",
     close: item.enabled ? item.closeTime : "Closed",
   }));
+}
+
+function resolveNavbarProfileImage(settings) {
+  return (
+    settings?.account?.avatar?.fileUrl ||
+    settings?.profileImage?.fileUrl ||
+    ""
+  );
+}
+
+function notifyVendorProfileUpdated(settings) {
+  try {
+    dispatchVendorProfileUpdated({
+      profileImageUrl: resolveNavbarProfileImage(settings),
+    });
+  } catch {
+    // Keep settings save/upload flow working even if navbar refresh fails.
+  }
 }
 
 export default function useSettingsPageState() {
@@ -606,6 +625,7 @@ export default function useSettingsPageState() {
       setPasswordForm(emptyPasswordForm);
       setFieldErrors(emptyFieldErrors);
       setSaveMessage("Changes saved.");
+      notifyVendorProfileUpdated(nextSettings);
       await showVendorSuccessToast(
         confirmations[confirmations.length - 1] || "Settings saved successfully.",
       );
@@ -641,6 +661,7 @@ export default function useSettingsPageState() {
       setPasswordForm(emptyPasswordForm);
       setFieldErrors(emptyFieldErrors);
       setSaveMessage("Settings reset to default.");
+      notifyVendorProfileUpdated(mappedPage.settings);
       await showVendorSuccessToast(result.message || "Settings reset to default.");
     } catch (error) {
       await showVendorErrorAlert(error.message || "Unable to reset settings.");
@@ -719,6 +740,7 @@ export default function useSettingsPageState() {
       setPasswordForm(emptyPasswordForm);
       setFieldErrors(emptyFieldErrors);
       setSaveMessage("Store deleted permanently.");
+      notifyVendorProfileUpdated(defaultSettingsState);
       await showVendorSuccessToast(result.message || "Store deleted permanently.");
     } catch (error) {
       await showVendorErrorAlert(error.message || "Unable to delete store.");
