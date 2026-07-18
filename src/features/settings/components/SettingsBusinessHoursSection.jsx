@@ -39,9 +39,9 @@ export default function SettingsBusinessHoursSection({
             return (
           <div
             key={item.day}
-            className="flex items-center justify-between gap-4 py-3 max-[760px]:flex-col max-[760px]:items-stretch"
+            className="flex min-w-0 items-center justify-between gap-4 py-3 max-[760px]:flex-col max-[760px]:items-stretch"
           >
-            <div className="flex items-center gap-3.5">
+            <div className="flex min-w-0 items-center gap-3.5">
               <button
                 type="button"
                 disabled={disabled}
@@ -62,7 +62,7 @@ export default function SettingsBusinessHoursSection({
             </div>
 
             <div className="flex items-center gap-2 max-[760px]:justify-between">
-              <div className="w-[160px]">
+              <div className="w-[160px] max-[760px]:flex-1 max-[760px]:w-auto">
                 <SettingsSelectField
                   disabled={disabled || !item.enabled}
                   label=""
@@ -73,7 +73,7 @@ export default function SettingsBusinessHoursSection({
                 />
               </div>
               <span className="px-1 font-semibold text-[#8a7c70]">-</span>
-              <div className="w-[160px]">
+              <div className="w-[160px] max-[760px]:flex-1 max-[760px]:w-auto">
                 <SettingsSelectField
                   disabled={disabled || !item.enabled || !closeOptions.length}
                   label=""

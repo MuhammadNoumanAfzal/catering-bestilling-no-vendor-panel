@@ -34,16 +34,16 @@ export default function SettingsSelectField({
   }
 
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex min-w-0 flex-col gap-1">
       {label ? <span className="text-[13px] font-bold text-[#2a211b]">{label}</span> : null}
-      <div className="relative" ref={containerRef}>
+      <div className="relative min-w-0 w-full" ref={containerRef}>
         <button
-          className="type-subpara flex h-[38px] w-full cursor-pointer items-center justify-between rounded-[7px] border border-[#cec5bd] bg-white px-3 text-left text-[#201712] outline-none transition hover:border-[#cf6e38] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:pointer-events-none disabled:opacity-45 disabled:bg-[#f6f2ee] disabled:text-[#8d7f73]"
+          className="type-subpara flex h-[38px] w-full min-w-0 cursor-pointer items-center justify-between rounded-[7px] border border-[#cec5bd] bg-white px-3 text-left text-[#201712] outline-none transition hover:border-[#cf6e38] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:pointer-events-none disabled:opacity-45 disabled:bg-[#f6f2ee] disabled:text-[#8d7f73]"
           disabled={disabled}
           onClick={() => setIsOpen((current) => !current)}
           type="button"
         >
-          <span className={selectedOption ? (disabled ? "text-[#8d7f73]" : "text-[#201712]") : "text-[#b0a59b]"}>
+          <span className={`min-w-0 truncate ${selectedOption ? (disabled ? "text-[#8d7f73]" : "text-[#201712]") : "text-[#b0a59b]"}`}>
             {selectedOption?.label || placeholder}
           </span>
           <ChevronDown
