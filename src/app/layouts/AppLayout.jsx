@@ -18,6 +18,10 @@ import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { confirmVendorLogout, showNewNotificationToast } from "../../utils/vendorAlerts";
 import {
+  VENDOR_PROFILE_UPDATED_EVENT,
+  withImageCacheBuster,
+} from "../../utils/vendorProfileEvents";
+import {
   getVendorNotificationCounts,
   getVendorNotifications,
 } from "../../features/notifications/api/notificationsApi";
@@ -75,15 +79,17 @@ export default function AppLayout() {
   useEffect(() => {
     let isCancelled = false;
 
-    async function loadProfileImage() {
+    async function loadProfileImage(version = Date.now()) {
       try {
         const result = await getVendorSettingsPage();
         const settings = result?.vendorSettings;
-        const nextProfileImageUrl =
+        const nextProfileImageUrl = withImageCacheBuster(
           settings?.account?.avatar?.fileUrl ||
-          settings?.businessProfile?.profileImage?.fileUrl ||
-          settings?.logoUrl ||
-          "";
+            settings?.businessProfile?.profileImage?.fileUrl ||
+            settings?.logoUrl ||
+            "",
+          version,
+        );
 
         if (!isCancelled) {
           setProfileImageUrl(nextProfileImageUrl);
@@ -97,8 +103,25 @@ export default function AppLayout() {
 
     loadProfileImage();
 
+    function handleVendorProfileUpdated(event) {
+      const nextImageUrl = withImageCacheBuster(
+        event?.detail?.profileImageUrl,
+        event?.detail?.version,
+      );
+
+      if (nextImageUrl) {
+        setProfileImageUrl(nextImageUrl);
+        return;
+      }
+
+      loadProfileImage(event?.detail?.version || Date.now());
+    }
+
+    window.addEventListener(VENDOR_PROFILE_UPDATED_EVENT, handleVendorProfileUpdated);
+
     return () => {
       isCancelled = true;
+      window.removeEventListener(VENDOR_PROFILE_UPDATED_EVENT, handleVendorProfileUpdated);
     };
   }, []);
 
