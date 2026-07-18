@@ -28,7 +28,7 @@ export default function ReviewsFiltersBar({
   return (
     <div className="rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-2.5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="flex items-center justify-between gap-3 max-[760px]:flex-col max-[760px]:items-stretch">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 max-[480px]:grid max-[480px]:grid-cols-3">
           {filters.map((filter) => (
             <button
               key={filter}
@@ -36,7 +36,7 @@ export default function ReviewsFiltersBar({
                 activeFilter === filter
                   ? "bg-[#de6f39] text-white"
                   : "border border-[#ded6cf] bg-white text-[#6f645b] hover:text-[#de6f39]"
-              }`}
+              } max-[480px]:min-w-0 max-[480px]:w-full`}
               onClick={() => onFilterChange(filter)}
               type="button"
             >
@@ -45,17 +45,17 @@ export default function ReviewsFiltersBar({
           ))}
         </div>
 
-        <div className="flex items-center gap-2 max-[760px]:justify-between">
-          <div className="relative">
+        <div className="flex min-w-0 items-center gap-2 max-[760px]:w-full max-[760px]:flex-col max-[760px]:items-stretch">
+          <div className="relative min-w-0 max-[760px]:w-full">
             <button
-              className="flex min-w-[108px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-full border border-[#d7cfc7] bg-white px-4 py-[7px] text-[12px] font-semibold text-[#231b16]"
+              className="flex min-w-[108px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-full border border-[#d7cfc7] bg-white px-4 py-[7px] text-[12px] font-semibold text-[#231b16] max-[760px]:w-full max-[760px]:max-w-none"
               onClick={onToggleDateMenu}
               type="button"
             >
-              <span className="truncate">{dateButtonLabel}</span>
+              <span className="min-w-0 truncate">{dateButtonLabel}</span>
               {selectedDateOption !== "lastMonth" ? (
                 <span
-                  className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
+                  className="ml-1 inline-flex shrink-0 items-center justify-center rounded-full p-0.5 text-[#746a62] transition-colors hover:bg-[#f3ece6] hover:text-[#17120e]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectDateOption("lastMonth");
@@ -71,7 +71,7 @@ export default function ReviewsFiltersBar({
             </button>
 
             {isDateMenuOpen ? (
-              <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.14)]">
+              <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.14)] max-[760px]:left-0 max-[760px]:right-auto max-[760px]:w-full max-[760px]:max-w-none">
                 <div className="space-y-1">
                   {dateOptions.map((option) => {
                     const isActive = option.id === "custom" && isCustomDateOpen;
@@ -150,7 +150,7 @@ export default function ReviewsFiltersBar({
           </div>
 
           <button
-            className="cursor-pointer rounded-[8px] border border-[#dcd4cc] bg-white px-3 py-[7px] text-[10px] font-bold text-[#2b231d]"
+            className="cursor-pointer rounded-[8px] border border-[#dcd4cc] bg-white px-3 py-[7px] text-[10px] font-bold text-[#2b231d] max-[760px]:w-full"
             onClick={onClearFilters}
             type="button"
           >
