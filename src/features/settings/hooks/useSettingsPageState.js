@@ -120,6 +120,7 @@ function resolveNavbarProfileImage(settings) {
 function notifyVendorProfileUpdated(settings) {
   try {
     dispatchVendorProfileUpdated({
+      businessName: settings?.businessName,
       profileImageUrl: resolveNavbarProfileImage(settings),
     });
   } catch {

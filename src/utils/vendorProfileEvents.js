@@ -23,6 +23,7 @@ export function dispatchVendorProfileUpdated(detail = {}) {
   window.dispatchEvent(
     new CustomEvent(VENDOR_PROFILE_UPDATED_EVENT, {
       detail: {
+        businessName: normalizeString(detail.businessName),
         profileImageUrl: normalizeString(detail.profileImageUrl),
         version: detail.version || Date.now(),
       },

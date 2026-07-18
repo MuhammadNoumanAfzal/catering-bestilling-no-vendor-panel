@@ -64,8 +64,10 @@ export default function AppLayout() {
   const searchParamValue = searchParams.get("search") || "";
   const isSearchablePage = pathname === "/orders" || pathname === "/menu";
   const localSearch = isSearchablePage ? searchParamValue : headerSearch;
-  const displayName =
+  const accountDisplayName =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Vendor User";
+  const [businessDisplayName, setBusinessDisplayName] = useState("");
+  const displayName = businessDisplayName || accountDisplayName;
   const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
@@ -83,6 +85,7 @@ export default function AppLayout() {
       try {
         const result = await getVendorSettingsPage();
         const settings = result?.vendorSettings;
+        const nextBusinessName = settings?.businessProfile?.businessName || "";
         const nextProfileImageUrl = withImageCacheBuster(
           settings?.account?.avatar?.fileUrl ||
             settings?.businessProfile?.profileImage?.fileUrl ||
@@ -92,10 +95,12 @@ export default function AppLayout() {
         );
 
         if (!isCancelled) {
+          setBusinessDisplayName(nextBusinessName);
           setProfileImageUrl(nextProfileImageUrl);
         }
       } catch {
         if (!isCancelled) {
+          setBusinessDisplayName("");
           setProfileImageUrl("");
         }
       }
@@ -104,10 +109,15 @@ export default function AppLayout() {
     loadProfileImage();
 
     function handleVendorProfileUpdated(event) {
+      const nextBusinessName = String(event?.detail?.businessName || "").trim();
       const nextImageUrl = withImageCacheBuster(
         event?.detail?.profileImageUrl,
         event?.detail?.version,
       );
+
+      if (nextBusinessName) {
+        setBusinessDisplayName(nextBusinessName);
+      }
 
       if (nextImageUrl) {
         setProfileImageUrl(nextImageUrl);
@@ -369,7 +379,7 @@ export default function AppLayout() {
                     {renderProfileAvatar("h-11 w-11", "text-[14px]")}
                     <div className="min-w-0">
                       <p className="truncate text-[13px] font-extrabold text-[#211915]">{displayName}</p>
-                      <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{displayRole}</p>
+                      <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{accountDisplayName}</p>
                     </div>
                   </div>
 
@@ -457,7 +467,7 @@ export default function AppLayout() {
                         {renderProfileAvatar("h-11 w-11", "text-[14px]")}
                         <div className="min-w-0">
                           <p className="truncate text-[13px] font-extrabold text-[#211915]">{displayName}</p>
-                          <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{displayRole}</p>
+                          <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{accountDisplayName}</p>
                         </div>
                       </div>
                       <button
