@@ -47,7 +47,7 @@ export default function FinanceOrdersFilters({
         </div>
 
         <div className="relative">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 max-[560px]:flex-wrap">
             <button
               className="flex min-w-[108px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-full border border-[#d7cfc7] bg-white px-4 py-[7px] text-[12px] font-semibold text-[#231b16]"
               onClick={onToggleDateMenu}
@@ -82,8 +82,9 @@ export default function FinanceOrdersFilters({
           </div>
 
           {isDateMenuOpen ? (
-            <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.14)]">
-              <div className="space-y-1">
+            <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white shadow-[0_18px_40px_rgba(0,0,0,0.14)] max-[560px]:fixed max-[560px]:left-1/2 max-[560px]:right-auto max-[560px]:top-1/2 max-[560px]:w-[min(320px,calc(100vw-24px))] max-[560px]:-translate-x-1/2 max-[560px]:-translate-y-1/2">
+              <div className="max-h-[min(70vh,520px)] overflow-y-auto p-3 max-[560px]:max-h-[min(72svh,560px)] max-[560px]:overscroll-contain max-[560px]:pb-5">
+                <div className="space-y-1">
                 {financeDateOptions.map((option) => {
                     const isCustomOption = option.id === "custom";
                     const isActive = isCustomOption && isCustomDateOpen;
@@ -108,55 +109,56 @@ export default function FinanceOrdersFilters({
                       </button>
                     );
                   })}
-              </div>
-
-              {isCustomDateOpen ? (
-                <div className="mt-3 rounded-[18px] border border-[#f0dfd3] bg-[#fff8f4] p-4">
-                  <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#d58a61]">
-                    Custom Range
-                  </p>
-                  <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]">
-                    Choose a start and end date to filter the orders list.
-                  </p>
-
-                  <div className="mt-4 space-y-3">
-                    <label className="flex flex-col gap-1">
-                      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                        From
-                      </span>
-                      <input
-                        className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
-                        onChange={(event) => onCustomFromChange(event.target.value)}
-                        type="date"
-                        value={customFrom}
-                      />
-                    </label>
-
-                    <label className="flex flex-col gap-1">
-                      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                        To
-                      </span>
-                      <input
-                        className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
-                        onChange={(event) => onCustomToChange(event.target.value)}
-                        type="date"
-                        value={customTo}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      className="h-[40px] cursor-pointer rounded-full bg-[#d96e39] px-5 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={!customFrom || !customTo}
-                      onClick={onApplyCustomDate}
-                      type="button"
-                    >
-                      Apply
-                    </button>
-                  </div>
                 </div>
-              ) : null}
+
+                {isCustomDateOpen ? (
+                  <div className="mt-3 rounded-[18px] border border-[#f0dfd3] bg-[#fff8f4] p-4">
+                    <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#d58a61]">
+                      Custom Range
+                    </p>
+                    <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]">
+                      Choose a start and end date to filter the orders list.
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      <label className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
+                          From
+                        </span>
+                        <input
+                          className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
+                          onChange={(event) => onCustomFromChange(event.target.value)}
+                          type="date"
+                          value={customFrom}
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
+                          To
+                        </span>
+                        <input
+                          className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
+                          onChange={(event) => onCustomToChange(event.target.value)}
+                          type="date"
+                          value={customTo}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-4 flex justify-end border-t border-[#f0dfd3] pt-3">
+                      <button
+                        className="h-[40px] cursor-pointer rounded-full bg-[#d96e39] px-5 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={!customFrom || !customTo}
+                        onClick={onApplyCustomDate}
+                        type="button"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
           ) : null}
         </div>

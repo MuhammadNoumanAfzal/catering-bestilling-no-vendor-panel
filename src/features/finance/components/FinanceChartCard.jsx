@@ -75,7 +75,7 @@ export default function FinanceChartCard({ points }) {
 
   return (
     <section className="flex h-full min-h-[428px] flex-col rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-3 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-3 flex items-start justify-between gap-3 max-[560px]:flex-col max-[560px]:items-stretch">
         <div>
           <h2 className="type-h3 m-0 text-[#181310]">Earning Overview</h2>
           <p className="type-para mt-1 text-[#6f6258]">
@@ -83,7 +83,7 @@ export default function FinanceChartCard({ points }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-1 rounded-[10px] border border-[#e4dbd3] bg-[#faf7f4] p-1">
+        <div className="flex items-center gap-1 self-start rounded-[10px] border border-[#e4dbd3] bg-[#faf7f4] p-1 max-[560px]:self-end">
           <button
             className={`cursor-pointer rounded-[8px] px-3 py-1.5 text-[11px] font-bold transition ${
               !isOrdersView
@@ -109,9 +109,9 @@ export default function FinanceChartCard({ points }) {
         </div>
       </div>
 
-      <div className="flex flex-1 rounded-[12px] border border-[#eee6de] bg-white p-3">
-        <div className="grid min-h-[320px] w-full grid-cols-[68px_1fr] gap-3">
-          <div className="flex h-full flex-col justify-between pb-9 text-[11px] font-medium text-[#7f7369]">
+      <div className="flex flex-1 rounded-[12px] border border-[#eee6de] bg-white p-3 max-[560px]:p-2">
+        <div className="grid min-h-[320px] w-full grid-cols-[68px_1fr] gap-3 max-[560px]:min-h-[270px] max-[560px]:grid-cols-[52px_1fr] max-[560px]:gap-2">
+          <div className="flex h-full flex-col justify-between pb-9 text-[11px] font-medium text-[#7f7369] max-[560px]:pb-14 max-[560px]:text-[10px]">
             {axisTicks.map((tick) => (
               <span key={tick.value}>{tick.label}</span>
             ))}
@@ -128,7 +128,7 @@ export default function FinanceChartCard({ points }) {
                 ))}
               </div>
 
-              <div className="relative z-[1] flex h-full items-end justify-between gap-4 px-3">
+              <div className="relative z-[1] flex h-full items-end justify-between gap-4 px-3 max-[560px]:gap-2 max-[560px]:px-1">
                 {chartPoints.map((point, index) => {
                   const height = chartMaxValue > 0 ? (point.value / chartMaxValue) * 100 : 0;
 
@@ -139,7 +139,7 @@ export default function FinanceChartCard({ points }) {
                       title={`${point.label}: ${formatAxisValue(point.value, isOrdersView)}`}
                     >
                       <div
-                        className={`min-h-[8px] w-[44px] rounded-t-full ${
+                        className={`min-h-[8px] w-[44px] rounded-t-full max-[560px]:w-full max-[560px]:max-w-[44px] ${
                           hasLiveData ? "bg-[#d96e39]" : "bg-[#f1c7b1]"
                         }`}
                         style={{ height: `${Math.max(height, 8)}%` }}
@@ -150,11 +150,11 @@ export default function FinanceChartCard({ points }) {
               </div>
             </div>
 
-            <div className="mt-3 flex justify-between gap-4 px-3 text-[11px] font-medium text-[#7f7369]">
+            <div className="mt-3 flex justify-between gap-4 px-3 text-[11px] font-medium text-[#7f7369] max-[560px]:mt-2 max-[560px]:gap-2 max-[560px]:px-1 max-[560px]:text-[10px]">
               {chartPoints.map((point, index) => (
                 <span
                   key={`${point.label || "label"}-${index}`}
-                  className="flex-1 truncate text-center"
+                  className="flex-1 text-center leading-tight break-words"
                   title={point.label}
                 >
                   {point.label || `Point ${index + 1}`}
@@ -163,7 +163,7 @@ export default function FinanceChartCard({ points }) {
             </div>
 
             {!hasLiveData ? (
-              <p className="mt-3 px-3 text-center text-[12px] font-medium text-[#8b7d72]">
+              <p className="mt-3 px-3 text-center text-[12px] font-medium leading-relaxed text-[#8b7d72] max-[560px]:mt-2 max-[560px]:px-1 max-[560px]:text-[11px]">
                 No chart data is available for the selected date range.
               </p>
             ) : null}
