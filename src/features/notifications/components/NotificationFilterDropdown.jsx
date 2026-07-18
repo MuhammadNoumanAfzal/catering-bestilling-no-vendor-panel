@@ -23,17 +23,19 @@ export default function NotificationFilterDropdown({
   const isCustom = selectedFilter === "Custom Date";
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0 max-[760px]:w-full">
       <button
-        className="type-subpara inline-flex min-h-[38px] items-center gap-2 rounded-full border border-[#f1beab] bg-[#ffe0d1] px-4 text-[#d86f39]"
+        className="type-subpara inline-flex min-h-[38px] min-w-0 items-center gap-2 rounded-full border border-[#f1beab] bg-[#ffe0d1] px-4 text-[#d86f39] max-[760px]:flex max-[760px]:w-full max-[760px]:justify-between"
         onClick={onToggle}
         type="button"
       >
-        <CalendarDays size={14} />
-        <span>{filterLabel}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <CalendarDays size={14} />
+          <span className="truncate">{filterLabel}</span>
+        </span>
         {selectedFilter !== "Last Month" ? (
           <span
-            className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#ffd0bb] text-[#d86f39] hover:text-[#9e3f14] transition-colors"
+            className="ml-1 inline-flex shrink-0 items-center justify-center rounded-full p-0.5 text-[#d86f39] transition-colors hover:bg-[#ffd0bb] hover:text-[#9e3f14]"
             onClick={(e) => {
               e.stopPropagation();
               onSelectFilter("Last Month");
@@ -47,7 +49,7 @@ export default function NotificationFilterDropdown({
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 top-[calc(100%+10px)] z-30 min-w-[236px] rounded-[12px] border border-[#eadfd6] bg-white p-2 shadow-[0_20px_45px_rgba(28,18,12,0.18)]">
+        <div className="absolute right-0 top-[calc(100%+10px)] z-30 min-w-[236px] max-w-[min(92vw,320px)] rounded-[12px] border border-[#eadfd6] bg-white p-2 shadow-[0_20px_45px_rgba(28,18,12,0.18)] max-[760px]:left-0 max-[760px]:right-auto max-[760px]:w-full max-[760px]:min-w-0 max-[760px]:max-w-none">
           <div className="flex flex-col gap-1">
             {options.map((option) => {
               const isSelected = selectedFilter === option;
@@ -108,7 +110,7 @@ export default function NotificationFilterDropdown({
             </div>
           ) : null}
 
-          <p className="type-subpara mt-3 text-[#998b80]">
+          <p className="type-subpara mt-3 break-words text-[#998b80]">
             {isCustom
               ? `From: ${formatDateLabel(customRange.from)}   To: ${formatDateLabel(customRange.to)}`
               : "Choose a date range to filter notifications."}
