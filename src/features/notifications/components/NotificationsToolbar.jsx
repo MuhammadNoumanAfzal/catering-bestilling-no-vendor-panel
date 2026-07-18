@@ -19,7 +19,7 @@ export default function NotificationsToolbar({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-[18px] border border-[#e8ddd4] bg-white px-3 py-3 shadow-[0_10px_24px_rgba(45,31,20,0.05)] max-[760px]:flex-col max-[760px]:items-stretch">
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 max-[480px]:grid max-[480px]:grid-cols-3">
         {tabs.map((tab) => {
           const isActive = activeTab === tab;
 
@@ -30,7 +30,7 @@ export default function NotificationsToolbar({
                 isActive
                   ? "bg-[#cf6e38] text-white shadow-[0_8px_18px_rgba(207,110,56,0.22)]"
                   : "border border-[#e4d8cf] bg-[#fffdfa] text-[#5d5147] hover:border-[#d7c8bc] hover:bg-[#faf5f0]"
-              } max-[480px]:flex-1 max-[480px]:min-w-[96px]`}
+              } max-[480px]:min-w-0 max-[480px]:w-full`}
               onClick={() => onTabChange(tab)}
               type="button"
             >
