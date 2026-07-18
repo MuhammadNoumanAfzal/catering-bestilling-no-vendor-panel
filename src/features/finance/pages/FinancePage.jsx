@@ -13,24 +13,30 @@ export default function FinancePage() {
     customFrom,
     customTo,
     dateButtonLabel,
+    handleApplyHeaderCustomDate,
     handleApplyCustomDate,
     handleExport,
+    handleHeaderFilterChange,
     handlePageChange,
     handleRequestTransactionDetail,
     handleSelectDateOption,
     handleStatusChange,
     handleToggleDateMenu,
+    headerCustomFrom,
+    headerCustomTo,
     headerFilter,
+    headerFilterLabel,
     isExporting,
     isCustomDateOpen,
     isDateMenuOpen,
     isLoading,
     onCustomFromChange,
     onCustomToChange,
+    onHeaderCustomFromChange,
+    onHeaderCustomToChange,
     pageSize,
     paginatedOrders,
     payoutStatuses,
-    setHeaderFilter,
     summaryCards,
     totalItems,
     totalPages,
@@ -40,7 +46,16 @@ export default function FinancePage() {
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
-      <FinancePageHeader filter={headerFilter} onFilterChange={setHeaderFilter} />
+      <FinancePageHeader
+        customFrom={headerCustomFrom}
+        customTo={headerCustomTo}
+        displayLabel={headerFilterLabel}
+        filter={headerFilter}
+        onApplyCustomDate={handleApplyHeaderCustomDate}
+        onCustomFromChange={onHeaderCustomFromChange}
+        onCustomToChange={onHeaderCustomToChange}
+        onFilterChange={handleHeaderFilterChange}
+      />
 
       <FinanceSummaryGrid cards={summaryCards} />
 

@@ -291,6 +291,23 @@ function createDateAtStartOfDay(baseDate = new Date()) {
   return nextDate;
 }
 
+function getRangeLengthInDays(customFrom, customTo) {
+  const fromDate = createDateAtStartOfDay(new Date(customFrom));
+  const toDate = createDateAtStartOfDay(new Date(customTo));
+
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+    return null;
+  }
+
+  const differenceInMilliseconds = toDate.getTime() - fromDate.getTime();
+
+  if (differenceInMilliseconds < 0) {
+    return null;
+  }
+
+  return Math.floor(differenceInMilliseconds / 86400000) + 1;
+}
+
 export function getFinanceRangeVariables({ rangePreset, customFrom, customTo }) {
   if (rangePreset === "custom" && customFrom && customTo) {
     return {
@@ -334,7 +351,21 @@ export function getFinanceRangeVariables({ rangePreset, customFrom, customTo }) 
   };
 }
 
-export function getChartGroupBy(rangePreset) {
+export function getChartGroupBy(rangePreset, customFrom, customTo) {
+  if (rangePreset === "custom") {
+    const rangeLength = getRangeLengthInDays(customFrom, customTo);
+
+    if (rangeLength == null || rangeLength <= 31) {
+      return "day";
+    }
+
+    if (rangeLength <= 120) {
+      return "week";
+    }
+
+    return "month";
+  }
+
   if (rangePreset === "7days" || rangePreset === "30days") {
     return "day";
   }

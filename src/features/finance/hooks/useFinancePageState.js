@@ -38,6 +38,9 @@ function formatDateLabel(dateValue) {
 export default function useFinancePageState() {
   const [currentPage, setCurrentPage] = useState(1);
   const [headerFilter, setHeaderFilter] = useState("7days");
+  const [headerCustomFrom, setHeaderCustomFrom] = useState("");
+  const [headerCustomTo, setHeaderCustomTo] = useState("");
+  const [appliedHeaderCustomRange, setAppliedHeaderCustomRange] = useState(null);
   const [activeStatus, setActiveStatus] = useState("All");
   const [selectedDateOption, setSelectedDateOption] = useState("30days");
   const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
@@ -54,8 +57,13 @@ export default function useFinancePageState() {
   const [isExporting, setIsExporting] = useState(false);
 
   const headerRangeVariables = useMemo(
-    () => getFinanceRangeVariables({ rangePreset: headerFilter }),
-    [headerFilter],
+    () =>
+      getFinanceRangeVariables({
+        rangePreset: headerFilter,
+        customFrom: appliedHeaderCustomRange?.from,
+        customTo: appliedHeaderCustomRange?.to,
+      }),
+    [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
   );
 
   const ordersRangeVariables = useMemo(
@@ -77,7 +85,11 @@ export default function useFinancePageState() {
           getVendorFinanceSummary(headerRangeVariables),
           getVendorFinanceOverviewChart({
             ...headerRangeVariables,
-            groupBy: getChartGroupBy(headerFilter),
+            groupBy: getChartGroupBy(
+              headerFilter,
+              appliedHeaderCustomRange?.from,
+              appliedHeaderCustomRange?.to,
+            ),
           }),
           getVendorPayoutStatus(),
         ]);
@@ -118,7 +130,7 @@ export default function useFinancePageState() {
     return () => {
       isCancelled = true;
     };
-  }, [headerFilter, headerRangeVariables]);
+  }, [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter, headerRangeVariables]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -196,6 +208,25 @@ export default function useFinancePageState() {
               ? "Custom Date"
               : "Last 30 Days";
 
+  const headerFilterLabel =
+    headerFilter === "custom" &&
+    appliedHeaderCustomRange?.from &&
+    appliedHeaderCustomRange?.to
+      ? `${formatDateLabel(appliedHeaderCustomRange.from)} - ${formatDateLabel(appliedHeaderCustomRange.to)}`
+      : headerFilter === "7days"
+        ? "Last 7 days"
+        : headerFilter === "30days"
+          ? "Last 30 days"
+          : headerFilter === "thisMonth"
+            ? "This Month"
+            : headerFilter === "lastMonth"
+              ? "Last Month"
+              : headerFilter === "thisYear"
+                ? "This Year"
+                : headerFilter === "custom"
+                  ? "Custom Range"
+                  : "Last 7 days";
+
   async function handlePageChange(nextPage) {
     if (nextPage < 1 || nextPage > totalPages) {
       return;
@@ -247,6 +278,32 @@ export default function useFinancePageState() {
 
   function handleStatusChange(nextStatus) {
     setActiveStatus(nextStatus);
+  }
+
+  function handleHeaderFilterChange(nextFilter) {
+    setHeaderFilter(nextFilter);
+
+    if (nextFilter !== "custom") {
+      setAppliedHeaderCustomRange(null);
+      setHeaderCustomFrom("");
+      setHeaderCustomTo("");
+    }
+  }
+
+  function handleApplyHeaderCustomDate() {
+    if (!headerCustomFrom || !headerCustomTo) {
+      return;
+    }
+
+    if (headerCustomFrom > headerCustomTo) {
+      return;
+    }
+
+    setAppliedHeaderCustomRange({
+      from: headerCustomFrom,
+      to: headerCustomTo,
+    });
+    setHeaderFilter("custom");
   }
 
   function handleToggleDateMenu() {
@@ -316,24 +373,30 @@ export default function useFinancePageState() {
     customTo,
     dateButtonLabel,
     chartPoints,
+    handleApplyHeaderCustomDate,
     handleApplyCustomDate,
     handleExport,
     handlePageChange,
     handleRequestTransactionDetail,
     handleSelectDateOption,
     handleStatusChange,
+    handleHeaderFilterChange,
     handleToggleDateMenu,
+    headerCustomFrom,
+    headerCustomTo,
     headerFilter,
+    headerFilterLabel,
     isExporting,
     isCustomDateOpen,
     isDateMenuOpen,
     isLoading,
     onCustomFromChange: setCustomFrom,
     onCustomToChange: setCustomTo,
+    onHeaderCustomFromChange: setHeaderCustomFrom,
+    onHeaderCustomToChange: setHeaderCustomTo,
     payoutStatuses,
     paginatedOrders,
     pageSize: PAGE_SIZE,
-    setHeaderFilter,
     summaryCards,
     totalItems,
     totalPages,
