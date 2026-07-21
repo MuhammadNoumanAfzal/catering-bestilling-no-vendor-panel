@@ -1,5 +1,8 @@
-const DEFAULT_TIME_SLOTS = ["11:00 - 15:00", "18:00 - 23:00"];
 const DEFAULT_DELIVERY_DAYS = ["mo", "tu", "we", "th", "fr", "sa", "su"];
+const DEFAULT_TIME_SLOTS = [
+  { day: "mo", start: "11:00", end: "15:00" },
+  { day: "fr", start: "18:00", end: "23:00" },
+];
 
 export const defaultDeliverySettings = {
   id: "",
@@ -30,6 +33,11 @@ function normalizeString(value) {
 function normalizeNullableString(value) {
   const nextValue = normalizeString(value).trim();
   return nextValue || "";
+}
+
+function normalizeDayCode(value) {
+  const nextValue = normalizeNullableString(value).toLowerCase();
+  return DEFAULT_DELIVERY_DAYS.includes(nextValue) ? nextValue : "";
 }
 
 function normalizePositiveIntegerString(value) {
@@ -95,6 +103,26 @@ function normalizeServiceArea(area) {
   };
 }
 
+function normalizeDeliveryTimeSlot(slot) {
+  const day = normalizeDayCode(slot?.day);
+  const start = normalizeNullableString(slot?.start);
+  const end = normalizeNullableString(slot?.end);
+
+  if (!day || !start || !end) {
+    return null;
+  }
+
+  return { day, start, end };
+}
+
+function sortDeliveryTimeSlots(slots = []) {
+  return [...slots].sort((left, right) => {
+    const leftKey = `${left.day}-${left.start}-${left.end}`;
+    const rightKey = `${right.day}-${right.start}-${right.end}`;
+    return leftKey.localeCompare(rightKey);
+  });
+}
+
 export function mapVendorDeliverySettingsToForm(settingsPayload) {
   const settings = settingsPayload?.deliverySettings || settingsPayload;
   const serviceAreas = settingsPayload?.serviceAreas || [];
@@ -116,10 +144,16 @@ export function mapVendorDeliverySettingsToForm(settingsPayload) {
     sameFeeAllDistances: true,
     activeDays: Array.isArray(settings.deliveryDays) && settings.deliveryDays.length
       ? settings.deliveryDays
+        .map(normalizeDayCode)
+        .filter(Boolean)
       : DEFAULT_DELIVERY_DAYS,
     timeSlots:
       Array.isArray(settings.deliveryTimeSlots) && settings.deliveryTimeSlots.length
-        ? settings.deliveryTimeSlots.map((slot) => `${slot.start} - ${slot.end}`)
+        ? sortDeliveryTimeSlots(
+          settings.deliveryTimeSlots
+            .map(normalizeDeliveryTimeSlot)
+            .filter(Boolean),
+        )
         : DEFAULT_TIME_SLOTS,
     maxDeliveriesPerDay: normalizePositiveIntegerString(settings.maxDeliveriesPerDay),
     maxOrdersPerTimeSlot: normalizePositiveIntegerString(settings.maxOrdersPerTimeSlot),
@@ -182,11 +216,30 @@ export function parseTimeSlotLabel(slotLabel) {
   };
 }
 
+export function formatDeliveryTimeSlot(slot) {
+  const normalizedSlot = normalizeDeliveryTimeSlot(slot);
+
+  if (!normalizedSlot) {
+    return "";
+  }
+
+  return `${normalizedSlot.start} - ${normalizedSlot.end}`;
+}
+
 export function buildDeliverySettingsInput(formState) {
   const selectedModes = formState.selectedModes || ["delivery"];
-  const deliveryTimeSlots = (formState.timeSlots || [])
-    .map(parseTimeSlotLabel)
-    .filter(Boolean);
+  const deliveryTimeSlots = sortDeliveryTimeSlots(
+    (formState.timeSlots || [])
+      .map((slot) => {
+        if (typeof slot === "string") {
+          const parsedSlot = parseTimeSlotLabel(slot);
+          return parsedSlot ? { day: normalizeDayCode(formState.activeDays?.[0]), ...parsedSlot } : null;
+        }
+
+        return normalizeDeliveryTimeSlot(slot);
+      })
+      .filter(Boolean),
+  );
 
   return {
     deliveryMode: deriveDeliveryMode(selectedModes),
@@ -200,7 +253,9 @@ export function buildDeliverySettingsInput(formState) {
     baseDeliveryFee: parseDecimalOrNull(formState.baseFee),
     freeDeliveryOver: parseDecimalOrNull(formState.freeDelivery),
     sameFeeAllDistances: true,
-    deliveryDays: Array.isArray(formState.activeDays) ? formState.activeDays : [],
+    deliveryDays: Array.isArray(formState.activeDays)
+      ? formState.activeDays.map(normalizeDayCode).filter(Boolean)
+      : [],
     deliveryTimeSlots,
     maxDeliveriesPerDay: parsePositiveIntegerOrNull(formState.maxDeliveriesPerDay),
     maxOrdersPerTimeSlot: parsePositiveIntegerOrNull(formState.maxOrdersPerTimeSlot),
@@ -221,8 +276,22 @@ export function getComparableDeliverySettings(formState) {
     baseFee: normalizeNullableString(formState.baseFee),
     freeDelivery: normalizeNullableString(formState.freeDelivery),
     sameFeeAllDistances: true,
-    activeDays: [...(formState.activeDays || [])].sort(),
-    timeSlots: [...(formState.timeSlots || [])],
+    activeDays: [...(formState.activeDays || [])]
+      .map(normalizeDayCode)
+      .filter(Boolean)
+      .sort(),
+    timeSlots: sortDeliveryTimeSlots(
+      [...(formState.timeSlots || [])]
+        .map((slot) => {
+          if (typeof slot === "string") {
+            const parsedSlot = parseTimeSlotLabel(slot);
+            return parsedSlot ? { day: normalizeDayCode(formState.activeDays?.[0]), ...parsedSlot } : null;
+          }
+
+          return normalizeDeliveryTimeSlot(slot);
+        })
+        .filter(Boolean),
+    ),
     maxDeliveriesPerDay: normalizeNullableString(formState.maxDeliveriesPerDay),
     maxOrdersPerTimeSlot: normalizeNullableString(formState.maxOrdersPerTimeSlot),
     minDeliveryTime: normalizeNullableString(formState.minDeliveryTime),

@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { deliveryDays } from "../data/deliveryData";
 
 function normalizeTimeDraft(value) {
   const digits = String(value || "").replace(/\D/g, "").slice(0, 4);
@@ -11,13 +12,15 @@ function normalizeTimeDraft(value) {
 }
 
 export default function DeliveryAddSlotModal({
+  activeDays = [],
   draftSlot,
   onClose,
   onDraftChange,
   onSave,
   error = "",
 }) {
-  const isReadyToSave = draftSlot.start && draftSlot.end;
+  const selectableDays = deliveryDays.filter((day) => activeDays.includes(day.value));
+  const isReadyToSave = draftSlot.day && draftSlot.start && draftSlot.end;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6">
@@ -45,10 +48,30 @@ export default function DeliveryAddSlotModal({
         </p>
 
         <label className="mt-4 flex flex-col gap-1">
+          <span className="type-para text-[#1a1410]">Delivery day</span>
+          <select
+            autoFocus
+            className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
+              error ? "border-[#d25545]" : "border-[#cec5bd]"
+            }`}
+            onChange={(event) => onDraftChange({
+              ...draftSlot,
+              day: event.target.value,
+            })}
+            value={draftSlot.day}
+          >
+            {selectableDays.map((day) => (
+              <option key={day.value} value={day.value}>
+                {day.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="mt-4 flex flex-col gap-1">
           <span className="type-para text-[#1a1410]">Delivery time slot</span>
           <div className="grid grid-cols-2 gap-3">
             <input
-              autoFocus
               className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
                 error ? "border-[#d25545]" : "border-[#cec5bd]"
               }`}
