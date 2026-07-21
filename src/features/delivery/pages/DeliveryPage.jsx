@@ -188,6 +188,7 @@ export default function DeliveryPage() {
 
       {isAddSlotModalOpen ? (
         <DeliveryAddSlotModal
+          activeDays={activeDays}
           draftSlot={customSlotDraft}
           error={slotDraftError}
           onClose={handleCloseAddSlotModal}

@@ -9,17 +9,17 @@ import {
 import {
   buildDeliverySettingsInput,
   defaultDeliverySettings,
+  formatDeliveryTimeSlot,
   getComparableDeliverySettings,
   mapFieldErrors,
   mapVendorDeliverySettingsToForm,
-  parseTimeSlotLabel,
 } from "../api/deliveryMappers";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
-const DEFAULT_CUSTOM_SLOT_DRAFT = { start: "18:00", end: "21:00" };
+const DEFAULT_CUSTOM_SLOT_DRAFT = { day: "mo", start: "18:00", end: "21:00" };
 const defaultValidationState = {
   isValid: true,
   issues: [],
@@ -66,8 +66,15 @@ export default function useDeliverySettings() {
   const validationRequestIdRef = useRef(0);
   const areaSearchRequestIdRef = useRef(0);
 
-  function resetSlotDraftState() {
-    setCustomSlotDraft(DEFAULT_CUSTOM_SLOT_DRAFT);
+  function getDefaultSlotDraft(activeDays = formState.activeDays) {
+    return {
+      ...DEFAULT_CUSTOM_SLOT_DRAFT,
+      day: activeDays?.[0] || DEFAULT_CUSTOM_SLOT_DRAFT.day,
+    };
+  }
+
+  function resetSlotDraftState(activeDays = formState.activeDays) {
+    setCustomSlotDraft(getDefaultSlotDraft(activeDays));
     setSlotDraftError("");
   }
 
@@ -380,18 +387,33 @@ export default function useDeliverySettings() {
   }
 
   function handleToggleDay(dayValue) {
-    setFormState((current) => ({
-      ...current,
-      activeDays: current.activeDays.includes(dayValue)
+    setFormState((current) => {
+      const nextActiveDays = current.activeDays.includes(dayValue)
         ? current.activeDays.filter((day) => day !== dayValue)
-        : [...current.activeDays, dayValue],
-    }));
+        : [...current.activeDays, dayValue];
+
+      setCustomSlotDraft((draft) => ({
+        ...draft,
+        day: nextActiveDays.includes(draft.day)
+          ? draft.day
+          : (nextActiveDays[0] || DEFAULT_CUSTOM_SLOT_DRAFT.day),
+      }));
+
+      return {
+        ...current,
+        activeDays: nextActiveDays,
+      };
+    });
   }
 
   function handleRemoveTimeSlot(slotToRemove) {
     setFormState((current) => ({
       ...current,
-      timeSlots: current.timeSlots.filter((slot) => slot !== slotToRemove),
+      timeSlots: current.timeSlots.filter((slot) => (
+        slot.day !== slotToRemove.day ||
+        slot.start !== slotToRemove.start ||
+        slot.end !== slotToRemove.end
+      )),
     }));
   }
 
@@ -406,22 +428,34 @@ export default function useDeliverySettings() {
   }
 
   function handleSaveCustomSlot() {
-    const nextSlot = `${customSlotDraft.start} - ${customSlotDraft.end}`;
-    const parsedSlot = parseTimeSlotLabel(nextSlot);
+    if (!customSlotDraft.day) {
+      setSlotDraftError("Choose a delivery day first.");
+      return;
+    }
 
-    if (!parsedSlot) {
+    if (!customSlotDraft.start || !customSlotDraft.end) {
       setSlotDraftError("Enter both a start time and an end time.");
       return;
     }
 
-    if (parsedSlot.start >= parsedSlot.end) {
+    if (customSlotDraft.start >= customSlotDraft.end) {
       setSlotDraftError("Start time must be earlier than end time.");
       return;
     }
 
+    const nextSlot = {
+      day: customSlotDraft.day,
+      start: customSlotDraft.start,
+      end: customSlotDraft.end,
+    };
+
     setFormState((current) => ({
       ...current,
-      timeSlots: current.timeSlots.includes(nextSlot)
+      timeSlots: current.timeSlots.some((slot) => (
+        slot.day === nextSlot.day &&
+        slot.start === nextSlot.start &&
+        slot.end === nextSlot.end
+      ))
         ? current.timeSlots
         : [...current.timeSlots, nextSlot],
     }));
@@ -433,7 +467,7 @@ export default function useDeliverySettings() {
     setFieldErrors({});
     setValidationState(savedSettings.liveValidation || defaultValidationState);
     setIsAddSlotModalOpen(false);
-    resetSlotDraftState();
+    resetSlotDraftState(savedSettings.activeDays);
     resetServiceAreaSearchState();
     setSaveMessage("Changes discarded.");
     await showVendorSuccessToast("Delivery changes discarded.");
@@ -544,7 +578,10 @@ export default function useDeliverySettings() {
     setPickupInstructions: (value) => setField("pickupInstructions", value),
     setSameFeeAllDistances: (value) => setField("sameFeeAllDistances", value),
     slotDraftError,
-    timeSlots: formState.timeSlots,
+    timeSlots: formState.timeSlots.map((slot) => ({
+      ...slot,
+      label: formatDeliveryTimeSlot(slot),
+    })),
     validationState,
   };
 }

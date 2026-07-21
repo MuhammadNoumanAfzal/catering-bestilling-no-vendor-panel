@@ -12,6 +12,12 @@ export default function DeliveryScheduleSection({
   disabled = false,
   errors = {},
 }) {
+  const dayLabels = days.reduce((accumulator, day) => ({
+    ...accumulator,
+    [typeof day === "string" ? day : day.value]: typeof day === "string" ? day : day.label,
+  }), {});
+  const hasActiveDays = activeDays.length > 0;
+
   return (
     <DeliverySectionCard
       description="Choose the exact days and time slots customers can book for delivery."
@@ -36,7 +42,7 @@ export default function DeliveryScheduleSection({
           <div className="flex flex-wrap gap-2">
             {timeSlots.map((slot) => (
               <button
-                key={slot}
+                key={`${slot.day}-${slot.start}-${slot.end}`}
                 className={`type-subpara rounded-[8px] border border-[#5f5853] bg-white px-4 py-[9px] text-[#2a221d] transition ${
                   disabled
                     ? "cursor-not-allowed bg-[#f6f3ef] text-[#8f8377]"
@@ -46,23 +52,28 @@ export default function DeliveryScheduleSection({
                 onClick={() => onRemoveTimeSlot(slot)}
                 type="button"
               >
-                {slot} &times;
+                {dayLabels[slot.day] || slot.day.toUpperCase()} . {slot.label} &times;
               </button>
             ))}
           </div>
 
           <button
             className={`type-subpara w-fit rounded-[6px] border border-[#ddd6ce] bg-white px-4 py-[8px] text-[#9d9187] transition ${
-              disabled
+              disabled || !hasActiveDays
                 ? "cursor-not-allowed bg-[#f6f3ef] text-[#b0a49a]"
                 : "cursor-pointer hover:border-[#c9bfb7] hover:text-[#7c7067]"
             }`}
-            disabled={disabled}
+            disabled={disabled || !hasActiveDays}
             onClick={onAddCustomSlot}
             type="button"
           >
             + Add custom slot
           </button>
+          {!hasActiveDays ? (
+            <p className="type-subpara m-0 text-[#8c5a48]">
+              Select at least one delivery day before adding a slot.
+            </p>
+          ) : null}
         </div>
       </div>
       {errors.deliveryTimeSlots ? (

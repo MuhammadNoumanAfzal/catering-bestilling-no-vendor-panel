@@ -16,6 +16,7 @@ export const GET_VENDOR_DELIVERY_SETTINGS_QUERY = `
           sameFeeAllDistances
           deliveryDays
           deliveryTimeSlots {
+            day
             start
             end
           }
@@ -73,6 +74,7 @@ export const UPDATE_VENDOR_DELIVERY_SETTINGS_MUTATION = `
         sameFeeAllDistances
         deliveryDays
         deliveryTimeSlots {
+          day
           start
           end
         }
