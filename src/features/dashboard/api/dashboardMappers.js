@@ -260,7 +260,7 @@ export function mapDashboardResponse(
     },
     {
       label: "Urgent Orders",
-      value: String(urgentOrdersCount).padStart(2, "0"),
+      value: String(urgentOrdersCount),
       helper: "Require attention",
       icon: "alert",
       trend: urgentOrdersTrendMeta.trend,
