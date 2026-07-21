@@ -54,6 +54,7 @@ export default function SettingsSelectField({
 
         {isOpen ? (
           <div className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-full overflow-hidden rounded-[8px] border border-[#ddd4cc] bg-white py-1 shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+            <div className="max-h-[220px] overflow-y-auto overscroll-contain">
             {options.map((option) => {
               const isActive = option.value === value;
 
@@ -72,6 +73,7 @@ export default function SettingsSelectField({
                 </button>
               );
             })}
+            </div>
           </div>
         ) : null}
       </div>

@@ -12,7 +12,7 @@ export default function SettingsSectionCard({
 
   return (
     <section
-      className={`min-w-0 overflow-hidden rounded-[12px] border px-4 py-4 shadow-[0_3px_10px_rgba(43,30,20,0.04)] ${toneClasses}`}
+      className={`min-w-0 overflow-visible rounded-[12px] border px-4 py-4 shadow-[0_3px_10px_rgba(43,30,20,0.04)] ${toneClasses}`}
     >
       <header className="mb-3 flex items-start justify-between gap-3">
         <div>
