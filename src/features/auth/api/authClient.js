@@ -1,5 +1,9 @@
+const DEFAULT_GRAPHQL_API_URL = "https://api.gocatering.no/graphql/";
+
 const GRAPHQL_API_URL =
-  import.meta.env.VITE_GRAPHQL_API_URL ?? import.meta.env.VITE_GRAPHQL_URL;
+  import.meta.env.VITE_GRAPHQL_API_URL ??
+  import.meta.env.VITE_GRAPHQL_URL ??
+  DEFAULT_GRAPHQL_API_URL;
 
 function getErrorMessage(payload, fallbackMessage) {
   const firstError = payload?.errors?.[0];
