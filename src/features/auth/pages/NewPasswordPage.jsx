@@ -23,6 +23,55 @@ function isStrongPassword(password) {
   );
 }
 
+function getPasswordStrength(password) {
+  const checks = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[a-z]/.test(password),
+    /\d/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ];
+  const score = checks.filter(Boolean).length;
+
+  if (!password) {
+    return {
+      barClassName: "bg-[#eadfd6]",
+      filledBars: 0,
+      isVisible: false,
+      label: "Weak",
+      toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#8a7769]",
+    };
+  }
+
+  if (score <= 2) {
+    return {
+      barClassName: "bg-[#d76a4a]",
+      filledBars: 1,
+      isVisible: true,
+      label: "Weak",
+      toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#d76a4a]",
+    };
+  }
+
+  if (score <= 4) {
+    return {
+      barClassName: "bg-[#d6a23d]",
+      filledBars: 2,
+      isVisible: true,
+      label: "Medium",
+      toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#b8841f]",
+    };
+  }
+
+  return {
+    barClassName: "bg-[#4d9b5f]",
+    filledBars: 3,
+    isVisible: true,
+    label: "Strong",
+    toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#3f7f4e]",
+  };
+}
+
 export default function NewPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,6 +91,10 @@ export default function NewPasswordPage() {
       { label: "1 number", isValid: /\d/.test(formState.newPassword) },
       { label: "1 symbol", isValid: /[^A-Za-z0-9]/.test(formState.newPassword) },
     ],
+    [formState.newPassword],
+  );
+  const passwordStrength = useMemo(
+    () => getPasswordStrength(formState.newPassword),
     [formState.newPassword],
   );
 
@@ -129,6 +182,7 @@ export default function NewPasswordPage() {
             autoComplete: "new-password",
             name: "newPassword",
             onChange: handleFieldChange("newPassword"),
+            strengthIndicator: passwordStrength,
             type: "password",
             placeholder: "Enter new password",
             value: formState.newPassword,

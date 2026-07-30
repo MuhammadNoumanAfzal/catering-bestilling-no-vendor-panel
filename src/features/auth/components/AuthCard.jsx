@@ -1,13 +1,68 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
-function Field({ label, helperText, ...inputProps }) {
+function Field({
+  helperText,
+  label,
+  strengthIndicator,
+  ...inputProps
+}) {
+  const isPasswordField = inputProps.type === "password";
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const resolvedInputType =
+    isPasswordField && isPasswordVisible ? "text" : inputProps.type;
+
   return (
     <label className="flex flex-col gap-1.5">
       <span className="type-para text-[#4c4037]">{label}</span>
-      <input
-        className="type-subpara min-h-[42px] rounded-lg border border-[#ddd4cb] bg-white px-3 text-[#1d1713] outline-none transition duration-150 placeholder:text-[#baaea0] placeholder:font-normal focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-        {...inputProps}
-      />
+      <div className="relative">
+        <input
+          className={`type-subpara min-h-[42px] w-full rounded-lg border border-[#ddd4cb] bg-white text-[#1d1713] outline-none transition duration-150 placeholder:font-normal placeholder:text-[#baaea0] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)] ${
+            isPasswordField ? "px-3 pr-11" : "px-3"
+          }`}
+          {...inputProps}
+          type={resolvedInputType}
+        />
+        {isPasswordField ? (
+          <button
+            type="button"
+            onClick={() => setIsPasswordVisible((current) => !current)}
+            className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[#8e8176] transition hover:text-[#cf6e38]"
+            aria-label={isPasswordVisible ? "Hide password" : "Show password"}
+          >
+            {isPasswordVisible ? (
+              <FiEyeOff className="text-[16px]" />
+            ) : (
+              <FiEye className="text-[16px]" />
+            )}
+          </button>
+        ) : null}
+      </div>
+      {strengthIndicator?.isVisible ? (
+        <div className="rounded-[14px] border border-[#efe2d5] bg-[#fff8f2] px-3 py-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#8a7769]">
+              Password strength
+            </span>
+            <span className={strengthIndicator.toneClassName}>
+              {strengthIndicator.label}
+            </span>
+          </div>
+          <div className="mt-2 flex gap-1.5" aria-hidden="true">
+            {Array.from({ length: 3 }, (_, index) => (
+              <span
+                key={`${label}-strength-${index}`}
+                className={`h-1.5 flex-1 rounded-full ${
+                  index < strengthIndicator.filledBars
+                    ? strengthIndicator.barClassName
+                    : "bg-[#eadfd6]"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
       {helperText ? (
         <span className="type-subpara text-[#aaa094]">{helperText}</span>
       ) : null}

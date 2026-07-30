@@ -1,5 +1,5 @@
 import { Navigate, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
@@ -50,10 +50,63 @@ function normalizePhoneNumber(phone) {
   return phone.replace(/\s+/g, "").trim();
 }
 
+function getPasswordStrength(password) {
+  const checks = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[a-z]/.test(password),
+    /\d/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ];
+  const score = checks.filter(Boolean).length;
+
+  if (!password) {
+    return {
+      barClassName: "bg-[#eadfd6]",
+      filledBars: 0,
+      isVisible: false,
+      label: "Weak",
+      toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#8a7769]",
+    };
+  }
+
+  if (score <= 2) {
+    return {
+      barClassName: "bg-[#d76a4a]",
+      filledBars: 1,
+      isVisible: true,
+      label: "Weak",
+      toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#d76a4a]",
+    };
+  }
+
+  if (score <= 4) {
+    return {
+      barClassName: "bg-[#d6a23d]",
+      filledBars: 2,
+      isVisible: true,
+      label: "Medium",
+      toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#b8841f]",
+    };
+  }
+
+  return {
+    barClassName: "bg-[#4d9b5f]",
+    filledBars: 3,
+    isVisible: true,
+    label: "Strong",
+    toneClassName: "text-[11px] font-bold uppercase tracking-[0.08em] text-[#3f7f4e]",
+  };
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { clearRegisterError, isAuthenticated, isRegistering, register } = useAuth();
   const [formState, setFormState] = useState(initialFormState);
+  const passwordStrength = useMemo(
+    () => getPasswordStrength(formState.password),
+    [formState.password],
+  );
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -210,6 +263,7 @@ export default function RegisterPage() {
             name: "password",
             onChange: handleFieldChange("password"),
             placeholder: "Create a strong password",
+            strengthIndicator: passwordStrength,
             type: "password",
             value: formState.password,
           },
