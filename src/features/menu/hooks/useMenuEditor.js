@@ -46,6 +46,16 @@ const emptyFieldErrors = {
   minimumGuests: "",
 };
 
+function normalizeMenuItemsForEditor(menuItems = []) {
+  return menuItems.length
+    ? menuItems.map((item, index) => ({
+        ...item,
+        isSaved: item.isSaved ?? Boolean(item.title?.trim() || item.description?.trim() || item.image),
+        isExpanded: item.isExpanded ?? index === 0,
+      }))
+    : [createEmptyMenuItem()];
+}
+
 function mapMenuMutationErrors(errors = []) {
   const fieldMap = {
     name: "menuTitle",
@@ -90,6 +100,7 @@ export function useMenuEditor() {
   const [availableAddOns, setAvailableAddOns] = useState([]);
   const [existingMenus, setExistingMenus] = useState([]);
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
+  const [menuItemErrors, setMenuItemErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -136,6 +147,13 @@ export function useMenuEditor() {
             setFormState({
               ...getInitialMenuState(),
               ...mappedDetail,
+              menuItems: normalizeMenuItemsForEditor(
+                (mappedDetail.menuItems || []).map((item) => ({
+                  ...item,
+                  isSaved: true,
+                  isExpanded: false,
+                })),
+              ),
               productType:
                 mappedDetail.productType ||
                 nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
@@ -153,6 +171,7 @@ export function useMenuEditor() {
 
         setFormState((current) => ({
           ...current,
+          menuItems: normalizeMenuItemsForEditor(current.menuItems),
           productType:
             current.productType ||
             nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
@@ -229,22 +248,135 @@ export function useMenuEditor() {
   }
 
   function updateMenuItem(id, field, value) {
+    setMenuItemErrors((current) => {
+      if (!current[id]?.[field]) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [id]: {
+          ...current[id],
+          [field]: "",
+        },
+      };
+    });
+
     setFormState((current) => ({
       ...current,
       menuItems: current.menuItems.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item,
+        item.id === id
+          ? {
+              ...item,
+              [field]: value,
+              isSaved: false,
+            }
+          : item,
       ),
     }));
   }
 
-  function addMenuItem() {
+  function toggleMenuItemExpanded(id) {
     setFormState((current) => ({
       ...current,
-      menuItems: [...current.menuItems, createEmptyMenuItem()],
+      menuItems: current.menuItems.map((item) =>
+        item.id === id
+          ? { ...item, isExpanded: !item.isExpanded }
+          : item,
+      ),
     }));
   }
 
+  function saveMenuItem(id) {
+    const targetItem = formState.menuItems.find((item) => item.id === id);
+
+    if (!targetItem) {
+      return false;
+    }
+
+    const nextErrors = {
+      title: targetItem.title?.trim() ? "" : "Please enter an item title.",
+      description: targetItem.description?.trim() ? "" : "Please enter an item description.",
+    };
+
+    if (nextErrors.title || nextErrors.description) {
+      setMenuItemErrors((current) => ({
+        ...current,
+        [id]: nextErrors,
+      }));
+      return false;
+    }
+
+    setMenuItemErrors((current) => {
+      if (!current[id]) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [id]: {
+          ...current[id],
+          title: "",
+          description: "",
+        },
+      };
+    });
+
+    setFormState((current) => ({
+      ...current,
+      menuItems: current.menuItems.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              isSaved: true,
+              isExpanded: false,
+            }
+          : item,
+      ),
+    }));
+
+    return true;
+  }
+
+  function addMenuItem() {
+    const unsavedItem = formState.menuItems.find((item) => !item.isSaved);
+
+    if (unsavedItem) {
+      setFormState((current) => ({
+        ...current,
+        menuItems: current.menuItems.map((item) =>
+          item.id === unsavedItem.id
+            ? { ...item, isExpanded: true }
+            : item,
+        ),
+      }));
+      return false;
+    }
+
+    setFormState((current) => ({
+      ...current,
+      menuItems: [
+        ...current.menuItems.map((item) => ({
+          ...item,
+          isExpanded: false,
+        })),
+        createEmptyMenuItem(),
+      ],
+    }));
+    return true;
+  }
+
   function removeMenuItem(id) {
+    setMenuItemErrors((current) => {
+      if (!current[id]) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors[id];
+      return nextErrors;
+    });
+
     setFormState((current) => ({
       ...current,
       menuItems:
@@ -278,7 +410,13 @@ export function useMenuEditor() {
         ...current,
         menuItems: isSingleEmpty
           ? normalizedItems
-          : [...current.menuItems, ...normalizedItems],
+          : [
+              ...current.menuItems.map((item) => ({
+                ...item,
+                isExpanded: false,
+              })),
+              ...normalizedItems,
+            ],
       };
     });
   }
@@ -586,6 +724,7 @@ export function useMenuEditor() {
     resolveMediaUrl,
     actions: {
       addMenuItem,
+      saveMenuItem,
       handleAddImportedItems,
       handleAddMealTypeClick,
       handleAddOccasionClick,
@@ -607,10 +746,12 @@ export function useMenuEditor() {
       removeMenuItem,
       setField,
       setFormState,
+      toggleMenuItemExpanded,
       toggleAddOn,
       toggleDay,
       toggleDietary,
       updateMenuItem,
     },
+    menuItemErrors,
   };
 }

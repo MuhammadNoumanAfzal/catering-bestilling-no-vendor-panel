@@ -25,6 +25,7 @@ export default function CreateMenuPage() {
     isLoading,
     isSaving,
     isViewMode,
+    menuItemErrors,
     menuItemsForDisplay,
     menuTypeOptions,
     occasionOptions,
@@ -137,9 +138,12 @@ export default function CreateMenuPage() {
             handleItemImageSelect={(id, file) =>
               actions.handleImageUpload(file, (asset) => actions.updateMenuItem(id, "image", asset))
             }
+            menuItemErrors={menuItemErrors}
             menuItems={menuItemsForDisplay}
             onAddFromOtherPackage={() => actions.setField("isImportModalOpen", true)}
             removeMenuItem={actions.removeMenuItem}
+            saveMenuItem={actions.saveMenuItem}
+            toggleMenuItemExpanded={actions.toggleMenuItemExpanded}
             updateMenuItem={actions.updateMenuItem}
           />
 
