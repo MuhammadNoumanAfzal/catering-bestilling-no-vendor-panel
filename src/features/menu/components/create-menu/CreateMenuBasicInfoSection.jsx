@@ -114,9 +114,6 @@ export default function CreateMenuBasicInfoSection({
   onMenuTitleChange,
   onMenuTypesChange,
   onOccasionsChange,
-  onAddNewCategoryClick,
-  onAddNewMealTypeClick,
-  onAddNewOccasionClick,
 }) {
   return (
     <CreateMenuSectionCard
@@ -147,18 +144,7 @@ export default function CreateMenuBasicInfoSection({
 
         <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
           <div>
-            <div className="flex items-center justify-between">
-              <Label>Category</Label>
-              {!disabled && (
-                <button
-                  type="button"
-                  onClick={onAddNewCategoryClick}
-                  className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
-                >
-                  + Add New
-                </button>
-              )}
-            </div>
+            <Label>Category</Label>
             <SelectInput
               disabled={disabled}
               onChange={onCategoryChange}
@@ -169,18 +155,7 @@ export default function CreateMenuBasicInfoSection({
             <FieldError message={fieldErrors?.category} />
           </div>
           <div>
-            <div className="flex items-center justify-between">
-              <Label>Food Type</Label>
-              {!disabled && (
-                <button
-                  type="button"
-                  onClick={onAddNewMealTypeClick}
-                  className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
-                >
-                  + Add New
-                </button>
-              )}
-            </div>
+            <Label>Food Type</Label>
             <MultiSelectInput
               disabled={disabled}
               onChange={onMenuTypesChange}
@@ -193,18 +168,7 @@ export default function CreateMenuBasicInfoSection({
         </div>
 
         <div>
-          <div className="flex items-center justify-between">
-            <Label>Occasions</Label>
-            {!disabled && (
-              <button
-                type="button"
-                onClick={onAddNewOccasionClick}
-                className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
-              >
-                + Add New
-              </button>
-            )}
-          </div>
+          <Label>Occasions</Label>
           <MultiSelectInput
             disabled={disabled}
             onChange={onOccasionsChange}

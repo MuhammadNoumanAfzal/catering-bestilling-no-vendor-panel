@@ -1,7 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import AddCategoryModal from "../components/create-menu/AddCategoryModal";
 import CreateAddOnActionsBar from "../components/create-addon/CreateAddOnActionsBar";
 import CreateAddOnAvailabilitySection from "../components/create-addon/CreateAddOnAvailabilitySection";
 import CreateAddOnBasicInfoSection from "../components/create-addon/CreateAddOnBasicInfoSection";
@@ -76,19 +75,6 @@ export default function CreateAddOnPage() {
           onPriceChange={(event) => actions.setField("price", event.target.value)}
           price={formState.price}
         />
-
-        {!isSaving ? (
-          <div className="flex justify-end">
-            <button
-              className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
-              onClick={actions.handleAddMealTypeClick}
-              type="button"
-            >
-              + Add New Meal Type
-            </button>
-          </div>
-        ) : null}
-
         <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 max-[980px]:grid-cols-1">
           <CreateAddOnAvailabilitySection
             availableImmediately={formState.availableImmediately}
@@ -115,22 +101,6 @@ export default function CreateAddOnPage() {
         isEditMode={isEditMode}
         primaryLabel="+ Add Another Item"
         saveLabel={isEditMode ? "Save Changes" : isDuplicateMode ? "Save Copy" : "Save Add-on"}
-      />
-
-      <AddCategoryModal
-        duplicateErrorMessage="This meal type already exists."
-        emptyErrorMessage="Meal type name cannot be empty."
-        options={mealTypeOptions}
-        onEdit={actions.handleEditMealType}
-        onDelete={actions.handleDeleteMealType}
-        fieldLabel="Meal Type Name"
-        isOpen={Boolean(formState.isAddMealTypeModalOpen)}
-        onAdd={actions.handleCreateMealType}
-        onClose={() => actions.setField("isAddMealTypeModalOpen", false)}
-        placeholder="e.g. Desi Food, Fast Food"
-        submitLabel="Add Meal Type"
-        submittingLabel="Adding..."
-        title="Add New Meal Type"
       />
     </section>
   );

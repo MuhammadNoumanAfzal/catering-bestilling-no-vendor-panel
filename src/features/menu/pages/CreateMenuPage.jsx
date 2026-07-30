@@ -2,7 +2,6 @@ import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import CreateMenuActionsBar from "../components/create-menu/CreateMenuActionsBar";
-import AddCategoryModal from "../components/create-menu/AddCategoryModal";
 import CreateMenuAddOnsSection from "../components/create-menu/CreateMenuAddOnsSection";
 import CreateMenuAvailabilitySection from "../components/create-menu/CreateMenuAvailabilitySection";
 import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasicInfoSection";
@@ -115,9 +114,6 @@ export default function CreateMenuPage() {
             onMenuTitleChange={(event) => actions.setField("menuTitle", event.target.value)}
             onMenuTypesChange={(value) => actions.setField("menuTypes", value)}
             onOccasionsChange={(value) => actions.setField("selectedOccasions", value)}
-            onAddNewCategoryClick={actions.handleAddNewCategoryClick}
-            onAddNewMealTypeClick={actions.handleAddMealTypeClick}
-            onAddNewOccasionClick={actions.handleAddOccasionClick}
           />
 
           <CreateMenuPricingSection
@@ -210,65 +206,6 @@ export default function CreateMenuPage() {
         onAdd={actions.handleAddImportedItems}
         onClose={() => actions.setField("isImportModalOpen", false)}
         onRequestMenuItems={actions.handleImportMenuItemsRequest}
-      />
-
-      <AddCategoryModal
-        options={categoryOptions}
-        isOpen={Boolean(formState.isAddCategoryModalOpen)}
-        onAdd={actions.handleCreateCategory}
-        onEdit={actions.handleEditCategory}
-        onDelete={actions.handleDeleteCategory}
-        onClose={() => actions.setField("isAddCategoryModalOpen", false)}
-        submitLabel="Add Category"
-        submittingLabel="Adding..."
-        title="Add New Category"
-      />
-
-      <AddCategoryModal
-        duplicateErrorMessage="This food type already exists."
-        emptyErrorMessage="Food type name cannot be empty."
-        options={menuTypeOptions}
-        onEdit={actions.handleEditMealType}
-        onDelete={actions.handleDeleteMealType}
-        fieldLabel="Food Type Name"
-        isOpen={Boolean(formState.isAddMealTypeModalOpen)}
-        onAdd={actions.handleCreateMealType}
-        onClose={() => actions.setField("isAddMealTypeModalOpen", false)}
-        placeholder="e.g. Hot Meal, Desi Food"
-        submitLabel="Add Food Type"
-        submittingLabel="Adding..."
-        title="Add New Food Type"
-      />
-
-      <AddCategoryModal
-        duplicateErrorMessage="This occasion already exists."
-        emptyErrorMessage="Occasion name cannot be empty."
-        options={occasionOptions}
-        fieldLabel="Occasion Name"
-        isOpen={Boolean(formState.isAddOccasionModalOpen)}
-        onAdd={actions.handleCreateOccasion}
-        onEdit={actions.handleEditOccasion}
-        onDelete={actions.handleDeleteOccasion}
-        onClose={() => actions.setField("isAddOccasionModalOpen", false)}
-        placeholder="e.g. Office Lunch, Birthday Party"
-        submitLabel="Add Occasion"
-        submittingLabel="Adding..."
-        title="Add New Occasion"
-      />
-
-      <AddCategoryModal
-        duplicateErrorMessage="This allergen already exists."
-        emptyErrorMessage="Allergen name cannot be empty."
-        options={allergenOptions}
-        fieldLabel="Allergen Name"
-        isOpen={Boolean(formState.isAddAllergenModalOpen)}
-        onAdd={actions.handleCreateAllergen}
-        onEdit={actions.handleEditAllergen}
-        onClose={() => actions.setField("isAddAllergenModalOpen", false)}
-        placeholder="e.g. Shellfish, Mustard"
-        submitLabel="Add Allergen"
-        submittingLabel="Adding..."
-        title="Add New Allergen"
       />
     </section>
   );
