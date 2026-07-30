@@ -41,6 +41,11 @@ import {
 } from "../../../utils/vendorAlerts";
 import { dispatchVendorProfileUpdated } from "../../../utils/vendorProfileEvents";
 import { uploadMenuImage } from "../../menu/api/menuUploadApi";
+import {
+  getCurrentYear,
+  isPastDateValue,
+  isValidEstablishedYear,
+} from "../../../utils/dateValidation";
 
 const emptyPasswordForm = {
   currentPassword: "",
@@ -53,6 +58,7 @@ const emptyFieldErrors = {
   emailAddress: "",
   phoneNumber: "",
   username: "",
+  establishedYear: "",
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
@@ -416,6 +422,19 @@ export default function useSettingsPageState() {
       }
     }
 
+    if (!isValidEstablishedYear(settings.establishedYear)) {
+      setFieldErrors((current) => ({
+        ...current,
+        establishedYear: `Enter a valid 4-digit year between 1900 and ${getCurrentYear()}.`,
+      }));
+      await showVendorErrorAlert(
+        `Enter a valid 4-digit year between 1900 and ${getCurrentYear()}.`,
+        "Invalid established year",
+      );
+      setSaveMessage("Please correct the established year.");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -751,6 +770,22 @@ export default function useSettingsPageState() {
   }
 
   async function handleSaveClosure(type, start, end, reason, id) {
+    if (isPastDateValue(start) || isPastDateValue(end)) {
+      await showVendorErrorAlert(
+        "Past dates are not allowed for special closures.",
+        "Invalid closure date",
+      );
+      return;
+    }
+
+    if (start && end && end < start) {
+      await showVendorErrorAlert(
+        "End date must be the same as or after the start date.",
+        "Invalid closure range",
+      );
+      return;
+    }
+
     setIsSaving(true);
 
     try {
