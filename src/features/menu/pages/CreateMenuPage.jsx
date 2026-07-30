@@ -138,7 +138,6 @@ export default function CreateMenuPage() {
               actions.handleImageUpload(file, (asset) => actions.updateMenuItem(id, "image", asset))
             }
             menuItems={menuItemsForDisplay}
-            onAddNewAllergenClick={actions.handleAddAllergenClick}
             onAddFromOtherPackage={() => actions.setField("isImportModalOpen", true)}
             removeMenuItem={actions.removeMenuItem}
             updateMenuItem={actions.updateMenuItem}

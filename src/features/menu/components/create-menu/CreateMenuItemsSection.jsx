@@ -11,7 +11,6 @@ export default function CreateMenuItemsSection({
   disabled = false,
   handleItemImageSelect,
   menuItems,
-  onAddNewAllergenClick,
   onAddFromOtherPackage,
   removeMenuItem,
   updateMenuItem,
@@ -39,7 +38,8 @@ export default function CreateMenuItemsSection({
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="text-[14px] font-bold text-[#211913]">Title</span>
                 <button
-                  className="cursor-pointer text-[#e06c39] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Remove menu item"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={disabled}
                   onClick={() => removeMenuItem(item.id)}
                   type="button"
@@ -69,18 +69,7 @@ export default function CreateMenuItemsSection({
               </div>
 
               <div className="mt-3">
-                <div className="flex items-center justify-between">
-                  <Label>Allergens</Label>
-                  {!disabled && !allergenFeatureUnavailable ? (
-                    <button
-                      type="button"
-                      onClick={onAddNewAllergenClick}
-                      className="cursor-pointer text-[12px] font-extrabold text-[#cf6e38] transition hover:text-[#bf622f]"
-                    >
-                      + Add New
-                    </button>
-                  ) : null}
-                </div>
+                <Label>Allergens</Label>
                 <MultiSelectInput
                   disabled={disabled || allergenFeatureUnavailable}
                   onChange={(value) => updateMenuItem(item.id, "allergens", value)}
@@ -95,6 +84,10 @@ export default function CreateMenuItemsSection({
                 {allergenFeatureMessage ? (
                   <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
                     {allergenFeatureMessage}
+                  </p>
+                ) : !allergenFeatureUnavailable ? (
+                  <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
+                    Allergens are managed by admin and loaded from the backend.
                   </p>
                 ) : null}
               </div>

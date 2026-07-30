@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  createAllergen,
   createFoodType,
   createOccasion,
   createVendorCategory,
@@ -526,44 +525,6 @@ export function useMenuEditor() {
     await showVendorSuccessToast(result.message || "Occasion updated successfully.");
   }
 
-  function handleAddAllergenClick() {
-    setField("isAddAllergenModalOpen", true);
-  }
-
-  async function handleCreateAllergen(allergenName) {
-    const result = await createAllergen(allergenName);
-    const nextOption = {
-      label: result.instance?.name || allergenName,
-      value: result.instance?.id || result.instance?.slug || allergenName,
-    };
-
-    setAllergenOptions((currentOptions) => [...currentOptions, nextOption]);
-    setField("isAddAllergenModalOpen", false);
-    await showVendorSuccessToast(result.message || "Allergen created.");
-  }
-
-  async function handleEditAllergen(id, newName) {
-    const result = await createAllergen({ id, name: newName });
-    const updatedOption = {
-      label: result.instance?.name || newName,
-      value: result.instance?.id || result.instance?.slug || id,
-    };
-
-    setAllergenOptions((currentOptions) =>
-      currentOptions.map((opt) => (opt.value === id ? updatedOption : opt)),
-    );
-    setFormState((current) => ({
-      ...current,
-      menuItems: current.menuItems.map((item) => ({
-        ...item,
-        allergens: (item.allergens || []).map((val) =>
-          val === id ? updatedOption.value : val,
-        ),
-      })),
-    }));
-    await showVendorSuccessToast(result.message || "Allergen updated successfully.");
-  }
-
   async function handleDeleteCategory(id) {
     const result = await deleteVendorCategory(id);
     setCategoryOptions((currentOptions) =>
@@ -625,20 +586,17 @@ export function useMenuEditor() {
     resolveMediaUrl,
     actions: {
       addMenuItem,
-      handleAddAllergenClick,
       handleAddImportedItems,
       handleAddMealTypeClick,
       handleAddOccasionClick,
       handleAddNewCategoryClick,
       handleCancel,
-      handleCreateAllergen,
       handleCreateCategory,
       handleCreateMealType,
       handleCreateOccasion,
       handleDeleteCategory,
       handleDeleteMealType,
       handleDeleteOccasion,
-      handleEditAllergen,
       handleEditCategory,
       handleEditMealType,
       handleEditOccasion,
