@@ -66,9 +66,16 @@ const emptyFieldErrors = {
 
 function hasPasswordChanges(passwordForm) {
   return (
-    passwordForm.currentPassword ||
-    passwordForm.newPassword ||
-    passwordForm.confirmPassword
+    String(passwordForm.currentPassword || "").trim() ||
+    String(passwordForm.newPassword || "").trim() ||
+    String(passwordForm.confirmPassword || "").trim()
+  );
+}
+
+function hasPasswordChangeIntent(passwordForm) {
+  return (
+    String(passwordForm.newPassword || "").trim() ||
+    String(passwordForm.confirmPassword || "").trim()
   );
 }
 
@@ -394,7 +401,20 @@ export default function useSettingsPageState() {
   async function handleSave() {
     setFieldErrors(emptyFieldErrors);
 
-    if (hasPasswordChanges(passwordForm)) {
+    if (hasPasswordChangeIntent(passwordForm)) {
+      if (!String(passwordForm.currentPassword || "").trim()) {
+        setFieldErrors((current) => ({
+          ...current,
+          currentPassword: "Enter your current password to change it.",
+        }));
+        await showVendorErrorAlert(
+          "Enter your current password to change it.",
+          "Current password required",
+        );
+        setSaveMessage("Current password required.");
+        return;
+      }
+
       if (passwordForm.newPassword.length < 8) {
         setFieldErrors((current) => ({
           ...current,
@@ -620,7 +640,7 @@ export default function useSettingsPageState() {
         confirmations.push(result.message || "Business hours saved.");
       }
 
-      if (hasPasswordChanges(passwordForm)) {
+      if (hasPasswordChangeIntent(passwordForm)) {
         const result = await changeVendorPassword(buildPasswordChangeInput(passwordForm));
 
         if (!result.success) {
@@ -928,7 +948,14 @@ export default function useSettingsPageState() {
     () =>
       JSON.stringify(getComparableSettingsState(settings)) !==
         JSON.stringify(getComparableSettingsState(savedSettings)) ||
-      JSON.stringify(getComparablePasswordState(passwordForm)) !==
+      JSON.stringify(
+        getComparablePasswordState({
+          ...passwordForm,
+          currentPassword: hasPasswordChangeIntent(passwordForm)
+            ? passwordForm.currentPassword
+            : "",
+        }),
+      ) !==
         JSON.stringify(getComparablePasswordState(emptyPasswordForm)),
     [passwordForm, savedSettings, settings],
   );
