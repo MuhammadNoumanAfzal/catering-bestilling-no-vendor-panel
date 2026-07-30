@@ -35,6 +35,7 @@ function AccountField({ label, onChange, value, error, disabled = false }) {
 }
 
 function PasswordField({
+  autoComplete,
   label,
   name,
   onChange,
@@ -55,6 +56,7 @@ function PasswordField({
               ? "border-[#d2542f] bg-[#fff7f5] focus:border-[#d2542f]"
               : "border-[#d5cbc3] focus:border-[#cf6e38]"
           }`}
+          autoComplete={autoComplete}
           disabled={disabled}
           name={name}
           onChange={onChange}
@@ -272,6 +274,7 @@ export default function SettingsAccountSecurityPanel({
       >
         <div className="space-y-3">
           <PasswordField
+            autoComplete="current-password"
             disabled={disabled}
             error={fieldErrors.currentPassword}
             label="Current Password"
@@ -283,6 +286,7 @@ export default function SettingsAccountSecurityPanel({
             visible={passwordVisibility.currentPassword}
           />
           <PasswordField
+            autoComplete="new-password"
             disabled={disabled}
             error={fieldErrors.newPassword}
             label="New Password"
@@ -328,6 +332,7 @@ export default function SettingsAccountSecurityPanel({
           </div>
 
           <PasswordField
+            autoComplete="new-password"
             disabled={disabled}
             error={fieldErrors.confirmPassword}
             label="Confirm Password"
