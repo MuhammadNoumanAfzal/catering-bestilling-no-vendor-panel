@@ -3,6 +3,7 @@ import { Calendar, Pencil, Trash2 } from "lucide-react";
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
+import { isPastDateValue } from "../../../utils/dateValidation";
 
 function formatDate(dateStr) {
   if (!dateStr) {
@@ -25,15 +26,68 @@ export default function SettingsSpecialClosuresSection({
   onDeleteClosure,
   closureTypeOptions = [],
   disabled = false,
+  minDate = "",
 }) {
   const [closureType, setClosureType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [dateError, setDateError] = useState("");
+
+  function handleStartDateChange(nextValue) {
+    if (!nextValue) {
+      setStartDate("");
+      setDateError("");
+      return;
+    }
+
+    if (isPastDateValue(nextValue)) {
+      setDateError("Past dates are not allowed.");
+      return;
+    }
+
+    setDateError("");
+    setStartDate(nextValue);
+
+    if (endDate && endDate < nextValue) {
+      setEndDate("");
+    }
+  }
+
+  function handleEndDateChange(nextValue) {
+    if (!nextValue) {
+      setEndDate("");
+      setDateError("");
+      return;
+    }
+
+    if (isPastDateValue(nextValue)) {
+      setDateError("Past dates are not allowed.");
+      return;
+    }
+
+    if (startDate && nextValue < startDate) {
+      setDateError("End date must be the same as or after the start date.");
+      return;
+    }
+
+    setDateError("");
+    setEndDate(nextValue);
+  }
 
   function handleAddOrUpdate() {
     if (!closureType || !startDate || !endDate) {
+      return;
+    }
+
+    if (isPastDateValue(startDate) || isPastDateValue(endDate)) {
+      setDateError("Past dates are not allowed.");
+      return;
+    }
+
+    if (endDate < startDate) {
+      setDateError("End date must be the same as or after the start date.");
       return;
     }
 
@@ -43,6 +97,7 @@ export default function SettingsSpecialClosuresSection({
     setEndDate("");
     setReason("");
     setEditingId(null);
+    setDateError("");
   }
 
   function handleEditClick(item) {
@@ -51,6 +106,7 @@ export default function SettingsSpecialClosuresSection({
     setEndDate(item.end);
     setReason(item.reason);
     setEditingId(item.id);
+    setDateError("");
 
     const element = document.getElementById("special-closures-section");
     if (element) {
@@ -79,9 +135,10 @@ export default function SettingsSpecialClosuresSection({
             <input
               className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
               disabled={disabled}
+              min={minDate}
               type="date"
               value={startDate}
-              onChange={(event) => setStartDate(event.target.value)}
+              onChange={(event) => handleStartDateChange(event.target.value)}
             />
             <Calendar
               className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
@@ -96,9 +153,10 @@ export default function SettingsSpecialClosuresSection({
             <input
               className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
               disabled={disabled}
+              min={startDate || minDate}
               type="date"
               value={endDate}
-              onChange={(event) => setEndDate(event.target.value)}
+              onChange={(event) => handleEndDateChange(event.target.value)}
             />
             <Calendar
               className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
@@ -115,6 +173,10 @@ export default function SettingsSpecialClosuresSection({
           value={reason}
         />
       </div>
+
+      {dateError ? (
+        <p className="mt-2 text-[12px] font-semibold text-[#d96e39]">{dateError}</p>
+      ) : null}
 
       <div className="mt-3 flex justify-end max-[480px]:justify-stretch">
         <button

@@ -4,6 +4,7 @@ import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
 import SettingsToggleRow from "./SettingsToggleRow";
+import { getCurrentYear, getTodayDateValue, sanitizeYearInput } from "../../../utils/dateValidation";
 
 export default function SettingsBusinessProfilePanel({
   businessTypeOptions,
@@ -11,6 +12,7 @@ export default function SettingsBusinessProfilePanel({
   cuisineOptions,
   currencyOptions,
   disabled = false,
+  fieldErrors = {},
   handleBusinessHourChange,
   handleDeactivateStore,
   handleDeleteStore,
@@ -126,9 +128,24 @@ export default function SettingsBusinessProfilePanel({
             </div>
             <SettingsTextField
               disabled={disabled}
+              error={fieldErrors.establishedYear}
               label="Established Year (Optional)"
-              onChange={handleFieldChange("establishedYear")}
+              inputMode="numeric"
+              max={getCurrentYear()}
+              maxLength={4}
+              min="1900"
+              onChange={(event) =>
+                handleFieldChange("establishedYear")({
+                  ...event,
+                  target: {
+                    ...event.target,
+                    value: sanitizeYearInput(event.target.value),
+                  },
+                })
+              }
               placeholder="Enter year"
+              pattern="[0-9]{4}"
+              type="number"
               value={settings.establishedYear}
             />
             <SettingsTextField
@@ -153,6 +170,7 @@ export default function SettingsBusinessProfilePanel({
             closureTypeOptions={closureTypeOptions}
             closures={settings.closures}
             disabled={disabled}
+            minDate={getTodayDateValue()}
             onAddOrUpdateClosure={handleSaveClosure}
             onDeleteClosure={handleDeleteClosure}
           />

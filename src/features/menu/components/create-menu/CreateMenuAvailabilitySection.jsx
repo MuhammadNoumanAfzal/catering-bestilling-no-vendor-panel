@@ -1,5 +1,6 @@
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { Label, SelectInput, TextInput, ToggleSwitch } from "./CreateMenuFields";
+import { getTodayDateValue } from "../../../../utils/dateValidation";
 
 export default function CreateMenuAvailabilitySection({
   availabilityDays,
@@ -19,6 +20,8 @@ export default function CreateMenuAvailabilitySection({
   availabilityEnd,
   onAvailabilityEndChange,
 }) {
+  const minDate = getTodayDateValue();
+
   return (
     <CreateMenuSectionCard
       description="General details about this catering package."
@@ -112,6 +115,7 @@ export default function CreateMenuAvailabilitySection({
             </span>
             <TextInput
               disabled={disabled || !hasAvailabilityWindow}
+              min={minDate}
               onChange={onAvailabilityStartChange}
               placeholder="Select start date..."
               type="date"
@@ -125,6 +129,7 @@ export default function CreateMenuAvailabilitySection({
             </span>
             <TextInput
               disabled={disabled || !hasAvailabilityWindow}
+              min={availabilityStart || minDate}
               onChange={onAvailabilityEndChange}
               placeholder="Select end date..."
               type="date"

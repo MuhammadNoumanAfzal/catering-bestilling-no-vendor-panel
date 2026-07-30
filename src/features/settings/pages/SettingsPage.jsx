@@ -88,6 +88,7 @@ export default function SettingsPage() {
           cuisineOptions={settingsOptions.cuisineOptions}
           currencyOptions={settingsOptions.currencyOptions}
           disabled={isLoading || isSaving}
+          fieldErrors={fieldErrors}
           handleBusinessHourChange={handleBusinessHourChange}
           handleDeactivateStore={handleDeactivateStore}
           handleDeleteStore={handleDeleteStore}

@@ -7,6 +7,7 @@ export function Label({ children }) {
 
 export function TextInput({
   disabled = false,
+  min,
   placeholder,
   value,
   onChange,
@@ -16,6 +17,7 @@ export function TextInput({
     <input
       className="h-[42px] w-full rounded-[8px] border border-[#d7cec4] bg-white px-3 text-[14px] text-[#1f1814] outline-none transition placeholder:text-[#aea39a] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:cursor-not-allowed disabled:bg-[#f5f2ef] disabled:text-[#7f7369]"
       disabled={disabled}
+      min={min}
       onChange={onChange}
       placeholder={placeholder}
       type={type}
