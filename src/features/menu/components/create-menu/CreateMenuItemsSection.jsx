@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock3, FileCheck2, Plus, X } from "lucide-react";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { Label, MultiSelectInput, TextInput, UploadBox } from "./CreateMenuFields";
@@ -10,99 +10,188 @@ export default function CreateMenuItemsSection({
   allergenOptions,
   disabled = false,
   handleItemImageSelect,
+  menuItemErrors = {},
   menuItems,
   onAddFromOtherPackage,
   removeMenuItem,
+  saveMenuItem,
+  toggleMenuItemExpanded,
   updateMenuItem,
 }) {
+  const hasUnsavedItem = menuItems.some((item) => !item.isSaved);
+
   return (
     <CreateMenuSectionCard
       description="Add the dishes and drinks included in the base price."
       title="Menu Items"
     >
       <div className="space-y-4">
-        {menuItems.map((item) => (
-          <div
-            key={item.id}
-            className="grid grid-cols-[108px_minmax(0,1fr)] gap-3 rounded-[10px] border border-[#e4dbd2] p-3 max-[720px]:grid-cols-1"
-          >
-            <UploadBox
-              compact
-              disabled={disabled}
-              image={item.image}
-              label="Click or drag to upload"
-              onFileSelect={(file) => handleItemImageSelect(item.id, file)}
-            />
+        {menuItems.map((item, index) => {
+          const itemErrors = menuItemErrors[item.id] || {};
+          const summaryTitle = item.title?.trim() || `Menu Item ${index + 1}`;
+          const summaryDescription = item.description?.trim() || "No description saved yet.";
 
-            <div>
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[14px] font-bold text-[#211913]">Title</span>
+          return (
+            <div
+              key={item.id}
+              className={`overflow-hidden rounded-[16px] border transition ${
+                item.isExpanded
+                  ? "border-[#efc9b4] bg-[#fffdfb] shadow-[0_12px_30px_rgba(58,40,25,0.08)]"
+                  : "border-[#e4dbd2] bg-white"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f1e7de] px-4 py-3">
                 <button
-                  aria-label="Remove menu item"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-w-0 flex-1 items-center gap-3 bg-transparent p-0 text-left border-0 cursor-pointer"
                   disabled={disabled}
-                  onClick={() => removeMenuItem(item.id)}
+                  onClick={() => toggleMenuItemExpanded(item.id)}
                   type="button"
                 >
-                  <X size={14} />
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                      item.isSaved ? "bg-[#eef8ef] text-[#2b8a46]" : "bg-[#fff1e8] text-[#cf6e38]"
+                    }`}
+                  >
+                    {item.isSaved ? <FileCheck2 size={18} /> : <Clock3 size={18} />}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px] font-extrabold text-[#211913]">
+                      {summaryTitle}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[12px] font-medium text-[#7e7065]">
+                      {summaryDescription}
+                    </span>
+                  </span>
                 </button>
-              </div>
-              <TextInput
-                disabled={disabled}
-                onChange={(event) => updateMenuItem(item.id, "title", event.target.value)}
-                placeholder="Grilled Chicken"
-                value={item.title}
-              />
 
-              <div className="mt-3">
-                <Label>Description</Label>
-                <textarea
-                  disabled={disabled}
-                  onChange={(event) =>
-                    updateMenuItem(item.id, "description", event.target.value)
-                  }
-                  placeholder="Add a short description for this item"
-                  rows={3}
-                  value={item.description || ""}
-                  className="min-h-[96px] w-full rounded-[8px] border border-[#ded4cb] bg-white px-3 py-2.5 text-[14px] text-[#211913] outline-none placeholder:text-[#a59689] disabled:cursor-not-allowed disabled:bg-[#f6f1ec] disabled:text-[#8c7f73]"
-                />
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] ${
+                      item.isSaved
+                        ? "bg-[#edf8ef] text-[#2b8a46]"
+                        : "bg-[#fff1e8] text-[#cf6e38]"
+                    }`}
+                  >
+                    {item.isSaved ? "Saved" : "Draft"}
+                  </span>
+                  <button
+                    aria-label={item.isExpanded ? "Collapse menu item" : "Expand menu item"}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={disabled}
+                    onClick={() => toggleMenuItemExpanded(item.id)}
+                    type="button"
+                  >
+                    {item.isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                  </button>
+                  <button
+                    aria-label="Remove menu item"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={disabled}
+                    onClick={() => removeMenuItem(item.id)}
+                    type="button"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
 
-              <div className="mt-3">
-                <Label>Allergens</Label>
-                <MultiSelectInput
-                  disabled={disabled || allergenFeatureUnavailable}
-                  onChange={(value) => updateMenuItem(item.id, "allergens", value)}
-                  options={allergenOptions}
-                  placeholder={
-                    allergenFeatureUnavailable
-                      ? "Allergen API not available in production yet"
-                      : "Select one or more allergens"
-                  }
-                  value={item.allergens}
-                />
-                {allergenFeatureMessage ? (
-                  <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
-                    {allergenFeatureMessage}
-                  </p>
-                ) : !allergenFeatureUnavailable ? (
-                  <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
-                    Allergens are managed by admin and loaded from the backend.
-                  </p>
-                ) : null}
-              </div>
+              {item.isExpanded ? (
+                <div className="grid grid-cols-[108px_minmax(0,1fr)] gap-3 p-4 max-[720px]:grid-cols-1">
+                  <UploadBox
+                    compact
+                    disabled={disabled}
+                    image={item.image}
+                    label="Click or drag to upload"
+                    onFileSelect={(file) => handleItemImageSelect(item.id, file)}
+                  />
+
+                  <div>
+                    <div>
+                      <Label>Title</Label>
+                      <TextInput
+                        disabled={disabled}
+                        onChange={(event) => updateMenuItem(item.id, "title", event.target.value)}
+                        placeholder="Grilled Chicken"
+                        value={item.title}
+                      />
+                      {itemErrors.title ? (
+                        <p className="mt-1 text-[12px] font-medium text-[#d2542f]">
+                          {itemErrors.title}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-3">
+                      <Label>Description</Label>
+                      <textarea
+                        disabled={disabled}
+                        onChange={(event) =>
+                          updateMenuItem(item.id, "description", event.target.value)
+                        }
+                        placeholder="Add a short description for this item"
+                        rows={3}
+                        value={item.description || ""}
+                        className="min-h-[96px] w-full rounded-[8px] border border-[#ded4cb] bg-white px-3 py-2.5 text-[14px] text-[#211913] outline-none placeholder:text-[#a59689] disabled:cursor-not-allowed disabled:bg-[#f6f1ec] disabled:text-[#8c7f73]"
+                      />
+                      {itemErrors.description ? (
+                        <p className="mt-1 text-[12px] font-medium text-[#d2542f]">
+                          {itemErrors.description}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-3">
+                      <Label>Allergens</Label>
+                      <MultiSelectInput
+                        disabled={disabled || allergenFeatureUnavailable}
+                        onChange={(value) => updateMenuItem(item.id, "allergens", value)}
+                        options={allergenOptions}
+                        placeholder={
+                          allergenFeatureUnavailable
+                            ? "Allergen API not available in production yet"
+                            : "Select one or more allergens"
+                        }
+                        value={item.allergens}
+                      />
+                      {allergenFeatureMessage ? (
+                        <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
+                          {allergenFeatureMessage}
+                        </p>
+                      ) : !allergenFeatureUnavailable ? (
+                        <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
+                          Allergens are managed by admin and loaded from the backend.
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        className="inline-flex h-[40px] items-center justify-center rounded-[10px] bg-[#cf6e38] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#bf622f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={disabled}
+                        onClick={() => saveMenuItem(item.id)}
+                        type="button"
+                      >
+                        Save Item
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         <div className="flex gap-3 max-[480px]:flex-col">
           <button
             className="flex-1 h-[38px] cursor-pointer rounded-[8px] border border-[#d6cdc4] bg-white text-[13px] font-bold text-[#332922] disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#faf7f5] transition active:scale-95"
-            disabled={disabled}
+            disabled={disabled || hasUnsavedItem}
             onClick={addMenuItem}
             type="button"
           >
-            + Add Another Item
+            <span className="inline-flex items-center gap-1.5">
+              <Plus size={14} />
+              Add Another Item
+            </span>
           </button>
           <button
             className="flex-1 h-[38px] cursor-pointer rounded-[8px] bg-[#cf6e38] text-[13px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-[#bf622f] transition active:scale-95"
@@ -113,6 +202,11 @@ export default function CreateMenuItemsSection({
             Add item from other package
           </button>
         </div>
+        {hasUnsavedItem ? (
+          <p className="text-[12px] font-medium text-[#8a776a]">
+            Save the open item before adding another menu item.
+          </p>
+        ) : null}
       </div>
     </CreateMenuSectionCard>
   );

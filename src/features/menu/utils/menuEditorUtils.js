@@ -7,6 +7,8 @@ export function createEmptyMenuItem() {
     description: "",
     allergens: [],
     image: null,
+    isSaved: false,
+    isExpanded: true,
   };
 }
 
@@ -74,5 +76,7 @@ export function toImportedMenuItem(item, index) {
           fileUrl: item.imageUrl || item.image,
         }
       : null,
+    isSaved: true,
+    isExpanded: false,
   };
 }
