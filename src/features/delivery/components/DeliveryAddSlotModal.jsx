@@ -1,15 +1,11 @@
 import { X } from "lucide-react";
 import { deliveryDays } from "../data/deliveryData";
 
-function normalizeTimeDraft(value) {
-  const digits = String(value || "").replace(/\D/g, "").slice(0, 4);
-
-  if (digits.length <= 2) {
-    return digits;
-  }
-
-  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
-}
+const TIME_OPTIONS = Array.from({ length: 96 }, (_, index) => {
+  const hours = String(Math.floor(index / 4)).padStart(2, "0");
+  const minutes = String((index % 4) * 15).padStart(2, "0");
+  return `${hours}:${minutes}`;
+});
 
 export default function DeliveryAddSlotModal({
   activeDays = [],
@@ -71,36 +67,46 @@ export default function DeliveryAddSlotModal({
         <label className="mt-4 flex flex-col gap-1">
           <span className="type-para text-[#1a1410]">Delivery time slot</span>
           <div className="grid grid-cols-2 gap-3">
-            <input
-              className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
-                error ? "border-[#d25545]" : "border-[#cec5bd]"
-              }`}
-              inputMode="numeric"
-              maxLength={5}
-              onChange={(event) => onDraftChange({
-                ...draftSlot,
-                start: normalizeTimeDraft(event.target.value),
-              })}
-              pattern="[0-2][0-9]:[0-5][0-9]"
-              placeholder="HH:MM"
-              type="text"
-              value={draftSlot.start}
-            />
-            <input
-              className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
-                error ? "border-[#d25545]" : "border-[#cec5bd]"
-              }`}
-              inputMode="numeric"
-              maxLength={5}
-              onChange={(event) => onDraftChange({
-                ...draftSlot,
-                end: normalizeTimeDraft(event.target.value),
-              })}
-              pattern="[0-2][0-9]:[0-5][0-9]"
-              placeholder="HH:MM"
-              type="text"
-              value={draftSlot.end}
-            />
+            <label className="flex flex-col gap-1">
+              <span className="type-subpara text-[#6f6258]">Start time</span>
+              <select
+                className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
+                  error ? "border-[#d25545]" : "border-[#cec5bd]"
+                }`}
+                onChange={(event) => onDraftChange({
+                  ...draftSlot,
+                  start: event.target.value,
+                })}
+                value={draftSlot.start}
+              >
+                <option value="">Select time</option>
+                {TIME_OPTIONS.map((timeOption) => (
+                  <option key={timeOption} value={timeOption}>
+                    {timeOption}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="type-subpara text-[#6f6258]">End time</span>
+              <select
+                className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
+                  error ? "border-[#d25545]" : "border-[#cec5bd]"
+                }`}
+                onChange={(event) => onDraftChange({
+                  ...draftSlot,
+                  end: event.target.value,
+                })}
+                value={draftSlot.end}
+              >
+                <option value="">Select time</option>
+                {TIME_OPTIONS.map((timeOption) => (
+                  <option key={timeOption} value={timeOption}>
+                    {timeOption}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           {error ? (
             <span className="type-subpara text-[#d25545]">{error}</span>

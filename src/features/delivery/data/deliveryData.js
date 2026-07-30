@@ -12,11 +12,11 @@ export const deliveryModes = [
 ];
 
 export const deliveryDays = [
-  { label: "Mo", value: "mo" },
-  { label: "Tu", value: "tu" },
-  { label: "We", value: "we" },
-  { label: "Th", value: "th" },
-  { label: "Fr", value: "fr" },
-  { label: "Sa", value: "sa" },
-  { label: "Su", value: "su" },
+  { label: "Monday", value: "mo" },
+  { label: "Tuesday", value: "tu" },
+  { label: "Wednesday", value: "we" },
+  { label: "Thursday", value: "th" },
+  { label: "Friday", value: "fr" },
+  { label: "Saturday", value: "sa" },
+  { label: "Sunday", value: "su" },
 ];
