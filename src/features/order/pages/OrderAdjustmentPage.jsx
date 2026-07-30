@@ -7,7 +7,7 @@ import {
   getVendorOrderDetail,
   searchVendorAdjustmentItems,
 } from "../api/orderApi";
-import { mapVendorOrderDetail } from "../api/orderMappers";
+import { mapVendorOrderDetail, normalizeBackendStatus } from "../api/orderMappers";
 import { savePendingAdjustment } from "../utils/pendingAdjustments";
 
 const REASON_OPTIONS = [
@@ -124,6 +124,11 @@ function hasSameText(left, right) {
   return normalizeString(left).trim() === normalizeString(right).trim();
 }
 
+function canAdjustOrder(status) {
+  const normalizedStatus = normalizeBackendStatus(status);
+  return normalizedStatus !== "Delivered" && normalizedStatus !== "Canceled";
+}
+
 function buildRemovableItems(orderDetail) {
   const orderItems = Array.isArray(orderDetail?.raw?.items) ? orderDetail.raw.items : [];
   const carts = Array.isArray(orderDetail?.raw?.orderCarts) ? orderDetail.raw.orderCarts : [];
@@ -206,6 +211,15 @@ export default function OrderAdjustmentPage() {
         }
 
         const mappedOrder = mapVendorOrderDetail(result, decodedOrderId);
+        if (!canAdjustOrder(mappedOrder?.status)) {
+          await showVendorErrorAlert(
+            "Order adjustment is only available before an order is delivered or canceled.",
+            "Adjustment unavailable",
+          );
+          navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
+          return;
+        }
+
         setOrderDetail(mappedOrder);
         setDate(extractDateYMD(mappedOrder?.raw?.deliveryDate) || "");
         const rawTimeVal = mappedOrder?.raw?.deliveryWindow || mappedOrder?.raw?.eventTime || "";
