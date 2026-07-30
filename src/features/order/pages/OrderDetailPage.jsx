@@ -24,6 +24,11 @@ function getStatusFromActionLabel(label) {
   return normalizeBackendStatus(label);
 }
 
+function canAdjustOrder(status) {
+  const normalizedStatus = normalizeBackendStatus(status);
+  return normalizedStatus !== "Delivered" && normalizedStatus !== "Canceled";
+}
+
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -109,6 +114,7 @@ export default function OrderDetailPage() {
   }
 
   const isAcceptedView = orderDetail.status !== "New";
+  const canOpenAdjustment = canAdjustOrder(orderDetail.status);
   const lifecycleActions = isAcceptedView ? [] : orderDetail.actions;
   const confirmedLifecycleActions = isAcceptedView
     ? orderDetail.actions.filter((action) => action.label !== "View Details")
@@ -330,8 +336,10 @@ export default function OrderDetailPage() {
               actions={confirmedLifecycleActions}
               currentStatus={orderDetail.status}
               onActionClick={handleConfirmedActionClick}
-              onOrderAdjustmentClick={() =>
-                navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+              onOrderAdjustmentClick={
+                canOpenAdjustment
+                  ? () => navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+                  : undefined
               }
               onStatusSelect={handleManualStatusSelect}
             />
@@ -339,8 +347,10 @@ export default function OrderDetailPage() {
             <LifecyclePanel
               actions={lifecycleActions}
               onActionClick={handleLifecycleActionClick}
-              onOrderAdjustmentClick={() =>
-                navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+              onOrderAdjustmentClick={
+                canOpenAdjustment
+                  ? () => navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+                  : undefined
               }
             />
           )}

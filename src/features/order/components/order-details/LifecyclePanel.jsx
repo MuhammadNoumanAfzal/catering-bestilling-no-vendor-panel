@@ -110,13 +110,15 @@ export default function LifecyclePanel({
           );
         })}
 
-        <button
-          className="flex w-full min-h-[34px] items-center justify-center gap-2 rounded-xl border border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4] hover:border-[#cf6e38]/30 hover:text-[#cf6e38] transition cursor-pointer font-extrabold text-[12px] active:scale-95"
-          onClick={onOrderAdjustmentClick}
-          type="button"
-        >
-          <span>Order Adjustment</span>
-        </button>
+        {typeof onOrderAdjustmentClick === "function" ? (
+          <button
+            className="flex w-full min-h-[34px] items-center justify-center gap-2 rounded-xl border border-[#d8cec4] bg-white text-[#2b231e] hover:bg-[#faf7f4] hover:border-[#cf6e38]/30 hover:text-[#cf6e38] transition cursor-pointer font-extrabold text-[12px] active:scale-95"
+            onClick={onOrderAdjustmentClick}
+            type="button"
+          >
+            <span>Order Adjustment</span>
+          </button>
+        ) : null}
       </div>
     </DetailPanel>
   );
