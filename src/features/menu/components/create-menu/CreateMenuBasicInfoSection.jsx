@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import {
   Label,
@@ -207,9 +207,10 @@ export default function CreateMenuBasicInfoSection({
                     <button
                       onClick={() => onRemoveGalleryImage(idx)}
                       type="button"
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-90 hover:opacity-100 hover:scale-105 active:scale-95 transition shadow-sm"
+                      aria-label={`Remove gallery image ${idx + 1}`}
+                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/70 bg-[rgba(28,21,16,0.78)] text-white shadow-[0_8px_18px_rgba(0,0,0,0.22)] backdrop-blur-sm transition hover:bg-[#cf6e38] hover:shadow-[0_10px_22px_rgba(207,110,56,0.28)] active:scale-95"
                     >
-                      <span className="leading-none text-[12px] font-bold">&times;</span>
+                      <X size={14} strokeWidth={2.5} />
                     </button>
                   </div>
                 ))}

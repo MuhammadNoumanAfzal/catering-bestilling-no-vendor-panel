@@ -158,9 +158,10 @@ export default function AddCategoryModal({
               handleCloseModal();
             }}
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded-full border border-[#e8dfd5] bg-[#fffdfa] text-[#746a62] hover:bg-[#faf8f6] hover:text-[#cf6e38] transition focus:outline-none active:scale-90 cursor-pointer"
+            aria-label="Close modal"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#efe4db] bg-[linear-gradient(180deg,#fffdfa_0%,#fbf5ef_100%)] text-[#746a62] shadow-[0_6px_16px_rgba(58,40,25,0.08)] transition hover:border-[#cf6e38]/40 hover:bg-[#fff1e8] hover:text-[#cf6e38] focus:outline-none active:scale-95 cursor-pointer"
           >
-            <X size={12} />
+            <X size={16} strokeWidth={2.2} />
           </button>
         </div>
 

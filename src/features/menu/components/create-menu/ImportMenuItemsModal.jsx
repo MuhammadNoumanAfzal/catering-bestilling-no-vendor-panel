@@ -138,9 +138,10 @@ export default function ImportMenuItemsModal({
           <button
             onClick={onClose}
             type="button"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e8dfd5] bg-[#fffdfa] text-[#746a62] transition hover:bg-[#faf8f6] hover:text-[#cf6e38] focus:outline-none active:scale-90"
+            aria-label="Close import modal"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#efe4db] bg-[linear-gradient(180deg,#fffdfa_0%,#fbf5ef_100%)] text-[#746a62] shadow-[0_6px_16px_rgba(58,40,25,0.08)] transition hover:border-[#cf6e38]/40 hover:bg-[#fff1e8] hover:text-[#cf6e38] focus:outline-none active:scale-95"
           >
-            <X size={14} />
+            <X size={16} strokeWidth={2.2} />
           </button>
         </div>
 
