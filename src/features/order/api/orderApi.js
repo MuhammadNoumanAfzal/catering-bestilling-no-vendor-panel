@@ -1,9 +1,12 @@
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
+  APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION,
   CREATE_VENDOR_ORDER_ADJUSTMENT_MUTATION,
+  GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY,
   GET_VENDOR_ORDER_DETAIL_QUERY,
   GET_VENDOR_ORDERS_QUERY,
   SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
+  REJECT_ORDER_MODIFICATION_REQUEST_MUTATION,
   UPDATE_VENDOR_ORDER_STATUS_MUTATION,
   GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY,
 } from "./orderQueries";
@@ -68,6 +71,17 @@ export function getVendorOrderDetail(id) {
   return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, { orderId: id });
 }
 
+export async function getVendorOrderModificationRequests(orderId) {
+  const result = await executeProtectedGraphqlRequest(
+    GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY,
+    { orderId },
+  );
+
+  return Array.isArray(result?.vendorOrderModificationRequests)
+    ? result.vendorOrderModificationRequests
+    : [];
+}
+
 export async function updateVendorOrderStatus({ id, status, note }) {
   const result = await executeProtectedGraphqlRequest(
     UPDATE_VENDOR_ORDER_STATUS_MUTATION,
@@ -94,6 +108,32 @@ export async function createVendorOrderAdjustment(input) {
       errors: [],
       adjustment: null,
     }
+  );
+}
+
+export async function approveOrderModificationRequest({ requestId, note = "" }) {
+  const result = await executeProtectedGraphqlRequest(
+    APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION,
+    { requestId, note: note || null },
+  );
+
+  return unwrapMutationResult(
+    result,
+    "approveOrderModificationRequest",
+    "Unable to approve the modification request.",
+  );
+}
+
+export async function rejectOrderModificationRequest({ requestId, reason }) {
+  const result = await executeProtectedGraphqlRequest(
+    REJECT_ORDER_MODIFICATION_REQUEST_MUTATION,
+    { requestId, reason },
+  );
+
+  return unwrapMutationResult(
+    result,
+    "rejectOrderModificationRequest",
+    "Unable to reject the modification request.",
   );
 }
 
