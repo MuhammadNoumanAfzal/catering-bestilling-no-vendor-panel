@@ -41,6 +41,7 @@ export default function DeliveryPage() {
     maxDeliveriesPerDay,
     maxDeliveryTime,
     maxOrdersPerTimeSlot,
+    minimumOrderNoticeHours,
     pickupAddress,
     pickupInstructions,
     serviceAreaResults,
@@ -56,6 +57,7 @@ export default function DeliveryPage() {
     setMaxDeliveriesPerDay,
     setMaxDeliveryTime,
     setMaxOrdersPerTimeSlot,
+    setMinimumOrderNoticeHours,
     setPickupAddress,
     setPickupInstructions,
     slotDraftError,
@@ -150,10 +152,14 @@ export default function DeliveryPage() {
             maxDeliveriesPerDay={maxDeliveriesPerDay}
             maxOrdersPerTimeSlot={maxOrdersPerTimeSlot}
             minDeliveryTime={minDeliveryTime}
+            minimumOrderNoticeHours={minimumOrderNoticeHours}
             onMaxDeliveryTimeChange={(event) => setMaxDeliveryTime(event.target.value)}
             onMaxDeliveriesPerDayChange={(event) => setMaxDeliveriesPerDay(event.target.value)}
             onMaxOrdersPerTimeSlotChange={(event) => setMaxOrdersPerTimeSlot(event.target.value)}
             onMinDeliveryTimeChange={(event) => setMinDeliveryTime(event.target.value)}
+            onMinimumOrderNoticeHoursChange={(event) =>
+              setMinimumOrderNoticeHours(event.target.value)
+            }
           />
         </div>
 

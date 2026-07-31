@@ -7,10 +7,12 @@ export default function DeliveryLimitsSection({
   maxDeliveryTime,
   maxDeliveriesPerDay,
   maxOrdersPerTimeSlot,
+  minimumOrderNoticeHours,
   onMinDeliveryTimeChange,
   onMaxDeliveryTimeChange,
   onMaxDeliveriesPerDayChange,
   onMaxOrdersPerTimeSlotChange,
+  onMinimumOrderNoticeHoursChange,
   disabled = false,
   errors = {},
 }) {
@@ -45,6 +47,19 @@ export default function DeliveryLimitsSection({
           />
           <p className="type-subpara mt-1 text-[#a09084]">
             Upper delivery estimate shown during busy periods.
+          </p>
+        </div>
+        <div>
+          <DeliveryTextInput
+            disabled={disabled}
+            error={errors.minimumOrderNoticeHours}
+            label="Minimum Order Notice (hours)"
+            onChange={onMinimumOrderNoticeHoursChange}
+            placeholder="24"
+            value={minimumOrderNoticeHours}
+          />
+          <p className="type-subpara mt-1 text-[#a09084]">
+            Customers must book at least this many hours in advance.
           </p>
         </div>
         <div>

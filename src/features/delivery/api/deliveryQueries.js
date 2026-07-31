@@ -24,6 +24,7 @@ export const GET_VENDOR_DELIVERY_SETTINGS_QUERY = `
           maxOrdersPerTimeSlot
           minDeliveryTime
           maxDeliveryTime
+          minimumOrderNoticeHours
           liveValidation {
             isValid
             issues
@@ -82,6 +83,7 @@ export const UPDATE_VENDOR_DELIVERY_SETTINGS_MUTATION = `
         maxOrdersPerTimeSlot
         minDeliveryTime
         maxDeliveryTime
+        minimumOrderNoticeHours
         liveValidation {
           isValid
           issues
