@@ -358,7 +358,13 @@ export function normalizeBackendStatus(status) {
   if (!normalized) return "New";
   if (normalized === "new" || normalized === "placed" || normalized === "pending") return "New";
   if (normalized === "accepted" || normalized === "confirmed") return "Accepted";
-  if (normalized === "modified") return "Modified";
+  if (
+    normalized === "modified" ||
+    normalized === "modification requested" ||
+    normalized === "change requested"
+  ) {
+    return "Modified";
+  }
   if (
     normalized === "preparing" ||
     normalized === "in preparation" ||
@@ -510,7 +516,12 @@ export function getStatusMutationValue(status) {
 
 export function mapVendorOrderNode(node) {
   const pendingAdjustment = getPendingAdjustment(node?.id);
-  const status = pendingAdjustment ? "Modified" : resolveOrderStatus(node);
+  const hasPendingCustomerModification =
+    `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+  const status =
+    pendingAdjustment || hasPendingCustomerModification
+      ? "Modified"
+      : resolveOrderStatus(node);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const carts = getOrderCartsArray(node?.orderCarts);
@@ -651,7 +662,12 @@ export function mapVendorOrderDetail(data, orderId) {
   const carts = getOrderCartsArray(node?.orderCarts);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
-  const status = pendingAdjustment ? "Modified" : resolveOrderStatus(node);
+  const hasPendingCustomerModification =
+    `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+  const status =
+    pendingAdjustment || hasPendingCustomerModification
+      ? "Modified"
+      : resolveOrderStatus(node);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
   const customer = buildCustomerFromApi(node);
   const orderItems = Array.isArray(node?.items) ? node.items : [];

@@ -38,6 +38,15 @@ export const GET_VENDOR_ORDERS_QUERY = `
           invoiceNumber
           orderNumber
           status
+          pendingModificationRequest {
+            id
+            status
+          }
+          latestModificationRequest {
+            id
+            status
+            resolvedOn
+          }
           createdOn
           eventTime
           customerName
@@ -76,6 +85,15 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       id
       invoiceNumber
       status
+      pendingModificationRequest {
+        id
+        status
+      }
+      latestModificationRequest {
+        id
+        status
+        resolvedOn
+      }
       email
       phone
       eventDate
@@ -139,6 +157,75 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             description
           }
         }
+      }
+    }
+  }
+`;
+
+export const GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY = `
+  query GetVendorOrderModificationRequests($orderId: ID!) {
+    vendorOrderModificationRequests(orderId: $orderId) {
+      id
+      status
+      requestedBy
+      createdOn
+      customerNote
+      requestedChanges {
+        eventDate
+        eventTime
+        personCount
+        deliveryAddress
+        deliverySuite
+        deliveryCity
+        deliveryPostalCode
+        orderNotes
+      }
+      currentSnapshot {
+        eventDate
+        eventTime
+        personCount
+        deliveryAddress
+        deliverySuite
+        deliveryCity
+        deliveryPostalCode
+        orderNotes
+      }
+    }
+  }
+`;
+
+export const APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION = `
+  mutation ApproveOrderModificationRequest($requestId: ID!, $note: String) {
+    approveOrderModificationRequest(requestId: $requestId, note: $note) {
+      success
+      message
+      order {
+        id
+        status
+        eventDate
+        eventTime
+        personCount
+        grandTotal
+      }
+      request {
+        id
+        status
+        resolvedOn
+      }
+    }
+  }
+`;
+
+export const REJECT_ORDER_MODIFICATION_REQUEST_MUTATION = `
+  mutation RejectOrderModificationRequest($requestId: ID!, $reason: String!) {
+    rejectOrderModificationRequest(requestId: $requestId, reason: $reason) {
+      success
+      message
+      request {
+        id
+        status
+        rejectionReason
+        resolvedOn
       }
     }
   }
