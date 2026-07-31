@@ -19,6 +19,7 @@ export const defaultDeliverySettings = {
   maxOrdersPerTimeSlot: "",
   minDeliveryTime: "",
   maxDeliveryTime: "",
+  minimumOrderNoticeHours: "",
   liveValidation: {
     isValid: true,
     issues: [],
@@ -159,6 +160,7 @@ export function mapVendorDeliverySettingsToForm(settingsPayload) {
     maxOrdersPerTimeSlot: normalizePositiveIntegerString(settings.maxOrdersPerTimeSlot),
     minDeliveryTime: normalizeNullableString(settings.minDeliveryTime),
     maxDeliveryTime: normalizeNullableString(settings.maxDeliveryTime),
+    minimumOrderNoticeHours: normalizePositiveIntegerString(settings.minimumOrderNoticeHours),
     liveValidation: {
       isValid: settings.liveValidation?.isValid ?? true,
       issues: Array.isArray(settings.liveValidation?.issues)
@@ -261,6 +263,7 @@ export function buildDeliverySettingsInput(formState) {
     maxOrdersPerTimeSlot: parsePositiveIntegerOrNull(formState.maxOrdersPerTimeSlot),
     minDeliveryTime: parseIntegerOrNull(formState.minDeliveryTime),
     maxDeliveryTime: parseIntegerOrNull(formState.maxDeliveryTime),
+    minimumOrderNoticeHours: parsePositiveIntegerOrNull(formState.minimumOrderNoticeHours),
   };
 }
 
@@ -296,6 +299,7 @@ export function getComparableDeliverySettings(formState) {
     maxOrdersPerTimeSlot: normalizeNullableString(formState.maxOrdersPerTimeSlot),
     minDeliveryTime: normalizeNullableString(formState.minDeliveryTime),
     maxDeliveryTime: normalizeNullableString(formState.maxDeliveryTime),
+    minimumOrderNoticeHours: normalizeNullableString(formState.minimumOrderNoticeHours),
   };
 }
 

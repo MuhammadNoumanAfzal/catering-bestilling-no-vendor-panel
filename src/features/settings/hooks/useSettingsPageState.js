@@ -161,6 +161,17 @@ export default function useSettingsPageState() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  async function refreshSettingsPageState() {
+    const refreshedResult = await getVendorSettingsPage();
+    const mappedPage = mapVendorSettingsPage(refreshedResult, { authUser });
+
+    setSavedSettings(mappedPage.settings);
+    setSettings(mappedPage.settings);
+    setSettingsOptions(mappedPage.options);
+
+    return mappedPage;
+  }
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -817,35 +828,7 @@ export default function useSettingsPageState() {
         await showVendorErrorAlert(result.message || "Unable to save special closure.");
         return;
       }
-
-      const nextClosure = {
-        id: result.closure?.id || id || `closure-${Date.now()}`,
-        type: result.closure?.type?.id || type,
-        typeLabel: result.closure?.type?.name || "",
-        start: result.closure?.startDate || start,
-        end: result.closure?.endDate || end,
-        reason: result.closure?.reason || reason || "",
-        status: result.closure?.status || "Scheduled",
-      };
-
-      setSettings((current) => {
-        const nextClosures = id
-          ? current.closures.map((item) => (item.id === id ? nextClosure : item))
-          : [...current.closures, nextClosure];
-        return {
-          ...current,
-          closures: nextClosures,
-        };
-      });
-      setSavedSettings((current) => {
-        const nextClosures = id
-          ? current.closures.map((item) => (item.id === id ? nextClosure : item))
-          : [...current.closures, nextClosure];
-        return {
-          ...current,
-          closures: nextClosures,
-        };
-      });
+      await refreshSettingsPageState();
 
       await showVendorSuccessToast(
         result.message ||
@@ -870,15 +853,7 @@ export default function useSettingsPageState() {
         await showVendorErrorAlert(result.message || "Unable to delete special closure.");
         return;
       }
-
-      setSettings((current) => ({
-        ...current,
-        closures: current.closures.filter((item) => item.id !== id),
-      }));
-      setSavedSettings((current) => ({
-        ...current,
-        closures: current.closures.filter((item) => item.id !== id),
-      }));
+      await refreshSettingsPageState();
       await showVendorSuccessToast(result.message || "Special closure deleted successfully.");
     } catch (error) {
       await showVendorErrorAlert(error.message || "Unable to delete special closure.");
