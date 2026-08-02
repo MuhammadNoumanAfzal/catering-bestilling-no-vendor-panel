@@ -408,16 +408,25 @@ export default function OrderAdjustmentPage() {
     setSubmitError("");
     setIsSubmitting(true);
 
-    let removedItems = [];
-    let addedItems = [];
+    let removedItemsJson = [];
+    let addedItemsJson = [];
 
     try {
-      removedItems = modifiedItems
-        .map((item) => extractDatabaseId(item.itemId || item.productId))
-        .filter(Boolean);
+      removedItemsJson = modifiedItems
+        .map((item) => ({
+          productId: item.productId || item.backendId || item.id || null,
+          quantity: Math.max(1, Number(item.quantity ?? 1) || 1),
+        }))
+        .filter((item) => item.productId);
 
-      addedItems = suggestedList
-        .map((item) => extractDatabaseId(item.backendId || item.id || null))
+      addedItemsJson = suggestedList
+        .map((item) => ({
+          productId: item.backendId || item.id || null,
+          quantity: Math.max(1, Number(item.quantity ?? 1) || 1),
+          ...(Array.isArray(item.selectedAddons) && item.selectedAddons.length > 0
+            ? { selectedAddons: item.selectedAddons }
+            : {}),
+        }))
         .filter(Boolean);
 
       const vendorNote = [
@@ -449,12 +458,13 @@ export default function OrderAdjustmentPage() {
       const originalPostalCode = orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
 
       const mutationInput = {
-        orderId: extractDatabaseId(orderDetail?.rawId || decodedOrderId),
+        orderId: orderDetail?.rawId || decodedOrderId,
         reason: REASON_ENUM_MAP[reason] || "OTHER",
         vendorNote,
-        removedItems,
-        addedItems,
-        ...(orderDetail?.version ? { version: orderDetail.version } : {}),
+        removedItemsJson,
+        addedItemsJson,
+        oldTotal,
+        newTotal,
         idempotencyKey: createIdempotencyKey(),
       };
 
@@ -499,8 +509,8 @@ export default function OrderAdjustmentPage() {
         status: payload?.adjustment?.status || "PENDING",
         reason,
         vendorNote,
-        removedItems,
-        addedItems,
+        removedItemsJson,
+        addedItemsJson,
         removedItemNames: modifiedItems.map((item) => item.name),
         addedItemNames: suggestedList.map((item) => item.name),
         proposedEventDate: mutationInput.proposedEventDate || null,
@@ -523,9 +533,9 @@ export default function OrderAdjustmentPage() {
       const errMsg = error instanceof Error ? error.message : "Unable to submit the order adjustment.";
       setSubmitError(errMsg);
       console.error("Order adjustment submit error:", error, {
-        orderId: extractDatabaseId(orderDetail?.rawId || decodedOrderId),
-        removedItems,
-        addedItems,
+        orderId: orderDetail?.rawId || decodedOrderId,
+        removedItemsJson,
+        addedItemsJson,
       });
       await showVendorErrorAlert(errMsg, "Submission Error");
     } finally {

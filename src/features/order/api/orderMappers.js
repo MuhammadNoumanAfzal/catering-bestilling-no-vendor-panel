@@ -360,6 +360,7 @@ export function normalizeBackendStatus(status) {
   if (normalized === "accepted" || normalized === "confirmed") return "Accepted";
   if (
     normalized === "modified" ||
+    normalized === "adjustment requested" ||
     normalized === "modification requested" ||
     normalized === "change requested"
   ) {
