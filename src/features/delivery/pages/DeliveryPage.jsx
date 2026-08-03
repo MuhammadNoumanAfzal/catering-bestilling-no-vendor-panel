@@ -37,9 +37,7 @@ export default function DeliveryPage() {
     isSaving,
     isSearchingAreas,
     isValidating,
-    minDeliveryTime,
     maxDeliveriesPerDay,
-    maxDeliveryTime,
     maxOrdersPerTimeSlot,
     minimumOrderNoticeHours,
     pickupAddress,
@@ -53,9 +51,7 @@ export default function DeliveryPage() {
     setBaseFee,
     setCustomSlotDraft,
     setFreeDelivery,
-    setMinDeliveryTime,
     setMaxDeliveriesPerDay,
-    setMaxDeliveryTime,
     setMaxOrdersPerTimeSlot,
     setMinimumOrderNoticeHours,
     setPickupAddress,
@@ -148,15 +144,11 @@ export default function DeliveryPage() {
           <DeliveryLimitsSection
             disabled={isPageDisabled || isDeliveryDisabled}
             errors={fieldErrors}
-            maxDeliveryTime={maxDeliveryTime}
             maxDeliveriesPerDay={maxDeliveriesPerDay}
             maxOrdersPerTimeSlot={maxOrdersPerTimeSlot}
-            minDeliveryTime={minDeliveryTime}
             minimumOrderNoticeHours={minimumOrderNoticeHours}
-            onMaxDeliveryTimeChange={(event) => setMaxDeliveryTime(event.target.value)}
             onMaxDeliveriesPerDayChange={(event) => setMaxDeliveriesPerDay(event.target.value)}
             onMaxOrdersPerTimeSlotChange={(event) => setMaxOrdersPerTimeSlot(event.target.value)}
-            onMinDeliveryTimeChange={(event) => setMinDeliveryTime(event.target.value)}
             onMinimumOrderNoticeHoursChange={(event) =>
               setMinimumOrderNoticeHours(event.target.value)
             }

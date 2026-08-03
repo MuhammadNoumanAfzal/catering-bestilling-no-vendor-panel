@@ -3,13 +3,9 @@ import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
 
 export default function DeliveryLimitsSection({
-  minDeliveryTime,
-  maxDeliveryTime,
   maxDeliveriesPerDay,
   maxOrdersPerTimeSlot,
   minimumOrderNoticeHours,
-  onMinDeliveryTimeChange,
-  onMaxDeliveryTimeChange,
   onMaxDeliveriesPerDayChange,
   onMaxOrdersPerTimeSlotChange,
   onMinimumOrderNoticeHoursChange,
@@ -18,37 +14,11 @@ export default function DeliveryLimitsSection({
 }) {
   return (
     <DeliverySectionCard
-      description="Set delivery estimates and capacity limits. These values do not define customer bookable slots."
+      description="Set order notice requirements and capacity limits. These values do not define customer bookable slots."
       disabled={disabled}
-      title="Limits & Delivery Window"
+      title="Limits"
     >
       <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
-        <div>
-          <DeliveryTextInput
-            disabled={disabled}
-            error={errors.minDeliveryTime}
-            label="Minimum Delivery Time (minutes)"
-            onChange={onMinDeliveryTimeChange}
-            placeholder="30"
-            value={minDeliveryTime}
-          />
-          <p className="type-subpara mt-1 text-[#a09084]">
-            Earliest estimated delivery time for customers.
-          </p>
-        </div>
-        <div>
-          <DeliveryTextInput
-            disabled={disabled}
-            error={errors.maxDeliveryTime}
-            label="Maximum Delivery Time (minutes)"
-            onChange={onMaxDeliveryTimeChange}
-            placeholder="120"
-            value={maxDeliveryTime}
-          />
-          <p className="type-subpara mt-1 text-[#a09084]">
-            Upper delivery estimate shown during busy periods.
-          </p>
-        </div>
         <div>
           <DeliveryTextInput
             disabled={disabled}
