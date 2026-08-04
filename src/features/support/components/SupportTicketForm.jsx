@@ -6,6 +6,7 @@ import { supportIssueTypeOptions } from "../data/supportData";
 export default function SupportTicketForm() {
   const {
     attachmentError,
+    attachmentUploadAvailable,
     attachmentName,
     descriptionCount,
     form,
@@ -72,6 +73,7 @@ export default function SupportTicketForm() {
             </p>
             <div className="mt-2">
               <SupportAttachmentDropzone
+                disabled={!attachmentUploadAvailable}
                 error={attachmentError}
                 fileName={attachmentName}
                 onChange={handleAttachmentChange}
