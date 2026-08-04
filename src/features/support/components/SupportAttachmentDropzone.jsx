@@ -1,27 +1,48 @@
 import { ImagePlus, X } from "lucide-react";
 
-export default function SupportAttachmentDropzone({ error, fileName, onChange, onRemove }) {
+export default function SupportAttachmentDropzone({
+  disabled = false,
+  error,
+  fileName,
+  onChange,
+  onRemove,
+}) {
   return (
     <div>
-      <label className="block cursor-pointer rounded-[12px] border border-dashed border-[#d8d0c8] bg-[#fffdfb] px-4 py-6 text-center transition hover:border-[#cf6e38] hover:bg-[#fff8f3]">
+      <label
+        className={[
+          "block rounded-[12px] border border-dashed px-4 py-6 text-center transition",
+          disabled
+            ? "cursor-not-allowed border-[#e4d8cf] bg-[#f7f3f0] text-[#a69486]"
+            : "cursor-pointer border-[#d8d0c8] bg-[#fffdfb] hover:border-[#cf6e38] hover:bg-[#fff8f3]",
+        ].join(" ")}
+      >
         <input
           accept="image/png,image/jpeg,image/jpg,image/webp"
+          disabled={disabled}
           className="sr-only"
           onChange={onChange}
           type="file"
         />
-        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#fff1ea] text-[#d96e39]">
+        <div
+          className={[
+            "mx-auto flex h-10 w-10 items-center justify-center rounded-full",
+            disabled ? "bg-[#ede7e2] text-[#aa9d92]" : "bg-[#fff1ea] text-[#d96e39]",
+          ].join(" ")}
+        >
           <ImagePlus size={18} />
         </div>
         <p className="mt-3 text-[13px] font-semibold text-[#352b24]">
-          {fileName || "Upload screenshot"}
+          {disabled ? "Attachment unavailable" : fileName || "Upload screenshot"}
         </p>
         <p className="mt-1 text-[11px] text-[#9b8f84]">
-          PNG, JPG, JPEG or WEBP under 2MB
+          {disabled
+            ? "Ticket submission still works without a screenshot."
+            : "PNG, JPG, JPEG or WEBP under 2MB"}
         </p>
       </label>
 
-      {fileName ? (
+      {fileName && !disabled ? (
         <div className="mt-3 flex items-center justify-between rounded-[10px] border border-[#eadfd6] bg-[#fff8f3] px-3 py-2">
           <span className="truncate text-[12px] font-semibold text-[#6d6158]">{fileName}</span>
           <button

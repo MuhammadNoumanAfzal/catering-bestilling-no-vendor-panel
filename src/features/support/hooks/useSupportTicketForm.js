@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { uploadMenuImage } from "../../menu/api/menuUploadApi";
+import {
+  isMenuImageUploadConfigured,
+  uploadMenuImage,
+} from "../../menu/api/menuUploadApi";
 import { createSupportTicket } from "../api/supportApi";
 import {
   initialSupportTicketForm,
@@ -19,6 +22,7 @@ const ALLOWED_ATTACHMENT_TYPES = [
 const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
 
 export default function useSupportTicketForm() {
+  const isAttachmentUploadAvailable = isMenuImageUploadConfigured();
   const [form, setForm] = useState(initialSupportTicketForm);
   const [attachment, setAttachment] = useState(null);
   const [attachmentError, setAttachmentError] = useState("");
@@ -46,6 +50,14 @@ export default function useSupportTicketForm() {
     const nextFile = event.target.files?.[0] || null;
     setSubmitted(false);
     setAttachmentError("");
+
+    if (!isAttachmentUploadAvailable) {
+      setAttachment(null);
+      setAttachmentError(
+        "Attachments are temporarily unavailable right now. You can still submit your ticket without a screenshot.",
+      );
+      return;
+    }
 
     if (!nextFile) {
       setAttachment(null);
@@ -117,6 +129,7 @@ export default function useSupportTicketForm() {
 
   return {
     attachmentError,
+    attachmentUploadAvailable: isAttachmentUploadAvailable,
     attachmentName: attachment?.name || "",
     descriptionCount,
     form,
