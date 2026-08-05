@@ -21,7 +21,7 @@ const ALLOWED_ATTACHMENT_TYPES = [
 ];
 const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
 
-export default function useSupportTicketForm() {
+export default function useSupportTicketForm(onSubmitted) {
   const isAttachmentUploadAvailable = isMenuImageUploadConfigured();
   const [form, setForm] = useState(initialSupportTicketForm);
   const [attachment, setAttachment] = useState(null);
@@ -116,6 +116,9 @@ export default function useSupportTicketForm() {
       setForm(initialSupportTicketForm);
       setAttachment(null);
       setAttachmentError("");
+      if (typeof onSubmitted === "function") {
+        await onSubmitted(result);
+      }
       await showSupportTicketSubmitted();
     } catch (error) {
       await showVendorErrorAlert(
