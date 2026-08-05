@@ -16,6 +16,7 @@ import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
 import SettingsPage from "../../features/settings/pages/SettingsPage";
 import SupportCenterPage from "../../features/support/pages/SupportCenterPage";
+import SupportResponsesPage from "../../features/support/pages/SupportResponsesPage";
 import MenuPage from "../../features/menu/pages/MenuPage";
 import CreateAddOnPage from "../../features/menu/pages/CreateAddOnPage";
 import CreateMenuPage from "../../features/menu/pages/CreateMenuPage";
@@ -48,6 +49,7 @@ export default function AppRouter() {
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="support" element={<SupportCenterPage />} />
+          <Route path="support/responses" element={<SupportResponsesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Route>
