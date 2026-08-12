@@ -8,7 +8,7 @@ import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasi
 import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSection";
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
 import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
-import { availabilityDays, dietaryOptions, leadTimeOptions } from "../menuConstants";
+import { availabilityDays, leadTimeOptions } from "../menuConstants";
 import { useMenuEditor } from "../hooks/useMenuEditor";
 
 export default function CreateMenuPage() {
@@ -16,6 +16,7 @@ export default function CreateMenuPage() {
   const {
     allergenOptions,
     categoryOptions,
+    dietaryOptions,
     existingMenus,
     fieldErrors,
     filteredAddOns,
