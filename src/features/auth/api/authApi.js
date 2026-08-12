@@ -24,7 +24,41 @@ function normalizeUser(user) {
     companyName: user.companyName ?? "",
     postCode: user.postCode ?? null,
     isActive: Boolean(user.isActive),
+    applicationStatus: user.applicationStatus ?? "",
+    vendorStatus: user.vendorStatus ?? "",
+    status: user.status ?? "",
   };
+}
+
+function resolveVendorAccessError(user) {
+  const applicationStatus = `${user?.applicationStatus ?? ""}`.trim().toUpperCase();
+  const vendorStatus = `${user?.vendorStatus ?? user?.status ?? ""}`.trim().toUpperCase();
+
+  if (applicationStatus === "PENDING_APPROVAL" || vendorStatus === "PENDING_APPROVAL") {
+    return "Your vendor account is pending admin approval. You can sign in after approval.";
+  }
+
+  if (applicationStatus === "REVIEWING") {
+    return "Your vendor application is under review. Please wait for admin approval.";
+  }
+
+  if (applicationStatus === "CHANGES_REQUESTED") {
+    return "Your vendor application needs changes before approval. Please contact support or admin.";
+  }
+
+  if (applicationStatus === "REJECTED") {
+    return "Your vendor application was rejected. Please contact support for help.";
+  }
+
+  if (vendorStatus === "SUSPENDED" || applicationStatus === "SUSPENDED") {
+    return "Your vendor account is suspended. Please contact support.";
+  }
+
+  if (vendorStatus === "DEACTIVATED" || applicationStatus === "DEACTIVATED") {
+    return "Your vendor account is deactivated. Please contact support.";
+  }
+
+  return "Your vendor account is inactive. Please contact support.";
 }
 
 export async function loginUserRequest({ identifier, password }) {
@@ -43,7 +77,7 @@ export async function loginUserRequest({ identifier, password }) {
   const normalizedUser = normalizeUser(loginUser.user);
 
   if (!normalizedUser?.isActive) {
-    throw new Error("Your vendor account is inactive. Please contact support.");
+    throw new Error(resolveVendorAccessError(normalizedUser));
   }
 
   if (!isAllowedAuthRole(normalizedUser?.role)) {
@@ -75,7 +109,9 @@ export async function registerVendorRequest(formValues) {
   }
 
   return {
-    message: registerUser.message || "Vendor account created successfully.",
+    message:
+      registerUser.message ||
+      "Vendor account created successfully. Your account is pending admin approval.",
     user: normalizeUser(registerUser.user),
   };
 }
