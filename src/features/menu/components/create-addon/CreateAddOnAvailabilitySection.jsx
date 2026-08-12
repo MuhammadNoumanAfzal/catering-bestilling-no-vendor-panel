@@ -19,21 +19,23 @@ export default function CreateAddOnAvailabilitySection({
           <Label>Dietary Tags</Label>
           <div className="grid grid-cols-2 gap-2">
             {dietaryOptions.map((option) => {
-              const isChecked = selectedDietary.includes(option);
+              const optionValue = option.value || option;
+              const optionLabel = option.label || option;
+              const isChecked = selectedDietary.includes(optionValue);
 
               return (
                 <label
-                  key={option}
+                  key={optionValue}
                   className="flex cursor-pointer items-center gap-2 rounded-[8px] border border-[#ddd4cb] bg-white px-3 py-2 text-[13px] font-semibold text-[#3f342d]"
                 >
                   <input
                     checked={isChecked}
                     className="h-4 w-4 cursor-pointer accent-[#cf6e38]"
                     disabled={disabled}
-                    onChange={() => onAvailabilityToggle(option)}
+                    onChange={() => onAvailabilityToggle(optionValue)}
                     type="checkbox"
                   />
-                  <span>{option}</span>
+                  <span>{optionLabel}</span>
                 </label>
               );
             })}

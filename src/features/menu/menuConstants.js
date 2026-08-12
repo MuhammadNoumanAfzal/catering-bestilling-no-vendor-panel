@@ -4,8 +4,6 @@ export const menuSortOptions = ["Latest", "Oldest", "Highest Price", "Lowest Pri
 
 export const allergenOptions = [];
 
-export const dietaryOptions = ["Vegetarian", "Halal", "Gluten-Free", "Vegan"];
-
 export const leadTimeOptions = [
   { label: "24 hours", value: "24" },
   { label: "48 hours", value: "48" },
@@ -42,28 +40,4 @@ export function formatChoiceLabel(value) {
   return String(value || "")
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-export function mergeUniqueOptionLabels(...collections) {
-  const seen = new Set();
-  const merged = [];
-
-  collections.flat().forEach((value) => {
-    const normalized = String(value || "").trim();
-
-    if (!normalized) {
-      return;
-    }
-
-    const lookup = normalized.toLowerCase();
-
-    if (seen.has(lookup)) {
-      return;
-    }
-
-    seen.add(lookup);
-    merged.push(normalized);
-  });
-
-  return merged;
 }

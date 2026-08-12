@@ -119,6 +119,40 @@ export function mapAllergensToOptions(allergens = []) {
   }));
 }
 
+export function mapDietaryTagsToOptions(dietaryTags = []) {
+  return safeArray(dietaryTags)
+    .filter((tag) => tag?.id || tag?.slug || tag?.name)
+    .map((tag) => ({
+      label: tag.name || formatChoiceLabel(tag.slug || ""),
+      value: tag.id || tag.slug || tag.name,
+    }));
+}
+
+function mapSelectedDietaryValues(dietaryTags = []) {
+  return safeArray(dietaryTags)
+    .map((tag) => {
+      if (typeof tag === "string") {
+        return tag;
+      }
+
+      return tag?.id || tag?.slug || tag?.name || "";
+    })
+    .filter(Boolean);
+}
+
+function formatDietaryTagNames(dietaryTags = []) {
+  return safeArray(dietaryTags)
+    .map((tag) => {
+      if (typeof tag === "string") {
+        return tag;
+      }
+
+      return tag?.name || formatChoiceLabel(tag?.slug || "");
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
 export function mapCategoriesToOptions(categoriesConnection) {
   return getCategoryItems(categoriesConnection)
     .map((category) => ({
@@ -135,7 +169,7 @@ export function mapVendorAddOnNodeToCard(node) {
     title: node.name,
     description: node.category?.name || "Optional add-on",
     price: formattedPrice,
-    meta: (node.dietaryTags || []).join(", ") || "Available add-on",
+    meta: formatDietaryTagNames(node.dietaryTags) || "Available add-on",
     image: node.coverImage?.fileUrl || "/heroBg.webp",
     status: statusLabelMap[node.menuStatus] || formatChoiceLabel(node.menuStatus || "active"),
     badge: node.category?.name || "Add-on",
@@ -212,7 +246,7 @@ export function mapVendorAddOnDetailToForm(addOn) {
     mealTypes: safeArray(addOn.foodTypes)
       .map((foodType) => foodType?.id || foodType?.slug || "")
       .filter(Boolean),
-    selectedDietary: safeArray(addOn.dietaryTags),
+    selectedDietary: mapSelectedDietaryValues(addOn.dietaryTags),
     availableImmediately: addOn.menuStatus === "active",
     status: addOn.menuStatus || "draft",
   };
@@ -265,7 +299,7 @@ export function mapVendorMenuDetailToForm(menu) {
     selectedDays: safeArray(menu.availableDays),
     leadTime: menu.minLeadTimeHours ? String(menu.minLeadTimeHours) : "24",
     blackoutDate: safeArray(menu.blackoutDates)[0] || "",
-    selectedDietary: safeArray(menu.dietaryTags),
+    selectedDietary: mapSelectedDietaryValues(menu.dietaryTags),
     customDietary: menu.customDietary || "",
     pricingMode: menu.pricingType || "",
     basePrice: menu.priceWithTax || "",

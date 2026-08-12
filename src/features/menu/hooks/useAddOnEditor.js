@@ -11,15 +11,12 @@ import {
 import {
   buildSaveVendorAddOnVariables,
   mapCategoriesToOptions,
+  mapDietaryTagsToOptions,
   mapFoodTypesToOptions,
   mapVendorAddOnDetailToForm,
   resolveMediaUrl,
 } from "../api/menuMappers";
 import { uploadMenuImage } from "../api/menuUploadApi";
-import {
-  dietaryOptions as defaultDietaryOptions,
-  mergeUniqueOptionLabels,
-} from "../menuConstants";
 import { getInitialAddOnState } from "../utils/addOnEditorUtils";
 import {
   showVendorErrorAlert,
@@ -67,7 +64,7 @@ export function useAddOnEditor() {
   const [formState, setFormState] = useState(getInitialAddOnState);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [mealTypeOptions, setMealTypeOptions] = useState([]);
-  const [dietaryOptions, setDietaryOptions] = useState(defaultDietaryOptions);
+  const [dietaryOptions, setDietaryOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,16 +87,7 @@ export function useAddOnEditor() {
 
         const nextCategoryOptions = mapCategoriesToOptions(bootstrapResult.categories);
         const nextMealTypeOptions = mapFoodTypesToOptions(bootstrapResult.foodTypes);
-        const nextDietaryOptions = mergeUniqueOptionLabels(
-          defaultDietaryOptions,
-          (bootstrapResult.vendorMenus?.edges || []).flatMap(
-            (edge) => edge?.node?.dietaryTags || [],
-          ),
-          (bootstrapResult.vendorAddOns?.edges || []).flatMap(
-            (edge) => edge?.node?.dietaryTags || [],
-          ),
-          detailResult?.vendorAddOn?.dietaryTags || [],
-        );
+        const nextDietaryOptions = mapDietaryTagsToOptions(bootstrapResult.dietaryTags);
         setCategoryOptions(nextCategoryOptions);
         setMealTypeOptions(nextMealTypeOptions);
         setDietaryOptions(nextDietaryOptions);

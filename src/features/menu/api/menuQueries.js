@@ -19,6 +19,13 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       name
       slug
     }
+    dietaryTags {
+      id
+      name
+      slug
+      isActive
+      sortOrder
+    }
     categories {
       edges {
         node {
@@ -34,7 +41,13 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
           name
           priceWithTax
           menuStatus
-          dietaryTags
+          dietaryTags {
+            id
+            name
+            slug
+            isActive
+            sortOrder
+          }
           coverImage {
             fileUrl
             fileId
@@ -43,14 +56,6 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
             id
             name
           }
-        }
-      }
-    }
-    vendorMenus(first: 100) {
-      edges {
-        node {
-          id
-          dietaryTags
         }
       }
     }
@@ -88,7 +93,13 @@ export const GET_VENDOR_MENU_DETAIL_QUERY = `
       minLeadTimeDays
       availableDays
       blackoutDates
-      dietaryTags
+      dietaryTags {
+        id
+        name
+        slug
+        isActive
+        sortOrder
+      }
       customDietary
       contains
       isAdjustableForSingleStaff
@@ -162,7 +173,13 @@ export const GET_VENDOR_MENUS_QUERY = `
           pricingType
           priceWithTax
           minimumGuests
-          dietaryTags
+          dietaryTags {
+            id
+            name
+            slug
+            isActive
+            sortOrder
+          }
           createdOn
           updatedOn
           coverImage {
@@ -225,7 +242,13 @@ export const SAVE_VENDOR_MENU_MUTATION = `
         minLeadTimeDays
         availableDays
         blackoutDates
-        dietaryTags
+        dietaryTags {
+          id
+          name
+          slug
+          isActive
+          sortOrder
+        }
         customDietary
         contains
         isAdjustableForSingleStaff
@@ -366,21 +389,12 @@ export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
       name
       slug
     }
-    vendorMenus(first: 100) {
-      edges {
-        node {
-          id
-          dietaryTags
-        }
-      }
-    }
-    vendorAddOns(first: 100) {
-      edges {
-        node {
-          id
-          dietaryTags
-        }
-      }
+    dietaryTags {
+      id
+      name
+      slug
+      isActive
+      sortOrder
     }
   }
 `;
@@ -396,7 +410,13 @@ export const GET_VENDOR_ADD_ONS_QUERY = `
           priceWithTax
           taxPercent
           menuStatus
-          dietaryTags
+          dietaryTags {
+            id
+            name
+            slug
+            isActive
+            sortOrder
+          }
           customDietary
           availableDays
           coverImage {
@@ -433,7 +453,13 @@ export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
       priceWithTax
       taxPercent
       menuStatus
-      dietaryTags
+      dietaryTags {
+        id
+        name
+        slug
+        isActive
+        sortOrder
+      }
       customDietary
       availableDays
       coverImage {
@@ -475,7 +501,13 @@ export const SAVE_VENDOR_ADD_ON_MUTATION = `
         priceWithTax
         taxPercent
         menuStatus
-        dietaryTags
+        dietaryTags {
+          id
+          name
+          slug
+          isActive
+          sortOrder
+        }
         customDietary
         availableDays
         coverImage {
