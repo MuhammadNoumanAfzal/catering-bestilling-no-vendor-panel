@@ -70,21 +70,23 @@ export default function CreateMenuAvailabilitySection({
         <Label>Dietary Tags</Label>
         <div className="flex flex-wrap gap-2">
           {dietaryOptions.map((tag) => {
-            const isActive = selectedDietary.includes(tag);
+            const tagValue = tag.value || tag;
+            const tagLabel = tag.label || tag;
+            const isActive = selectedDietary.includes(tagValue);
 
             return (
               <button
-                key={tag}
+                key={tagValue}
                 className={`cursor-pointer rounded-full border px-3 py-[8px] text-[13px] font-semibold transition ${
                   isActive
                     ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
                     : "border-[#bdb2a9] bg-white text-[#29211d]"
                 } ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                 disabled={disabled}
-                onClick={() => toggleDietary(tag)}
+                onClick={() => toggleDietary(tagValue)}
                 type="button"
               >
-                {tag}
+                {tagLabel}
               </button>
             );
           })}
