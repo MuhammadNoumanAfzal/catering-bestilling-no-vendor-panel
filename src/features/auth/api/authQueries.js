@@ -12,6 +12,9 @@ export const LOGIN_USER_MUTATION = `
         postCode
         role
         isActive
+        applicationStatus
+        vendorStatus
+        status
       }
     }
   }
@@ -52,6 +55,9 @@ export const REGISTER_VENDOR_MUTATION = `
         companyName
         postCode
         isActive
+        applicationStatus
+        vendorStatus
+        status
       }
     }
   }

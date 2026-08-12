@@ -2,6 +2,25 @@ import { isAllowedAuthRole } from "../authConfig";
 
 const AUTH_STORAGE_KEY = "vendor-panel-auth";
 
+function isVendorSessionAllowed(user) {
+  const applicationStatus = `${user?.applicationStatus ?? ""}`.trim().toUpperCase();
+  const vendorStatus = `${user?.vendorStatus ?? user?.status ?? ""}`.trim().toUpperCase();
+
+  if (!user?.isActive) {
+    return false;
+  }
+
+  if (applicationStatus && !["ACTIVE", "APPROVED"].includes(applicationStatus)) {
+    return false;
+  }
+
+  if (vendorStatus && !["ACTIVE", "APPROVED"].includes(vendorStatus)) {
+    return false;
+  }
+
+  return true;
+}
+
 export function loadStoredAuthSession() {
   if (typeof window === "undefined") {
     return {
@@ -24,7 +43,13 @@ export function loadStoredAuthSession() {
     const accessToken = parsedSession.accessToken || null;
     const user = parsedSession.user || null;
 
-    if (!accessToken || !user?.id || !user?.email || !isAllowedAuthRole(user?.role) || !user?.isActive) {
+    if (
+      !accessToken ||
+      !user?.id ||
+      !user?.email ||
+      !isAllowedAuthRole(user?.role) ||
+      !isVendorSessionAllowed(user)
+    ) {
       window.localStorage.removeItem(AUTH_STORAGE_KEY);
       return {
         accessToken: null,
@@ -49,7 +74,12 @@ export function persistAuthSession(session) {
     return;
   }
 
-  if (!session?.accessToken || !session?.user || !isAllowedAuthRole(session.user.role)) {
+  if (
+    !session?.accessToken ||
+    !session?.user ||
+    !isAllowedAuthRole(session.user.role) ||
+    !isVendorSessionAllowed(session.user)
+  ) {
     return;
   }
 
