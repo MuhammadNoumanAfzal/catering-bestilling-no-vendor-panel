@@ -141,6 +141,36 @@ function mapSimpleOptions(items = [], valueKey, labelKey) {
     .filter((item) => item.value && item.label);
 }
 
+function mapCurrencyOptions(items = []) {
+  return items
+    .map((item) => {
+      const code = item?.code || "";
+      const label = item?.label || code;
+      const symbol = item?.symbol ? ` (${item.symbol})` : "";
+
+      return {
+        value: code,
+        label: `${label}${symbol}`,
+      };
+    })
+    .filter((item) => item.value && item.label);
+}
+
+function mapTimeZoneOptions(items = []) {
+  return items
+    .map((item) => {
+      const value = item?.value || "";
+      const label = item?.label || value;
+      const utcOffset = item?.utcOffset ? ` ${item.utcOffset}` : "";
+
+      return {
+        value,
+        label: `${label}${utcOffset}`.trim(),
+      };
+    })
+    .filter((item) => item.value && item.label);
+}
+
 function mapBusinessHours(hours = []) {
   return WEEK_DAYS.map((day) => {
     const matchedHour = hours.find((item) => normalizeString(item?.day) === day);
@@ -255,8 +285,8 @@ export function mapVendorSettingsPage(result, options = {}) {
       businessTypeOptions: mapTaxonomyOptions(bootstrap?.businessTypes),
       closureTypeOptions: mapTaxonomyOptions(bootstrap?.closureTypes),
       languageOptions: mapSimpleOptions(bootstrap?.languages, "code", "label"),
-      currencyOptions: mapSimpleOptions(bootstrap?.currencies, "code", "label"),
-      timeZoneOptions: mapSimpleOptions(bootstrap?.timeZones, "value", "label"),
+      currencyOptions: mapCurrencyOptions(bootstrap?.currencies),
+      timeZoneOptions: mapTimeZoneOptions(bootstrap?.timeZones),
     },
   };
 }

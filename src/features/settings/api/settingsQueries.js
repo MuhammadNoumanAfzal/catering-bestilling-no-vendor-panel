@@ -94,11 +94,15 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         id
         name
         slug
+        isActive
+        sortOrder
       }
       businessTypes {
         id
         name
         slug
+        isActive
+        sortOrder
       }
       closureTypes {
         id
@@ -108,14 +112,22 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
       languages {
         code
         label
+        isActive
+        sortOrder
       }
       currencies {
         code
         label
+        symbol
+        isActive
+        sortOrder
       }
       timeZones {
         value
         label
+        utcOffset
+        isActive
+        sortOrder
       }
     }
   }
