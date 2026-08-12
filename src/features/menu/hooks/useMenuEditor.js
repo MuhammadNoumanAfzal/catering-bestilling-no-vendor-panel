@@ -25,7 +25,11 @@ import {
   resolveMediaUrl,
 } from "../api/menuMappers";
 import { uploadMenuImage } from "../api/menuUploadApi";
-import { allergenOptions as defaultAllergenOptions } from "../menuConstants";
+import {
+  allergenOptions as defaultAllergenOptions,
+  dietaryOptions as defaultDietaryOptions,
+  mergeUniqueOptionLabels,
+} from "../menuConstants";
 import {
   createEmptyMenuItem,
   getInitialMenuState,
@@ -96,6 +100,7 @@ export function useMenuEditor() {
   const [menuTypeOptions, setMenuTypeOptions] = useState([]);
   const [occasionOptions, setOccasionOptions] = useState([]);
   const [allergenOptions, setAllergenOptions] = useState(defaultAllergenOptions);
+  const [dietaryOptions, setDietaryOptions] = useState(defaultDietaryOptions);
   const [pricingModes, setPricingModes] = useState([]);
   const [availableAddOns, setAvailableAddOns] = useState([]);
   const [existingMenus, setExistingMenus] = useState([]);
@@ -126,6 +131,17 @@ export function useMenuEditor() {
         const nextMenuTypeOptions = mapFoodTypesToOptions(bootstrapResult.foodTypes);
         const nextOccasionOptions = mapOccasionsToOptions(bootstrapResult.occasions);
         const nextAllergenOptions = mapAllergensToOptions(bootstrapResult.allergens);
+        const nextDietaryOptions = mergeUniqueOptionLabels(
+          defaultDietaryOptions,
+          (bootstrapResult.vendorAddOns?.edges || []).flatMap(
+            (edge) => edge?.node?.dietaryTags || [],
+          ),
+          (bootstrapResult.vendorMenus?.edges || []).flatMap(
+            (edge) => edge?.node?.dietaryTags || [],
+          ),
+          (menusResult?.vendorMenus?.edges || []).flatMap((edge) => edge?.node?.dietaryTags || []),
+          detailResult?.vendorMenu?.dietaryTags || [],
+        );
         const nextPricingModes = mapChoiceOptions(bootstrapResult.pricingTypeChoices);
         const nextAddOns = (bootstrapResult.vendorAddOns?.edges || [])
           .map((edge) => edge?.node)
@@ -136,6 +152,7 @@ export function useMenuEditor() {
         setMenuTypeOptions(nextMenuTypeOptions);
         setOccasionOptions(nextOccasionOptions);
         setAllergenOptions(nextAllergenOptions);
+        setDietaryOptions(nextDietaryOptions);
         setPricingModes(nextPricingModes);
         setAvailableAddOns(nextAddOns);
         setExistingMenus(mapMenuListResponse(menusResult));
@@ -709,6 +726,7 @@ export function useMenuEditor() {
     existingMenus,
     fieldErrors,
     allergenOptions,
+    dietaryOptions,
     filteredAddOns,
     formState,
     isDuplicateMode,

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import CreateAddOnActionsBar from "../components/create-addon/CreateAddOnActionsBar";
 import CreateAddOnAvailabilitySection from "../components/create-addon/CreateAddOnAvailabilitySection";
 import CreateAddOnBasicInfoSection from "../components/create-addon/CreateAddOnBasicInfoSection";
-import { dietaryOptions } from "../menuConstants";
 import { useAddOnEditor } from "../hooks/useAddOnEditor";
 
 export default function CreateAddOnPage() {
@@ -18,6 +17,7 @@ export default function CreateAddOnPage() {
     isEditMode,
     isLoading,
     isSaving,
+    dietaryOptions,
     mealTypeOptions,
     resolvedCategory,
     selectedCategoryLabel,

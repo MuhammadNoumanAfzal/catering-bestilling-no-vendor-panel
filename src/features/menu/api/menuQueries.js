@@ -46,6 +46,14 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
         }
       }
     }
+    vendorMenus(first: 100) {
+      edges {
+        node {
+          id
+          dietaryTags
+        }
+      }
+    }
   }
 `;
 
@@ -154,6 +162,7 @@ export const GET_VENDOR_MENUS_QUERY = `
           pricingType
           priceWithTax
           minimumGuests
+          dietaryTags
           createdOn
           updatedOn
           coverImage {
@@ -357,6 +366,22 @@ export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
       name
       slug
     }
+    vendorMenus(first: 100) {
+      edges {
+        node {
+          id
+          dietaryTags
+        }
+      }
+    }
+    vendorAddOns(first: 100) {
+      edges {
+        node {
+          id
+          dietaryTags
+        }
+      }
+    }
   }
 `;
 
@@ -531,4 +556,3 @@ export const DELETE_OCCASION_MUTATION = `
     }
   }
 `;
-

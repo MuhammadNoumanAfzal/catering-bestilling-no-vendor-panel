@@ -43,3 +43,27 @@ export function formatChoiceLabel(value) {
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
+
+export function mergeUniqueOptionLabels(...collections) {
+  const seen = new Set();
+  const merged = [];
+
+  collections.flat().forEach((value) => {
+    const normalized = String(value || "").trim();
+
+    if (!normalized) {
+      return;
+    }
+
+    const lookup = normalized.toLowerCase();
+
+    if (seen.has(lookup)) {
+      return;
+    }
+
+    seen.add(lookup);
+    merged.push(normalized);
+  });
+
+  return merged;
+}
