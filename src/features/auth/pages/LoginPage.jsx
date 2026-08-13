@@ -4,6 +4,7 @@ import { useState } from "react";
 import AuthCard from "../components/AuthCard";
 import { useAuth } from "../hooks/useAuth";
 import AuthLayout from "../layouts/AuthLayout";
+import { getVendorPostLoginPath } from "../api/authApi";
 import { showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
 
 function isValidEmail(email) {
@@ -13,14 +14,14 @@ function isValidEmail(email) {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { clearAuthError, isAuthenticated, isLoggingIn, login } = useAuth();
+  const { clearAuthError, isAuthenticated, isLoggingIn, login, user } = useAuth();
   const [formState, setFormState] = useState({
     identifier: "",
     password: "",
   });
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getVendorPostLoginPath(user)} replace />;
   }
 
   function handleFieldChange(field) {
@@ -45,9 +46,9 @@ export default function LoginPage() {
     }
 
     try {
-      await login(formState);
+      const session = await login(formState);
       await showVendorSuccessToast("Logged in successfully.");
-      const nextPath = location.state?.from?.pathname || "/dashboard";
+      const nextPath = location.state?.from?.pathname || getVendorPostLoginPath(session?.user);
       navigate(nextPath, { replace: true });
     } catch (error) {
       await showVendorErrorAlert(error.message || "Login failed.", "Login failed");

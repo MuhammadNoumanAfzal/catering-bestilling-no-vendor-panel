@@ -3,22 +3,7 @@ import { isAllowedAuthRole } from "../authConfig";
 const AUTH_STORAGE_KEY = "vendor-panel-auth";
 
 function isVendorSessionAllowed(user) {
-  const applicationStatus = `${user?.applicationStatus ?? ""}`.trim().toUpperCase();
-  const vendorStatus = `${user?.vendorStatus ?? user?.status ?? ""}`.trim().toUpperCase();
-
-  if (!user?.isActive) {
-    return false;
-  }
-
-  if (applicationStatus && !["ACTIVE", "APPROVED"].includes(applicationStatus)) {
-    return false;
-  }
-
-  if (vendorStatus && !["ACTIVE", "APPROVED"].includes(vendorStatus)) {
-    return false;
-  }
-
-  return true;
+  return Boolean(user?.id && user?.email && isAllowedAuthRole(user?.role));
 }
 
 export function loadStoredAuthSession() {

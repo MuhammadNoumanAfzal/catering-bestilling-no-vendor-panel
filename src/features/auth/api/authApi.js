@@ -20,7 +20,7 @@ function normalizeUser(user) {
     firstName: user.firstName,
     lastName: user.lastName,
     phone: user.phone,
-    role: user.role,
+    role: `${user.role ?? ""}`.trim().toLowerCase(),
     companyName: user.companyName ?? "",
     postCode: user.postCode ?? null,
     isActive: Boolean(user.isActive),
@@ -61,6 +61,18 @@ function resolveVendorAccessError(user) {
   return "Your vendor account is inactive. Please contact support.";
 }
 
+export function getVendorPostLoginPath(user) {
+  const applicationStatus = `${user?.applicationStatus ?? ""}`.trim().toUpperCase();
+  const vendorStatus = `${user?.vendorStatus ?? user?.status ?? ""}`.trim().toUpperCase();
+
+  if (["ACTIVE", "APPROVED"].includes(applicationStatus) || ["ACTIVE", "APPROVED"].includes(vendorStatus)) {
+    return "/dashboard";
+  }
+
+  // Allow non-approved vendors to sign in and complete their business profile.
+  return "/settings";
+}
+
 export async function loginUserRequest({ identifier, password }) {
   const data = await executeGraphqlRequest(LOGIN_USER_MUTATION, {
     email: identifier.trim(),
@@ -75,10 +87,6 @@ export async function loginUserRequest({ identifier, password }) {
   }
 
   const normalizedUser = normalizeUser(loginUser.user);
-
-  if (!normalizedUser?.isActive) {
-    throw new Error(resolveVendorAccessError(normalizedUser));
-  }
 
   if (!isAllowedAuthRole(normalizedUser?.role)) {
     throw new Error("This portal is restricted to vendor accounts.");
