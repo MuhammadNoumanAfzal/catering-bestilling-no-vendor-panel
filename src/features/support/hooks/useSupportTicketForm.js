@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   isMenuImageUploadConfigured,
   uploadMenuImage,
@@ -21,9 +21,18 @@ const ALLOWED_ATTACHMENT_TYPES = [
 ];
 const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
 
-export default function useSupportTicketForm(onSubmitted) {
+function buildInitialForm(prefill = null) {
+  return {
+    ...initialSupportTicketForm,
+    issueType: `${prefill?.issueType ?? initialSupportTicketForm.issueType ?? ""}`.trim(),
+    relatedOrder: `${prefill?.relatedOrder ?? initialSupportTicketForm.relatedOrder ?? ""}`.trim(),
+    description: `${prefill?.description ?? initialSupportTicketForm.description ?? ""}`,
+  };
+}
+
+export default function useSupportTicketForm(onSubmitted, initialForm = null) {
   const isAttachmentUploadAvailable = isMenuImageUploadConfigured();
-  const [form, setForm] = useState(initialSupportTicketForm);
+  const [form, setForm] = useState(() => buildInitialForm(initialForm));
   const [attachment, setAttachment] = useState(null);
   const [attachmentError, setAttachmentError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +44,22 @@ export default function useSupportTicketForm(onSubmitted) {
     () => form.issueType && form.description.trim().length > 0,
     [form.description, form.issueType],
   );
+
+  useEffect(() => {
+    if (!initialForm) {
+      return;
+    }
+
+    setForm((current) => {
+      const nextForm = buildInitialForm(initialForm);
+      const hasExistingInput =
+        current.issueType !== initialSupportTicketForm.issueType
+        || current.relatedOrder !== initialSupportTicketForm.relatedOrder
+        || current.description !== initialSupportTicketForm.description;
+
+      return hasExistingInput ? current : nextForm;
+    });
+  }, [initialForm]);
 
   function handleFieldChange(field) {
     return (event) => {
@@ -113,7 +138,7 @@ export default function useSupportTicketForm(onSubmitted) {
 
       setSubmitted(true);
       setSubmittedTicketId(result.ticketId || "");
-      setForm(initialSupportTicketForm);
+      setForm(buildInitialForm(null));
       setAttachment(null);
       setAttachmentError("");
       if (typeof onSubmitted === "function") {

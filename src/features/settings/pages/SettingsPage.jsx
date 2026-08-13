@@ -9,6 +9,9 @@ function resolveSettingsNoticeStatus(applicationReview, authUser) {
   const reviewStatus = `${applicationReview?.applicationStatus ?? ""}`.trim().toUpperCase();
   const vendorStatus = `${applicationReview?.vendorStatus ?? authUser?.vendorStatus ?? ""}`.trim().toUpperCase();
   const currentStatus = `${applicationReview?.currentStatus ?? authUser?.status ?? ""}`.trim().toUpperCase();
+  const isFixedAndReady = Boolean(
+    applicationReview?.canApprove || applicationReview?.isReadyForApproval,
+  );
 
   if (
     ["ACTIVE", "APPROVED"].includes(reviewStatus) ||
@@ -16,6 +19,10 @@ function resolveSettingsNoticeStatus(applicationReview, authUser) {
     ["ACTIVE", "APPROVED"].includes(currentStatus)
   ) {
     return "";
+  }
+
+  if (reviewStatus === "CHANGES_REQUESTED" && isFixedAndReady) {
+    return "REVIEWING";
   }
 
   return (
@@ -32,9 +39,13 @@ export default function SettingsPage() {
     activeTab,
     authUser,
     applicationReview,
+    complianceDocuments,
     handleAccountFieldChange,
     handleBannerImageUpload,
     handleBusinessHourChange,
+    handleComplianceDocumentRemove,
+    handleComplianceDocumentUpload,
+    handleComplianceDocumentsReviewRequest,
     handleCancel,
     handleDeactivateStore,
     handleDeleteClosure,
@@ -118,12 +129,16 @@ export default function SettingsPage() {
       ) : (
         <SettingsBusinessProfilePanel
           businessTypeOptions={settingsOptions.businessTypeOptions}
+          complianceDocuments={complianceDocuments}
           closureTypeOptions={settingsOptions.closureTypeOptions}
           cuisineOptions={settingsOptions.cuisineOptions}
           currencyOptions={settingsOptions.currencyOptions}
           disabled={isLoading || isSaving}
           fieldErrors={fieldErrors}
           handleBusinessHourChange={handleBusinessHourChange}
+          handleComplianceDocumentRemove={handleComplianceDocumentRemove}
+          handleComplianceDocumentUpload={handleComplianceDocumentUpload}
+          handleComplianceDocumentsReviewRequest={handleComplianceDocumentsReviewRequest}
           handleDeactivateStore={handleDeactivateStore}
           handleDeleteStore={handleDeleteStore}
           handleFieldChange={handleFieldChange}

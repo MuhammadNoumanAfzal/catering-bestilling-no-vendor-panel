@@ -1,7 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import SupportTicketForm from "../components/SupportTicketForm";
 
 export default function SupportCenterPage() {
+  const location = useLocation();
+  const initialForm = location.state?.initialSupportForm || null;
+
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -20,7 +23,7 @@ export default function SupportCenterPage() {
         </Link>
       </header>
 
-      <SupportTicketForm />
+      <SupportTicketForm initialForm={initialForm} />
     </section>
   );
 }

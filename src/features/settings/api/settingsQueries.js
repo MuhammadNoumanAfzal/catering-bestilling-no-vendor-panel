@@ -100,6 +100,10 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
       vendorId
       applicationStatus
       reviewedAt
+      canApprove
+      isReadyForApproval
+      checklistCompleted
+      checklistTotal
       missingRequirements {
         code
         label

@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 function formatReviewDate(value) {
   if (!value) {
     return "";
@@ -87,12 +89,44 @@ export default function VendorApplicationStatusNotice({
   requestedFields = [],
   missingRequirements = [],
 }) {
+  const navigate = useNavigate();
   const config = getStatusConfig(status);
   const reviewedLabel = formatReviewDate(reviewedAt);
   const detailFields = requestedFields.length ? requestedFields : missingRequirements;
 
   if (!config) {
     return null;
+  }
+
+  const requestReviewMessage =
+    changeRequestMessage
+    || "I have completed the requested changes. Please review my vendor application again.";
+
+  function handleOpenReviewSupport() {
+    const requestedItemSummary = detailFields
+      .map((item) => item?.label || item?.code)
+      .filter(Boolean)
+      .join(", ");
+
+    const descriptionLines = [
+      "I have completed the requested application changes and would like admin to review my vendor profile again.",
+      "",
+      "Admin request:",
+      requestReviewMessage,
+    ];
+
+    if (requestedItemSummary) {
+      descriptionLines.push("", `Updated items: ${requestedItemSummary}`);
+    }
+
+    navigate("/support", {
+      state: {
+        initialSupportForm: {
+          issueType: "account-verification",
+          description: descriptionLines.join("\n"),
+        },
+      },
+    });
   }
 
   return (
@@ -136,6 +170,20 @@ export default function VendorApplicationStatusNotice({
               </div>
             ))}
           </div>
+          {`${status}`.trim().toUpperCase() === "CHANGES_REQUESTED" ? (
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                className="inline-flex h-[44px] items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[14px] font-bold text-white transition hover:bg-[#c9602c]"
+                onClick={handleOpenReviewSupport}
+                type="button"
+              >
+                I fixed the changes
+              </button>
+              <p className="text-[12px] leading-5 text-[#7a675d]">
+                This opens a support ticket so admin can re-check your updated application.
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
 
