@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadStoredAuthSession } from "../../auth/store/authStorage";
-import { createSupportTicket } from "../../support/api/supportApi";
 import {
   changeVendorPassword,
   deactivateVendorStore,
   deleteVendorSpecialClosure,
   deleteVendorStore,
+  getVendorComplianceDocuments,
   getVendorSettingsPage,
   resetVendorSettingsToDefault,
   updateVendorAccountProfile,
@@ -14,6 +14,7 @@ import {
   updateVendorSettingsImages,
   updateVendorNotificationPreferences,
   updateVendorRegionalPreferences,
+  uploadVendorComplianceDocument,
   upsertVendorSpecialClosure,
 } from "../api/settingsApi";
 import {
@@ -42,7 +43,7 @@ import {
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 import { dispatchVendorProfileUpdated } from "../../../utils/vendorProfileEvents";
-import { uploadMenuImage } from "../../menu/api/menuUploadApi";
+import { uploadFileAsset, uploadMenuImage } from "../../menu/api/menuUploadApi";
 import {
   getCurrentYear,
   isPastDateValue,
@@ -56,44 +57,66 @@ const emptyPasswordForm = {
 };
 
 const SETTINGS_DRAFT_STORAGE_KEY = "vendor-settings-draft";
-const COMPLIANCE_DOCUMENTS_STORAGE_KEY = "vendor-compliance-documents";
-
 const defaultComplianceDocuments = [
   {
-    type: "business-registration",
+    type: "BUSINESS_REGISTRATION",
     title: "Business Registration",
     description: "Official business registration or company incorporation proof.",
-    acceptedFormatsLabel: "PNG, JPG, WEBP",
+    acceptedFormatsLabel: "PDF, PNG, JPG, WEBP",
     isRequired: true,
-    asset: null,
-    notifiedAdminAt: "",
+    fileName: "",
+    fileUrl: "",
+    fileId: "",
+    uploadedAt: "",
+    reviewedAt: "",
+    status: "PENDING",
+    reviewNote: "",
+    rejectionReason: "",
   },
   {
-    type: "food-safety-license",
+    type: "FOOD_SAFETY_LICENSE",
     title: "Food Safety License",
     description: "Valid food handling, catering, or hygiene permit.",
-    acceptedFormatsLabel: "PNG, JPG, WEBP",
+    acceptedFormatsLabel: "PDF, PNG, JPG, WEBP",
     isRequired: true,
-    asset: null,
-    notifiedAdminAt: "",
+    fileName: "",
+    fileUrl: "",
+    fileId: "",
+    uploadedAt: "",
+    reviewedAt: "",
+    status: "PENDING",
+    reviewNote: "",
+    rejectionReason: "",
   },
   {
-    type: "vat-tax-id",
+    type: "VAT_TAX_ID",
     title: "VAT / Tax ID",
     description: "Tax registration, VAT certificate, or organization number proof.",
-    acceptedFormatsLabel: "PNG, JPG, WEBP",
+    acceptedFormatsLabel: "PDF, PNG, JPG, WEBP",
     isRequired: true,
-    asset: null,
-    notifiedAdminAt: "",
+    fileName: "",
+    fileUrl: "",
+    fileId: "",
+    uploadedAt: "",
+    reviewedAt: "",
+    status: "PENDING",
+    reviewNote: "",
+    rejectionReason: "",
   },
   {
-    type: "liability-insurance",
+    type: "LIABILITY_INSURANCE",
     title: "Liability Insurance",
     description: "Current insurance certificate showing business coverage.",
-    acceptedFormatsLabel: "PNG, JPG, WEBP",
+    acceptedFormatsLabel: "PDF, PNG, JPG, WEBP",
     isRequired: true,
-    asset: null,
-    notifiedAdminAt: "",
+    fileName: "",
+    fileUrl: "",
+    fileId: "",
+    uploadedAt: "",
+    reviewedAt: "",
+    status: "PENDING",
+    reviewNote: "",
+    rejectionReason: "",
   },
 ];
 
@@ -161,57 +184,20 @@ function clearStoredSettingsDraft(userId) {
   window.localStorage.removeItem(getDraftStorageKey(userId));
 }
 
-function getComplianceStorageKey(userId) {
-  return `${COMPLIANCE_DOCUMENTS_STORAGE_KEY}:${userId || "anonymous"}`;
-}
-
-function mergeComplianceDocuments(storedItems = []) {
+function mergeComplianceDocuments(apiItems = []) {
   return defaultComplianceDocuments.map((item) => {
-    const matched = Array.isArray(storedItems)
-      ? storedItems.find((storedItem) => storedItem?.type === item.type)
+    const matched = Array.isArray(apiItems)
+      ? apiItems.find((apiItem) => `${apiItem?.type ?? ""}`.trim().toUpperCase() === item.type)
       : null;
 
     return matched
       ? {
           ...item,
           ...matched,
-          asset: matched.asset
-            ? {
-                name: matched.asset.name || "",
-                fileId: matched.asset.fileId || "",
-                fileUrl: matched.asset.fileUrl || "",
-                uploadedAt: matched.asset.uploadedAt || "",
-              }
-            : null,
+          fileName: matched.fileName || matched.title || item.title,
         }
       : item;
   });
-}
-
-function loadStoredComplianceDocuments(userId) {
-  if (typeof window === "undefined") {
-    return defaultComplianceDocuments;
-  }
-
-  try {
-    const rawValue = window.localStorage.getItem(getComplianceStorageKey(userId));
-    if (!rawValue) {
-      return defaultComplianceDocuments;
-    }
-
-    const parsed = JSON.parse(rawValue);
-    return mergeComplianceDocuments(parsed);
-  } catch {
-    return defaultComplianceDocuments;
-  }
-}
-
-function persistComplianceDocuments(userId, payload) {
-  if (typeof window === "undefined" || !userId) {
-    return;
-  }
-
-  window.localStorage.setItem(getComplianceStorageKey(userId), JSON.stringify(payload));
 }
 
 function formatMutationErrors(errors = []) {
@@ -301,6 +287,7 @@ export default function useSettingsPageState() {
   async function refreshSettingsPageState() {
     const refreshedResult = await getVendorSettingsPage();
     const mappedPage = mapVendorSettingsPage(refreshedResult, { authUser });
+    const complianceResult = await getVendorComplianceDocuments();
     const storedDraft = loadStoredSettingsDraft(authUser?.id);
     const nextActiveTab =
       storedDraft?.activeTab === "security" || storedDraft?.activeTab === "business"
@@ -325,7 +312,7 @@ export default function useSettingsPageState() {
     setSettings(nextSettings);
     setSettingsOptions(mappedPage.options);
     setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
-    setComplianceDocuments(loadStoredComplianceDocuments(authUser?.id));
+    setComplianceDocuments(mergeComplianceDocuments(complianceResult.documents));
     setActiveTab(nextActiveTab);
 
     return mappedPage;
@@ -338,7 +325,10 @@ export default function useSettingsPageState() {
       setIsLoading(true);
 
       try {
-        const result = await getVendorSettingsPage();
+        const [result, complianceResult] = await Promise.all([
+          getVendorSettingsPage(),
+          getVendorComplianceDocuments(),
+        ]);
 
         if (isCancelled) {
           return;
@@ -369,7 +359,7 @@ export default function useSettingsPageState() {
         setSettings(nextSettings);
         setSettingsOptions(mappedPage.options);
         setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
-        setComplianceDocuments(loadStoredComplianceDocuments(authUser?.id));
+        setComplianceDocuments(mergeComplianceDocuments(complianceResult.documents));
         setActiveTab(nextActiveTab);
       } catch (error) {
         if (!isCancelled) {
@@ -403,14 +393,6 @@ export default function useSettingsPageState() {
 
     return () => window.clearTimeout(timeoutId);
   }, [saveMessage]);
-
-  useEffect(() => {
-    if (!authUser?.id) {
-      return;
-    }
-
-    persistComplianceDocuments(authUser.id, complianceDocuments);
-  }, [authUser?.id, complianceDocuments]);
 
   useEffect(() => {
     if (!authUser?.id || isLoading) {
@@ -621,9 +603,9 @@ export default function useSettingsPageState() {
   }
 
   async function handleComplianceDocumentUpload(type, file) {
-    if (!["image/png", "image/jpeg", "image/jpg", "image/webp"].includes(file.type)) {
+    if (!["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/webp"].includes(file.type)) {
       await showVendorErrorAlert(
-        "Please upload a PNG, JPG, JPEG, or WEBP image for this compliance proof.",
+        "Please upload a PDF, PNG, JPG, JPEG, or WEBP file for this compliance proof.",
         "Unsupported document format",
       );
       return;
@@ -636,24 +618,34 @@ export default function useSettingsPageState() {
 
     try {
       setIsSaving(true);
-      const uploadedAsset = await uploadMenuImage(file);
+      const uploadedAsset = await uploadFileAsset(file);
+      const matchedDocument = complianceDocuments.find((item) => item.type === type);
+      const result = await uploadVendorComplianceDocument({
+        type,
+        title: matchedDocument?.title || file.name,
+        subtitle: matchedDocument?.description || null,
+        fileUrl: uploadedAsset.fileUrl,
+        fileName: file.name,
+        mimeType: file.type,
+        isRequired: true,
+      });
+
+      if (!result.success || !result.document) {
+        await showVendorErrorAlert(result.message || "Unable to upload this compliance document.");
+        return;
+      }
 
       setComplianceDocuments((current) =>
-        current.map((item) =>
-          item.type === type
-            ? {
-                ...item,
-                asset: {
-                  ...uploadedAsset,
-                  name: file.name,
-                  uploadedAt: new Date().toISOString(),
-                },
-                notifiedAdminAt: "",
-              }
-            : item,
+        mergeComplianceDocuments(
+          current
+            .filter((item) => item.fileUrl && item.type !== type)
+            .map((item) => ({
+              ...item,
+            }))
+            .concat(result.document),
         ),
       );
-      await showVendorSuccessToast("Compliance document uploaded.");
+      await showVendorSuccessToast(result.message || "Compliance document uploaded.");
     } catch (error) {
       await showVendorErrorAlert(error.message || "Unable to upload this compliance document.");
     } finally {
@@ -661,83 +653,14 @@ export default function useSettingsPageState() {
     }
   }
 
-  function handleComplianceDocumentRemove(type) {
-    setComplianceDocuments((current) =>
-      current.map((item) =>
-        item.type === type
-          ? {
-              ...item,
-              asset: null,
-              notifiedAdminAt: "",
-            }
-          : item,
-      ),
-    );
-    setSaveMessage("Compliance document removed.");
-  }
-
-  async function handleComplianceDocumentsReviewRequest() {
-    const uploadedDocuments = complianceDocuments.filter((item) => item.asset?.fileUrl);
-    const missingRequiredDocuments = complianceDocuments.filter(
-      (item) => item.isRequired && !item.asset?.fileUrl,
-    );
-
-    if (!uploadedDocuments.length) {
-      await showVendorErrorAlert(
-        "Upload at least one compliance document before asking admin to review.",
-        "No compliance documents uploaded",
-      );
-      return;
-    }
-
-    if (missingRequiredDocuments.length) {
-      await showVendorErrorAlert(
-        `Please upload all required compliance documents first: ${missingRequiredDocuments
-          .map((item) => item.title)
-          .join(", ")}.`,
-        "Required documents missing",
-      );
-      return;
-    }
-
+  async function handleComplianceDocumentsRefresh() {
     try {
       setIsSaving(true);
-
-      const description = [
-        "I uploaded the required compliance documents for my vendor application. Please review and link them to my account.",
-        "",
-        ...uploadedDocuments.map((item) => `- ${item.title}: ${item.asset.fileUrl}`),
-      ].join("\n");
-
-      const firstAttachment = uploadedDocuments[0]?.asset || null;
-      const result = await createSupportTicket({
-        userRole: "vendor",
-        subject: "Account verification issue",
-        relatedOrderId: "",
-        description,
-        attachmentUrl: firstAttachment?.fileUrl || null,
-        attachmentFileId: firstAttachment?.fileId || null,
-      });
-
-      setComplianceDocuments((current) =>
-        current.map((item) =>
-          item.asset?.fileUrl
-            ? {
-                ...item,
-                notifiedAdminAt: new Date().toISOString(),
-              }
-            : item,
-        ),
-      );
-      await showVendorSuccessToast(
-        result.ticketId
-          ? `Compliance documents sent to admin. Reference: ${result.ticketId}.`
-          : "Compliance documents sent to admin for review.",
-      );
+      await refreshSettingsPageState();
+      await showVendorSuccessToast("Compliance review status refreshed.");
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to send compliance documents for review right now.",
-        "Review request failed",
+        error.message || "Unable to refresh compliance review status right now.",
       );
     } finally {
       setIsSaving(false);
@@ -1280,9 +1203,8 @@ export default function useSettingsPageState() {
     complianceDocuments,
     handleAccountFieldChange,
     handleBusinessHourChange,
-    handleComplianceDocumentRemove,
+    handleComplianceDocumentsRefresh,
     handleComplianceDocumentUpload,
-    handleComplianceDocumentsReviewRequest,
     handleCancel,
     handleDeactivateStore,
     handleDeleteClosure,

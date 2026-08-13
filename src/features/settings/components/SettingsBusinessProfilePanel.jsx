@@ -16,9 +16,8 @@ export default function SettingsBusinessProfilePanel({
   fieldErrors = {},
   complianceDocuments = [],
   handleBusinessHourChange,
-  handleComplianceDocumentRemove,
   handleComplianceDocumentUpload,
-  handleComplianceDocumentsReviewRequest,
+  handleComplianceDocumentsRefresh,
   handleDeactivateStore,
   handleDeleteStore,
   handleFieldChange,
@@ -173,10 +172,8 @@ export default function SettingsBusinessProfilePanel({
         <SettingsComplianceDocumentsSection
           disabled={disabled}
           documents={complianceDocuments}
-          onRemove={handleComplianceDocumentRemove}
-          onSendForReview={handleComplianceDocumentsReviewRequest}
+          onRefreshStatus={handleComplianceDocumentsRefresh}
           onUpload={handleComplianceDocumentUpload}
-          sendDisabled={complianceDocuments.some((item) => item.isRequired && !item.asset?.fileUrl)}
         />
 
         <div id="special-closures-section">

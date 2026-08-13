@@ -43,9 +43,8 @@ export default function SettingsPage() {
     handleAccountFieldChange,
     handleBannerImageUpload,
     handleBusinessHourChange,
-    handleComplianceDocumentRemove,
+    handleComplianceDocumentsRefresh,
     handleComplianceDocumentUpload,
-    handleComplianceDocumentsReviewRequest,
     handleCancel,
     handleDeactivateStore,
     handleDeleteClosure,
@@ -136,9 +135,8 @@ export default function SettingsPage() {
           disabled={isLoading || isSaving}
           fieldErrors={fieldErrors}
           handleBusinessHourChange={handleBusinessHourChange}
-          handleComplianceDocumentRemove={handleComplianceDocumentRemove}
+          handleComplianceDocumentsRefresh={handleComplianceDocumentsRefresh}
           handleComplianceDocumentUpload={handleComplianceDocumentUpload}
-          handleComplianceDocumentsReviewRequest={handleComplianceDocumentsReviewRequest}
           handleDeactivateStore={handleDeactivateStore}
           handleDeleteStore={handleDeleteStore}
           handleFieldChange={handleFieldChange}

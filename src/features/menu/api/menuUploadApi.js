@@ -5,6 +5,39 @@ export function isMenuImageUploadConfigured() {
   return Boolean(CLOUDINARY_CLOUD_NAME && CLOUDINARY_UPLOAD_PRESET);
 }
 
+export async function uploadFileAsset(file) {
+  if (!isMenuImageUploadConfigured()) {
+    throw new Error(
+      "Missing Cloudinary configuration. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET.",
+    );
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok || !payload?.secure_url || !payload?.public_id) {
+    throw new Error(payload?.error?.message || "File upload failed. Please try again.");
+  }
+
+  return {
+    fileId: payload.public_id,
+    fileUrl: payload.secure_url,
+    fileName: payload.original_filename || file?.name || "document",
+    mimeType: file?.type || payload.resource_type || "",
+  };
+}
+
 export async function uploadMenuImage(file) {
   if (!isMenuImageUploadConfigured()) {
     throw new Error(
