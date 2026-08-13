@@ -54,6 +54,8 @@ const emptyPasswordForm = {
   confirmPassword: "",
 };
 
+const SETTINGS_DRAFT_STORAGE_KEY = "vendor-settings-draft";
+
 const emptyFieldErrors = {
   fullName: "",
   emailAddress: "",
@@ -78,6 +80,44 @@ function hasPasswordChangeIntent(passwordForm) {
     String(passwordForm.newPassword || "").trim() ||
     String(passwordForm.confirmPassword || "").trim()
   );
+}
+
+function getDraftStorageKey(userId) {
+  return `${SETTINGS_DRAFT_STORAGE_KEY}:${userId || "anonymous"}`;
+}
+
+function loadStoredSettingsDraft(userId) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(getDraftStorageKey(userId));
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistSettingsDraft(userId, payload) {
+  if (typeof window === "undefined" || !userId) {
+    return;
+  }
+
+  window.localStorage.setItem(getDraftStorageKey(userId), JSON.stringify(payload));
+}
+
+function clearStoredSettingsDraft(userId) {
+  if (typeof window === "undefined" || !userId) {
+    return;
+  }
+
+  window.localStorage.removeItem(getDraftStorageKey(userId));
 }
 
 function formatMutationErrors(errors = []) {
@@ -166,11 +206,31 @@ export default function useSettingsPageState() {
   async function refreshSettingsPageState() {
     const refreshedResult = await getVendorSettingsPage();
     const mappedPage = mapVendorSettingsPage(refreshedResult, { authUser });
+    const storedDraft = loadStoredSettingsDraft(authUser?.id);
+    const nextActiveTab =
+      storedDraft?.activeTab === "security" || storedDraft?.activeTab === "business"
+        ? storedDraft.activeTab
+        : "business";
+    const nextSettings = storedDraft?.settings
+      ? {
+          ...mappedPage.settings,
+          ...storedDraft.settings,
+          account: {
+            ...mappedPage.settings.account,
+            ...(storedDraft.settings.account || {}),
+          },
+          notifications: {
+            ...mappedPage.settings.notifications,
+            ...(storedDraft.settings.notifications || {}),
+          },
+        }
+      : mappedPage.settings;
 
     setSavedSettings(mappedPage.settings);
-    setSettings(mappedPage.settings);
+    setSettings(nextSettings);
     setSettingsOptions(mappedPage.options);
     setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
+    setActiveTab(nextActiveTab);
 
     return mappedPage;
   }
@@ -189,10 +249,31 @@ export default function useSettingsPageState() {
         }
 
         const mappedPage = mapVendorSettingsPage(result, { authUser });
+        const storedDraft = loadStoredSettingsDraft(authUser?.id);
+        const nextActiveTab =
+          storedDraft?.activeTab === "security" || storedDraft?.activeTab === "business"
+            ? storedDraft.activeTab
+            : "business";
+        const nextSettings = storedDraft?.settings
+          ? {
+              ...mappedPage.settings,
+              ...storedDraft.settings,
+              account: {
+                ...mappedPage.settings.account,
+                ...(storedDraft.settings.account || {}),
+              },
+              notifications: {
+                ...mappedPage.settings.notifications,
+                ...(storedDraft.settings.notifications || {}),
+              },
+            }
+          : mappedPage.settings;
+
         setSavedSettings(mappedPage.settings);
-        setSettings(mappedPage.settings);
+        setSettings(nextSettings);
         setSettingsOptions(mappedPage.options);
         setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
+        setActiveTab(nextActiveTab);
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -225,6 +306,26 @@ export default function useSettingsPageState() {
 
     return () => window.clearTimeout(timeoutId);
   }, [saveMessage]);
+
+  useEffect(() => {
+    if (!authUser?.id || isLoading) {
+      return;
+    }
+
+    const hasDraftChanges =
+      JSON.stringify(getComparableSettingsState(settings)) !==
+      JSON.stringify(getComparableSettingsState(savedSettings));
+
+    if (!hasDraftChanges) {
+      clearStoredSettingsDraft(authUser.id);
+      return;
+    }
+
+    persistSettingsDraft(authUser.id, {
+      activeTab,
+      settings,
+    });
+  }, [activeTab, authUser?.id, isLoading, savedSettings, settings]);
 
   function handleFieldChange(field) {
     return (event) => {
@@ -410,6 +511,7 @@ export default function useSettingsPageState() {
     setPasswordForm(emptyPasswordForm);
     setFieldErrors(emptyFieldErrors);
     setSaveMessage("Changes discarded.");
+    clearStoredSettingsDraft(authUser?.id);
     await showVendorSuccessToast("Settings changes discarded.");
   }
 
@@ -680,6 +782,7 @@ export default function useSettingsPageState() {
       setPasswordForm(emptyPasswordForm);
       setFieldErrors(emptyFieldErrors);
       setSaveMessage("Changes saved.");
+      clearStoredSettingsDraft(authUser?.id);
       notifyVendorProfileUpdated(nextSettings);
       await showVendorSuccessToast(
         confirmations[confirmations.length - 1] || "Settings saved successfully.",
@@ -716,6 +819,7 @@ export default function useSettingsPageState() {
       setPasswordForm(emptyPasswordForm);
       setFieldErrors(emptyFieldErrors);
       setSaveMessage("Settings reset to default.");
+      clearStoredSettingsDraft(authUser?.id);
       notifyVendorProfileUpdated(mappedPage.settings);
       await showVendorSuccessToast(result.message || "Settings reset to default.");
     } catch (error) {
@@ -795,6 +899,7 @@ export default function useSettingsPageState() {
       setPasswordForm(emptyPasswordForm);
       setFieldErrors(emptyFieldErrors);
       setSaveMessage("Store deleted permanently.");
+      clearStoredSettingsDraft(authUser?.id);
       notifyVendorProfileUpdated(defaultSettingsState);
       await showVendorSuccessToast(result.message || "Store deleted permanently.");
     } catch (error) {
