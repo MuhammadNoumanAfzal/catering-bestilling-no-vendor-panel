@@ -58,6 +58,17 @@ export const defaultSettingsState = {
   closures: [],
 };
 
+export const defaultApplicationReviewState = {
+  id: "",
+  vendorId: "",
+  applicationStatus: "",
+  reviewedAt: "",
+  changeRequestMessage: "",
+  missingRequirements: [],
+  requestedFields: [],
+  latestChangeRequest: null,
+};
+
 export const defaultSettingsOptions = {
   cuisineOptions: [],
   businessTypeOptions: [],
@@ -213,6 +224,41 @@ function mapSpecialClosures(closures = []) {
   }));
 }
 
+function mapChecklistRequirements(items = []) {
+  return items
+    .map((item) => ({
+      code: normalizeString(item?.code),
+      label: normalizeString(item?.label),
+    }))
+    .filter((item) => item.code || item.label);
+}
+
+function mapApplicationReview(review) {
+  if (!review) {
+    return defaultApplicationReviewState;
+  }
+
+  return {
+    id: normalizeString(review.id),
+    vendorId: normalizeString(review.vendorId),
+    applicationStatus: normalizeString(review.applicationStatus),
+    reviewedAt: normalizeString(review.reviewedAt),
+    changeRequestMessage: normalizeString(
+      review.changeRequestMessage || review.latestChangeRequest?.message,
+    ),
+    missingRequirements: mapChecklistRequirements(review.missingRequirements),
+    requestedFields: mapChecklistRequirements(review.requestedFields),
+    latestChangeRequest: review.latestChangeRequest
+      ? {
+          id: normalizeString(review.latestChangeRequest.id),
+          message: normalizeString(review.latestChangeRequest.message),
+          createdAt: normalizeString(review.latestChangeRequest.createdAt),
+          fields: mapChecklistRequirements(review.latestChangeRequest.fields),
+        }
+      : null,
+  };
+}
+
 export function mapVendorSettingsPage(result, options = {}) {
   const settings = result?.vendorSettings;
   const bootstrap = result?.vendorSettingsBootstrap;
@@ -222,6 +268,7 @@ export function mapVendorSettingsPage(result, options = {}) {
     return {
       settings: defaultSettingsState,
       options: defaultSettingsOptions,
+      applicationReview: defaultApplicationReviewState,
     };
   }
 
@@ -288,6 +335,7 @@ export function mapVendorSettingsPage(result, options = {}) {
       currencyOptions: mapCurrencyOptions(bootstrap?.currencies),
       timeZoneOptions: mapTimeZoneOptions(bootstrap?.timeZones),
     },
+    applicationReview: mapApplicationReview(result?.vendorApplicationReviewStatus),
   };
 }
 

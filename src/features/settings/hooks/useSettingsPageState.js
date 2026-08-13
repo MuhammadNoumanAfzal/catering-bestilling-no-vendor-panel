@@ -16,6 +16,7 @@ import {
   upsertVendorSpecialClosure,
 } from "../api/settingsApi";
 import {
+  defaultApplicationReviewState,
   buildAccountProfileInput,
   buildBusinessHoursInput,
   buildBusinessProfileInput,
@@ -150,6 +151,7 @@ export default function useSettingsPageState() {
   const [savedSettings, setSavedSettings] = useState(defaultSettingsState);
   const [settings, setSettings] = useState(defaultSettingsState);
   const [settingsOptions, setSettingsOptions] = useState(defaultSettingsOptions);
+  const [applicationReview, setApplicationReview] = useState(defaultApplicationReviewState);
   const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
   const [passwordVisibility, setPasswordVisibility] = useState({
     currentPassword: false,
@@ -168,6 +170,7 @@ export default function useSettingsPageState() {
     setSavedSettings(mappedPage.settings);
     setSettings(mappedPage.settings);
     setSettingsOptions(mappedPage.options);
+    setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
 
     return mappedPage;
   }
@@ -189,6 +192,7 @@ export default function useSettingsPageState() {
         setSavedSettings(mappedPage.settings);
         setSettings(mappedPage.settings);
         setSettingsOptions(mappedPage.options);
+        setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -937,6 +941,8 @@ export default function useSettingsPageState() {
 
   return {
     activeTab,
+    authUser,
+    applicationReview,
     handleAccountFieldChange,
     handleBusinessHourChange,
     handleCancel,
