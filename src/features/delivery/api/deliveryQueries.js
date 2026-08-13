@@ -36,6 +36,12 @@ export const GET_VENDOR_DELIVERY_SETTINGS_QUERY = `
           postCode
           isActive
         }
+        availableServiceAreas {
+          id
+          name
+          postCode
+          isActive
+        }
       }
     }
   }

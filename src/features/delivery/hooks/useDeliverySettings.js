@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getVendorDeliverySettings,
-  searchAvailableAreas,
   updateVendorDeliverySettings,
   validateVendorDeliverySettings,
-  createValidArea,
 } from "../api/deliveryApi";
 import {
   buildDeliverySettingsInput,
@@ -57,14 +55,9 @@ export default function useDeliverySettings() {
   const [slotDraftError, setSlotDraftError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [serviceAreaSearch, setServiceAreaSearch] = useState("");
-  const [serviceAreaResults, setServiceAreaResults] = useState([]);
-  const [isSearchingAreas, setIsSearchingAreas] = useState(false);
-  const [isCreatingArea, setIsCreatingArea] = useState(false);
-  const [customAreaDraft, setCustomAreaDraft] = useState({ name: "", postCode: "" });
-  const [customAreaErrors, setCustomAreaErrors] = useState({});
+  const [availableServiceAreas, setAvailableServiceAreas] = useState([]);
   const hasLoadedSettingsRef = useRef(false);
   const validationRequestIdRef = useRef(0);
-  const areaSearchRequestIdRef = useRef(0);
 
   function getDefaultSlotDraft(activeDays = formState.activeDays) {
     return {
@@ -80,7 +73,6 @@ export default function useDeliverySettings() {
 
   function resetServiceAreaSearchState() {
     setServiceAreaSearch("");
-    setServiceAreaResults([]);
   }
 
   function applyLoadedSettings(nextSettings) {
@@ -96,9 +88,14 @@ export default function useDeliverySettings() {
 
     try {
       const result = await getVendorDeliverySettings();
-      const nextSettings = mapVendorDeliverySettingsToForm(result?.me?.vendor);
+      const vendor = result?.me?.vendor;
+      const nextSettings = mapVendorDeliverySettingsToForm(vendor);
+      const nextAvailableAreas = Array.isArray(vendor?.availableServiceAreas)
+        ? vendor.availableServiceAreas.map(normalizeServiceArea).filter((area) => area.id && area.isActive)
+        : [];
 
       applyLoadedSettings(nextSettings);
+      setAvailableServiceAreas(nextAvailableAreas);
       hasLoadedSettingsRef.current = true;
     } catch (error) {
       const nextError = error.message || "Unable to load delivery settings right now.";
@@ -173,47 +170,23 @@ export default function useDeliverySettings() {
     return () => window.clearTimeout(timeoutId);
   }, [formState, isLoading, loadError]);
 
-  useEffect(() => {
-    const searchValue = serviceAreaSearch.trim();
+  const serviceAreaResults = useMemo(() => {
+    const searchValue = serviceAreaSearch.trim().toLowerCase();
 
     if (!searchValue || !formState.selectedModes.includes("delivery") || loadError) {
-      setServiceAreaResults([]);
-      setIsSearchingAreas(false);
-      return undefined;
+      return [];
     }
 
-    const requestId = areaSearchRequestIdRef.current + 1;
-    areaSearchRequestIdRef.current = requestId;
-
-    const timeoutId = window.setTimeout(async () => {
-      setIsSearchingAreas(true);
-
-      try {
-        const result = await searchAvailableAreas({ term: searchValue, first: 10 });
-
-        if (areaSearchRequestIdRef.current !== requestId) {
-          return;
-        }
-
-        const selectedIds = new Set((formState.serviceAreas || []).map((area) => area.id));
-        setServiceAreaResults(
-          result.filter((area) => area?.id && !selectedIds.has(area.id)),
-        );
-      } catch {
-        if (areaSearchRequestIdRef.current !== requestId) {
-          return;
-        }
-
-        setServiceAreaResults([]);
-      } finally {
-        if (areaSearchRequestIdRef.current === requestId) {
-          setIsSearchingAreas(false);
-        }
-      }
-    }, 300);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
+    const selectedIds = new Set((formState.serviceAreas || []).map((area) => area.id));
+    return availableServiceAreas
+      .filter((area) => !selectedIds.has(area.id))
+      .filter((area) => {
+        const areaName = `${area.name || ""}`.toLowerCase();
+        const areaPostCode = `${area.postCode || ""}`.toLowerCase();
+        return areaName.includes(searchValue) || areaPostCode.includes(searchValue);
+      })
+      .slice(0, 10);
+  }, [availableServiceAreas, formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
 
   const currentComparable = useMemo(
     () => getComparableDeliverySettings(formState),
@@ -317,73 +290,6 @@ export default function useDeliverySettings() {
       serviceAreas: current.serviceAreas.filter((area) => area.id !== areaId),
     }));
     clearServiceAreaErrors();
-  }
-
-  function handleCustomAreaDraftChange(field, value) {
-    setCustomAreaDraft((current) => ({ ...current, [field]: value }));
-    setCustomAreaErrors((current) => {
-      if (!current[field]) return current;
-      const next = { ...current };
-      delete next[field];
-      return next;
-    });
-  }
-
-  function resetCustomAreaDraft() {
-    setCustomAreaDraft({ name: "", postCode: "" });
-    setCustomAreaErrors({});
-  }
-
-  async function handleCreateCustomArea() {
-    const name = customAreaDraft.name.trim();
-    const postCode = customAreaDraft.postCode.trim();
-
-    // Basic client-side validation
-    const nextErrors = {};
-    if (!name) nextErrors.name = "Area name is required.";
-    if (!postCode) nextErrors.postCode = "Post code is required.";
-    if (!/^\d+$/.test(postCode) && postCode) nextErrors.postCode = "Post code must be a valid number.";
-
-    if (Object.keys(nextErrors).length) {
-      setCustomAreaErrors(nextErrors);
-      return;
-    }
-
-    setIsCreatingArea(true);
-
-    try {
-      const result = await createValidArea({ name, postCode });
-
-      if (!result.success) {
-        // Map backend field errors (e.g. postCode invalid)
-        const fieldErrors = {};
-        (result.errors || []).forEach((err) => {
-          if (err.field) {
-            // Backend returns snake_case field; normalize to camelCase
-            const key = err.field === "post_code" ? "postCode" : err.field;
-            fieldErrors[key] = err.message;
-          }
-        });
-        if (Object.keys(fieldErrors).length) {
-          setCustomAreaErrors(fieldErrors);
-        } else {
-          await showVendorErrorAlert(result.message || "Could not create service area.");
-        }
-        return;
-      }
-
-      // success: true covers both "created" and "already exists" cases
-      const newArea = result.validArea;
-      if (newArea?.id) {
-        handleAddServiceArea(newArea);
-      }
-      resetCustomAreaDraft();
-      await showVendorSuccessToast(result.message || "Service area added.");
-    } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to create service area.");
-    } finally {
-      setIsCreatingArea(false);
-    }
   }
 
   function handleToggleDay(dayValue) {
@@ -524,16 +430,12 @@ export default function useDeliverySettings() {
   return {
     activeDays: formState.activeDays,
     baseFee: formState.baseFee,
-    customAreaDraft,
-    customAreaErrors,
     customSlotDraft,
     fieldErrors,
     freeDelivery: formState.freeDelivery,
     handleAddServiceArea,
     handleCancelChanges,
     handleCloseAddSlotModal,
-    handleCreateCustomArea,
-    handleCustomAreaDraftChange,
     handleOpenAddSlotModal,
     handleRemoveTimeSlot,
     handleRemoveServiceArea,
@@ -545,20 +447,18 @@ export default function useDeliverySettings() {
     hasUnsavedChanges:
       JSON.stringify(currentComparable) !== JSON.stringify(savedComparable),
     isAddSlotModalOpen,
-    isCreatingArea,
     loadError,
     isDeliveryDisabled,
     isLoading,
     isPickupOnly,
     isSaving,
-    isSearchingAreas,
+    isSearchingAreas: false,
     isValidating,
     maxDeliveriesPerDay: formState.maxDeliveriesPerDay,
     maxOrdersPerTimeSlot: formState.maxOrdersPerTimeSlot,
     minimumOrderNoticeHours: formState.minimumOrderNoticeHours,
     pickupAddress: formState.pickupAddress,
     pickupInstructions: formState.pickupInstructions,
-    resetCustomAreaDraft,
     serviceAreaResults,
     serviceAreaSearch,
     serviceAreas: formState.serviceAreas,
