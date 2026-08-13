@@ -17,6 +17,10 @@ export async function searchAvailableAreas({ term, first = 10 }) {
     { term: term || null, first },
   );
 
+  if (Array.isArray(result?.vendorAvailableDeliveryAreas)) {
+    return result.vendorAvailableDeliveryAreas;
+  }
+
   return Array.isArray(result?.validAreasSearch) ? result.validAreasSearch : [];
 }
 
