@@ -4,6 +4,7 @@ import {
   DEACTIVATE_VENDOR_STORE_MUTATION,
   DELETE_VENDOR_SPECIAL_CLOSURE_MUTATION,
   DELETE_VENDOR_STORE_MUTATION,
+  GET_VENDOR_COMPLIANCE_DOCUMENTS_QUERY,
   GET_VENDOR_SETTINGS_PAGE_QUERY,
   RESET_VENDOR_SETTINGS_TO_DEFAULT_MUTATION,
   UPDATE_VENDOR_ACCOUNT_PROFILE_MUTATION,
@@ -12,6 +13,7 @@ import {
   UPDATE_VENDOR_SETTINGS_IMAGES_MUTATION,
   UPDATE_VENDOR_NOTIFICATION_PREFERENCES_MUTATION,
   UPDATE_VENDOR_REGIONAL_PREFERENCES_MUTATION,
+  UPLOAD_VENDOR_COMPLIANCE_DOCUMENT_MUTATION,
   UPSERT_VENDOR_SPECIAL_CLOSURE_MUTATION,
 } from "./settingsQueries";
 
@@ -25,6 +27,54 @@ function createFallbackResult(message) {
 
 export function getVendorSettingsPage() {
   return executeProtectedGraphqlRequest(GET_VENDOR_SETTINGS_PAGE_QUERY, {});
+}
+
+function normalizeComplianceDocument(item) {
+  return {
+    id: item?.id || "",
+    type: item?.type || "",
+    title: item?.title || "",
+    status: `${item?.status ?? ""}`.trim().toUpperCase() || "PENDING",
+    fileUrl: item?.fileUrl || "",
+    fileId: item?.fileId || "",
+    uploadedAt: item?.uploadedAt || "",
+    reviewedAt: item?.reviewedAt || "",
+    reviewNote: item?.reviewNote || "",
+    rejectionReason: item?.rejectionReason || "",
+    isRequired: Boolean(item?.isRequired),
+  };
+}
+
+export async function getVendorComplianceDocuments() {
+  const result = await executeProtectedGraphqlRequest(GET_VENDOR_COMPLIANCE_DOCUMENTS_QUERY, {});
+
+  return {
+    missingRequirements: Array.isArray(result?.vendorApplicationReviewStatus?.missingRequirements)
+      ? result.vendorApplicationReviewStatus.missingRequirements.map((item) => ({
+          code: item?.code || "",
+          label: item?.label || "",
+        }))
+      : [],
+    documents: Array.isArray(result?.vendorComplianceDocuments)
+      ? result.vendorComplianceDocuments.map(normalizeComplianceDocument)
+      : [],
+  };
+}
+
+export async function uploadVendorComplianceDocument(input) {
+  const result = await executeProtectedGraphqlRequest(
+    UPLOAD_VENDOR_COMPLIANCE_DOCUMENT_MUTATION,
+    { input },
+  );
+
+  const payload =
+    result?.uploadVendorComplianceDocument ||
+    createFallbackResult("Unable to upload compliance document.");
+
+  return {
+    ...payload,
+    document: payload?.document ? normalizeComplianceDocument(payload.document) : null,
+  };
 }
 
 export async function updateVendorBusinessProfile(input) {

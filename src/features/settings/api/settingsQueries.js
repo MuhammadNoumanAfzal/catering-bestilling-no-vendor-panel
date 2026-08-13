@@ -167,6 +167,58 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
   }
 `;
 
+export const GET_VENDOR_COMPLIANCE_DOCUMENTS_QUERY = `
+  query GetVendorComplianceDocuments {
+    vendorApplicationReviewStatus {
+      id
+      missingRequirements {
+        code
+        label
+      }
+    }
+    vendorComplianceDocuments {
+      id
+      type
+      title
+      status
+      fileUrl
+      fileId
+      uploadedAt
+      reviewedAt
+      reviewNote
+      rejectionReason
+      isRequired
+    }
+  }
+`;
+
+export const UPLOAD_VENDOR_COMPLIANCE_DOCUMENT_MUTATION = `
+  mutation UploadVendorComplianceDocument($input: VendorComplianceDocumentInput!) {
+    uploadVendorComplianceDocument(input: $input) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      document {
+        id
+        type
+        title
+        status
+        fileUrl
+        fileId
+        uploadedAt
+        reviewedAt
+        reviewNote
+        rejectionReason
+        isRequired
+      }
+    }
+  }
+`;
+
 export const UPDATE_VENDOR_SETTINGS_IMAGES_MUTATION = `
   mutation VendorSettings($input: VendorSettingsInput!) {
     vendorSettingsMutation(input: $input) {

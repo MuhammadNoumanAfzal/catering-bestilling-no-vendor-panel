@@ -1,4 +1,4 @@
-import { FileBadge2, Send, ShieldCheck, Trash2, UploadCloud } from "lucide-react";
+import { FileBadge2, RefreshCw, ShieldCheck, UploadCloud } from "lucide-react";
 import SettingsSectionCard from "./SettingsSectionCard";
 
 function formatUploadedAt(value) {
@@ -21,11 +21,15 @@ function formatUploadedAt(value) {
 }
 
 function getStatusTone(item) {
-  if (item.notifiedAdminAt) {
+  if (item.status === "VERIFIED") {
     return "border-[#d9eadf] bg-[#eef8f1] text-[#287946]";
   }
 
-  if (item.asset?.fileUrl) {
+  if (item.status === "REJECTED") {
+    return "border-[#efc8c4] bg-[#fff2f1] text-[#b13e33]";
+  }
+
+  if (item.fileUrl) {
     return "border-[#efd8bf] bg-[#fff6eb] text-[#a15a1d]";
   }
 
@@ -33,12 +37,16 @@ function getStatusTone(item) {
 }
 
 function getStatusLabel(item) {
-  if (item.notifiedAdminAt) {
-    return "Sent for review";
+  if (item.status === "VERIFIED") {
+    return "Verified";
   }
 
-  if (item.asset?.fileUrl) {
-    return "Uploaded";
+  if (item.status === "REJECTED") {
+    return "Rejected";
+  }
+
+  if (item.fileUrl) {
+    return "Pending review";
   }
 
   return "Missing";
@@ -48,9 +56,7 @@ export default function SettingsComplianceDocumentsSection({
   disabled = false,
   documents = [],
   onUpload,
-  onRemove,
-  onSendForReview,
-  sendDisabled = false,
+  onRefreshStatus,
 }) {
   return (
     <SettingsSectionCard
@@ -67,12 +73,11 @@ export default function SettingsComplianceDocumentsSection({
           <ShieldCheck className="mt-0.5 text-[#cf6e38]" size={18} />
           <div>
             <p className="text-[13px] font-bold text-[#211914]">
-              Upload image-based copies of your required business documents
+              Upload the legal and business documents required for approval
             </p>
             <p className="mt-1 text-[12px] leading-6 text-[#7d6f65]">
-              This panel currently supports <span className="font-semibold">PNG, JPG, and WEBP</span>.
-              After uploading, use <span className="font-semibold">Send to Admin Review</span> so your
-              files can be followed up through the existing support workflow.
+              This panel supports <span className="font-semibold">PDF, PNG, JPG, and WEBP</span>.
+              Uploaded documents are sent directly into the admin review flow and show their live verification status here.
             </p>
           </div>
         </div>
@@ -110,17 +115,32 @@ export default function SettingsComplianceDocumentsSection({
                   ) : null}
                 </div>
 
-                {item.asset?.fileUrl ? (
+                {item.fileUrl ? (
                   <div className="mt-3 rounded-[14px] border border-[#eadfd6] bg-white px-3 py-3 text-[12px] leading-6 text-[#62554d]">
-                    <p className="font-bold text-[#251c17]">{item.asset.name || "Uploaded file"}</p>
-                    {formatUploadedAt(item.asset.uploadedAt) ? (
+                    <p className="font-bold text-[#251c17]">{item.fileName || item.title || "Uploaded file"}</p>
+                    {formatUploadedAt(item.uploadedAt) ? (
                       <p className="mt-0.5 text-[#8b7c72]">
-                        Uploaded on {formatUploadedAt(item.asset.uploadedAt)}
+                        Uploaded on {formatUploadedAt(item.uploadedAt)}
+                      </p>
+                    ) : null}
+                    {formatUploadedAt(item.reviewedAt) ? (
+                      <p className="mt-0.5 text-[#8b7c72]">
+                        Reviewed on {formatUploadedAt(item.reviewedAt)}
+                      </p>
+                    ) : null}
+                    {item.reviewNote ? (
+                      <p className="mt-2 text-[#5f5148]">
+                        <span className="font-bold text-[#251c17]">Review note:</span> {item.reviewNote}
+                      </p>
+                    ) : null}
+                    {item.rejectionReason ? (
+                      <p className="mt-2 text-[#b13e33]">
+                        <span className="font-bold">Rejection reason:</span> {item.rejectionReason}
                       </p>
                     ) : null}
                     <a
                       className="mt-2 inline-flex text-[#cf6e38] underline underline-offset-2"
-                      href={item.asset.fileUrl}
+                      href={item.fileUrl}
                       rel="noreferrer"
                       target="_blank"
                     >
@@ -137,9 +157,9 @@ export default function SettingsComplianceDocumentsSection({
               <div className="flex shrink-0 flex-wrap gap-2">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] bg-[#d96e39] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_14px_24px_rgba(217,110,57,0.22)] transition hover:bg-[#c9602c]">
                   <UploadCloud size={15} />
-                  {item.asset?.fileUrl ? "Replace" : "Upload"}
+                  {item.fileUrl ? "Replace" : "Upload"}
                   <input
-                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    accept="application/pdf,image/png,image/jpeg,image/jpg,image/webp"
                     className="hidden"
                     disabled={disabled}
                     onChange={(event) => {
@@ -152,15 +172,6 @@ export default function SettingsComplianceDocumentsSection({
                     type="file"
                   />
                 </label>
-                <button
-                  className="inline-flex items-center gap-2 rounded-[12px] border border-[#e7d6cb] bg-white px-4 py-2.5 text-[13px] font-bold text-[#6f6259] transition hover:bg-[#faf6f2] disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={disabled || !item.asset?.fileUrl}
-                  onClick={() => onRemove?.(item.type)}
-                  type="button"
-                >
-                  <Trash2 size={15} />
-                  Remove
-                </button>
               </div>
             </div>
           </article>
@@ -170,20 +181,21 @@ export default function SettingsComplianceDocumentsSection({
       <div className="mt-4 rounded-[16px] border border-[#eadccf] bg-white px-4 py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-[14px] font-bold text-[#1f1712]">Ready to notify admin?</p>
+            <p className="text-[14px] font-bold text-[#1f1712]">How this works</p>
             <p className="mt-1 text-[12px] leading-6 text-[#7c6d63]">
-              This sends your uploaded document links through the current support workflow until a
-              dedicated backend compliance document API is connected.
+              Each upload is saved to the backend immediately. There is no extra save button for these
+              four documents. Admin can review them from the vendor approval screen, and approval will
+              unlock once the documents are verified.
             </p>
           </div>
           <button
-            className="inline-flex h-[44px] items-center justify-center gap-2 rounded-[12px] bg-[#201813] px-5 text-[13px] font-bold text-white transition hover:bg-[#362922] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={disabled || sendDisabled}
-            onClick={onSendForReview}
+            className="inline-flex h-[42px] items-center justify-center gap-2 rounded-[12px] border border-[#ddd1c8] bg-[#faf6f2] px-4 text-[13px] font-bold text-[#4c3c33] transition hover:bg-[#f3ece6] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={disabled}
+            onClick={onRefreshStatus}
             type="button"
           >
-            <Send size={15} />
-            Send to Admin Review
+            <RefreshCw size={15} />
+            Refresh review status
           </button>
         </div>
       </div>
