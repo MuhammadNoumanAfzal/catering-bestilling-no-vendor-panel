@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getVendorDeliverySettings,
+  searchAvailableAreas,
   updateVendorDeliverySettings,
   validateVendorDeliverySettings,
 } from "../api/deliveryApi";
@@ -56,8 +57,11 @@ export default function useDeliverySettings() {
   const [loadError, setLoadError] = useState("");
   const [serviceAreaSearch, setServiceAreaSearch] = useState("");
   const [availableServiceAreas, setAvailableServiceAreas] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearchingAreas, setIsSearchingAreas] = useState(false);
   const hasLoadedSettingsRef = useRef(false);
   const validationRequestIdRef = useRef(0);
+  const serviceAreaSearchRequestIdRef = useRef(0);
 
   function getDefaultSlotDraft(activeDays = formState.activeDays) {
     return {
@@ -170,7 +174,7 @@ export default function useDeliverySettings() {
     return () => window.clearTimeout(timeoutId);
   }, [formState, isLoading, loadError]);
 
-  const serviceAreaResults = useMemo(() => {
+  const localServiceAreaResults = useMemo(() => {
     const searchValue = serviceAreaSearch.trim().toLowerCase();
 
     if (!searchValue || !formState.selectedModes.includes("delivery") || loadError) {
@@ -187,6 +191,58 @@ export default function useDeliverySettings() {
       })
       .slice(0, 10);
   }, [availableServiceAreas, formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
+
+  useEffect(() => {
+    const searchValue = serviceAreaSearch.trim();
+
+    if (!searchValue || !formState.selectedModes.includes("delivery") || loadError) {
+      setSearchResults([]);
+      setIsSearchingAreas(false);
+      return undefined;
+    }
+
+    const requestId = serviceAreaSearchRequestIdRef.current + 1;
+    serviceAreaSearchRequestIdRef.current = requestId;
+
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearchingAreas(true);
+
+      try {
+        const areas = await searchAvailableAreas({ term: searchValue, first: 10 });
+
+        if (serviceAreaSearchRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        const selectedIds = new Set((formState.serviceAreas || []).map((area) => area.id));
+        const nextResults = areas
+          .map(normalizeServiceArea)
+          .filter((area) => area.id && area.isActive && !selectedIds.has(area.id));
+
+        setSearchResults(nextResults);
+      } catch {
+        if (serviceAreaSearchRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        setSearchResults(localServiceAreaResults);
+      } finally {
+        if (serviceAreaSearchRequestIdRef.current === requestId) {
+          setIsSearchingAreas(false);
+        }
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    formState.selectedModes,
+    formState.serviceAreas,
+    loadError,
+    localServiceAreaResults,
+    serviceAreaSearch,
+  ]);
+
+  const serviceAreaResults = searchResults.length ? searchResults : localServiceAreaResults;
 
   const currentComparable = useMemo(
     () => getComparableDeliverySettings(formState),
@@ -452,7 +508,7 @@ export default function useDeliverySettings() {
     isLoading,
     isPickupOnly,
     isSaving,
-    isSearchingAreas: false,
+    isSearchingAreas,
     isValidating,
     maxDeliveriesPerDay: formState.maxDeliveriesPerDay,
     maxOrdersPerTimeSlot: formState.maxOrdersPerTimeSlot,
