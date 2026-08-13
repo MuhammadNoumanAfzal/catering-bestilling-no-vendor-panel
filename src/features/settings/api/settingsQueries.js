@@ -1,5 +1,11 @@
 export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
   query GetVendorSettingsPage {
+    me {
+      id
+      applicationStatus
+      vendorStatus
+      status
+    }
     vendorSettings {
       id
       logoUrl

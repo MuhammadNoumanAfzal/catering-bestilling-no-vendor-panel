@@ -5,6 +5,28 @@ import SettingsTabs from "../components/SettingsTabs";
 import VendorApplicationStatusNotice from "../components/VendorApplicationStatusNotice";
 import useSettingsPageState from "../hooks/useSettingsPageState";
 
+function resolveSettingsNoticeStatus(applicationReview, authUser) {
+  const reviewStatus = `${applicationReview?.applicationStatus ?? ""}`.trim().toUpperCase();
+  const vendorStatus = `${applicationReview?.vendorStatus ?? authUser?.vendorStatus ?? ""}`.trim().toUpperCase();
+  const currentStatus = `${applicationReview?.currentStatus ?? authUser?.status ?? ""}`.trim().toUpperCase();
+
+  if (
+    ["ACTIVE", "APPROVED"].includes(reviewStatus) ||
+    ["ACTIVE", "APPROVED"].includes(vendorStatus) ||
+    ["ACTIVE", "APPROVED"].includes(currentStatus)
+  ) {
+    return "";
+  }
+
+  return (
+    applicationReview?.applicationStatus ||
+    authUser?.applicationStatus ||
+    authUser?.vendorStatus ||
+    authUser?.status ||
+    ""
+  );
+}
+
 export default function SettingsPage() {
   const {
     activeTab,
@@ -52,6 +74,7 @@ export default function SettingsPage() {
           title: "Settings",
           description: "Manage your business, account and preferences.",
         };
+  const noticeStatus = resolveSettingsNoticeStatus(applicationReview, authUser);
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
@@ -63,12 +86,7 @@ export default function SettingsPage() {
       </header>
 
       <VendorApplicationStatusNotice
-        status={
-          applicationReview?.applicationStatus ||
-          authUser?.applicationStatus ||
-          authUser?.vendorStatus ||
-          authUser?.status
-        }
+        status={noticeStatus}
         reviewedAt={applicationReview?.reviewedAt}
         changeRequestMessage={applicationReview?.changeRequestMessage}
         requestedFields={applicationReview?.requestedFields || []}

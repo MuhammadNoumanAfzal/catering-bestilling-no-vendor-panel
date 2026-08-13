@@ -62,6 +62,8 @@ export const defaultApplicationReviewState = {
   id: "",
   vendorId: "",
   applicationStatus: "",
+  vendorStatus: "",
+  currentStatus: "",
   reviewedAt: "",
   changeRequestMessage: "",
   missingRequirements: [],
@@ -277,6 +279,8 @@ function mapApplicationReview(review) {
     id: normalizeString(review.id),
     vendorId: normalizeString(review.vendorId),
     applicationStatus: normalizeString(review.applicationStatus),
+    vendorStatus: normalizeString(review.vendorStatus),
+    currentStatus: normalizeString(review.currentStatus),
     reviewedAt: normalizeString(review.reviewedAt),
     changeRequestMessage: normalizeString(
       review.changeRequestMessage || review.latestChangeRequest?.message,
@@ -294,18 +298,37 @@ function mapApplicationReview(review) {
   };
 }
 
+function resolveCurrentVendorStatuses(me, authUser) {
+  return {
+    applicationStatus: normalizeString(
+      me?.applicationStatus || authUser?.applicationStatus,
+    ),
+    vendorStatus: normalizeString(me?.vendorStatus || authUser?.vendorStatus),
+    currentStatus: normalizeString(me?.status || authUser?.status),
+  };
+}
+
 export function mapVendorSettingsPage(result, options = {}) {
   const settings = result?.vendorSettings;
   const bootstrap = result?.vendorSettingsBootstrap;
   const authUser = options?.authUser || null;
+  const me = result?.me || null;
+  const currentStatuses = resolveCurrentVendorStatuses(me, authUser);
 
   if (!settings) {
     return {
       settings: defaultSettingsState,
       options: defaultSettingsOptions,
-      applicationReview: defaultApplicationReviewState,
+      applicationReview: {
+        ...defaultApplicationReviewState,
+        applicationStatus: currentStatuses.applicationStatus,
+        vendorStatus: currentStatuses.vendorStatus,
+        currentStatus: currentStatuses.currentStatus,
+      },
     };
   }
+
+  const mappedApplicationReview = mapApplicationReview(result?.vendorApplicationReviewStatus);
 
   return {
     settings: {
@@ -370,7 +393,13 @@ export function mapVendorSettingsPage(result, options = {}) {
       currencyOptions: mapCurrencyOptions(bootstrap?.currencies),
       timeZoneOptions: mapTimeZoneOptions(bootstrap?.timeZones),
     },
-    applicationReview: mapApplicationReview(result?.vendorApplicationReviewStatus),
+    applicationReview: {
+      ...mappedApplicationReview,
+      applicationStatus:
+        currentStatuses.applicationStatus || mappedApplicationReview.applicationStatus,
+      vendorStatus: currentStatuses.vendorStatus,
+      currentStatus: currentStatuses.currentStatus,
+    },
   };
 }
 
