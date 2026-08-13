@@ -82,6 +82,37 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function getEdgeNodes(connection) {
+  return safeArray(connection?.edges).map((edge) => edge?.node).filter(Boolean);
+}
+
+function getCollectionItems(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return getEdgeNodes(value);
+}
+
+function sortOptionItems(items = []) {
+  return [...items].sort((left, right) => {
+    const leftOrder = Number.isInteger(left?.sortOrder) ? left.sortOrder : Number.MAX_SAFE_INTEGER;
+    const rightOrder = Number.isInteger(right?.sortOrder) ? right.sortOrder : Number.MAX_SAFE_INTEGER;
+
+    if (leftOrder !== rightOrder) {
+      return leftOrder - rightOrder;
+    }
+
+    return normalizeString(left?.name || left?.label || left?.code || left?.value).localeCompare(
+      normalizeString(right?.name || right?.label || right?.code || right?.value),
+    );
+  });
+}
+
 function normalizeAssetFromUrl(fileUrl, fileId) {
   const normalizedUrl = normalizeString(fileUrl).trim();
 
@@ -135,7 +166,8 @@ function splitTimeRange(value) {
 }
 
 function mapTaxonomyOptions(items = []) {
-  return items
+  return sortOptionItems(getCollectionItems(items))
+    .filter((item) => item?.isActive !== false)
     .map((item) => ({
       value: item?.id || item?.slug || item?.name || "",
       label: item?.name || item?.slug || item?.id || "",
@@ -144,7 +176,8 @@ function mapTaxonomyOptions(items = []) {
 }
 
 function mapSimpleOptions(items = [], valueKey, labelKey) {
-  return items
+  return sortOptionItems(getCollectionItems(items))
+    .filter((item) => item?.isActive !== false)
     .map((item) => ({
       value: item?.[valueKey] || "",
       label: item?.[labelKey] || item?.[valueKey] || "",
@@ -153,7 +186,8 @@ function mapSimpleOptions(items = [], valueKey, labelKey) {
 }
 
 function mapCurrencyOptions(items = []) {
-  return items
+  return sortOptionItems(getCollectionItems(items))
+    .filter((item) => item?.isActive !== false)
     .map((item) => {
       const code = item?.code || "";
       const label = item?.label || code;
@@ -168,7 +202,8 @@ function mapCurrencyOptions(items = []) {
 }
 
 function mapTimeZoneOptions(items = []) {
-  return items
+  return sortOptionItems(getCollectionItems(items))
+    .filter((item) => item?.isActive !== false)
     .map((item) => {
       const value = item?.value || "";
       const label = item?.label || value;
