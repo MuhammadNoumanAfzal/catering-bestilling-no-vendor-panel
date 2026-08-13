@@ -2,11 +2,14 @@ import SettingsAccountSecurityPanel from "../components/SettingsAccountSecurityP
 import SettingsActionsBar from "../components/SettingsActionsBar";
 import SettingsBusinessProfilePanel from "../components/SettingsBusinessProfilePanel";
 import SettingsTabs from "../components/SettingsTabs";
+import VendorApplicationStatusNotice from "../components/VendorApplicationStatusNotice";
 import useSettingsPageState from "../hooks/useSettingsPageState";
 
 export default function SettingsPage() {
   const {
     activeTab,
+    authUser,
+    applicationReview,
     handleAccountFieldChange,
     handleBannerImageUpload,
     handleBusinessHourChange,
@@ -58,6 +61,19 @@ export default function SettingsPage() {
           {pageContent.description}
         </p>
       </header>
+
+      <VendorApplicationStatusNotice
+        status={
+          applicationReview?.applicationStatus ||
+          authUser?.applicationStatus ||
+          authUser?.vendorStatus ||
+          authUser?.status
+        }
+        reviewedAt={applicationReview?.reviewedAt}
+        changeRequestMessage={applicationReview?.changeRequestMessage}
+        requestedFields={applicationReview?.requestedFields || []}
+        missingRequirements={applicationReview?.missingRequirements || []}
+      />
 
       <SettingsTabs activeTab={activeTab} onChange={setActiveTab} />
 

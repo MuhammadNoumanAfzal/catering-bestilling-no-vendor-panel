@@ -89,6 +89,30 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         status
       }
     }
+    vendorApplicationReviewStatus {
+      id
+      vendorId
+      applicationStatus
+      reviewedAt
+      missingRequirements {
+        code
+        label
+      }
+      latestChangeRequest {
+        id
+        message
+        createdAt
+        fields {
+          code
+          label
+        }
+      }
+      changeRequestMessage
+      requestedFields {
+        code
+        label
+      }
+    }
     vendorSettingsBootstrap {
       cuisineTypes {
         id
