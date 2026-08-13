@@ -3,7 +3,7 @@ import SupportFieldSelect from "./SupportFieldSelect";
 import useSupportTicketForm from "../hooks/useSupportTicketForm";
 import { supportIssueTypeOptions } from "../data/supportData";
 
-export default function SupportTicketForm({ onSubmitted }) {
+export default function SupportTicketForm({ onSubmitted, initialForm = null }) {
   const {
     attachmentError,
     attachmentUploadAvailable,
@@ -18,7 +18,7 @@ export default function SupportTicketForm({ onSubmitted }) {
     isSubmitting,
     submitted,
     submittedTicketId,
-  } = useSupportTicketForm(onSubmitted);
+  } = useSupportTicketForm(onSubmitted, initialForm);
 
   return (
     <section className="rounded-[18px] border border-[#e7ddd4] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(43,30,20,0.05)]">

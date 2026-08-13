@@ -1,4 +1,5 @@
 import SettingsBusinessHoursSection from "./SettingsBusinessHoursSection";
+import SettingsComplianceDocumentsSection from "./SettingsComplianceDocumentsSection";
 import SettingsSpecialClosuresSection from "./SettingsSpecialClosuresSection";
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
@@ -13,7 +14,11 @@ export default function SettingsBusinessProfilePanel({
   currencyOptions,
   disabled = false,
   fieldErrors = {},
+  complianceDocuments = [],
   handleBusinessHourChange,
+  handleComplianceDocumentRemove,
+  handleComplianceDocumentUpload,
+  handleComplianceDocumentsReviewRequest,
   handleDeactivateStore,
   handleDeleteStore,
   handleFieldChange,
@@ -163,6 +168,15 @@ export default function SettingsBusinessProfilePanel({
           hours={settings.hours}
           onChangeTime={handleBusinessHourChange}
           onToggleDay={handleToggleBusinessDay}
+        />
+
+        <SettingsComplianceDocumentsSection
+          disabled={disabled}
+          documents={complianceDocuments}
+          onRemove={handleComplianceDocumentRemove}
+          onSendForReview={handleComplianceDocumentsReviewRequest}
+          onUpload={handleComplianceDocumentUpload}
+          sendDisabled={complianceDocuments.some((item) => item.isRequired && !item.asset?.fileUrl)}
         />
 
         <div id="special-closures-section">
