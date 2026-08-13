@@ -92,7 +92,11 @@ export default function VendorApplicationStatusNotice({
   const navigate = useNavigate();
   const config = getStatusConfig(status);
   const reviewedLabel = formatReviewDate(reviewedAt);
-  const detailFields = requestedFields.length ? requestedFields : missingRequirements;
+  const normalizedStatus = `${status}`.trim().toUpperCase();
+  const shouldShowChangeRequestDetails = normalizedStatus === "CHANGES_REQUESTED";
+  const detailFields = shouldShowChangeRequestDetails
+    ? (requestedFields.length ? requestedFields : missingRequirements)
+    : [];
 
   if (!config) {
     return null;
@@ -147,7 +151,7 @@ export default function VendorApplicationStatusNotice({
               Last reviewed on {reviewedLabel}
             </p>
           ) : null}
-          {changeRequestMessage ? (
+          {shouldShowChangeRequestDetails && changeRequestMessage ? (
             <div className="mt-4 rounded-[16px] border border-white/80 bg-white/80 px-4 py-4">
               <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
                 Message From Admin
@@ -170,7 +174,7 @@ export default function VendorApplicationStatusNotice({
               </div>
             ))}
           </div>
-          {`${status}`.trim().toUpperCase() === "CHANGES_REQUESTED" ? (
+          {shouldShowChangeRequestDetails ? (
             <div className="mt-4 flex flex-col gap-2">
               <button
                 className="inline-flex h-[44px] items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[14px] font-bold text-white transition hover:bg-[#c9602c]"
