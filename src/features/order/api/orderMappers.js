@@ -519,6 +519,7 @@ export function mapVendorOrderNode(node) {
   const pendingAdjustment = getPendingAdjustment(node?.id);
   const hasPendingCustomerModification =
     `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+  const displayId = formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id);
   const status =
     pendingAdjustment || hasPendingCustomerModification
       ? "Modified"
@@ -531,8 +532,9 @@ export function mapVendorOrderNode(node) {
 
   return {
     rawId: normalizeString(node?.id),
+    displayId,
     version: toNumber(node?.version, 0),
-    id: formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id),
+    id: normalizeString(node?.id),
     customer:
       firstNonEmpty(node?.customerName, node?.customerInfo?.fullName) ||
       "Customer unavailable",
@@ -665,6 +667,7 @@ export function mapVendorOrderDetail(data, orderId) {
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const hasPendingCustomerModification =
     `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+  const displayId = formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id || orderId);
   const status =
     pendingAdjustment || hasPendingCustomerModification
       ? "Modified"
@@ -688,8 +691,9 @@ export function mapVendorOrderDetail(data, orderId) {
 
   return {
     rawId: normalizeString(node?.id),
+    displayId,
     version: toNumber(node?.version, 0),
-    id: formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id || orderId),
+    id: normalizeString(node?.id || orderId),
     date: dateLabel,
     time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     guests: resolveGuestCount(node, 0),

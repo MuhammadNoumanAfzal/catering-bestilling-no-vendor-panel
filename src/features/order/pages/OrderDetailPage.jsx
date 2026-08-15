@@ -115,6 +115,28 @@ export default function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isResolvingRequest, setIsResolvingRequest] = useState(false);
 
+  async function refreshOrderDetail(options = {}) {
+    const { silent = false } = options;
+
+    if (!silent) {
+      setIsLoading(true);
+    }
+
+    try {
+      const [detailResult, requestResults] = await Promise.all([
+        getVendorOrderDetail(decodedOrderId),
+        getVendorOrderModificationRequests(decodedOrderId),
+      ]);
+
+      setOrderDetail(mapVendorOrderDetail(detailResult, decodedOrderId));
+      setModificationRequests(Array.isArray(requestResults) ? requestResults : []);
+    } finally {
+      if (!silent) {
+        setIsLoading(false);
+      }
+    }
+  }
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -156,14 +178,23 @@ export default function OrderDetailPage() {
     };
   }, [decodedOrderId]);
 
-  async function refreshOrderDetail() {
-    const [detailResult, requestResults] = await Promise.all([
-      getVendorOrderDetail(decodedOrderId),
-      getVendorOrderModificationRequests(decodedOrderId),
-    ]);
-    setOrderDetail(mapVendorOrderDetail(detailResult, decodedOrderId));
-    setModificationRequests(Array.isArray(requestResults) ? requestResults : []);
-  }
+  useEffect(() => {
+    if (!decodedOrderId) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== "visible" || isResolvingRequest) {
+        return;
+      }
+
+      refreshOrderDetail({ silent: true }).catch(() => {});
+    }, 15000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [decodedOrderId, isResolvingRequest]);
 
   async function updateOrderStatus(nextStatus, message) {
     await updateVendorOrderStatus({
@@ -221,7 +252,7 @@ export default function OrderDetailPage() {
 
     const confirmation = await confirmOrderStatusAction(
       "Approve modification request",
-      orderDetail.id,
+      orderDetail.displayId || orderDetail.id,
     );
     if (!confirmation.isConfirmed) {
       return;
@@ -307,22 +338,22 @@ export default function OrderDetailPage() {
   async function handleLifecycleActionClick(action) {
     try {
       if (/accept/i.test(action.label)) {
-        const result = await confirmOrderStatusAction("Accept order", orderDetail.id);
+        const result = await confirmOrderStatusAction("Accept order", orderDetail.displayId || orderDetail.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await updateOrderStatus("Accepted", `Order ${orderDetail.id} accepted.`);
+        await updateOrderStatus("Accepted", `Order ${orderDetail.displayId || orderDetail.id} accepted.`);
         return;
       }
 
       if (/reject/i.test(action.label)) {
-        const result = await confirmOrderStatusAction("Reject order", orderDetail.id);
+        const result = await confirmOrderStatusAction("Reject order", orderDetail.displayId || orderDetail.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await updateOrderStatus("Canceled", `Order ${orderDetail.id} rejected.`);
+        await updateOrderStatus("Canceled", `Order ${orderDetail.displayId || orderDetail.id} rejected.`);
         navigate("/orders");
       }
     } catch (error) {
@@ -348,14 +379,14 @@ export default function OrderDetailPage() {
         }
       }
 
-      const result = await confirmOrderStatusAction(action.label, orderDetail.id);
+      const result = await confirmOrderStatusAction(action.label, orderDetail.displayId || orderDetail.id);
       if (!result.isConfirmed) {
         return;
       }
 
       await updateOrderStatus(
         nextStatus,
-        `${orderDetail.id} updated to ${action.label.toLowerCase()}.`,
+        `${orderDetail.displayId || orderDetail.id} updated to ${action.label.toLowerCase()}.`,
       );
     } catch (error) {
       await showVendorErrorAlert(
@@ -376,7 +407,7 @@ export default function OrderDetailPage() {
 
       await updateOrderStatus(
         nextStatus,
-        `${orderDetail.id} updated to ${nextStatus.toLowerCase()}.`,
+        `${orderDetail.displayId || orderDetail.id} updated to ${nextStatus.toLowerCase()}.`,
       );
     } catch (error) {
       await showVendorErrorAlert(
@@ -393,7 +424,7 @@ export default function OrderDetailPage() {
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
           <h1 className="m-0 text-[34px] font-extrabold leading-none text-[#19130f]">
-            Order<span className="ml-0.5">{orderDetail.id}</span>
+            Order<span className="ml-0.5">{orderDetail.displayId || orderDetail.id}</span>
           </h1>
           <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
             {orderDetail.date} | {orderDetail.time}

@@ -84,6 +84,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
     vendorOrder(id: $orderId) {
       id
       invoiceNumber
+      orderNumber
       status
       pendingModificationRequest {
         id
