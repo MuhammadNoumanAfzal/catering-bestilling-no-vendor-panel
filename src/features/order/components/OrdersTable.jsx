@@ -118,7 +118,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
         <tbody>
           {rows.map((row, index) => (
             <tr
-              key={`${row.id}-${row.customer}-${index}`}
+              key={`${row.rawId || row.id}-${row.customer}-${index}`}
               className={`transition duration-150 cursor-pointer border-b border-[#eee7df] last:border-b-0 hover:bg-[#fff7f2] ${
                 row.statusTone === "is-new" ? "bg-[#eef8ff]/70" : "bg-white"
               }`}
@@ -135,7 +135,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 />
               </td>
               <td className="px-4 py-4 text-[16px] font-extrabold text-[#1c1510]">
-                {row.id}
+                {row.displayId || row.id}
               </td>
               <td className="px-4 py-4 text-[15px] font-bold text-[#17120e]">
                 {row.customer}
@@ -164,7 +164,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
               >
                 <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
                   {row.actions.map((action) => {
-                    const menuKey = `${row.id}-${action.label}`;
+                    const menuKey = `${row.rawId || row.id}-${action.label}`;
                     const isMenuOpen = openMenuKey === menuKey;
                     const hasDropdown = Boolean(action.hasDropdown);
  

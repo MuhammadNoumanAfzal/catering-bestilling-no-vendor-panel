@@ -3,12 +3,10 @@ import {
   exportVendorFinanceTransactions,
   getVendorFinanceOverviewChart,
   getVendorFinanceSummary,
-  getVendorFinanceTransactionDetail,
-  getVendorFinanceTransactions,
-  getVendorPayoutStatus,
+  getVendorInvoices,
+  getVendorPayouts,
 } from "../api/financeApi";
 import {
-  buildFinanceOrderTotalsLookup,
   getChartGroupBy,
   getFinanceRangeVariables,
   mapFinanceChartPoints,
@@ -17,7 +15,6 @@ import {
   mapTransactionDetail,
   mapTransactionsConnection,
 } from "../api/financeMappers";
-import { getAllVendorOrders } from "../../order/api/orderApi";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
@@ -51,8 +48,7 @@ export default function useFinancePageState() {
   const [summaryCards, setSummaryCards] = useState([]);
   const [chartPoints, setChartPoints] = useState([]);
   const [payoutStatuses, setPayoutStatuses] = useState([]);
-  const [pageCache, setPageCache] = useState({});
-  const [orderTotalsLookup, setOrderTotalsLookup] = useState(() => new Map());
+  const [invoiceRows, setInvoiceRows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -91,7 +87,7 @@ export default function useFinancePageState() {
               appliedHeaderCustomRange?.to,
             ),
           }),
-          getVendorPayoutStatus(),
+          getVendorPayouts(headerRangeVariables),
         ]);
 
         if (isCancelled) {
@@ -139,23 +135,18 @@ export default function useFinancePageState() {
       setIsLoading(true);
 
       try {
-        const [result, ordersResult] = await Promise.all([
-          getVendorFinanceTransactions({
-            first: PAGE_SIZE,
-            ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
-            ...ordersRangeVariables,
-          }),
-          getAllVendorOrders(ordersRangeVariables),
-        ]);
+        const result = await getVendorInvoices({
+          first: 100,
+          ...(activeStatus !== "All" ? { status: activeStatus.toUpperCase().replace(/\s+/g, "_") } : {}),
+          ...ordersRangeVariables,
+        });
 
         if (isCancelled) {
           return;
         }
 
-        const nextOrderTotalsLookup = buildFinanceOrderTotalsLookup(ordersResult);
-        const mapped = mapTransactionsConnection(result, nextOrderTotalsLookup);
-        setOrderTotalsLookup(nextOrderTotalsLookup);
-        setPageCache({ 1: mapped });
+        const mapped = mapTransactionsConnection(result);
+        setInvoiceRows(mapped.rows);
         setCurrentPage(1);
       } catch (error) {
         if (!isCancelled) {
@@ -178,18 +169,12 @@ export default function useFinancePageState() {
     };
   }, [activeStatus, ordersRangeVariables]);
 
-  const currentPageData = pageCache[currentPage] || {
-    rows: [],
-    pageInfo: {
-      hasNextPage: false,
-      endCursor: "",
-    },
-    totalCount: 0,
-  };
-
-  const paginatedOrders = currentPageData.rows;
-  const totalItems = currentPageData.totalCount || 0;
+  const totalItems = invoiceRows.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const paginatedOrders = invoiceRows.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   const dateButtonLabel =
     selectedDateOption === "custom" &&
@@ -231,49 +216,7 @@ export default function useFinancePageState() {
     if (nextPage < 1 || nextPage > totalPages) {
       return;
     }
-
-    if (pageCache[nextPage]) {
-      setCurrentPage(nextPage);
-      return;
-    }
-
-    if (nextPage < currentPage) {
-      setCurrentPage(nextPage);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      let nextCache = { ...pageCache };
-      let lastKnownPage = currentPage;
-
-      while (lastKnownPage < nextPage) {
-        const currentData = nextCache[lastKnownPage];
-
-        if (!currentData?.pageInfo?.hasNextPage || !currentData?.pageInfo?.endCursor) {
-          break;
-        }
-
-        const result = await getVendorFinanceTransactions({
-          first: PAGE_SIZE,
-          after: currentData.pageInfo.endCursor,
-          ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
-          ...ordersRangeVariables,
-        });
-        nextCache[lastKnownPage + 1] = mapTransactionsConnection(result, orderTotalsLookup);
-        lastKnownPage += 1;
-      }
-
-      setPageCache(nextCache);
-      setCurrentPage(Math.min(nextPage, lastKnownPage));
-    } catch (error) {
-      await showVendorErrorAlert(
-        error.message || "Unable to load more transactions right now.",
-        "Pagination failed",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    setCurrentPage(nextPage);
   }
 
   function handleStatusChange(nextStatus) {
@@ -339,8 +282,7 @@ export default function useFinancePageState() {
   }
 
   async function handleRequestTransactionDetail(id) {
-    const result = await getVendorFinanceTransactionDetail(id);
-    return mapTransactionDetail(result?.vendorFinanceTransaction, orderTotalsLookup);
+    return mapTransactionDetail(invoiceRows.find((row) => row.id === id) || null);
   }
 
   async function handleExport(format) {

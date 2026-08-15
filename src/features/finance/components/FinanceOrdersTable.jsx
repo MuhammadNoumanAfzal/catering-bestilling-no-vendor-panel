@@ -13,7 +13,7 @@ function TransactionDetailModal({ order, onClose }) {
             Catering bestilling.no
           </span>
           <h2 className="m-0 text-[18px] font-extrabold mt-0.5 text-white">
-            Order {order.orderId} Details
+            Invoice {order.invoiceNumber || order.orderId}
           </h2>
           <button
             onClick={onClose}
@@ -33,17 +33,17 @@ function TransactionDetailModal({ order, onClose }) {
               <strong className="text-[15px] text-[#1c1510] font-extrabold">{order.customerName}</strong>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">Status</span>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">Payment Status</span>
               <span
                 className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-3 text-[12px] font-extrabold shadow-sm mt-0.5 ${
-                  order.payoutStatus.toLowerCase() === "pending"
+                  order.paymentStatus.toLowerCase() === "pending" || order.paymentStatus.toLowerCase() === "unpaid"
                     ? "bg-[#fff4dd] text-[#d8a12f]"
-                    : order.payoutStatus.toLowerCase() === "processing"
-                      ? "bg-[#eef4ff] text-[#4e78d8]"
+                    : order.paymentStatus.toLowerCase() === "overdue" || order.paymentStatus.toLowerCase() === "partially_paid"
+                      ? "bg-[#fff0f0] text-[#d55b5b]"
                       : "bg-[#edf9ef] text-[#38a657]"
                 }`}
               >
-                {order.payoutStatus}
+                {order.paymentStatus}
               </span>
             </div>
           </div>
@@ -51,11 +51,11 @@ function TransactionDetailModal({ order, onClose }) {
           {/* Details Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-[#ffefe5] border border-[#ffdcd0] p-3 text-center">
-              <span className="block text-[12px] font-extrabold text-[#c85e2f] uppercase tracking-wide">Event Type</span>
-              <span className="text-[14px] font-extrabold text-[#cf6e38] mt-1 block">{order.eventType}</span>
+              <span className="block text-[12px] font-extrabold text-[#c85e2f] uppercase tracking-wide">Order ID</span>
+              <span className="text-[14px] font-extrabold text-[#cf6e38] mt-1 block">{order.orderId}</span>
             </div>
             <div className="rounded-xl bg-[#f0f4f8] border border-[#d6e4f0] p-3 text-center">
-              <span className="block text-[12px] font-extrabold text-[#3b70a6] uppercase tracking-wide">Event Date</span>
+              <span className="block text-[12px] font-extrabold text-[#3b70a6] uppercase tracking-wide">Delivery Date</span>
               <span className="text-[14px] font-extrabold text-[#3b70a6] mt-1 block">{order.eventDate}</span>
             </div>
           </div>
@@ -63,25 +63,25 @@ function TransactionDetailModal({ order, onClose }) {
           {/* Financial Summary */}
           <div className="border-t border-[#f2ece6] pt-3">
             <h3 className="m-0 text-[12px] font-extrabold text-[#9a8f85] uppercase tracking-wider mb-2">
-              Financial Breakdown
+              Invoice Summary
             </h3>
 
             <div className="space-y-2.5">
               <div className="flex justify-between items-center text-[14px] px-1">
-                <span className="font-semibold text-[#6f6358]">Total Charged</span>
+                <span className="font-semibold text-[#6f6358]">Total Amount</span>
                 <span className="font-extrabold text-[#1c1510] text-[15px]">{order.grossAmount}</span>
               </div>
               <div className="flex justify-between items-center text-[14px] px-1">
-                <span className="font-semibold text-[#6f6358]">Platform Commission</span>
-                <span className="font-bold text-[#de5f5f] bg-[#fff0f0] px-2 py-0.5 rounded-full text-[13px]">{order.commissionAmount}</span>
+                <span className="font-semibold text-[#6f6358]">Payment Method</span>
+                <span className="font-bold text-[#3b70a6] bg-[#eef4ff] px-2 py-0.5 rounded-full text-[13px]">{order.paymentMethod}</span>
               </div>
 
               <div className="mt-3 bg-[#edf9ef] border border-[#c7ebd0] px-4 py-3 rounded-xl flex justify-between items-center shadow-sm">
                 <div className="flex flex-col">
-                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#38a657]">Net Earnings</span>
-                  <span className="text-[13px] font-medium text-[#4c8f59]">Transferred to Wallet</span>
+                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#38a657]">Canonical ID</span>
+                  <span className="text-[13px] font-medium text-[#4c8f59]">Shared across admin and vendor flows</span>
                 </div>
-                <span className="text-[18px] font-extrabold text-[#237a39]">{order.netAmount}</span>
+                <span className="text-[18px] font-extrabold text-[#237a39]">{order.id}</span>
               </div>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function FinanceOrdersTable({
         <table className="w-full min-w-[980px] border-collapse">
           <thead>
             <tr className="border-b border-[#ede5de] text-left">
-              {["Sr.", "Order ID", "Customer", "Event", "Date", "Total Amount", "Commission", "Net Earnings", "Status", ""].map((heading) => (
+              {["Sr.", "Invoice", "Customer", "Delivery date", "Payment Method", "Total Amount", "Payment Status", ""].map((heading) => (
                 <th
                   key={heading}
                   className="border-b border-[#eee7df] px-[10px] py-3 text-left text-[15px] font-extrabold text-[#17120e]"
@@ -178,9 +178,9 @@ export default function FinanceOrdersTable({
               <tr>
                 <td
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
-                  colSpan={10}
+                  colSpan={8}
                 >
-                  Loading transactions...
+                  Loading invoices...
                 </td>
               </tr>
             ) : rows.length ? (
@@ -190,37 +190,31 @@ export default function FinanceOrdersTable({
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[16px] font-extrabold text-[#1c1510]">
-                    {row.orderId}
+                    {row.invoiceNumber}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
                     {row.customerName}
                   </td>
-                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
-                    {row.eventType}
-                  </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-semibold text-[#75695f]">
                     {row.eventDate}
+                  </td>
+                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-semibold text-[#75695f]">
+                    {row.paymentMethod}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
                     {row.grossAmount}
                   </td>
-                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#de5f5f]">
-                    {row.commissionAmount}
-                  </td>
-                  <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
-                    {row.netAmount}
-                  </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3">
                     <span
                       className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-[11px] text-[12px] font-bold ${
-                        row.payoutStatus.toLowerCase() === "pending"
+                        row.paymentStatus.toLowerCase() === "pending" || row.paymentStatus.toLowerCase() === "unpaid"
                           ? "bg-[#fff4dd] text-[#d8a12f]"
-                          : row.payoutStatus.toLowerCase() === "processing"
-                            ? "bg-[#eef4ff] text-[#4e78d8]"
+                          : row.paymentStatus.toLowerCase() === "overdue" || row.paymentStatus.toLowerCase() === "partially_paid"
+                            ? "bg-[#fff0f0] text-[#d55b5b]"
                             : "bg-[#edf9ef] text-[#38a657]"
                       }`}
                     >
-                      {row.payoutStatus}
+                      {row.paymentStatus}
                     </span>
                   </td>
                   <td className="relative border-b border-[#eee7df] px-[10px] py-3 text-[16px]">
@@ -253,9 +247,9 @@ export default function FinanceOrdersTable({
               <tr>
                 <td
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
-                  colSpan={10}
+                  colSpan={8}
                 >
-                  No orders match the selected filters.
+                  No invoices match the selected filters.
                 </td>
               </tr>
             )}
@@ -267,7 +261,7 @@ export default function FinanceOrdersTable({
         <span className="type-subpara text-[14px] font-medium text-[#7a6d63]">
           Showing <span className="font-bold text-[#1c1510]">{startItem}</span> to{" "}
           <span className="font-bold text-[#1c1510]">{endItem}</span> of{" "}
-          <span className="font-bold text-[#1c1510]">{totalItems}</span> Orders
+          <span className="font-bold text-[#1c1510]">{totalItems}</span> Invoices
         </span>
         <div className="flex items-center gap-1">
           <button

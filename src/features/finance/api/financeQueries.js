@@ -1,20 +1,32 @@
 export const GET_VENDOR_FINANCE_SUMMARY_QUERY = `
   query GetVendorFinanceSummary(
-    $dateFrom: Date
-    $dateTo: Date
+    $dateFrom: DateTime
+    $dateTo: DateTime
   ) {
     vendorFinanceSummary(
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
-      totalEarnings
-      netIncome
-      platformCommission
-      pendingPayouts
-      currency
-      totalOrders
-      paidOrders
-      pendingOrders
+      totalRevenue {
+        amount
+        currency
+        formatted
+      }
+      pendingPayout {
+        amount
+        currency
+        formatted
+      }
+      completedPayouts {
+        amount
+        currency
+        formatted
+      }
+      commissionPaid {
+        amount
+        currency
+        formatted
+      }
     }
   }
 `;
@@ -39,45 +51,46 @@ export const GET_VENDOR_FINANCE_OVERVIEW_CHART_QUERY = `
   }
 `;
 
-export const GET_VENDOR_PAYOUT_STATUS_QUERY = `
-  query GetVendorPayoutStatus {
-    vendorPayoutStatus {
-      pendingPayout {
-        title
-        description
-        amount
-        expectedArrival
-        currency
-      }
-      paidAmount {
-        title
-        description
-        amount
-        currency
-      }
-      lastPayout {
-        title
-        description
-        payoutDate
-        amount
-        currency
-        status
+export const GET_VENDOR_INVOICES_QUERY = `
+  query GetVendorInvoices(
+    $first: Int = 100
+    $status: String
+    $search: String
+    $dateFrom: DateTime
+    $dateTo: DateTime
+  ) {
+    vendorInvoices(
+      first: $first
+      status: $status
+      search: $search
+      dateFrom: $dateFrom
+      dateTo: $dateTo
+    ) {
+      totalCount
+      edges {
+        node {
+          id
+          invoiceNumber
+          customerName
+          deliveryDate
+          finalPrice
+          paymentStatus
+          paymentMethod
+        }
       }
     }
   }
 `;
 
-export const GET_VENDOR_FINANCE_TRANSACTIONS_QUERY = `
-  query GetVendorFinanceTransactions(
-    $first: Int = 10
-    $after: String
+export const GET_VENDOR_PAYOUTS_QUERY = `
+  query GetVendorPayouts(
+    $first: Int = 100
     $status: String
     $dateFrom: Date
     $dateTo: Date
   ) {
-    vendorFinanceTransactions(
+    vendorPayouts(
       first: $first
-      after: $after
       status: $status
       dateFrom: $dateFrom
       dateTo: $dateTo
@@ -85,43 +98,30 @@ export const GET_VENDOR_FINANCE_TRANSACTIONS_QUERY = `
       edges {
         node {
           id
-          orderId
-          customerName
-          eventType
-          eventDate
-          grossAmount
-          commissionAmount
-          netAmount
-          currency
-          payoutStatus
-          createdOn
+          payoutNumber
+          status
+          createdAt
+          releasedAt
+          paidAt
+          payoutReference
+          grossAmount {
+            amount
+            currency
+            formatted
+          }
+          commissionAmount {
+            amount
+            currency
+            formatted
+          }
+          netAmount {
+            amount
+            currency
+            formatted
+          }
         }
       }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
       totalCount
-    }
-  }
-`;
-
-export const GET_VENDOR_FINANCE_TRANSACTION_DETAIL_QUERY = `
-  query GetVendorFinanceTransactionDetail($id: ID!) {
-    vendorFinanceTransaction(id: $id) {
-      id
-      orderId
-      customerName
-      eventType
-      eventDate
-      grossAmount
-      commissionAmount
-      netAmount
-      currency
-      payoutStatus
-      payoutDate
-      createdOn
-      updatedOn
     }
   }
 `;

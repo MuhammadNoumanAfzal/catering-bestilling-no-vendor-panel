@@ -3,9 +3,8 @@ import {
   EXPORT_VENDOR_FINANCE_TRANSACTIONS_MUTATION,
   GET_VENDOR_FINANCE_OVERVIEW_CHART_QUERY,
   GET_VENDOR_FINANCE_SUMMARY_QUERY,
-  GET_VENDOR_FINANCE_TRANSACTION_DETAIL_QUERY,
-  GET_VENDOR_FINANCE_TRANSACTIONS_QUERY,
-  GET_VENDOR_PAYOUT_STATUS_QUERY,
+  GET_VENDOR_INVOICES_QUERY,
+  GET_VENDOR_PAYOUTS_QUERY,
 } from "./financeQueries";
 
 function unwrapMutationResult(result, key, fallbackMessage) {
@@ -26,19 +25,18 @@ export function getVendorFinanceOverviewChart(variables = {}) {
   return executeProtectedGraphqlRequest(GET_VENDOR_FINANCE_OVERVIEW_CHART_QUERY, variables);
 }
 
-export function getVendorPayoutStatus() {
-  return executeProtectedGraphqlRequest(GET_VENDOR_PAYOUT_STATUS_QUERY, {});
-}
-
-export function getVendorFinanceTransactions(variables = {}) {
-  return executeProtectedGraphqlRequest(GET_VENDOR_FINANCE_TRANSACTIONS_QUERY, {
-    first: 10,
+export function getVendorInvoices(variables = {}) {
+  return executeProtectedGraphqlRequest(GET_VENDOR_INVOICES_QUERY, {
+    first: 100,
     ...variables,
   });
 }
 
-export function getVendorFinanceTransactionDetail(id) {
-  return executeProtectedGraphqlRequest(GET_VENDOR_FINANCE_TRANSACTION_DETAIL_QUERY, { id });
+export function getVendorPayouts(variables = {}) {
+  return executeProtectedGraphqlRequest(GET_VENDOR_PAYOUTS_QUERY, {
+    first: 100,
+    ...variables,
+  });
 }
 
 export async function exportVendorFinanceTransactions(variables) {

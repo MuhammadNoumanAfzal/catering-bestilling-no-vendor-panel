@@ -265,7 +265,7 @@ export default function OrdersPage() {
     const searchedRows = searchQuery
       ? chipFilteredRows.filter(
           (row) =>
-            row.id.toLowerCase().includes(searchQuery) ||
+            (row.displayId || row.id).toLowerCase().includes(searchQuery) ||
             row.customer.toLowerCase().includes(searchQuery) ||
             row.event.toLowerCase().includes(searchQuery),
         )
@@ -376,18 +376,22 @@ export default function OrdersPage() {
       }
 
       if (action.fromDropdown) {
-        await commitStatusChange(row, nextStatus, `Status updated to ${nextStatus} for ${row.id}.`);
+        await commitStatusChange(
+          row,
+          nextStatus,
+          `Status updated to ${nextStatus} for ${row.displayId || row.id}.`,
+        );
         return;
       }
 
       if (action.navigateToDetail) {
         if (actionLabel === "Accept") {
-          const result = await confirmOrderStatusAction("Accept order", row.id);
+          const result = await confirmOrderStatusAction("Accept order", row.displayId || row.id);
           if (!result.isConfirmed) {
             return;
           }
 
-          await commitStatusChange(row, "Accepted", `Order ${row.id} accepted.`);
+          await commitStatusChange(row, "Accepted", `Order ${row.displayId || row.id} accepted.`);
           navigate(`/orders/${encodeURIComponent(row.rawId)}`);
           return;
         }
@@ -397,33 +401,37 @@ export default function OrdersPage() {
       }
 
       if (actionLabel === "Accept") {
-        const result = await confirmOrderStatusAction("Accept order", row.id);
+        const result = await confirmOrderStatusAction("Accept order", row.displayId || row.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await commitStatusChange(row, "Accepted", `Order ${row.id} accepted.`);
+        await commitStatusChange(row, "Accepted", `Order ${row.displayId || row.id} accepted.`);
         navigate(`/orders/${encodeURIComponent(row.rawId)}`);
         return;
       }
 
       if (actionLabel === "Reject") {
-        const result = await confirmOrderStatusAction("Reject order", row.id);
+        const result = await confirmOrderStatusAction("Reject order", row.displayId || row.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await commitStatusChange(row, "Canceled", `Order ${row.id} rejected.`);
+        await commitStatusChange(row, "Canceled", `Order ${row.displayId || row.id} rejected.`);
         return;
       }
 
       if (actionLabel === "Mark delivered") {
-        const result = await confirmOrderStatusAction("Mark delivered", row.id);
+        const result = await confirmOrderStatusAction("Mark delivered", row.displayId || row.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await commitStatusChange(row, "Delivered", `Order ${row.id} marked as delivered.`);
+        await commitStatusChange(
+          row,
+          "Delivered",
+          `Order ${row.displayId || row.id} marked as delivered.`,
+        );
       }
     } catch (error) {
       await showVendorErrorAlert(

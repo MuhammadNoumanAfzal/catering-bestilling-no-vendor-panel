@@ -26,133 +26,31 @@ function formatDateLabel(dateValue) {
   });
 }
 
-function normalizeLookupKey(value) {
-  return normalizeString(value).trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function getTrailingDigits(value) {
-  const match = normalizeString(value).match(/(\d+)\D*$/);
-  return match ? match[1] : "";
-}
-
-function createLookupKeys(...values) {
-  const keys = new Set();
-
-  values.forEach((value) => {
-    const normalized = normalizeString(value).trim();
-    if (!normalized) {
-      return;
-    }
-
-    const compactKey = normalizeLookupKey(normalized);
-    if (compactKey) {
-      keys.add(compactKey);
-    }
-
-    const trailingDigits = getTrailingDigits(normalized);
-    if (trailingDigits) {
-      keys.add(trailingDigits);
-    }
-  });
-
-  return [...keys];
-}
-
-export function buildFinanceOrderTotalsLookup(ordersResult) {
-  const connection = ordersResult?.orders || ordersResult?.vendorOrders;
-  const edges = Array.isArray(connection?.edges) ? connection.edges : [];
-  const lookup = new Map();
-
-  edges
-    .map((edge) => edge?.node)
-    .filter(Boolean)
-    .forEach((node) => {
-      const grandTotal = parseNumber(node?.pricing?.grandTotal ?? node?.finalPrice);
-      const currency = normalizeString(node?.currency || "NOK");
-
-      if (grandTotal <= 0) {
-        return;
-      }
-
-      createLookupKeys(node?.id, node?.invoiceNumber, node?.orderNumber).forEach((key) => {
-        lookup.set(key, {
-          grandTotal,
-          currency,
-        });
-      });
-    });
-
-  return lookup;
-}
-
-function resolveTransactionAmounts(node, orderTotalsLookup) {
-  const grossAmount = parseNumber(node?.grossAmount);
-  const commissionAmount = parseNumber(node?.commissionAmount);
-  const netAmount = parseNumber(node?.netAmount);
-
-  if (!(orderTotalsLookup instanceof Map) || orderTotalsLookup.size === 0) {
-    return {
-      grossAmount,
-      commissionAmount,
-      netAmount,
-      currency: normalizeString(node?.currency),
-    };
-  }
-
-  const matchedOrder = createLookupKeys(node?.orderId, node?.id)
-    .map((key) => orderTotalsLookup.get(key))
-    .find(Boolean);
-
-  if (!matchedOrder || matchedOrder.grandTotal <= grossAmount) {
-    return {
-      grossAmount,
-      commissionAmount,
-      netAmount,
-      currency: normalizeString(node?.currency || matchedOrder?.currency),
-    };
-  }
-
-  const resolvedGrossAmount = matchedOrder.grandTotal;
-  const resolvedNetAmount =
-    commissionAmount > 0
-      ? Math.max(0, resolvedGrossAmount - commissionAmount)
-      : resolvedGrossAmount;
-
-  return {
-    grossAmount: resolvedGrossAmount,
-    commissionAmount,
-    netAmount:
-      netAmount > 0 && Math.abs(netAmount - grossAmount) > 0.01 ? netAmount : resolvedNetAmount,
-    currency: normalizeString(node?.currency || matchedOrder.currency),
-  };
-}
-
 export function mapFinanceSummaryCards(data) {
   const summary = data?.vendorFinanceSummary;
-  const currency = normalizeString(summary?.currency || "kr");
 
   return [
     {
-      label: "Total Earnings",
-      value: formatCurrency(summary?.totalEarnings, currency),
+      label: "Total Revenue",
+      value: summary?.totalRevenue?.formatted || formatCurrency(summary?.totalRevenue?.amount, summary?.totalRevenue?.currency || "NOK"),
       accent: "#ffefe7",
       icon: "camera",
     },
     {
-      label: "Net Income",
-      value: formatCurrency(summary?.netIncome, currency),
+      label: "Pending Payout",
+      value: summary?.pendingPayout?.formatted || formatCurrency(summary?.pendingPayout?.amount, summary?.pendingPayout?.currency || "NOK"),
       accent: "#fff2ec",
       icon: "wallet",
     },
     {
-      label: "Platform Commission",
-      value: formatCurrency(summary?.platformCommission, currency),
+      label: "Completed Payouts",
+      value: summary?.completedPayouts?.formatted || formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK"),
       accent: "#fff2ec",
       icon: "close",
     },
     {
-      label: "Pending Payouts",
-      value: formatCurrency(summary?.pendingPayouts, currency),
+      label: "Commission Paid",
+      value: summary?.commissionPaid?.formatted || formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK"),
       accent: "#fff2ec",
       icon: "clock",
     },
@@ -172,57 +70,53 @@ export function mapFinanceChartPoints(data) {
 }
 
 export function mapPayoutStatusItems(data) {
-  const payoutStatus = data?.vendorPayoutStatus || {};
+  const connection = data?.vendorPayouts || {};
+  const edges = Array.isArray(connection?.edges) ? connection.edges : [];
+  const payouts = edges.map((edge) => edge?.node).filter(Boolean);
+
+  const pending = payouts.filter((item) => normalizeString(item?.status).toUpperCase() === "PENDING");
+  const released = payouts.filter((item) => normalizeString(item?.status).toUpperCase() === "RELEASED");
+  const paid = payouts.filter((item) => normalizeString(item?.status).toUpperCase() === "PAID");
+  const latestPaid = [...paid].sort((left, right) => {
+    const leftTime = new Date(left?.paidAt || left?.createdAt || 0).getTime();
+    const rightTime = new Date(right?.paidAt || right?.createdAt || 0).getTime();
+    return rightTime - leftTime;
+  })[0];
+
+  const sumAmount = (items, field) =>
+    items.reduce((sum, item) => sum + parseNumber(item?.[field]?.amount), 0);
+
+  const pendingCurrency = pending[0]?.netAmount?.currency || payouts[0]?.netAmount?.currency || "NOK";
+  const releasedCurrency = released[0]?.netAmount?.currency || pendingCurrency;
 
   return [
-    payoutStatus.pendingPayout
+    {
+      title: "Pending Payouts",
+      description: `${pending.length} payout${pending.length === 1 ? "" : "s"} waiting for release`,
+      amount: formatCurrency(sumAmount(pending, "netAmount"), pendingCurrency),
+      tone: "orange",
+    },
+    {
+      title: "Released Payouts",
+      description: `${released.length} payout${released.length === 1 ? "" : "s"} released by admin`,
+      amount: formatCurrency(sumAmount(released, "netAmount"), releasedCurrency),
+      tone: "green",
+    },
+    latestPaid
       ? {
-          title: payoutStatus.pendingPayout.title || "Pending Payout",
-          description:
-            payoutStatus.pendingPayout.description ||
-            (payoutStatus.pendingPayout.expectedArrival
-              ? `Expected arrival ${payoutStatus.pendingPayout.expectedArrival}`
-              : ""),
-          amount: formatCurrency(
-            payoutStatus.pendingPayout.amount,
-            payoutStatus.pendingPayout.currency,
-          ),
-          tone: "orange",
-        }
-      : null,
-    payoutStatus.paidAmount
-      ? {
-          title: payoutStatus.paidAmount.title || "Paid Amount",
-          description: payoutStatus.paidAmount.description || "",
-          amount: formatCurrency(
-            payoutStatus.paidAmount.amount,
-            payoutStatus.paidAmount.currency,
-          ),
-          tone: "green",
-        }
-      : null,
-    payoutStatus.lastPayout
-      ? {
-          title: payoutStatus.lastPayout.title || "Last Payout",
-          description:
-            payoutStatus.lastPayout.description ||
-            (payoutStatus.lastPayout.status
-              ? `Status: ${payoutStatus.lastPayout.status}`
-              : ""),
-          amount: payoutStatus.lastPayout.payoutDate
-            ? formatDateLabel(payoutStatus.lastPayout.payoutDate)
-            : formatCurrency(
-                payoutStatus.lastPayout.amount,
-                payoutStatus.lastPayout.currency,
-              ),
+          title: latestPaid.payoutNumber || "Latest Paid Payout",
+          description: latestPaid.payoutReference
+            ? `Reference: ${latestPaid.payoutReference}`
+            : `Paid ${formatDateLabel(latestPaid.paidAt || latestPaid.createdAt)}`,
+          amount: latestPaid.netAmount?.formatted || formatCurrency(latestPaid.netAmount?.amount, latestPaid.netAmount?.currency || "NOK"),
           tone: "blue",
         }
       : null,
   ].filter(Boolean);
 }
 
-export function mapTransactionsConnection(data, orderTotalsLookup = null) {
-  const connection = data?.vendorFinanceTransactions;
+export function mapTransactionsConnection(data) {
+  const connection = data?.vendorInvoices;
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];
 
   return {
@@ -230,51 +124,36 @@ export function mapTransactionsConnection(data, orderTotalsLookup = null) {
       .map((edge) => edge?.node)
       .filter(Boolean)
       .map((node) => {
-        const amounts = resolveTransactionAmounts(node, orderTotalsLookup);
-
         return {
           id: normalizeString(node.id),
-          orderId: normalizeString(node.orderId),
+          invoiceNumber: normalizeString(node.invoiceNumber || `INV-${node.id}`),
+          orderId: normalizeString(node.id),
           customerName: normalizeString(node.customerName),
-          eventType: normalizeString(node.eventType),
-          eventDate: normalizeString(node.eventDate),
-          grossAmount: formatCurrency(amounts.grossAmount, amounts.currency),
-          commissionAmount: `-${formatCurrency(amounts.commissionAmount, amounts.currency)}`,
-          netAmount: formatCurrency(amounts.netAmount, amounts.currency),
-          currency: normalizeString(amounts.currency),
-          payoutStatus: normalizeString(node.payoutStatus),
-          createdOn: normalizeString(node.createdOn),
+          eventDate: formatDateLabel(node.deliveryDate),
+          eventDateRaw: normalizeString(node.deliveryDate),
+          grossAmount: formatCurrency(node.finalPrice, "NOK"),
+          paymentStatus: normalizeString(node.paymentStatus || "PENDING"),
+          paymentMethod: normalizeString(node.paymentMethod || "Not specified"),
         };
       }),
-    pageInfo: {
-      hasNextPage: Boolean(connection?.pageInfo?.hasNextPage),
-      endCursor: normalizeString(connection?.pageInfo?.endCursor),
-    },
     totalCount: parseNumber(connection?.totalCount),
   };
 }
 
-export function mapTransactionDetail(node, orderTotalsLookup = null) {
+export function mapTransactionDetail(node) {
   if (!node) {
     return null;
   }
 
-  const amounts = resolveTransactionAmounts(node, orderTotalsLookup);
-
   return {
     id: normalizeString(node.id),
-    orderId: normalizeString(node.orderId),
+    invoiceNumber: normalizeString(node.invoiceNumber || `INV-${node.id}`),
+    orderId: normalizeString(node.id),
     customerName: normalizeString(node.customerName),
-    eventType: normalizeString(node.eventType),
-    eventDate: normalizeString(node.eventDate),
-    grossAmount: formatCurrency(amounts.grossAmount, amounts.currency),
-    commissionAmount: `-${formatCurrency(amounts.commissionAmount, amounts.currency)}`,
-    netAmount: formatCurrency(amounts.netAmount, amounts.currency),
-    currency: normalizeString(amounts.currency),
-    payoutStatus: normalizeString(node.payoutStatus),
-    payoutDate: normalizeString(node.payoutDate),
-    createdOn: normalizeString(node.createdOn),
-    updatedOn: normalizeString(node.updatedOn),
+    eventDate: formatDateLabel(node.deliveryDate || node.eventDate),
+    grossAmount: formatCurrency(node.finalPrice, "NOK"),
+    paymentStatus: normalizeString(node.paymentStatus || "PENDING"),
+    paymentMethod: normalizeString(node.paymentMethod || "Not specified"),
   };
 }
 
