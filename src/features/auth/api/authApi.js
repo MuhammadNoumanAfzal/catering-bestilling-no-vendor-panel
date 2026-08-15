@@ -4,6 +4,7 @@ import {
   PASSWORD_RESET_MAIL_MUTATION,
   REGISTER_VENDOR_MUTATION,
   RESET_PASSWORD_MUTATION,
+  SEND_SIGNUP_OTP_MUTATION,
   VERIFY_RESET_CODE_MUTATION,
 } from "./authQueries";
 import { executeGraphqlRequest } from "./authClient";
@@ -100,14 +101,17 @@ export async function loginUserRequest({ identifier, password }) {
 
 export async function registerVendorRequest(formValues) {
   const data = await executeGraphqlRequest(REGISTER_VENDOR_MUTATION, {
-    email: formValues.email.trim(),
-    phone: formValues.phone.trim(),
-    password: formValues.password,
-    role: AUTH_ROLE,
-    firstName: formValues.firstName.trim(),
-    lastName: formValues.lastName.trim(),
-    companyName: formValues.companyName.trim(),
-    postCode: Number(formValues.postCode),
+    input: {
+      email: formValues.email.trim(),
+      phone: formValues.phone.trim(),
+      password: formValues.password,
+      role: AUTH_ROLE,
+      firstName: formValues.firstName.trim(),
+      lastName: formValues.lastName.trim(),
+      companyName: formValues.companyName.trim(),
+      postCode: Number(formValues.postCode),
+    },
+    otp: `${formValues.otp ?? ""}`.trim(),
   });
 
   const registerUser = data?.registerUser;
@@ -121,6 +125,22 @@ export async function registerVendorRequest(formValues) {
       registerUser.message ||
       "Vendor account created successfully. Your account is pending admin approval.",
     user: normalizeUser(registerUser.user),
+  };
+}
+
+export async function sendSignupOtpRequest({ email }) {
+  const data = await executeGraphqlRequest(SEND_SIGNUP_OTP_MUTATION, {
+    email: email.trim().toLowerCase(),
+  });
+
+  const result = data?.sendSignupOtp;
+
+  if (!result?.success) {
+    throw new Error(result?.message || "Unable to send verification code right now.");
+  }
+
+  return {
+    message: result.message || "Verification code sent successfully.",
   };
 }
 
