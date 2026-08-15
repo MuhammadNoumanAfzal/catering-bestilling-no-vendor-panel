@@ -2,9 +2,9 @@ import {
   LOGIN_USER_MUTATION,
   LOGOUT_USER_MUTATION,
   PASSWORD_RESET_MAIL_MUTATION,
-  REGISTER_VENDOR_MUTATION,
   RESET_PASSWORD_MUTATION,
   SEND_SIGNUP_OTP_MUTATION,
+  VERIFY_SIGNUP_OTP_MUTATION,
   VERIFY_RESET_CODE_MUTATION,
 } from "./authQueries";
 import { executeGraphqlRequest } from "./authClient";
@@ -99,10 +99,10 @@ export async function loginUserRequest({ identifier, password }) {
   };
 }
 
-export async function registerVendorRequest(formValues) {
-  const data = await executeGraphqlRequest(REGISTER_VENDOR_MUTATION, {
+export async function sendSignupOtpRequest(formValues) {
+  const data = await executeGraphqlRequest(SEND_SIGNUP_OTP_MUTATION, {
     input: {
-      email: formValues.email.trim(),
+      email: formValues.email.trim().toLowerCase(),
       phone: formValues.phone.trim(),
       password: formValues.password,
       role: AUTH_ROLE,
@@ -111,26 +111,6 @@ export async function registerVendorRequest(formValues) {
       companyName: formValues.companyName.trim(),
       postCode: Number(formValues.postCode),
     },
-    otp: `${formValues.otp ?? ""}`.trim(),
-  });
-
-  const registerUser = data?.registerUser;
-
-  if (!registerUser?.success) {
-    throw new Error(registerUser?.message || "Registration failed. Please try again.");
-  }
-
-  return {
-    message:
-      registerUser.message ||
-      "Vendor account created successfully. Your account is pending admin approval.",
-    user: normalizeUser(registerUser.user),
-  };
-}
-
-export async function sendSignupOtpRequest({ email }) {
-  const data = await executeGraphqlRequest(SEND_SIGNUP_OTP_MUTATION, {
-    email: email.trim().toLowerCase(),
   });
 
   const result = data?.sendSignupOtp;
@@ -142,6 +122,35 @@ export async function sendSignupOtpRequest({ email }) {
   return {
     message: result.message || "Verification code sent successfully.",
   };
+}
+
+export async function verifySignupOtpRequest({ email, otp }) {
+  const data = await executeGraphqlRequest(VERIFY_SIGNUP_OTP_MUTATION, {
+    input: {
+      email: email.trim().toLowerCase(),
+      otp: otp.trim(),
+    },
+  });
+
+  const result = data?.verifySignupOtp;
+
+  if (!result?.success) {
+    throw new Error(result?.message || "Verification failed. Please try again.");
+  }
+
+  return {
+    message:
+      result.message ||
+      "Vendor account created successfully. Your account is pending admin approval.",
+    user: normalizeUser(result.user),
+  };
+}
+
+export async function registerVendorRequest(formValues) {
+  return verifySignupOtpRequest({
+    email: formValues.email,
+    otp: `${formValues.otp ?? ""}`,
+  });
 }
 
 export async function logoutUserRequest(accessToken) {

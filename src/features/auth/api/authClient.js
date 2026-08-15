@@ -5,6 +5,19 @@ const GRAPHQL_API_URL =
   import.meta.env.VITE_GRAPHQL_URL ??
   DEFAULT_GRAPHQL_API_URL;
 
+const GRAPHQL_CONTRACT_ERROR_TRANSLATIONS = [
+  {
+    pattern: /cannot query field ['"]sendsignupotp['"] on type ['"]mutation['"]/i,
+    message:
+      "Email OTP signup is not available on the current backend deployment yet.",
+  },
+  {
+    pattern: /cannot query field ['"]registeruser['"] on type ['"]mutation['"]/i,
+    message:
+      "The new signup flow is not available on the current backend deployment yet.",
+  },
+];
+
 function getErrorMessage(payload, fallbackMessage) {
   const firstError = payload?.errors?.[0];
   const fieldErrors =
@@ -25,6 +38,18 @@ function getErrorMessage(payload, fallbackMessage) {
   }
 
   return fallbackMessage;
+}
+
+function translateGraphqlContractError(message) {
+  if (!message || typeof message !== "string") {
+    return message;
+  }
+
+  const matchedTranslation = GRAPHQL_CONTRACT_ERROR_TRANSLATIONS.find(({ pattern }) =>
+    pattern.test(message),
+  );
+
+  return matchedTranslation?.message ?? message;
 }
 
 function extractFieldErrors(payload) {
@@ -98,7 +123,11 @@ export async function executeGraphqlRequest(query, variables, options = {}) {
   }
 
   if (payload?.errors?.length) {
-    const error = new Error(getErrorMessage(payload, "Authentication request failed."));
+    const error = new Error(
+      translateGraphqlContractError(
+        getErrorMessage(payload, "Authentication request failed."),
+      ),
+    );
     error.isAuthenticationError = isAuthenticationError(payload);
     error.fieldErrors = extractFieldErrors(payload);
     throw error;
