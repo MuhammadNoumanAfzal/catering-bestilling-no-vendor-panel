@@ -7,12 +7,13 @@ const GRAPHQL_API_URL =
 
 function getErrorMessage(payload, fallbackMessage) {
   const firstError = payload?.errors?.[0];
-  const fieldErrors = firstError?.extensions?.errors;
+  const fieldErrors =
+    firstError?.extensions?.fields ?? firstError?.extensions?.errors;
 
   if (fieldErrors && typeof fieldErrors === "object") {
-    const firstFieldMessage = Object.values(fieldErrors).find(
-      (value) => typeof value === "string" && value.trim(),
-    );
+    const firstFieldMessage = Object.values(fieldErrors)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .find((value) => typeof value === "string" && value.trim());
 
     if (firstFieldMessage) {
       return firstFieldMessage;
@@ -24,6 +25,25 @@ function getErrorMessage(payload, fallbackMessage) {
   }
 
   return fallbackMessage;
+}
+
+function extractFieldErrors(payload) {
+  const rawFieldErrors =
+    payload?.errors?.[0]?.extensions?.fields ??
+    payload?.errors?.[0]?.extensions?.errors;
+
+  if (!rawFieldErrors || typeof rawFieldErrors !== "object") {
+    return null;
+  }
+
+  return Object.fromEntries(
+    Object.entries(rawFieldErrors).map(([field, value]) => [
+      field,
+      (Array.isArray(value) ? value : [value]).filter(
+        (item) => typeof item === "string" && item.trim(),
+      ),
+    ]),
+  );
 }
 
 export function isAuthenticationError(payload) {
@@ -80,6 +100,7 @@ export async function executeGraphqlRequest(query, variables, options = {}) {
   if (payload?.errors?.length) {
     const error = new Error(getErrorMessage(payload, "Authentication request failed."));
     error.isAuthenticationError = isAuthenticationError(payload);
+    error.fieldErrors = extractFieldErrors(payload);
     throw error;
   }
 

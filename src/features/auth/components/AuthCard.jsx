@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 function Field({
+  className,
+  containerClassName,
+  errorText,
   helperText,
   label,
   strengthIndicator,
@@ -14,13 +17,17 @@ function Field({
     isPasswordField && isPasswordVisible ? "text" : inputProps.type;
 
   return (
-    <label className="flex flex-col gap-1.5">
+    <label className={`flex flex-col gap-1.5 ${containerClassName || ""}`.trim()}>
       <span className="type-para text-[#4c4037]">{label}</span>
       <div className="relative">
         <input
-          className={`type-subpara min-h-[42px] w-full rounded-lg border border-[#ddd4cb] bg-white text-[#1d1713] outline-none transition duration-150 placeholder:font-normal placeholder:text-[#baaea0] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)] ${
+          className={`type-subpara min-h-[42px] w-full rounded-lg border bg-white text-[#1d1713] outline-none transition duration-150 placeholder:font-normal placeholder:text-[#baaea0] ${
+            errorText
+              ? "border-[#d76a4a] focus:border-[#d76a4a] focus:shadow-[0_0_0_3px_rgba(215,106,74,0.12)]"
+              : "border-[#ddd4cb] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
+          } ${
             isPasswordField ? "px-3 pr-11" : "px-3"
-          }`}
+          } ${className || ""}`}
           {...inputProps}
           type={resolvedInputType}
         />
@@ -63,7 +70,10 @@ function Field({
           </div>
         </div>
       ) : null}
-      {helperText ? (
+      {errorText ? (
+        <span className="type-subpara text-[#d76a4a]">{errorText}</span>
+      ) : null}
+      {!errorText && helperText ? (
         <span className="type-subpara text-[#aaa094]">{helperText}</span>
       ) : null}
     </label>

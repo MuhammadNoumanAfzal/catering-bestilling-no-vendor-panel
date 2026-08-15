@@ -1,3 +1,12 @@
+export const SEND_SIGNUP_OTP_MUTATION = `
+  mutation SendSignupOTP($email: String!) {
+    sendSignupOtp(email: $email) {
+      success
+      message
+    }
+  }
+`;
+
 export const LOGIN_USER_MUTATION = `
   mutation LoginUser($email: String!, $password: String!, $role: String!) {
     loginUser(email: $email, password: $password, role: $role) {
@@ -21,28 +30,8 @@ export const LOGIN_USER_MUTATION = `
 `;
 
 export const REGISTER_VENDOR_MUTATION = `
-  mutation RegisterVendor(
-    $email: String!
-    $phone: String!
-    $password: String!
-    $role: String!
-    $firstName: String!
-    $lastName: String!
-    $companyName: String!
-    $postCode: Int!
-  ) {
-    registerUser(
-      input: {
-        email: $email
-        phone: $phone
-        password: $password
-        role: $role
-        firstName: $firstName
-        lastName: $lastName
-        companyName: $companyName
-        postCode: $postCode
-      }
-    ) {
+  mutation RegisterVendor($input: SignupFormInput!, $otp: String!) {
+    registerUser(input: $input, otp: $otp) {
       success
       message
       user {

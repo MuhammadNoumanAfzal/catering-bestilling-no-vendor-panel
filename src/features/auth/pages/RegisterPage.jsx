@@ -4,10 +4,13 @@ import { useMemo, useState } from "react";
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
 import { useAuth } from "../hooks/useAuth";
+import { sendSignupOtpRequest } from "../api/authApi";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
+
+const SIGNUP_OTP_LENGTH = 6;
 
 const initialFormState = {
   firstName: "",
@@ -18,6 +21,7 @@ const initialFormState = {
   postCode: "",
   password: "",
   confirmPassword: "",
+  otp: "",
 };
 
 function getReadableErrorMessage(error) {
@@ -103,6 +107,9 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { clearRegisterError, isAuthenticated, isRegistering, register } = useAuth();
   const [formState, setFormState] = useState(initialFormState);
+  const [otpSentTo, setOtpSentTo] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const passwordStrength = useMemo(
     () => getPasswordStrength(formState.password),
     [formState.password],
@@ -114,12 +121,61 @@ export default function RegisterPage() {
 
   function handleFieldChange(field) {
     return (event) => {
+      const nextValue = event.target.value;
       clearRegisterError();
-      setFormState((current) => ({
-        ...current,
-        [field]: event.target.value,
-      }));
+      setFormState((current) => {
+        const nextState = {
+          ...current,
+          [field]: nextValue,
+        };
+
+        if (field === "email" && nextValue.trim().toLowerCase() !== otpSentTo) {
+          nextState.otp = "";
+        }
+
+        return nextState;
+      });
+
+      if (field === "email" && nextValue.trim().toLowerCase() !== otpSentTo) {
+        setOtpSentTo("");
+        setOtpError("");
+      }
+
+      if (field === "otp") {
+        setOtpError("");
+      }
     };
+  }
+
+  async function handleSendOtp() {
+    const email = formState.email.trim().toLowerCase();
+
+    if (!email) {
+      await showVendorErrorAlert("Please enter your email address first.", "Email required");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      return;
+    }
+
+    setIsSendingOtp(true);
+
+    try {
+      const result = await sendSignupOtpRequest({ email });
+      setOtpSentTo(email);
+      setOtpError("");
+      await showVendorSuccessToast(result.message || "Verification code sent to your email.");
+    } catch (error) {
+      setOtpSentTo("");
+      await showVendorErrorAlert(
+        getReadableErrorMessage(error),
+        "Unable to send code",
+      );
+    } finally {
+      setIsSendingOtp(false);
+    }
   }
 
   async function handleSubmit() {
@@ -178,6 +234,19 @@ export default function RegisterPage() {
       return;
     }
 
+    if (otpSentTo !== formState.email.trim().toLowerCase()) {
+      await showVendorErrorAlert(
+        "Please send a verification code to this email before creating the account.",
+        "Verification required",
+      );
+      return;
+    }
+
+    if (!new RegExp(`^\\d{${SIGNUP_OTP_LENGTH}}$`).test(formState.otp)) {
+      setOtpError(`Verification code must be ${SIGNUP_OTP_LENGTH} digits.`);
+      return;
+    }
+
     let result;
 
     try {
@@ -186,15 +255,23 @@ export default function RegisterPage() {
         email: formState.email,
         firstName: formState.firstName,
         lastName: formState.lastName,
+        otp: formState.otp,
         password: formState.password,
         phone: normalizedPhone,
         postCode: formState.postCode,
       });
     } catch (error) {
-      await showVendorErrorAlert(
-        getReadableErrorMessage(error),
-        "Unable to register",
-      );
+      const fieldOtpError =
+        error?.fieldErrors?.otp?.[0] || "";
+
+      if (fieldOtpError) {
+        setOtpError(fieldOtpError);
+      } else {
+        await showVendorErrorAlert(
+          getReadableErrorMessage(error),
+          "Unable to register",
+        );
+      }
       return;
     }
 
@@ -205,7 +282,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout>
       <AuthCard
-        actionDisabled={isRegistering}
+        actionDisabled={isRegistering || isSendingOtp}
         actionLabel={isRegistering ? "Creating account..." : "Create Vendor Account"}
         auxiliaryLinkLabel="Already have an account?"
         auxiliaryLinkTo="/auth/login"
@@ -232,6 +309,10 @@ export default function RegisterPage() {
             placeholder: "corporate.eats@example.com",
             type: "email",
             value: formState.email,
+            helperText:
+              otpSentTo === formState.email.trim().toLowerCase()
+                ? "Verification code sent. Enter the 6-digit code below."
+                : "We will send a 6-digit verification code to this email.",
           },
           {
             label: "Phone Number",
@@ -276,7 +357,41 @@ export default function RegisterPage() {
             type: "password",
             value: formState.confirmPassword,
           },
+          {
+            label: "Email Verification Code",
+            inputMode: "numeric",
+            maxLength: SIGNUP_OTP_LENGTH,
+            name: "otp",
+            onChange: (event) => {
+              clearRegisterError();
+              setOtpError("");
+              setFormState((current) => ({
+                ...current,
+                otp: event.target.value.replace(/\D/g, "").slice(0, SIGNUP_OTP_LENGTH),
+              }));
+            },
+            placeholder: "Enter 6-digit code",
+            type: "text",
+            value: formState.otp,
+            helperText: "The code expires in 10 minutes.",
+            errorText: otpError,
+            containerClassName: "sm:col-span-2",
+          },
         ]}
+        extraContent={
+          <button
+            type="button"
+            onClick={handleSendOtp}
+            disabled={isSendingOtp || isRegistering || !formState.email.trim()}
+            className="type-para inline-flex min-h-[42px] w-full items-center justify-center rounded-lg border border-[#cf6e38] bg-white font-bold text-[#cf6e38] transition duration-150 hover:bg-[#fff4ee] disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {isSendingOtp
+              ? "Sending code..."
+              : otpSentTo === formState.email.trim().toLowerCase()
+                ? "Resend verification code"
+                : "Send verification code"}
+          </button>
+        }
         footerLinkLabel="Sign in"
         footerLinkTo="/auth/login"
         footerText="Already registered?"

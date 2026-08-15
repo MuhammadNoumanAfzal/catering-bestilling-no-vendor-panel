@@ -36,7 +36,10 @@ export const registerVendor = createAsyncThunk(
     try {
       return await registerVendorRequest(payload);
     } catch (error) {
-      return rejectWithValue(error.message || "Registration failed.");
+      return rejectWithValue({
+        fieldErrors: error.fieldErrors || null,
+        message: error.message || "Registration failed.",
+      });
     }
   },
 );
@@ -109,7 +112,8 @@ const authSlice = createSlice({
       })
       .addCase(registerVendor.rejected, (state, action) => {
         state.registerStatus = "failed";
-        state.registerError = action.payload || "Registration failed.";
+        state.registerError =
+          action.payload?.message || action.payload || "Registration failed.";
       })
       .addCase(logoutUser.pending, (state) => {
         state.loginStatus = "logging-out";
