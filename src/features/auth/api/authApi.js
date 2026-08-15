@@ -2,13 +2,17 @@ import {
   LOGIN_USER_MUTATION,
   LOGOUT_USER_MUTATION,
   PASSWORD_RESET_MAIL_MUTATION,
+  REGISTER_VENDOR_MUTATION,
   RESET_PASSWORD_MUTATION,
   SEND_SIGNUP_OTP_MUTATION,
-  VERIFY_SIGNUP_OTP_MUTATION,
   VERIFY_RESET_CODE_MUTATION,
 } from "./authQueries";
 import { executeGraphqlRequest } from "./authClient";
 import { AUTH_ROLE, isAllowedAuthRole } from "../authConfig";
+
+function normalizePhoneNumber(phone) {
+  return `${phone ?? ""}`.replace(/\s+/g, "").trim();
+}
 
 function normalizeUser(user) {
   if (!user) {
@@ -101,16 +105,7 @@ export async function loginUserRequest({ identifier, password }) {
 
 export async function sendSignupOtpRequest(formValues) {
   const data = await executeGraphqlRequest(SEND_SIGNUP_OTP_MUTATION, {
-    input: {
-      email: formValues.email.trim().toLowerCase(),
-      phone: formValues.phone.trim(),
-      password: formValues.password,
-      role: AUTH_ROLE,
-      firstName: formValues.firstName.trim(),
-      lastName: formValues.lastName.trim(),
-      companyName: formValues.companyName.trim(),
-      postCode: Number(formValues.postCode),
-    },
+    email: formValues.email.trim().toLowerCase(),
   });
 
   const result = data?.sendSignupOtp;
@@ -124,15 +119,22 @@ export async function sendSignupOtpRequest(formValues) {
   };
 }
 
-export async function verifySignupOtpRequest({ email, otp }) {
-  const data = await executeGraphqlRequest(VERIFY_SIGNUP_OTP_MUTATION, {
+export async function verifySignupOtpRequest(formValues) {
+  const data = await executeGraphqlRequest(REGISTER_VENDOR_MUTATION, {
     input: {
-      email: email.trim().toLowerCase(),
-      otp: otp.trim(),
+      email: formValues.email.trim().toLowerCase(),
+      phone: normalizePhoneNumber(formValues.phone),
+      password: formValues.password,
+      role: AUTH_ROLE,
+      firstName: formValues.firstName.trim(),
+      lastName: formValues.lastName.trim(),
+      companyName: formValues.companyName.trim(),
+      postCode: Number(formValues.postCode),
     },
+    otp: `${formValues.otp ?? ""}`.trim(),
   });
 
-  const result = data?.verifySignupOtp;
+  const result = data?.registerUser;
 
   if (!result?.success) {
     throw new Error(result?.message || "Verification failed. Please try again.");
@@ -147,10 +149,7 @@ export async function verifySignupOtpRequest({ email, otp }) {
 }
 
 export async function registerVendorRequest(formValues) {
-  return verifySignupOtpRequest({
-    email: formValues.email,
-    otp: `${formValues.otp ?? ""}`,
-  });
+  return verifySignupOtpRequest(formValues);
 }
 
 export async function logoutUserRequest(accessToken) {
