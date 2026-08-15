@@ -233,6 +233,7 @@ export default function RegisterPage() {
 
     try {
       const result = await verifySignupOtpRequest({
+        ...formState,
         email: formState.email,
         otp: otpCode,
       });
