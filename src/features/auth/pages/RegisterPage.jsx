@@ -1,16 +1,25 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { FiArrowRight, FiEdit3 } from "react-icons/fi";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
 import { useAuth } from "../hooks/useAuth";
-import { sendSignupOtpRequest } from "../api/authApi";
+import {
+  sendSignupOtpRequest,
+  verifySignupOtpRequest,
+} from "../api/authApi";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
 const SIGNUP_OTP_LENGTH = 6;
+
+const SIGNUP_STEP = {
+  FORM: "form",
+  VERIFY: "verify",
+};
 
 const initialFormState = {
   firstName: "",
@@ -21,7 +30,6 @@ const initialFormState = {
   postCode: "",
   password: "",
   confirmPassword: "",
-  otp: "",
 };
 
 function getReadableErrorMessage(error) {
@@ -105,11 +113,13 @@ function getPasswordStrength(password) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { clearRegisterError, isAuthenticated, isRegistering, register } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const [signupStep, setSignupStep] = useState(SIGNUP_STEP.FORM);
   const [formState, setFormState] = useState(initialFormState);
-  const [otpSentTo, setOtpSentTo] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [otpError, setOtpError] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const passwordStrength = useMemo(
     () => getPasswordStrength(formState.password),
     [formState.password],
@@ -122,63 +132,20 @@ export default function RegisterPage() {
   function handleFieldChange(field) {
     return (event) => {
       const nextValue = event.target.value;
-      clearRegisterError();
-      setFormState((current) => {
-        const nextState = {
-          ...current,
-          [field]: nextValue,
-        };
+      setFormState((current) => ({
+        ...current,
+        [field]: nextValue,
+      }));
 
-        if (field === "email" && nextValue.trim().toLowerCase() !== otpSentTo) {
-          nextState.otp = "";
-        }
-
-        return nextState;
-      });
-
-      if (field === "email" && nextValue.trim().toLowerCase() !== otpSentTo) {
-        setOtpSentTo("");
-        setOtpError("");
-      }
-
-      if (field === "otp") {
+      if (field === "email" && signupStep === SIGNUP_STEP.VERIFY) {
+        setSignupStep(SIGNUP_STEP.FORM);
+        setOtpCode("");
         setOtpError("");
       }
     };
   }
 
   async function handleSendOtp() {
-    const email = formState.email.trim().toLowerCase();
-
-    if (!email) {
-      await showVendorErrorAlert("Please enter your email address first.", "Email required");
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
-      return;
-    }
-
-    setIsSendingOtp(true);
-
-    try {
-      const result = await sendSignupOtpRequest({ email });
-      setOtpSentTo(email);
-      setOtpError("");
-      await showVendorSuccessToast(result.message || "Verification code sent to your email.");
-    } catch (error) {
-      setOtpSentTo("");
-      await showVendorErrorAlert(
-        getReadableErrorMessage(error),
-        "Unable to send code",
-      );
-    } finally {
-      setIsSendingOtp(false);
-    }
-  }
-
-  async function handleSubmit() {
     if (
       !formState.firstName.trim() ||
       !formState.lastName.trim() ||
@@ -234,172 +201,212 @@ export default function RegisterPage() {
       return;
     }
 
-    if (otpSentTo !== formState.email.trim().toLowerCase()) {
-      await showVendorErrorAlert(
-        "Please send a verification code to this email before creating the account.",
-        "Verification required",
-      );
-      return;
-    }
+    setIsSendingOtp(true);
 
-    if (!new RegExp(`^\\d{${SIGNUP_OTP_LENGTH}}$`).test(formState.otp)) {
+    try {
+      const result = await sendSignupOtpRequest({
+        ...formState,
+        phone: normalizedPhone,
+      });
+      setOtpCode("");
+      setOtpError("");
+      setSignupStep(SIGNUP_STEP.VERIFY);
+      await showVendorSuccessToast(result.message || "Verification code sent to your email.");
+    } catch (error) {
+      await showVendorErrorAlert(
+        getReadableErrorMessage(error),
+        "Unable to send code",
+      );
+    } finally {
+      setIsSendingOtp(false);
+    }
+  }
+
+  async function handleVerifyOtp() {
+    if (!new RegExp(`^\\d{${SIGNUP_OTP_LENGTH}}$`).test(otpCode)) {
       setOtpError(`Verification code must be ${SIGNUP_OTP_LENGTH} digits.`);
       return;
     }
 
-    let result;
+    setOtpError("");
+    setIsVerifyingOtp(true);
 
     try {
-      result = await register({
-        companyName: formState.companyName,
+      const result = await verifySignupOtpRequest({
         email: formState.email,
-        firstName: formState.firstName,
-        lastName: formState.lastName,
-        otp: formState.otp,
-        password: formState.password,
-        phone: normalizedPhone,
-        postCode: formState.postCode,
+        otp: otpCode,
       });
+      await showVendorSuccessToast(result?.message || "Account created successfully.");
+      setFormState(initialFormState);
+      setOtpCode("");
+      setSignupStep(SIGNUP_STEP.FORM);
+      navigate("/auth/login", { replace: true });
     } catch (error) {
-      const fieldOtpError =
-        error?.fieldErrors?.otp?.[0] || "";
+      const fieldOtpError = error?.fieldErrors?.otp?.[0] || "";
 
       if (fieldOtpError) {
         setOtpError(fieldOtpError);
       } else {
         await showVendorErrorAlert(
           getReadableErrorMessage(error),
-          "Unable to register",
+          "Unable to verify code",
         );
       }
-      return;
+    } finally {
+      setIsVerifyingOtp(false);
     }
-
-    await showVendorSuccessToast(result?.message || "Account created successfully.");
-    navigate("/auth/login", { replace: true });
   }
 
   return (
     <AuthLayout>
       <AuthCard
-        actionDisabled={isRegistering || isSendingOtp}
-        actionLabel={isRegistering ? "Creating account..." : "Create Vendor Account"}
+        actionDisabled={isSendingOtp || isVerifyingOtp}
+        actionLabel={
+          signupStep === SIGNUP_STEP.VERIFY
+            ? isVerifyingOtp
+              ? "Verifying..."
+              : "Verify & Create Account"
+            : isSendingOtp
+              ? "Sending code..."
+              : "Register"
+        }
         auxiliaryLinkLabel="Already have an account?"
         auxiliaryLinkTo="/auth/login"
         fieldsColumnsClassName="grid grid-cols-1 gap-3 sm:grid-cols-2"
-        fields={[
-          {
-            label: "First Name",
-            name: "firstName",
-            onChange: handleFieldChange("firstName"),
-            placeholder: "Sarah",
-            value: formState.firstName,
-          },
-          {
-            label: "Last Name",
-            name: "lastName",
-            onChange: handleFieldChange("lastName"),
-            placeholder: "Jensen",
-            value: formState.lastName,
-          },
-          {
-            label: "Email Address",
-            name: "email",
-            onChange: handleFieldChange("email"),
-            placeholder: "corporate.eats@example.com",
-            type: "email",
-            value: formState.email,
-            helperText:
-              otpSentTo === formState.email.trim().toLowerCase()
-                ? "Verification code sent. Enter the 6-digit code below."
-                : "We will send a 6-digit verification code to this email.",
-          },
-          {
-            label: "Phone Number",
-            maxLength: 15,
-            name: "phone",
-            onChange: handleFieldChange("phone"),
-            placeholder: "+4798765432",
-            type: "tel",
-            autoComplete: "tel",
-            value: formState.phone,
-          },
-          {
-            label: "Company Name",
-            name: "companyName",
-            onChange: handleFieldChange("companyName"),
-            placeholder: "Nordic Gourmet Catering",
-            value: formState.companyName,
-          },
-          {
-            label: "Post Code",
-            name: "postCode",
-            onChange: handleFieldChange("postCode"),
-            placeholder: "9021",
-            value: formState.postCode,
-          },
-          {
-            label: "Password",
-            autoComplete: "new-password",
-            name: "password",
-            onChange: handleFieldChange("password"),
-            placeholder: "Create a strong password",
-            strengthIndicator: passwordStrength,
-            type: "password",
-            value: formState.password,
-          },
-          {
-            label: "Confirm Password",
-            autoComplete: "new-password",
-            name: "confirmPassword",
-            onChange: handleFieldChange("confirmPassword"),
-            placeholder: "Confirm your password",
-            type: "password",
-            value: formState.confirmPassword,
-          },
-          {
-            label: "Email Verification Code",
-            inputMode: "numeric",
-            maxLength: SIGNUP_OTP_LENGTH,
-            name: "otp",
-            onChange: (event) => {
-              clearRegisterError();
-              setOtpError("");
-              setFormState((current) => ({
-                ...current,
-                otp: event.target.value.replace(/\D/g, "").slice(0, SIGNUP_OTP_LENGTH),
-              }));
-            },
-            placeholder: "Enter 6-digit code",
-            type: "text",
-            value: formState.otp,
-            helperText: "The code expires in 10 minutes.",
-            errorText: otpError,
-            containerClassName: "sm:col-span-2",
-          },
-        ]}
+        fields={
+          signupStep === SIGNUP_STEP.FORM
+            ? [
+                {
+                  label: "First Name",
+                  name: "firstName",
+                  onChange: handleFieldChange("firstName"),
+                  placeholder: "Sarah",
+                  value: formState.firstName,
+                },
+                {
+                  label: "Last Name",
+                  name: "lastName",
+                  onChange: handleFieldChange("lastName"),
+                  placeholder: "Jensen",
+                  value: formState.lastName,
+                },
+                {
+                  label: "Email Address",
+                  name: "email",
+                  onChange: handleFieldChange("email"),
+                  placeholder: "corporate.eats@example.com",
+                  type: "email",
+                  value: formState.email,
+                  helperText: "We will send a verification code after you click Register.",
+                },
+                {
+                  label: "Phone Number",
+                  maxLength: 15,
+                  name: "phone",
+                  onChange: handleFieldChange("phone"),
+                  placeholder: "+4798765432",
+                  type: "tel",
+                  autoComplete: "tel",
+                  value: formState.phone,
+                },
+                {
+                  label: "Company Name",
+                  name: "companyName",
+                  onChange: handleFieldChange("companyName"),
+                  placeholder: "Nordic Gourmet Catering",
+                  value: formState.companyName,
+                },
+                {
+                  label: "Post Code",
+                  name: "postCode",
+                  onChange: handleFieldChange("postCode"),
+                  placeholder: "9021",
+                  value: formState.postCode,
+                },
+                {
+                  label: "Password",
+                  autoComplete: "new-password",
+                  name: "password",
+                  onChange: handleFieldChange("password"),
+                  placeholder: "Create a strong password",
+                  strengthIndicator: passwordStrength,
+                  type: "password",
+                  value: formState.password,
+                },
+                {
+                  label: "Confirm Password",
+                  autoComplete: "new-password",
+                  name: "confirmPassword",
+                  onChange: handleFieldChange("confirmPassword"),
+                  placeholder: "Confirm your password",
+                  type: "password",
+                  value: formState.confirmPassword,
+                },
+              ]
+            : [
+                {
+                  label: "Email Verification Code",
+                  inputMode: "numeric",
+                  maxLength: SIGNUP_OTP_LENGTH,
+                  name: "otp",
+                  onChange: (event) => {
+                    setOtpError("");
+                    setOtpCode(
+                      event.target.value.replace(/\D/g, "").slice(0, SIGNUP_OTP_LENGTH),
+                    );
+                  },
+                  placeholder: "Enter 6-digit code",
+                  type: "text",
+                  value: otpCode,
+                  helperText: `We sent a verification code to ${formState.email}. It expires in 10 minutes.`,
+                  errorText: otpError,
+                  containerClassName: "sm:col-span-2",
+                },
+              ]
+        }
         extraContent={
-          <button
-            type="button"
-            onClick={handleSendOtp}
-            disabled={isSendingOtp || isRegistering || !formState.email.trim()}
-            className="type-para inline-flex min-h-[42px] w-full items-center justify-center rounded-lg border border-[#cf6e38] bg-white font-bold text-[#cf6e38] transition duration-150 hover:bg-[#fff4ee] disabled:cursor-not-allowed disabled:opacity-55"
-          >
-            {isSendingOtp
-              ? "Sending code..."
-              : otpSentTo === formState.email.trim().toLowerCase()
-                ? "Resend verification code"
-                : "Send verification code"}
-          </button>
+          signupStep === SIGNUP_STEP.VERIFY ? (
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setSignupStep(SIGNUP_STEP.FORM);
+                  setOtpCode("");
+                  setOtpError("");
+                }}
+                disabled={isSendingOtp || isVerifyingOtp}
+                className="type-para inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg border border-[#d9cdc3] bg-white font-bold text-[#7b6f66] transition duration-150 hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                <FiEdit3 className="text-[14px]" />
+                Edit details
+              </button>
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={isSendingOtp || isVerifyingOtp}
+                className="type-para inline-flex min-h-[42px] w-full items-center justify-center rounded-lg border border-[#cf6e38] bg-white font-bold text-[#cf6e38] transition duration-150 hover:bg-[#fff4ee] disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                {isSendingOtp ? "Sending code..." : "Resend verification code"}
+              </button>
+            </div>
+          ) : null
         }
         footerLinkLabel="Sign in"
         footerLinkTo="/auth/login"
         footerText="Already registered?"
         formClassName="px-6 pb-6 pt-7"
         maxWidthClassName="sm:max-w-[760px]"
-        onAction={handleSubmit}
-        subtitle="Create your vendor account and start managing orders."
-        title="Vendor Registration"
+        onAction={signupStep === SIGNUP_STEP.VERIFY ? handleVerifyOtp : handleSendOtp}
+        subtitle={
+          signupStep === SIGNUP_STEP.VERIFY
+            ? `Enter the 6-digit code sent to ${formState.email} to complete your vendor account setup.`
+            : "Fill in your business details and click Register to receive an email verification code."
+        }
+        title={
+          signupStep === SIGNUP_STEP.VERIFY
+            ? "Verify Your Email"
+            : "Vendor Registration"
+        }
       />
     </AuthLayout>
   );
