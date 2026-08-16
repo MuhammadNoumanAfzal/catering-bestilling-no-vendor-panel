@@ -33,7 +33,9 @@ function TransactionDetailModal({ order, onClose }) {
               <strong className="text-[15px] text-[#1c1510] font-extrabold">{order.customerName}</strong>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">Payment Status</span>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">
+                {order.paymentStatusLabel || "Customer Invoice Status"}
+              </span>
               <span
                 className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-3 text-[12px] font-extrabold shadow-sm mt-0.5 ${
                   order.paymentStatus.toLowerCase() === "pending" || order.paymentStatus.toLowerCase() === "unpaid"
@@ -74,6 +76,10 @@ function TransactionDetailModal({ order, onClose }) {
               <div className="flex justify-between items-center text-[14px] px-1">
                 <span className="font-semibold text-[#6f6358]">Payment Method</span>
                 <span className="font-bold text-[#3b70a6] bg-[#eef4ff] px-2 py-0.5 rounded-full text-[13px]">{order.paymentMethod}</span>
+              </div>
+              <div className="flex justify-between items-center text-[14px] px-1">
+                <span className="font-semibold text-[#6f6358]">Vendor payout</span>
+                <span className="font-bold text-[#237a39]">Track this in payout cards above</span>
               </div>
 
               <div className="mt-3 bg-[#edf9ef] border border-[#c7ebd0] px-4 py-3 rounded-xl flex justify-between items-center shadow-sm">
@@ -163,7 +169,7 @@ export default function FinanceOrdersTable({
         <table className="w-full min-w-[980px] border-collapse">
           <thead>
             <tr className="border-b border-[#ede5de] text-left">
-              {["Sr.", "Invoice", "Customer", "Delivery date", "Payment Method", "Total Amount", "Payment Status", ""].map((heading) => (
+              {["Sr.", "Invoice", "Customer", "Delivery date", "Payment Method", "Total Amount", "Customer Invoice Status", ""].map((heading) => (
                 <th
                   key={heading}
                   className="border-b border-[#eee7df] px-[10px] py-3 text-left text-[15px] font-extrabold text-[#17120e]"
@@ -249,7 +255,7 @@ export default function FinanceOrdersTable({
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
                   colSpan={8}
                 >
-                  No invoices match the selected filters.
+                  No customer invoices match the selected filters.
                 </td>
               </tr>
             )}
