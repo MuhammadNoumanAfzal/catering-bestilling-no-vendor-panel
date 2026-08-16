@@ -133,6 +133,7 @@ export function mapTransactionsConnection(data) {
           eventDateRaw: normalizeString(node.deliveryDate),
           grossAmount: formatCurrency(node.finalPrice, "NOK"),
           paymentStatus: normalizeString(node.paymentStatus || "PENDING"),
+          paymentStatusLabel: "Customer invoice status",
           paymentMethod: normalizeString(node.paymentMethod || "Not specified"),
         };
       }),
@@ -153,6 +154,7 @@ export function mapTransactionDetail(node) {
     eventDate: formatDateLabel(node.deliveryDate || node.eventDate),
     grossAmount: formatCurrency(node.finalPrice, "NOK"),
     paymentStatus: normalizeString(node.paymentStatus || "PENDING"),
+    paymentStatusLabel: "Customer invoice status",
     paymentMethod: normalizeString(node.paymentMethod || "Not specified"),
   };
 }
