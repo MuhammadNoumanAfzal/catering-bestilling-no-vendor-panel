@@ -73,11 +73,12 @@ export default function SettingsComplianceDocumentsSection({
           <ShieldCheck className="mt-0.5 text-[#cf6e38]" size={18} />
           <div>
             <p className="text-[13px] font-bold text-[#211914]">
-              Upload the legal and business documents required for approval
+              Upload the documents needed to verify your business
             </p>
             <p className="mt-1 text-[12px] leading-6 text-[#7d6f65]">
-              This panel supports <span className="font-semibold">PDF, PNG, JPG, and WEBP</span>.
-              Uploaded documents are sent directly into the admin review flow and show their live verification status here.
+              You can upload <span className="font-semibold">PDF, PNG, JPG, and WEBP</span> files here.
+              Once uploaded, each document appears in this section so you can quickly see whether it is missing,
+              under review, verified, or needs changes.
             </p>
           </div>
         </div>
@@ -179,23 +180,23 @@ export default function SettingsComplianceDocumentsSection({
       </div>
 
       <div className="mt-4 rounded-[16px] border border-[#eadccf] bg-white px-4 py-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-[720px]">
             <p className="text-[14px] font-bold text-[#1f1712]">How this works</p>
             <p className="mt-1 text-[12px] leading-6 text-[#7c6d63]">
-              Each upload is saved to the backend immediately. There is no extra save button for these
-              four documents. Admin can review them from the vendor approval screen, and approval will
-              unlock once the documents are verified.
+              Each document is saved as soon as you upload it, so there is no extra save button here.
+              After that, the document is checked during the review process. If anything is missing or unclear,
+              you will see the updated status here.
             </p>
           </div>
           <button
-            className="inline-flex h-[42px] items-center justify-center gap-2 rounded-[12px] border border-[#ddd1c8] bg-[#faf6f2] px-4 text-[13px] font-bold text-[#4c3c33] transition hover:bg-[#f3ece6] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 self-start rounded-[12px] border border-[#ddd1c8] bg-[#faf6f2] px-4 py-2.5 text-[13px] font-bold text-[#4c3c33] transition hover:border-[#cf6e38] hover:bg-[#fff4ec] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto lg:self-center"
             disabled={disabled}
             onClick={onRefreshStatus}
             type="button"
           >
             <RefreshCw size={15} />
-            Refresh review status
+            Refresh Status
           </button>
         </div>
       </div>
