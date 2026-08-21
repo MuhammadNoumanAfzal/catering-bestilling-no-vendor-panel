@@ -189,7 +189,7 @@ function getRangeLengthInDays(customFrom, customTo) {
   return Math.floor(differenceInMilliseconds / 86400000) + 1;
 }
 
-export function getFinanceRangeVariables({ rangePreset, customFrom, customTo }) {
+export function getFinanceDateRangeVariables({ rangePreset, customFrom, customTo }) {
   if (rangePreset === "custom" && customFrom && customTo) {
     return {
       dateFrom: customFrom,
@@ -229,6 +229,20 @@ export function getFinanceRangeVariables({ rangePreset, customFrom, customTo }) 
   return {
     dateFrom: toYmd(dateFromDate),
     dateTo,
+  };
+}
+
+export function getFinanceSummaryVariables({ rangePreset, customFrom, customTo }) {
+  if (rangePreset === "custom" && customFrom && customTo) {
+    return {
+      rangePreset,
+      dateFrom: customFrom,
+      dateTo: customTo,
+    };
+  }
+
+  return {
+    rangePreset,
   };
 }
 

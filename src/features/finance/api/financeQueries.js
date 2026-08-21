@@ -1,9 +1,11 @@
 export const GET_VENDOR_FINANCE_SUMMARY_QUERY = `
   query GetVendorFinanceSummary(
-    $dateFrom: DateTime
-    $dateTo: DateTime
+    $rangePreset: String
+    $dateFrom: Date
+    $dateTo: Date
   ) {
     vendorFinanceSummary(
+      rangePreset: $rangePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
     ) {
@@ -33,11 +35,13 @@ export const GET_VENDOR_FINANCE_SUMMARY_QUERY = `
 
 export const GET_VENDOR_FINANCE_OVERVIEW_CHART_QUERY = `
   query GetVendorFinanceOverviewChart(
+    $rangePreset: String
     $dateFrom: Date
     $dateTo: Date
     $groupBy: String
   ) {
     vendorFinanceOverviewChart(
+      rangePreset: $rangePreset
       dateFrom: $dateFrom
       dateTo: $dateTo
       groupBy: $groupBy
@@ -86,8 +90,8 @@ export const GET_VENDOR_PAYOUTS_QUERY = `
   query GetVendorPayouts(
     $first: Int = 100
     $status: String
-    $dateFrom: Date
-    $dateTo: Date
+    $dateFrom: DateTime
+    $dateTo: DateTime
   ) {
     vendorPayouts(
       first: $first

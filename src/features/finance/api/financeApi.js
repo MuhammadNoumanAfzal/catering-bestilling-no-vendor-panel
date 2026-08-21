@@ -17,6 +17,17 @@ function unwrapMutationResult(result, key, fallbackMessage) {
   return payload;
 }
 
+function toDateTimeBoundary(value, boundary = "start") {
+  if (!value) {
+    return null;
+  }
+
+  const suffix =
+    boundary === "end" ? "T23:59:59.999Z" : "T00:00:00.000Z";
+
+  return `${value}${suffix}`;
+}
+
 export function getVendorFinanceSummary(variables = {}) {
   return executeProtectedGraphqlRequest(GET_VENDOR_FINANCE_SUMMARY_QUERY, variables);
 }
@@ -29,6 +40,8 @@ export function getVendorInvoices(variables = {}) {
   return executeProtectedGraphqlRequest(GET_VENDOR_INVOICES_QUERY, {
     first: 100,
     ...variables,
+    dateFrom: toDateTimeBoundary(variables.dateFrom, "start"),
+    dateTo: toDateTimeBoundary(variables.dateTo, "end"),
   });
 }
 
@@ -36,6 +49,8 @@ export function getVendorPayouts(variables = {}) {
   return executeProtectedGraphqlRequest(GET_VENDOR_PAYOUTS_QUERY, {
     first: 100,
     ...variables,
+    dateFrom: toDateTimeBoundary(variables.dateFrom, "start"),
+    dateTo: toDateTimeBoundary(variables.dateTo, "end"),
   });
 }
 
