@@ -8,7 +8,8 @@ import {
 } from "../api/financeApi";
 import {
   getChartGroupBy,
-  getFinanceRangeVariables,
+  getFinanceDateRangeVariables,
+  getFinanceSummaryVariables,
   mapFinanceChartPoints,
   mapFinanceSummaryCards,
   mapPayoutStatusItems,
@@ -21,6 +22,35 @@ import {
 } from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
+const FINANCE_SUMMARY_ERROR_MESSAGE =
+  "Unable to load finance summary right now. Please try again shortly.";
+const FINANCE_TRANSACTIONS_ERROR_MESSAGE =
+  "Unable to load finance transactions right now. Please try again shortly.";
+
+function getSafeFinanceErrorMessage(error, fallbackMessage) {
+  const message = String(error?.message || "").trim();
+
+  if (!message) {
+    return fallbackMessage;
+  }
+
+  const looksLikeServerTrace =
+    message.includes("/home/") ||
+    message.includes("Traceback") ||
+    message.includes("cannot import name") ||
+    message.includes("graphql_relay") ||
+    message.includes("\n");
+
+  return looksLikeServerTrace ? fallbackMessage : message;
+}
+
+function toInvoiceStatusFilter(status) {
+  if (!status || status === "All") {
+    return undefined;
+  }
+
+  return status.toUpperCase().replace(/\s+/g, "_");
+}
 
 function formatDateLabel(dateValue) {
   const date = new Date(dateValue);
@@ -54,7 +84,7 @@ export default function useFinancePageState() {
 
   const headerRangeVariables = useMemo(
     () =>
-      getFinanceRangeVariables({
+      getFinanceSummaryVariables({
         rangePreset: headerFilter,
         customFrom: appliedHeaderCustomRange?.from,
         customTo: appliedHeaderCustomRange?.to,
@@ -64,12 +94,22 @@ export default function useFinancePageState() {
 
   const ordersRangeVariables = useMemo(
     () =>
-      getFinanceRangeVariables({
+      getFinanceDateRangeVariables({
         rangePreset: selectedDateOption,
         customFrom: appliedCustomRange?.from,
         customTo: appliedCustomRange?.to,
       }),
     [appliedCustomRange?.from, appliedCustomRange?.to, selectedDateOption],
+  );
+
+  const payoutRangeVariables = useMemo(
+    () =>
+      getFinanceDateRangeVariables({
+        rangePreset: headerFilter,
+        customFrom: appliedHeaderCustomRange?.from,
+        customTo: appliedHeaderCustomRange?.to,
+      }),
+    [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
   );
 
   useEffect(() => {
@@ -87,7 +127,7 @@ export default function useFinancePageState() {
               appliedHeaderCustomRange?.to,
             ),
           }),
-          getVendorPayouts(headerRangeVariables),
+          getVendorPayouts(payoutRangeVariables),
         ]);
 
         if (isCancelled) {
@@ -100,7 +140,11 @@ export default function useFinancePageState() {
           const chartError =
             chartResult.status === "rejected" ? chartResult.reason : null;
 
-          throw summaryError || chartError || new Error("Unable to load finance summary right now.");
+          throw (
+            summaryError ||
+            chartError ||
+            new Error(FINANCE_SUMMARY_ERROR_MESSAGE)
+          );
         }
 
         setSummaryCards(mapFinanceSummaryCards(summaryResult.value));
@@ -114,7 +158,7 @@ export default function useFinancePageState() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load finance summary right now.",
+            getSafeFinanceErrorMessage(error, FINANCE_SUMMARY_ERROR_MESSAGE),
             "Finance unavailable",
           );
         }
@@ -126,7 +170,13 @@ export default function useFinancePageState() {
     return () => {
       isCancelled = true;
     };
-  }, [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter, headerRangeVariables]);
+  }, [
+    appliedHeaderCustomRange?.from,
+    appliedHeaderCustomRange?.to,
+    headerFilter,
+    headerRangeVariables,
+    payoutRangeVariables,
+  ]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -137,7 +187,9 @@ export default function useFinancePageState() {
       try {
         const result = await getVendorInvoices({
           first: 100,
-          ...(activeStatus !== "All" ? { status: activeStatus.toUpperCase().replace(/\s+/g, "_") } : {}),
+          ...(toInvoiceStatusFilter(activeStatus)
+            ? { status: toInvoiceStatusFilter(activeStatus) }
+            : {}),
           ...ordersRangeVariables,
         });
 
@@ -151,7 +203,10 @@ export default function useFinancePageState() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load finance transactions right now.",
+            getSafeFinanceErrorMessage(
+              error,
+              FINANCE_TRANSACTIONS_ERROR_MESSAGE,
+            ),
             "Transactions unavailable",
           );
         }
@@ -289,7 +344,9 @@ export default function useFinancePageState() {
     try {
       setIsExporting(true);
       const result = await exportVendorFinanceTransactions({
-        ...(activeStatus !== "All" ? { status: activeStatus.toLowerCase() } : {}),
+        ...(toInvoiceStatusFilter(activeStatus)
+          ? { status: toInvoiceStatusFilter(activeStatus) }
+          : {}),
         ...ordersRangeVariables,
         format,
       });
@@ -301,7 +358,10 @@ export default function useFinancePageState() {
       await showVendorSuccessToast(result.message || "Export generated successfully.");
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to export transactions right now.",
+        getSafeFinanceErrorMessage(
+          error,
+          "Unable to export transactions right now. Please try again shortly.",
+        ),
         "Export failed",
       );
     } finally {
