@@ -138,6 +138,12 @@ export function mapTransactionsConnection(data) {
         };
       }),
     totalCount: parseNumber(connection?.totalCount),
+    pageInfo: {
+      hasNextPage: Boolean(connection?.pageInfo?.hasNextPage),
+      hasPreviousPage: Boolean(connection?.pageInfo?.hasPreviousPage),
+      startCursor: normalizeString(connection?.pageInfo?.startCursor),
+      endCursor: normalizeString(connection?.pageInfo?.endCursor),
+    },
   };
 }
 
