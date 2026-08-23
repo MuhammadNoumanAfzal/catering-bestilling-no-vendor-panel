@@ -57,7 +57,8 @@ export const GET_VENDOR_FINANCE_OVERVIEW_CHART_QUERY = `
 
 export const GET_VENDOR_INVOICES_QUERY = `
   query GetVendorInvoices(
-    $first: Int = 100
+    $first: Int = 10
+    $after: String
     $status: String
     $search: String
     $dateFrom: DateTime
@@ -65,6 +66,7 @@ export const GET_VENDOR_INVOICES_QUERY = `
   ) {
     vendorInvoices(
       first: $first
+      after: $after
       status: $status
       search: $search
       dateFrom: $dateFrom
@@ -72,6 +74,7 @@ export const GET_VENDOR_INVOICES_QUERY = `
     ) {
       totalCount
       edges {
+        cursor
         node {
           id
           invoiceNumber
@@ -82,6 +85,12 @@ export const GET_VENDOR_INVOICES_QUERY = `
           paymentMethod
         }
       }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
     }
   }
 `;
@@ -89,12 +98,14 @@ export const GET_VENDOR_INVOICES_QUERY = `
 export const GET_VENDOR_PAYOUTS_QUERY = `
   query GetVendorPayouts(
     $first: Int = 100
+    $after: String
     $status: String
     $dateFrom: DateTime
     $dateTo: DateTime
   ) {
     vendorPayouts(
       first: $first
+      after: $after
       status: $status
       dateFrom: $dateFrom
       dateTo: $dateTo
@@ -126,6 +137,12 @@ export const GET_VENDOR_PAYOUTS_QUERY = `
         }
       }
       totalCount
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
     }
   }
 `;

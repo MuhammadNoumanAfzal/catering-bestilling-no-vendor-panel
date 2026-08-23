@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   exportVendorFinanceTransactions,
   getVendorFinanceOverviewChart,
@@ -63,6 +63,9 @@ function formatDateLabel(dateValue) {
 }
 
 export default function useFinancePageState() {
+  const invoicePageCacheRef = useRef({});
+  const invoicePageInfoRef = useRef({});
+  const invoiceRequestIdRef = useRef(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [headerFilter, setHeaderFilter] = useState("7days");
   const [headerCustomFrom, setHeaderCustomFrom] = useState("");
@@ -79,6 +82,7 @@ export default function useFinancePageState() {
   const [chartPoints, setChartPoints] = useState([]);
   const [payoutStatuses, setPayoutStatuses] = useState([]);
   const [invoiceRows, setInvoiceRows] = useState([]);
+  const [invoiceTotalCount, setInvoiceTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -110,6 +114,16 @@ export default function useFinancePageState() {
         customTo: appliedHeaderCustomRange?.to,
       }),
     [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
+  );
+
+  const invoiceQueryVariables = useMemo(
+    () => ({
+      ...(toInvoiceStatusFilter(activeStatus)
+        ? { status: toInvoiceStatusFilter(activeStatus) }
+        : {}),
+      ...ordersRangeVariables,
+    }),
+    [activeStatus, ordersRangeVariables],
   );
 
   useEffect(() => {
@@ -179,29 +193,99 @@ export default function useFinancePageState() {
   ]);
 
   useEffect(() => {
+    invoicePageCacheRef.current = {};
+    invoicePageInfoRef.current = {};
+    setInvoiceRows([]);
+    setInvoiceTotalCount(0);
+    setIsLoading(true);
+    setCurrentPage(1);
+  }, [invoiceQueryVariables]);
+
+  useEffect(() => {
     let isCancelled = false;
 
-    async function loadTransactions() {
+    if (!Object.keys(invoicePageCacheRef.current).length && currentPage !== 1) {
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    async function fetchInvoicePage(pageNumber, afterCursor) {
+      const result = await getVendorInvoices({
+        first: PAGE_SIZE,
+        after: afterCursor,
+        ...invoiceQueryVariables,
+      });
+
+      const mapped = mapTransactionsConnection(result);
+
+      invoicePageCacheRef.current[pageNumber] = mapped.rows;
+      invoicePageInfoRef.current[pageNumber] = mapped.pageInfo;
+
+      return mapped;
+    }
+
+    async function loadTransactionsPage() {
+      const requestId = invoiceRequestIdRef.current + 1;
+      invoiceRequestIdRef.current = requestId;
       setIsLoading(true);
 
       try {
-        const result = await getVendorInvoices({
-          first: 100,
-          ...(toInvoiceStatusFilter(activeStatus)
-            ? { status: toInvoiceStatusFilter(activeStatus) }
-            : {}),
-          ...ordersRangeVariables,
-        });
+        let mapped = null;
 
-        if (isCancelled) {
+        if (invoicePageCacheRef.current[currentPage]) {
+          mapped = {
+            rows: invoicePageCacheRef.current[currentPage],
+            pageInfo: invoicePageInfoRef.current[currentPage] || {},
+            totalCount: invoiceTotalCount,
+          };
+        } else {
+          let startPage = 1;
+          let afterCursor;
+
+          for (let page = currentPage - 1; page >= 1; page -= 1) {
+            const pageInfo = invoicePageInfoRef.current[page];
+
+            if (invoicePageCacheRef.current[page] && pageInfo) {
+              startPage = page + 1;
+              afterCursor = pageInfo.endCursor || undefined;
+              break;
+            }
+          }
+
+          for (let page = startPage; page <= currentPage; page += 1) {
+            if (invoicePageCacheRef.current[page]) {
+              afterCursor =
+                invoicePageInfoRef.current[page]?.endCursor || undefined;
+              mapped = {
+                rows: invoicePageCacheRef.current[page],
+                pageInfo: invoicePageInfoRef.current[page] || {},
+                totalCount: invoiceTotalCount,
+              };
+              continue;
+            }
+
+            mapped = await fetchInvoicePage(page, afterCursor);
+            afterCursor = mapped.pageInfo.endCursor || undefined;
+
+            if (!mapped.pageInfo.hasNextPage && page < currentPage) {
+              break;
+            }
+          }
+        }
+
+        if (
+          isCancelled ||
+          invoiceRequestIdRef.current !== requestId ||
+          !mapped
+        ) {
           return;
         }
 
-        const mapped = mapTransactionsConnection(result);
-        setInvoiceRows(mapped.rows);
-        setCurrentPage(1);
+        setInvoiceRows(invoicePageCacheRef.current[currentPage] || []);
+        setInvoiceTotalCount(mapped.totalCount);
       } catch (error) {
-        if (!isCancelled) {
+        if (!isCancelled && invoiceRequestIdRef.current === requestId) {
           await showVendorErrorAlert(
             getSafeFinanceErrorMessage(
               error,
@@ -211,25 +295,22 @@ export default function useFinancePageState() {
           );
         }
       } finally {
-        if (!isCancelled) {
+        if (!isCancelled && invoiceRequestIdRef.current === requestId) {
           setIsLoading(false);
         }
       }
     }
 
-    loadTransactions();
+    loadTransactionsPage();
 
     return () => {
       isCancelled = true;
     };
-  }, [activeStatus, ordersRangeVariables]);
+  }, [currentPage, invoiceQueryVariables]);
 
-  const totalItems = invoiceRows.length;
+  const totalItems = invoiceTotalCount;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-  const paginatedOrders = invoiceRows.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  const paginatedOrders = invoiceRows;
 
   const dateButtonLabel =
     selectedDateOption === "custom" &&
