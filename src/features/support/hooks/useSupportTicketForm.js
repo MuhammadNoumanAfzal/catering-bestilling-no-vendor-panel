@@ -128,7 +128,6 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
         || form.issueType;
 
       const result = await createSupportTicket({
-        userRole: "vendor",
         subject: selectedIssueLabel,
         relatedOrderId: form.relatedOrder,
         description: form.description,

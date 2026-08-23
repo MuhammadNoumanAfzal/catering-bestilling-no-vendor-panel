@@ -8,10 +8,6 @@ import {
 
 function normalizeSupportInput(input) {
   return {
-    userRole:
-      `${input?.userRole ?? ""}`.trim().toLowerCase() === "customer"
-        ? "Customer"
-        : "Vendor",
     subject: `${input?.subject ?? ""}`.trim(),
     relatedOrderId: `${input?.relatedOrderId ?? ""}`.trim() || null,
     description: `${input?.description ?? ""}`.trim(),
@@ -47,16 +43,20 @@ function normalizeAttachment(attachment) {
 }
 
 function normalizeConversationItem(message) {
+  const side = `${message?.side ?? ""}`.trim().toLowerCase() || "admin";
+  const authorRole = `${message?.author?.role ?? side}`.trim();
+  const fallbackAuthorName = side === "admin" ? "Support" : "You";
+
   return {
     id: message?.id ?? "",
-    side: message?.side ?? "",
+    side,
     message: message?.message ?? "",
     createdAt: message?.createdAt ?? "",
     createdAtLabel: formatDisplayDate(message?.createdAt),
     author: {
       id: message?.author?.id ?? "",
-      fullName: message?.author?.fullName ?? "Unknown",
-      role: message?.author?.role ?? "",
+      fullName: message?.author?.fullName ?? fallbackAuthorName,
+      role: authorRole || (side === "admin" ? "admin" : "vendor"),
     },
     attachments: Array.isArray(message?.attachments)
       ? message.attachments.map(normalizeAttachment)
@@ -67,17 +67,18 @@ function normalizeConversationItem(message) {
 function normalizeTicketListItem(item) {
   return {
     id: item?.id ?? "",
+    ticketNo: item?.ticketNo ?? "",
     subject: item?.subject ?? "",
     status: item?.status ?? "",
     priority: item?.priority ?? "",
     createdAt: item?.createdAt ?? "",
     createdAtLabel: formatDisplayDate(item?.createdAt),
-    updatedAt: item?.updatedAt ?? "",
-    updatedAtLabel: formatDisplayDate(item?.updatedAt),
+    updatedAt: item?.lastMessageAt ?? item?.createdAt ?? "",
+    updatedAtLabel: formatDisplayDate(item?.lastMessageAt || item?.createdAt),
     lastMessageAt: item?.lastMessageAt ?? "",
     lastMessageAtLabel: formatDisplayDate(item?.lastMessageAt),
     unreadCount: Number(item?.unreadCount ?? 0),
-    orderReference: item?.orderReference ?? "",
+    orderReference: item?.ticketNo ?? "",
   };
 }
 
@@ -92,62 +93,83 @@ export async function createSupportTicket(input) {
     throw new Error("Please enter a description for your issue.");
   }
 
-  const data = await executeProtectedGraphqlRequest(CREATE_SUPPORT_TICKET_MUTATION, variables);
+  const messageParts = [variables.description];
+
+  if (variables.relatedOrderId) {
+    messageParts.push(`Related order: ${variables.relatedOrderId}`);
+  }
+
+  if (variables.attachmentUrl) {
+    messageParts.push(`Attachment: ${variables.attachmentUrl}`);
+  }
+
+  const data = await executeProtectedGraphqlRequest(CREATE_SUPPORT_TICKET_MUTATION, {
+    input: {
+      subject: variables.subject,
+      message: messageParts.join("\n\n"),
+    },
+  });
   const result = data?.createSupportTicket;
 
-  if (!result?.success) {
+  if (!result?.success || !result?.ticket?.id) {
     throw new Error(result?.message || "Unable to submit support ticket.");
   }
 
   return {
     success: true,
     message: result?.message || "Support ticket submitted successfully.",
-    ticketId: result?.ticketId || "",
+    ticketId: result?.ticket?.id || "",
   };
 }
 
 export async function getMySupportTickets(page = 1, pageSize = 10) {
-  const data = await executeProtectedGraphqlRequest(MY_SUPPORT_TICKETS_QUERY, {
-    page: Number(page || 1),
-    pageSize: Number(pageSize || 10),
-  });
+  const data = await executeProtectedGraphqlRequest(MY_SUPPORT_TICKETS_QUERY);
 
   const result = data?.mySupportTickets;
 
+  const items = Array.isArray(result?.items)
+    ? result.items.map(normalizeTicketListItem)
+    : [];
+
   return {
-    items: Array.isArray(result?.items) ? result.items.map(normalizeTicketListItem) : [],
+    items,
     pageInfo: {
-      page: Number(result?.pageInfo?.page ?? page),
-      pageSize: Number(result?.pageInfo?.pageSize ?? pageSize),
-      totalItems: Number(result?.pageInfo?.totalItems ?? 0),
-      totalPages: Number(result?.pageInfo?.totalPages ?? 1),
-      hasNextPage: Boolean(result?.pageInfo?.hasNextPage),
-      hasPreviousPage: Boolean(result?.pageInfo?.hasPreviousPage),
+      page: Number(page || 1),
+      pageSize: Number(pageSize || 10),
+      totalItems: items.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
     },
   };
 }
 
 export async function getMySupportTicket(id) {
-  const data = await executeProtectedGraphqlRequest(MY_SUPPORT_TICKET_QUERY, { id });
-  const ticket = data?.mySupportTicket;
+  const data = await executeProtectedGraphqlRequest(MY_SUPPORT_TICKET_QUERY, {
+    ticketId: id,
+  });
+  const ticket = data?.supportTicket;
 
   if (!ticket?.id) {
     throw new Error("Unable to load support ticket.");
   }
 
+  const messages = Array.isArray(ticket?.messages) ? ticket.messages : [];
+
   return {
     id: ticket.id,
+    ticketNo: ticket.ticketNo ?? "",
     subject: ticket.subject ?? "",
     status: ticket.status ?? "",
     priority: ticket.priority ?? "",
     createdAt: ticket.createdAt ?? "",
     createdAtLabel: formatDisplayDate(ticket.createdAt),
-    updatedAt: ticket.updatedAt ?? "",
-    updatedAtLabel: formatDisplayDate(ticket.updatedAt),
-    orderReference: ticket.orderReference ?? "",
-    conversation: Array.isArray(ticket.conversation)
-      ? ticket.conversation.map(normalizeConversationItem)
-      : [],
+    updatedAt: messages[messages.length - 1]?.createdAt ?? ticket.createdAt ?? "",
+    updatedAtLabel: formatDisplayDate(
+      messages[messages.length - 1]?.createdAt || ticket.createdAt,
+    ),
+    orderReference: ticket.ticketNo ?? "",
+    conversation: messages.map(normalizeConversationItem),
   };
 }
 
@@ -158,20 +180,36 @@ export async function replyToOwnSupportTicket(ticketId, message, attachmentIds =
     throw new Error("Please enter a reply before sending.");
   }
 
-  const data = await executeProtectedGraphqlRequest(REPLY_TO_OWN_SUPPORT_TICKET_MUTATION, {
+  const payload = {
     ticketId,
     message: trimmedMessage,
-    attachmentIds,
-  });
+  };
 
-  const result = data?.replyToOwnSupportTicket;
+  if (Array.isArray(attachmentIds) && attachmentIds.length) {
+    payload.attachmentIds = attachmentIds;
+  }
 
-  if (!result?.success || !result?.reply?.id) {
+  const data = await executeProtectedGraphqlRequest(
+    REPLY_TO_OWN_SUPPORT_TICKET_MUTATION,
+    {
+      input: payload,
+    },
+  );
+
+  const result = data?.replySupportTicket;
+
+  if (!result?.success || !result?.messageItem?.id) {
     throw new Error(result?.message || "Unable to send support reply.");
   }
 
   return {
     message: result.message || "Reply sent successfully.",
-    reply: normalizeConversationItem(result.reply),
+    reply: normalizeConversationItem(result.messageItem),
+    ticket: {
+      id: result.ticket?.id ?? ticketId,
+      lastMessageAt: result.ticket?.lastMessageAt ?? result.messageItem.createdAt,
+      unreadCount: Number(result.ticket?.unreadCount ?? 0),
+      status: result.ticket?.status ?? "",
+    },
   };
 }

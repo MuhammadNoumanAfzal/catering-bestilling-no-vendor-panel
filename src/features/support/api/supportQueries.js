@@ -1,79 +1,54 @@
 export const CREATE_SUPPORT_TICKET_MUTATION = `
-  mutation CreateSupportTicket(
-    $userRole: String!
-    $subject: String!
-    $relatedOrderId: String
-    $description: String!
-    $attachmentUrl: String
-    $attachmentFileId: String
-  ) {
-    createSupportTicket(
-      userRole: $userRole
-      subject: $subject
-      relatedOrderId: $relatedOrderId
-      description: $description
-      attachmentUrl: $attachmentUrl
-      attachmentFileId: $attachmentFileId
-    ) {
+  mutation CreateSupportTicket($input: CreateSupportTicketInput!) {
+    createSupportTicket(input: $input) {
       success
       message
-      ticketId
+      ticket {
+        id
+        ticketNo
+        status
+        createdAt
+      }
     }
   }
 `;
 
 export const MY_SUPPORT_TICKETS_QUERY = `
-  query MySupportTickets($page: Int!, $pageSize: Int!) {
-    mySupportTickets(page: $page, pageSize: $pageSize) {
+  query MySupportTickets {
+    mySupportTickets {
       items {
         id
+        ticketNo
         subject
         status
         priority
         createdAt
-        updatedAt
         lastMessageAt
         unreadCount
-        orderReference
-      }
-      pageInfo {
-        page
-        pageSize
-        totalItems
-        totalPages
-        hasNextPage
-        hasPreviousPage
       }
     }
   }
 `;
 
 export const MY_SUPPORT_TICKET_QUERY = `
-  query MySupportTicket($id: ID!) {
-    mySupportTicket(id: $id) {
+  query GetSupportTicket($ticketId: ID!) {
+    supportTicket(id: $ticketId) {
       id
+      ticketNo
+      category
+      priority
       subject
       status
-      priority
       createdAt
-      updatedAt
-      orderReference
-      conversation {
+      messages {
         id
-        side
         message
         createdAt
+        side
         author {
           id
           fullName
           role
-        }
-        attachments {
-          id
-          fileName
-          url
-          mimeType
-          size
         }
       }
     }
@@ -81,11 +56,11 @@ export const MY_SUPPORT_TICKET_QUERY = `
 `;
 
 export const REPLY_TO_OWN_SUPPORT_TICKET_MUTATION = `
-  mutation ReplyToOwnSupportTicket($ticketId: ID!, $message: String!, $attachmentIds: [ID!]) {
-    replyToOwnSupportTicket(ticketId: $ticketId, message: $message, attachmentIds: $attachmentIds) {
+  mutation ReplySupportTicket($input: ReplySupportTicketInput!) {
+    replySupportTicket(input: $input) {
       success
       message
-      reply {
+      messageItem {
         id
         side
         message
@@ -95,13 +70,12 @@ export const REPLY_TO_OWN_SUPPORT_TICKET_MUTATION = `
           fullName
           role
         }
-        attachments {
-          id
-          fileName
-          url
-          mimeType
-          size
-        }
+      }
+      ticket {
+        id
+        lastMessageAt
+        unreadCount
+        status
       }
     }
   }
