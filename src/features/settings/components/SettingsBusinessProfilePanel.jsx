@@ -23,7 +23,10 @@ export default function SettingsBusinessProfilePanel({
   handleFieldChange,
   handleNotificationToggle,
   handleResetAllSettings,
+  handleSave,
   handleToggleBusinessDay,
+  hasUnsavedChanges = false,
+  isSaving = false,
   languageOptions,
   settings,
   handleSaveClosure,
@@ -168,6 +171,127 @@ export default function SettingsBusinessProfilePanel({
           onChangeTime={handleBusinessHourChange}
           onToggleDay={handleToggleBusinessDay}
         />
+
+        <SettingsSectionCard
+          description="Add the bank details the platform should use when sending your manual payouts."
+          title="Payout Bank Details"
+        >
+          <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
+            <SettingsTextField
+              disabled={disabled}
+              label="Account Holder Name"
+              onChange={handleFieldChange("payoutProfile.accountHolderName")}
+              placeholder="Enter account holder name"
+              value={settings.payoutProfile.accountHolderName}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Bank Name"
+              onChange={handleFieldChange("payoutProfile.bankName")}
+              placeholder="Enter bank name"
+              value={settings.payoutProfile.bankName}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Account Number"
+              onChange={handleFieldChange("payoutProfile.accountNumber")}
+              placeholder="Enter account number"
+              value={settings.payoutProfile.accountNumber}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="IBAN"
+              onChange={handleFieldChange("payoutProfile.iban")}
+              placeholder="Enter IBAN"
+              value={settings.payoutProfile.iban}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="SWIFT / BIC"
+              onChange={handleFieldChange("payoutProfile.swiftBic")}
+              placeholder="Enter SWIFT / BIC"
+              value={settings.payoutProfile.swiftBic}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Routing Number"
+              onChange={handleFieldChange("payoutProfile.routingNumber")}
+              placeholder="Enter routing number"
+              value={settings.payoutProfile.routingNumber}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Branch Name"
+              onChange={handleFieldChange("payoutProfile.branchName")}
+              placeholder="Enter branch name"
+              value={settings.payoutProfile.branchName}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Branch Code"
+              onChange={handleFieldChange("payoutProfile.branchCode")}
+              placeholder="Enter branch code"
+              value={settings.payoutProfile.branchCode}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Billing Address"
+              onChange={handleFieldChange("payoutProfile.billingAddress")}
+              placeholder="Enter billing address"
+              value={settings.payoutProfile.billingAddress}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="City"
+              onChange={handleFieldChange("payoutProfile.city")}
+              placeholder="Enter city"
+              value={settings.payoutProfile.city}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Postal Code"
+              onChange={handleFieldChange("payoutProfile.postalCode")}
+              placeholder="Enter postal code"
+              value={settings.payoutProfile.postalCode}
+            />
+            <SettingsTextField
+              disabled={disabled}
+              label="Country"
+              onChange={handleFieldChange("payoutProfile.country")}
+              placeholder="Enter country"
+              value={settings.payoutProfile.country}
+            />
+          </div>
+
+          <div className="mt-4 rounded-[10px] border border-[#f0dfd3] bg-[#fff8f4] px-4 py-3 text-[12px] text-[#6f635b]">
+            <p className="font-semibold text-[#201914]">
+              Verification status: {settings.payoutProfile.verificationStatus || "Pending review"}
+            </p>
+            <p className="mt-1">
+              Bank details confirmed: {settings.payoutProfile.bankDetailsVerified ? "Yes" : "Not yet"}
+            </p>
+            {settings.payoutProfile.verificationNote ? (
+              <p className="mt-2 text-[#8b796c]">{settings.payoutProfile.verificationNote}</p>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-[#ecdccf] bg-[#fffdfb] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[13px] font-semibold text-[#201914]">Save your payout details</p>
+              <p className="mt-1 text-[12px] leading-6 text-[#7a6d63]">
+                Your bank details stay here after you save them, so they will still be available when you refresh the page.
+              </p>
+            </div>
+            <button
+              className="inline-flex h-10 min-w-[140px] items-center justify-center rounded-[10px] bg-[#d96e39] px-4 text-[12px] font-bold text-white shadow-[0_8px_18px_rgba(217,110,57,0.22)] transition hover:bg-[#c9602c] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={disabled || isSaving || !hasUnsavedChanges}
+              onClick={handleSave}
+              type="button"
+            >
+              {isSaving ? "Saving details..." : "Save bank details"}
+            </button>
+          </div>
+        </SettingsSectionCard>
 
         <SettingsComplianceDocumentsSection
           disabled={disabled}

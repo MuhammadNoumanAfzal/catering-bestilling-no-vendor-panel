@@ -11,10 +11,10 @@ export default function SettingsActionsBar({
       <p className="type-subpara mr-auto text-[#7c7067]">
         {saveMessage ||
           (isLoading
-            ? "Loading settings..."
+            ? "Loading your settings..."
             : hasUnsavedChanges
-              ? "You have unsaved changes."
-              : "All changes saved.")}
+              ? "You have changes ready to save."
+              : "Everything is saved.")}
       </p>
       <button
         className="h-[38px] min-w-[104px] cursor-pointer rounded-[8px] border border-[#4a4038] bg-white px-4 text-[12px] font-bold text-[#15110f] disabled:cursor-not-allowed disabled:opacity-50"

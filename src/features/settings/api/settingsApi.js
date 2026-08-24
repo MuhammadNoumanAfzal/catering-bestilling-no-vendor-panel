@@ -14,6 +14,7 @@ import {
   UPDATE_VENDOR_NOTIFICATION_PREFERENCES_MUTATION,
   UPDATE_VENDOR_REGIONAL_PREFERENCES_MUTATION,
   UPLOAD_VENDOR_COMPLIANCE_DOCUMENT_MUTATION,
+  UPSERT_VENDOR_PAYOUT_PROFILE_MUTATION,
   UPSERT_VENDOR_SPECIAL_CLOSURE_MUTATION,
 } from "./settingsQueries";
 
@@ -137,6 +138,18 @@ export async function updateVendorRegionalPreferences(input) {
   return (
     result?.updateVendorRegionalPreferences ||
     createFallbackResult("Unable to save regional preferences.")
+  );
+}
+
+export async function upsertVendorPayoutProfile(input) {
+  const result = await executeProtectedGraphqlRequest(
+    UPSERT_VENDOR_PAYOUT_PROFILE_MUTATION,
+    { input },
+  );
+
+  return (
+    result?.upsertVendorPayoutProfile ||
+    createFallbackResult("Unable to save payout profile.")
   );
 }
 
