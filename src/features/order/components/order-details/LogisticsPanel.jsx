@@ -30,7 +30,7 @@ export default function LogisticsPanel({ logistics }) {
         </p>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3 border-b border-[#efe6de] pb-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 border-b border-[#efe6de] pb-3 md:grid-cols-2">
         <div className="flex flex-col gap-1">
           <a
             className="inline-flex min-h-8 items-center justify-center rounded-md border border-[#c7d5f3] bg-white px-3 text-[11px] font-bold text-[#4b78d0] no-underline"
@@ -42,7 +42,6 @@ export default function LogisticsPanel({ logistics }) {
           </a>
         </div>
         <Field label="Event Type" value={logistics.eventType} />
-        <Field label="Service" value={logistics.serviceType} />
       </div>
     </DetailPanel>
   );
