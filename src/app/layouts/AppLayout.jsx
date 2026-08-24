@@ -23,7 +23,6 @@ import {
   withImageCacheBuster,
 } from "../../utils/vendorProfileEvents";
 import {
-  getVendorNotificationCounts,
   getVendorNotifications,
 } from "../../features/notifications/api/notificationsApi";
 import { getVendorSettingsPage } from "../../features/settings/api/settingsApi";
@@ -40,7 +39,24 @@ const sidebarItems = [
   { label: "Settings", to: "/settings", icon: Settings },
 ];
 
-const NOTIFICATION_POLL_INTERVAL_MS = 30000;
+const NOTIFICATION_POLL_INTERVAL_MS = 10000;
+const LAST_SEEN_VENDOR_NOTIFICATION_KEY = "vendor-last-seen-notification-id";
+
+function readLastSeenVendorNotificationId() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.localStorage.getItem(LAST_SEEN_VENDOR_NOTIFICATION_KEY);
+}
+
+function writeLastSeenVendorNotificationId(notificationId) {
+  if (typeof window === "undefined" || !notificationId) {
+    return;
+  }
+
+  window.localStorage.setItem(LAST_SEEN_VENDOR_NOTIFICATION_KEY, notificationId);
+}
 
 function getInitials(name) {
   const parts = String(name || "")
@@ -72,7 +88,7 @@ export default function AppLayout() {
   const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
-  const prevUnreadCountRef = useRef(null);
+  const prevLatestNotificationIdRef = useRef(null);
   const [isDesktopProfileMenuOpen, setIsDesktopProfileMenuOpen] = useState(false);
   const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
   const desktopProfileMenuRef = useRef(null);
@@ -141,26 +157,30 @@ export default function AppLayout() {
 
     async function loadNotificationCounts() {
       try {
-        const result = await getVendorNotificationCounts();
-        const unreadCount = result?.vendorFinanceNotifications?.unreadCount || 0;
+        const result = await getVendorNotifications({ first: 1, status: null });
+        const connection = result?.vendorFinanceNotifications;
+        const unreadCount = Number(connection?.unreadCount ?? 0) || 0;
+        const latestNotification = connection?.edges?.[0]?.node || null;
+        const latestNotificationId = latestNotification?.id || null;
+        const lastSeenNotificationId = readLastSeenVendorNotificationId();
 
         if (!isCancelled) {
           setUnreadNotificationsCount(unreadCount);
 
-          if (prevUnreadCountRef.current !== null && unreadCount > prevUnreadCountRef.current) {
-            getVendorNotifications({ status: "UNREAD", first: 1 })
-              .then((notificationsRes) => {
-                if (isCancelled) return;
-                const latest = notificationsRes?.vendorFinanceNotifications?.edges?.[0]?.node;
-                const title = latest?.title || "New Notification";
-                const message = latest?.message || "You have received a new update.";
-                showNewNotificationToast(title, message);
-              })
-              .catch(() => {
-                showNewNotificationToast("New Notification", "You have received a new update.");
-              });
+          if (
+            latestNotificationId &&
+            latestNotificationId !== prevLatestNotificationIdRef.current &&
+            latestNotificationId !== lastSeenNotificationId &&
+            latestNotification?.isRead === false
+          ) {
+            const title = latestNotification?.title || "New Notification";
+            const message =
+              latestNotification?.message || "You have received a new update.";
+            showNewNotificationToast(title, message);
+            writeLastSeenVendorNotificationId(latestNotificationId);
           }
-          prevUnreadCountRef.current = unreadCount;
+
+          prevLatestNotificationIdRef.current = latestNotificationId;
         }
       } catch {
         if (!isCancelled) {
