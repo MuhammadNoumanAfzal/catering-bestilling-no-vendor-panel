@@ -26,7 +26,6 @@ import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
-import { getEarlyDeliveryBlockMessage } from "../utils/orderSchedule";
 
 function formatRequestValue(value) {
   const normalized = `${value ?? ""}`.trim();
@@ -371,14 +370,6 @@ export default function OrderDetailPage() {
       }
 
       const nextStatus = getStatusFromActionLabel(action.label);
-      if (nextStatus === "Delivered") {
-        const blockedMessage = getEarlyDeliveryBlockMessage(orderDetail);
-        if (blockedMessage) {
-          await showVendorErrorAlert(blockedMessage, "Delivery not available yet");
-          return;
-        }
-      }
-
       const result = await confirmOrderStatusAction(action.label, orderDetail.displayId || orderDetail.id);
       if (!result.isConfirmed) {
         return;
@@ -397,14 +388,6 @@ export default function OrderDetailPage() {
 
   async function handleManualStatusSelect(nextStatus) {
     try {
-      if (nextStatus === "Delivered") {
-        const blockedMessage = getEarlyDeliveryBlockMessage(orderDetail);
-        if (blockedMessage) {
-          await showVendorErrorAlert(blockedMessage, "Delivery not available yet");
-          return;
-        }
-      }
-
       await updateOrderStatus(
         nextStatus,
         `${orderDetail.displayId || orderDetail.id} updated to ${nextStatus.toLowerCase()}.`,
