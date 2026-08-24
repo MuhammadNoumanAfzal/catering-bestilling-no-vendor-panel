@@ -245,6 +245,72 @@ export function mapPayoutStatusItems(data) {
   ].filter(Boolean);
 }
 
+function startOfWeek(dateValue) {
+  const date = new Date(dateValue);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function toChartBucketLabel(dateValue, groupBy) {
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  if (groupBy === "month") {
+    date.setDate(1);
+  } else if (groupBy === "week") {
+    return toYmd(startOfWeek(date));
+  }
+
+  date.setHours(0, 0, 0, 0);
+  return toYmd(date);
+}
+
+export function mapPayoutOverviewChart(data, options = {}) {
+  const connection = data?.vendorPayouts;
+  const edges = Array.isArray(connection?.edges) ? connection.edges : [];
+  const groupBy = getChartGroupBy(
+    options.rangePreset,
+    options.customFrom,
+    options.customTo,
+  );
+  const buckets = new Map();
+
+  edges
+    .map((edge) => edge?.node)
+    .filter(Boolean)
+    .forEach((node) => {
+      const eventDate =
+        node?.paidAt || node?.releasedAt || node?.settledAt || node?.createdAt;
+      const label = toChartBucketLabel(eventDate, groupBy);
+
+      if (!label) {
+        return;
+      }
+
+      const currentBucket = buckets.get(label) || {
+        label,
+        earnings: 0,
+        orders: 0,
+      };
+
+      currentBucket.earnings += parseNumber(node?.netAmount?.amount);
+      currentBucket.orders += 1;
+      buckets.set(label, currentBucket);
+    });
+
+  return Array.from(buckets.values()).sort((left, right) => {
+    const leftTime = new Date(left.label).getTime();
+    const rightTime = new Date(right.label).getTime();
+    return leftTime - rightTime;
+  });
+}
+
 export function mapTransactionsConnection(data) {
   const connection = data?.vendorInvoices;
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];

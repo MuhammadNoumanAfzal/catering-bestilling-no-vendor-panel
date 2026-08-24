@@ -1,16 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   exportVendorFinanceTransactions,
-  getVendorFinanceOverviewChart,
-  getVendorFinanceSummary,
   getVendorPayouts,
 } from "../api/financeApi";
 import {
-  getChartGroupBy,
   getFinanceDateRangeVariables,
-  getFinanceSummaryVariables,
-  mapFinanceChartPoints,
   mapFinanceSummaryCards,
+  mapPayoutOverviewChart,
   mapPayoutStatusItems,
   mapPayoutTransactions,
 } from "../api/financeMappers";
@@ -64,10 +60,9 @@ function formatDateLabel(dateValue) {
 
 export default function useFinancePageState() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [headerFilter, setHeaderFilter] = useState("7days");
+  const [headerFilter, setHeaderFilter] = useState("30days");
   const [headerCustomFrom, setHeaderCustomFrom] = useState("");
   const [headerCustomTo, setHeaderCustomTo] = useState("");
-  const [appliedHeaderCustomRange, setAppliedHeaderCustomRange] = useState(null);
   const [activeStatus, setActiveStatus] = useState("All");
   const [selectedDateOption, setSelectedDateOption] = useState("30days");
   const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
@@ -83,17 +78,7 @@ export default function useFinancePageState() {
   const [isExporting, setIsExporting] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
-  const headerRangeVariables = useMemo(
-    () =>
-      getFinanceSummaryVariables({
-        rangePreset: headerFilter,
-        customFrom: appliedHeaderCustomRange?.from,
-        customTo: appliedHeaderCustomRange?.to,
-      }),
-    [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
-  );
-
-  const payoutTableRangeVariables = useMemo(
+  const financeRangeVariables = useMemo(
     () =>
       getFinanceDateRangeVariables({
         rangePreset: selectedDateOption,
@@ -103,24 +88,14 @@ export default function useFinancePageState() {
     [appliedCustomRange?.from, appliedCustomRange?.to, selectedDateOption],
   );
 
-  const payoutSummaryRangeVariables = useMemo(
-    () =>
-      getFinanceDateRangeVariables({
-        rangePreset: headerFilter,
-        customFrom: appliedHeaderCustomRange?.from,
-        customTo: appliedHeaderCustomRange?.to,
-      }),
-    [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
-  );
-
   const payoutQueryVariables = useMemo(
     () => ({
       ...(toPayoutStatusFilter(activeStatus)
         ? { status: toPayoutStatusFilter(activeStatus) }
         : {}),
-      ...payoutTableRangeVariables,
+      ...financeRangeVariables,
     }),
-    [activeStatus, payoutTableRangeVariables],
+    [activeStatus, financeRangeVariables],
   );
 
   useEffect(() => {
@@ -128,44 +103,28 @@ export default function useFinancePageState() {
 
     async function loadHeaderData() {
       try {
-        const [summaryResult, chartResult, payoutResult] = await Promise.allSettled([
-          getVendorFinanceSummary(headerRangeVariables),
-          getVendorFinanceOverviewChart({
-            ...headerRangeVariables,
-            groupBy: getChartGroupBy(
-              headerFilter,
-              appliedHeaderCustomRange?.from,
-              appliedHeaderCustomRange?.to,
-            ),
-          }),
-          getVendorPayouts({ first: 100, ...payoutSummaryRangeVariables }),
+        const [payoutResult] = await Promise.allSettled([
+          getVendorPayouts({ first: 100, ...payoutQueryVariables }),
         ]);
 
         if (isCancelled) {
           return;
         }
 
-        if (summaryResult.status !== "fulfilled" || chartResult.status !== "fulfilled") {
-          const summaryError =
-            summaryResult.status === "rejected" ? summaryResult.reason : null;
-          const chartError =
-            chartResult.status === "rejected" ? chartResult.reason : null;
-
-          throw (
-            summaryError ||
-            chartError ||
-            new Error(FINANCE_SUMMARY_ERROR_MESSAGE)
-          );
-        }
-
         const payoutPayload =
           payoutResult.status === "fulfilled" ? payoutResult.value : null;
 
-        setSummaryCards(mapFinanceSummaryCards(summaryResult.value, payoutPayload));
-        setChartPoints(mapFinanceChartPoints(chartResult.value));
-        setPayoutStatuses(
-          payoutPayload ? mapPayoutStatusItems(payoutPayload) : [],
+        setSummaryCards(mapFinanceSummaryCards(null, payoutPayload));
+        setChartPoints(
+          payoutPayload
+            ? mapPayoutOverviewChart(payoutPayload, {
+                rangePreset: selectedDateOption,
+                customFrom: appliedCustomRange?.from,
+                customTo: appliedCustomRange?.to,
+              })
+            : [],
         );
+        setPayoutStatuses(payoutPayload ? mapPayoutStatusItems(payoutPayload) : []);
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -182,12 +141,13 @@ export default function useFinancePageState() {
       isCancelled = true;
     };
   }, [
-    appliedHeaderCustomRange?.from,
-    appliedHeaderCustomRange?.to,
-    headerFilter,
-    headerRangeVariables,
-    payoutSummaryRangeVariables,
+    activeStatus,
+    appliedCustomRange?.from,
+    appliedCustomRange?.to,
+    financeRangeVariables,
+    payoutQueryVariables,
     refreshTick,
+    selectedDateOption,
   ]);
 
   useEffect(() => {
@@ -282,9 +242,9 @@ export default function useFinancePageState() {
 
   const headerFilterLabel =
     headerFilter === "custom" &&
-    appliedHeaderCustomRange?.from &&
-    appliedHeaderCustomRange?.to
-      ? `${formatDateLabel(appliedHeaderCustomRange.from)} - ${formatDateLabel(appliedHeaderCustomRange.to)}`
+    appliedCustomRange?.from &&
+    appliedCustomRange?.to
+      ? `${formatDateLabel(appliedCustomRange.from)} - ${formatDateLabel(appliedCustomRange.to)}`
       : headerFilter === "7days"
         ? "Last 7 days"
         : headerFilter === "30days"
@@ -313,11 +273,14 @@ export default function useFinancePageState() {
 
   function handleHeaderFilterChange(nextFilter) {
     setHeaderFilter(nextFilter);
+    setSelectedDateOption(nextFilter);
 
     if (nextFilter !== "custom") {
-      setAppliedHeaderCustomRange(null);
       setHeaderCustomFrom("");
       setHeaderCustomTo("");
+      setAppliedCustomRange(null);
+      setCustomFrom("");
+      setCustomTo("");
     }
   }
 
@@ -326,11 +289,14 @@ export default function useFinancePageState() {
       return;
     }
 
-    setAppliedHeaderCustomRange({
+    setAppliedCustomRange({
       from: headerCustomFrom,
       to: headerCustomTo,
     });
     setHeaderFilter("custom");
+    setSelectedDateOption("custom");
+    setCustomFrom(headerCustomFrom);
+    setCustomTo(headerCustomTo);
   }
 
   function handleToggleDateMenu() {
@@ -339,6 +305,7 @@ export default function useFinancePageState() {
 
   function handleSelectDateOption(optionId) {
     setSelectedDateOption(optionId);
+    setHeaderFilter(optionId);
 
     if (optionId === "custom") {
       setIsCustomDateOpen(true);
@@ -349,6 +316,8 @@ export default function useFinancePageState() {
     setIsDateMenuOpen(false);
     setIsCustomDateOpen(false);
     setAppliedCustomRange(null);
+    setHeaderCustomFrom("");
+    setHeaderCustomTo("");
   }
 
   function handleApplyCustomDate() {
@@ -361,6 +330,9 @@ export default function useFinancePageState() {
       to: customTo,
     });
     setSelectedDateOption("custom");
+    setHeaderFilter("custom");
+    setHeaderCustomFrom(customFrom);
+    setHeaderCustomTo(customTo);
     setIsDateMenuOpen(false);
     setIsCustomDateOpen(false);
   }
@@ -376,7 +348,7 @@ export default function useFinancePageState() {
         ...(toPayoutStatusFilter(activeStatus)
           ? { status: toPayoutStatusFilter(activeStatus) }
           : {}),
-        ...payoutTableRangeVariables,
+        ...financeRangeVariables,
         format,
       });
 
@@ -412,6 +384,9 @@ export default function useFinancePageState() {
       setAppliedCustomRange(null);
       setCustomFrom("");
       setCustomTo("");
+      setHeaderFilter("30days");
+      setHeaderCustomFrom("");
+      setHeaderCustomTo("");
       setIsCustomDateOpen(false);
       setIsDateMenuOpen(false);
     },
