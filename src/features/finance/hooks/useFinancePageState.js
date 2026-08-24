@@ -161,11 +161,14 @@ export default function useFinancePageState() {
           );
         }
 
-        setSummaryCards(mapFinanceSummaryCards(summaryResult.value));
+        const payoutPayload =
+          payoutResult.status === "fulfilled" ? payoutResult.value : null;
+
+        setSummaryCards(mapFinanceSummaryCards(summaryResult.value, payoutPayload));
         setChartPoints(mapFinanceChartPoints(chartResult.value));
 
-        if (payoutResult.status === "fulfilled") {
-          setPayoutStatuses(mapPayoutStatusItems(payoutResult.value));
+        if (payoutPayload) {
+          setPayoutStatuses(mapPayoutStatusItems(payoutPayload));
         } else {
           setPayoutStatuses([]);
         }
