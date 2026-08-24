@@ -6,6 +6,15 @@ const TEXT_COLOR = "#201b17";
 const MUTED_BUTTON = "#d7cec6";
 const SOFT_ORANGE = "#f0b79e";
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function withBaseOptions(options) {
   return {
     background: POPUP_BACKGROUND,
@@ -31,17 +40,31 @@ export function showVendorSuccessToast(title) {
 }
 
 export function showNewNotificationToast(title, message) {
+  const safeTitle = escapeHtml(title || "New Notification");
+  const safeMessage = escapeHtml(message || "You have received a new update.");
+
   return Swal.fire({
     toast: true,
     position: "top-end",
     icon: "info",
-    title: title || "New Notification",
-    text: message || "You have received a new update.",
+    html: `
+      <div class="vendor-notification-toast__body">
+        <span class="vendor-notification-toast__eyebrow">Live update</span>
+        <h3 class="vendor-notification-toast__title">${safeTitle}</h3>
+        <p class="vendor-notification-toast__message">${safeMessage}</p>
+      </div>
+    `,
     showConfirmButton: false,
-    timer: 4500,
+    timer: 5000,
     timerProgressBar: true,
     background: POPUP_BACKGROUND,
     color: TEXT_COLOR,
+    customClass: {
+      popup: "vendor-notification-toast",
+      icon: "vendor-notification-toast__icon",
+      htmlContainer: "vendor-notification-toast__content",
+      timerProgressBar: "vendor-notification-toast__progress",
+    },
   });
 }
 
