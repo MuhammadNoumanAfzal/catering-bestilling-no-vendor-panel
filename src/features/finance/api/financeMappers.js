@@ -207,7 +207,15 @@ export function mapPayoutStatusItems(data) {
   const payouts = edges.map((edge) => edge?.node).filter(Boolean);
 
   const pending = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PENDING");
-  const released = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "RELEASED");
+  const released = payouts.filter((item) => {
+    const lifecycleStatus = resolvePayoutLifecycleStatus(item);
+
+    return (
+      lifecycleStatus === "RELEASED" ||
+      lifecycleStatus === "PAID" ||
+      hasValidDate(item?.releasedAt)
+    );
+  });
   const paid = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PAID");
   const latestPaid = [...paid].sort((left, right) => {
     const leftTime = new Date(left?.paidAt || left?.createdAt || 0).getTime();
