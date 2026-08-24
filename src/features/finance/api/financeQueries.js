@@ -114,10 +114,13 @@ export const GET_VENDOR_PAYOUTS_QUERY = `
         node {
           id
           payoutNumber
+          invoiceId
+          invoiceNumber
           status
           createdAt
           releasedAt
           paidAt
+          settledAt
           payoutReference
           grossAmount {
             amount
