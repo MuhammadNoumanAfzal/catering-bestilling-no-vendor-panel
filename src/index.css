@@ -313,6 +313,8 @@ textarea {
 
 .vendor-notification-toast.swal2-toast {
   width: min(100%, 390px) !important;
+  height: auto !important;
+  min-height: 0 !important;
   align-items: stretch !important;
   gap: 14px !important;
   border: 1px solid #eedfd4 !important;
@@ -347,6 +349,9 @@ textarea {
 .vendor-notification-toast__content {
   margin: 0 !important;
   padding: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  align-self: flex-start !important;
 }
 
 .vendor-notification-toast__body {
@@ -354,6 +359,9 @@ textarea {
   flex-direction: column;
   gap: 6px;
   text-align: left;
+  min-height: 0;
+  height: auto;
+  align-self: flex-start;
 }
 
 .vendor-notification-toast__eyebrow {
@@ -387,6 +395,10 @@ textarea {
   font-weight: 600;
   line-height: 1.5;
   max-width: 29ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .vendor-notification-toast .swal2-timer-progress-bar {

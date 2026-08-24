@@ -25,9 +25,28 @@ function getStageIndex(status) {
   const norm = status.toLowerCase().replace(/[_-]+/g, " ").trim();
   if (norm === "new" || norm === "placed" || norm === "pending") return 0;
   if (norm === "accepted" || norm === "confirmed") return 1;
-  if (norm === "preparing" || norm === "in preparation") return 2;
-  if (norm === "ready") return 3;
-  if (norm === "out for delivery" || norm === "in transit" || norm === "out_for_delivery") return 4;
+  if (
+    norm === "preparing" ||
+    norm === "in preparation" ||
+    norm === "processing"
+  ) {
+    return 2;
+  }
+  if (
+    norm === "ready" ||
+    norm === "food ready" ||
+    norm === "ready to deliver" ||
+    norm === "ready to dispatch"
+  ) {
+    return 3;
+  }
+  if (
+    norm === "out for delivery" ||
+    norm === "in transit" ||
+    norm === "out_for_delivery"
+  ) {
+    return 4;
+  }
   if (norm === "delivered" || norm === "completed") return 5;
   return -1; // Canceled/rejected
 }

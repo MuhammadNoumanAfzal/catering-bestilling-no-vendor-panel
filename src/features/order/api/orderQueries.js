@@ -86,6 +86,11 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       invoiceNumber
       orderNumber
       status
+      availableActions
+      statuses {
+        status
+        createdOn
+      }
       pendingModificationRequest {
         id
         status
