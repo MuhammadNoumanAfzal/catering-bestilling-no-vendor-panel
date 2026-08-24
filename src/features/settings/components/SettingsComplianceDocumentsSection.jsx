@@ -182,11 +182,10 @@ export default function SettingsComplianceDocumentsSection({
       <div className="mt-4 rounded-[16px] border border-[#eadccf] bg-white px-4 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-[720px]">
-            <p className="text-[14px] font-bold text-[#1f1712]">How this works</p>
+            <p className="text-[14px] font-bold text-[#1f1712]">What happens next</p>
             <p className="mt-1 text-[12px] leading-6 text-[#7c6d63]">
-              Each document is saved as soon as you upload it, so there is no extra save button here.
-              After that, the document is checked during the review process. If anything is missing or unclear,
-              you will see the updated status here.
+              Each document is uploaded and stored right away. After that, our team reviews it and updates the status here,
+              so you can quickly see whether everything is approved or if we need anything else from you.
             </p>
           </div>
           <button
@@ -196,7 +195,7 @@ export default function SettingsComplianceDocumentsSection({
             type="button"
           >
             <RefreshCw size={15} />
-            Refresh Status
+            Check review status
           </button>
         </div>
       </div>

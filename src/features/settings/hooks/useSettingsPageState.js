@@ -15,6 +15,7 @@ import {
   updateVendorNotificationPreferences,
   updateVendorRegionalPreferences,
   uploadVendorComplianceDocument,
+  upsertVendorPayoutProfile,
   upsertVendorSpecialClosure,
 } from "../api/settingsApi";
 import {
@@ -25,6 +26,7 @@ import {
   buildVendorSettingsImagesInput,
   buildNotificationPreferencesInput,
   buildPasswordChangeInput,
+  buildPayoutProfileInput,
   buildRegionalPreferencesInput,
   buildSpecialClosureInput,
   buildStorePasswordInput,
@@ -416,10 +418,26 @@ export default function useSettingsPageState() {
 
   function handleFieldChange(field) {
     return (event) => {
-      setSettings((current) => ({
-        ...current,
-        [field]: event.target.value,
-      }));
+      const value = event.target.value;
+
+      setSettings((current) => {
+        if (!field.includes(".")) {
+          return {
+            ...current,
+            [field]: value,
+          };
+        }
+
+        const [parentKey, childKey] = field.split(".");
+
+        return {
+          ...current,
+          [parentKey]: {
+            ...(current[parentKey] || {}),
+            [childKey]: value,
+          },
+        };
+      });
     };
   }
 
@@ -855,6 +873,55 @@ export default function useSettingsPageState() {
           },
         };
         confirmations.push(result.message || "Account profile saved.");
+      }
+
+      if (
+        JSON.stringify(comparableSaved.payoutProfile) !==
+        JSON.stringify(comparableCurrent.payoutProfile)
+      ) {
+        const result = await upsertVendorPayoutProfile(
+          buildPayoutProfileInput(settings),
+        );
+
+        if (!result.success) {
+          await showVendorErrorAlert(result.message || "Unable to save bank payout details.");
+          return;
+        }
+
+        nextSettings = {
+          ...nextSettings,
+          payoutProfile: {
+            ...nextSettings.payoutProfile,
+            payoutMethod:
+              result.payoutProfile?.payoutMethod || nextSettings.payoutProfile.payoutMethod,
+            bankDetailsVerified: Boolean(result.payoutProfile?.bankDetailsVerified),
+            verificationStatus:
+              result.payoutProfile?.verificationStatus || nextSettings.payoutProfile.verificationStatus,
+            verificationNote:
+              result.payoutProfile?.verificationNote || nextSettings.payoutProfile.verificationNote,
+            accountHolderName:
+              result.payoutProfile?.accountHolderName || nextSettings.payoutProfile.accountHolderName,
+            bankName: result.payoutProfile?.bankName || nextSettings.payoutProfile.bankName,
+            accountNumber:
+              result.payoutProfile?.accountNumber || nextSettings.payoutProfile.accountNumber,
+            iban: result.payoutProfile?.iban || nextSettings.payoutProfile.iban,
+            swiftBic: result.payoutProfile?.swiftBic || nextSettings.payoutProfile.swiftBic,
+            routingNumber:
+              result.payoutProfile?.routingNumber || nextSettings.payoutProfile.routingNumber,
+            branchName:
+              result.payoutProfile?.branchName || nextSettings.payoutProfile.branchName,
+            branchCode:
+              result.payoutProfile?.branchCode || nextSettings.payoutProfile.branchCode,
+            billingAddress:
+              result.payoutProfile?.billingAddress || nextSettings.payoutProfile.billingAddress,
+            city: result.payoutProfile?.city || nextSettings.payoutProfile.city,
+            postalCode:
+              result.payoutProfile?.postalCode || nextSettings.payoutProfile.postalCode,
+            country: result.payoutProfile?.country || nextSettings.payoutProfile.country,
+          },
+        };
+
+        confirmations.push(result.message || "Bank payout details saved.");
       }
 
       if (

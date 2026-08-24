@@ -47,6 +47,24 @@ export const defaultSettingsState = {
     accountId: "",
     avatar: null,
   },
+  payoutProfile: {
+    payoutMethod: "BANK_TRANSFER",
+    bankDetailsVerified: false,
+    verificationStatus: "",
+    verificationNote: "",
+    accountHolderName: "",
+    bankName: "",
+    accountNumber: "",
+    iban: "",
+    swiftBic: "",
+    routingNumber: "",
+    branchName: "",
+    branchCode: "",
+    billingAddress: "",
+    city: "",
+    postalCode: "",
+    country: "Norway",
+  },
   hours: WEEK_DAYS.map((day) => ({
     id: "",
     day,
@@ -390,6 +408,24 @@ export function mapVendorSettingsPage(result, options = {}) {
         accountId: normalizeString(settings.account?.accountId),
         avatar: settings.account?.avatar || null,
       },
+      payoutProfile: {
+        payoutMethod: normalizeString(result?.myVendorPayoutProfile?.payoutMethod || "BANK_TRANSFER"),
+        bankDetailsVerified: Boolean(result?.myVendorPayoutProfile?.bankDetailsVerified),
+        verificationStatus: normalizeString(result?.myVendorPayoutProfile?.verificationStatus),
+        verificationNote: normalizeString(result?.myVendorPayoutProfile?.verificationNote),
+        accountHolderName: normalizeString(result?.myVendorPayoutProfile?.accountHolderName),
+        bankName: normalizeString(result?.myVendorPayoutProfile?.bankName),
+        accountNumber: normalizeString(result?.myVendorPayoutProfile?.accountNumber),
+        iban: normalizeString(result?.myVendorPayoutProfile?.iban),
+        swiftBic: normalizeString(result?.myVendorPayoutProfile?.swiftBic),
+        routingNumber: normalizeString(result?.myVendorPayoutProfile?.routingNumber),
+        branchName: normalizeString(result?.myVendorPayoutProfile?.branchName),
+        branchCode: normalizeString(result?.myVendorPayoutProfile?.branchCode),
+        billingAddress: normalizeString(result?.myVendorPayoutProfile?.billingAddress),
+        city: normalizeString(result?.myVendorPayoutProfile?.city),
+        postalCode: normalizeString(result?.myVendorPayoutProfile?.postalCode),
+        country: normalizeString(result?.myVendorPayoutProfile?.country || "Norway"),
+      },
       hours: mapBusinessHours(settings.businessHours),
       closures: mapSpecialClosures(settings.specialClosures),
     },
@@ -485,6 +521,24 @@ export function buildRegionalPreferencesInput(settings) {
   };
 }
 
+export function buildPayoutProfileInput(settings) {
+  return {
+    payoutMethod: normalizeString(settings.payoutProfile?.payoutMethod).trim() || "BANK_TRANSFER",
+    accountHolderName: normalizeString(settings.payoutProfile?.accountHolderName).trim(),
+    bankName: normalizeString(settings.payoutProfile?.bankName).trim() || null,
+    accountNumber: normalizeString(settings.payoutProfile?.accountNumber).trim() || null,
+    iban: normalizeString(settings.payoutProfile?.iban).trim() || null,
+    swiftBic: normalizeString(settings.payoutProfile?.swiftBic).trim() || null,
+    routingNumber: normalizeString(settings.payoutProfile?.routingNumber).trim() || null,
+    branchName: normalizeString(settings.payoutProfile?.branchName).trim() || null,
+    branchCode: normalizeString(settings.payoutProfile?.branchCode).trim() || null,
+    billingAddress: normalizeString(settings.payoutProfile?.billingAddress).trim() || null,
+    city: normalizeString(settings.payoutProfile?.city).trim() || null,
+    postalCode: normalizeString(settings.payoutProfile?.postalCode).trim() || null,
+    country: normalizeString(settings.payoutProfile?.country).trim() || null,
+  };
+}
+
 export function buildBusinessHoursInput(settings) {
   return settings.hours.map((item) => {
     const normalizedRange = splitTimeRange(item.timeRange);
@@ -522,6 +576,7 @@ export function getComparableSettingsState(settings) {
     businessProfile: buildBusinessProfileInput(settings),
     notifications: buildNotificationPreferencesInput(settings),
     regionalPreferences: buildRegionalPreferencesInput(settings),
+    payoutProfile: buildPayoutProfileInput(settings),
     account: buildAccountProfileInput(settings),
     hours: buildBusinessHoursInput(settings),
     closures: [...(settings.closures || [])].map((item) => ({

@@ -123,6 +123,27 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         label
       }
     }
+    myVendorPayoutProfile {
+      id
+      payoutMethod
+      bankDetailsVerified
+      verificationStatus
+      verificationNote
+      accountHolderName
+      bankName
+      accountNumber
+      iban
+      swiftBic
+      routingNumber
+      branchName
+      branchCode
+      billingAddress
+      city
+      postalCode
+      country
+      createdAt
+      updatedAt
+    }
     vendorSettingsBootstrap {
       cuisineTypes {
         id
@@ -162,6 +183,35 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         utcOffset
         isActive
         sortOrder
+      }
+    }
+  }
+`;
+
+export const UPSERT_VENDOR_PAYOUT_PROFILE_MUTATION = `
+  mutation UpsertVendorPayoutProfile($input: VendorPayoutProfileInput!) {
+    upsertVendorPayoutProfile(input: $input) {
+      success
+      message
+      payoutProfile {
+        id
+        payoutMethod
+        bankDetailsVerified
+        verificationStatus
+        verificationNote
+        accountHolderName
+        bankName
+        accountNumber
+        iban
+        swiftBic
+        routingNumber
+        branchName
+        branchCode
+        billingAddress
+        city
+        postalCode
+        country
+        updatedAt
       }
     }
   }

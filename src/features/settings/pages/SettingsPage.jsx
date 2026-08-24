@@ -142,7 +142,10 @@ export default function SettingsPage() {
           handleFieldChange={handleFieldChange}
           handleNotificationToggle={handleNotificationToggle}
           handleResetAllSettings={handleResetAllSettings}
+          handleSave={handleSave}
           handleToggleBusinessDay={handleToggleBusinessDay}
+          hasUnsavedChanges={hasUnsavedChanges}
+          isSaving={isSaving}
           languageOptions={settingsOptions.languageOptions}
           settings={settings}
           handleSaveClosure={handleSaveClosure}
