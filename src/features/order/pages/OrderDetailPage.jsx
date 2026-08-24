@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
   }, [decodedOrderId, isResolvingRequest]);
 
   async function updateOrderStatus(nextStatus, message) {
-    await updateVendorOrderStatus({
+    const payload = await updateVendorOrderStatus({
       id: decodedOrderId,
       status: getStatusMutationValue(nextStatus),
       note: "",
@@ -206,7 +206,26 @@ export default function OrderDetailPage() {
       clearPendingAdjustment(decodedOrderId);
     }
 
-    await refreshOrderDetail();
+    const updatedBackendStatus =
+      payload?.instance?.status || payload?.order?.status || nextStatus;
+    const normalizedUpdatedStatus = normalizeBackendStatus(updatedBackendStatus);
+
+    setOrderDetail((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        status: normalizedUpdatedStatus,
+        statusTone: current.statusTone,
+        actions: current.availableActions?.length
+          ? current.actions
+          : [],
+      };
+    });
+
+    await refreshOrderDetail({ silent: true });
     await showOrderStatusUpdated(message);
   }
 

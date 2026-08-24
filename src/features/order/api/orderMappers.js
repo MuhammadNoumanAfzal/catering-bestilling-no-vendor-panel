@@ -357,7 +357,13 @@ export function normalizeBackendStatus(status) {
 
   if (!normalized) return "New";
   if (normalized === "new" || normalized === "placed" || normalized === "pending") return "New";
-  if (normalized === "accepted" || normalized === "confirmed") return "Accepted";
+  if (
+    normalized === "accepted" ||
+    normalized === "confirmed" ||
+    normalized === "confirm"
+  ) {
+    return "Accepted";
+  }
   if (
     normalized === "modified" ||
     normalized === "adjustment requested" ||
@@ -369,12 +375,25 @@ export function normalizeBackendStatus(status) {
   if (
     normalized === "preparing" ||
     normalized === "in preparation" ||
-    normalized === "start preparing"
+    normalized === "start preparing" ||
+    normalized === "processing"
   ) {
     return "Preparing";
   }
-  if (normalized === "ready") return "Ready";
-  if (normalized === "out for delivery" || normalized === "in transit") return "Out for delivery";
+  if (
+    normalized === "ready" ||
+    normalized === "food ready" ||
+    normalized === "ready to deliver" ||
+    normalized === "ready to dispatch"
+  ) {
+    return "Ready";
+  }
+  if (
+    normalized === "out for delivery" ||
+    normalized === "in transit"
+  ) {
+    return "Out for delivery";
+  }
   if (normalized === "delivered" || normalized === "completed") return "Delivered";
   if (normalized === "canceled" || normalized === "cancelled" || normalized === "rejected") {
     return "Canceled";
