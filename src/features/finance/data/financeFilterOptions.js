@@ -1,4 +1,4 @@
-export const financeStatusTabs = ["All", "Paid", "Unpaid", "Overdue"];
+export const financeStatusTabs = ["All", "Paid", "Released", "Pending"];
 
 export const financeDateOptions = [
   { id: "7days", label: "Last 7 Days" },
