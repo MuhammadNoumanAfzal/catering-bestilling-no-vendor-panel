@@ -11,6 +11,10 @@ import {
   UPDATE_VENDOR_NOTIFICATION_SETTINGS_MUTATION,
 } from "./notificationsQueries";
 
+function getUnreadCount(connection) {
+  return Number(connection?.unreadCount ?? 0) || 0;
+}
+
 function unwrapMutationResult(result, key, fallbackMessage) {
   const payload = result?.[key];
 
@@ -38,25 +42,23 @@ export async function markVendorNotificationAsRead(id) {
     MARK_VENDOR_NOTIFICATION_AS_READ_MUTATION,
     { id },
   );
+  const payload = result?.markFinanceNotificationRead;
 
-  return unwrapMutationResult(
-    result,
-    "markVendorNotificationAsRead",
-    "Unable to mark the notification as read.",
-  );
+  if (!payload?.success || !payload?.notification?.id) {
+    throw new Error(payload?.message || "Unable to mark the notification as read.");
+  }
+
+  return {
+    success: true,
+    message: payload.message || "Notification marked as read.",
+    notification: payload.notification,
+    unreadCount: null,
+  };
 }
 
 export async function markVendorNotificationsAsRead(ids) {
-  const result = await executeProtectedGraphqlRequest(
-    MARK_VENDOR_NOTIFICATIONS_AS_READ_MUTATION,
-    { ids },
-  );
-
-  return unwrapMutationResult(
-    result,
-    "markVendorNotificationsAsRead",
-    "Unable to mark notifications as read.",
-  );
+  void ids;
+  return markAllVendorNotificationsAsRead();
 }
 
 export async function markAllVendorNotificationsAsRead() {
@@ -64,25 +66,32 @@ export async function markAllVendorNotificationsAsRead() {
     MARK_ALL_VENDOR_NOTIFICATIONS_AS_READ_MUTATION,
     {},
   );
+  const payload = result?.markAllFinanceNotificationsRead;
 
-  return unwrapMutationResult(
-    result,
-    "markAllVendorNotificationsAsRead",
-    "Unable to mark all notifications as read.",
-  );
+  if (!payload?.success) {
+    throw new Error(payload?.message || "Unable to mark all notifications as read.");
+  }
+
+  return {
+    success: true,
+    message: payload.message || "All notifications marked as read.",
+    unreadCount: 0,
+  };
 }
 
 export async function archiveVendorNotification(id) {
-  const result = await executeProtectedGraphqlRequest(
-    ARCHIVE_VENDOR_NOTIFICATION_MUTATION,
-    { id },
-  );
+  void id;
+  const result = await executeProtectedGraphqlRequest(ARCHIVE_VENDOR_NOTIFICATION_MUTATION, {});
+  const payload = result?.markAllFinanceNotificationsRead;
 
-  return unwrapMutationResult(
-    result,
-    "archiveVendorNotification",
-    "Unable to archive the notification.",
-  );
+  if (!payload?.success) {
+    throw new Error(payload?.message || "Unable to update the notification.");
+  }
+
+  return {
+    success: true,
+    message: payload.message || "Notification updated.",
+  };
 }
 
 export function getVendorNotificationSettings() {

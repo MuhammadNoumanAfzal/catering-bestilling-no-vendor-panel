@@ -142,7 +142,7 @@ export default function AppLayout() {
     async function loadNotificationCounts() {
       try {
         const result = await getVendorNotificationCounts();
-        const unreadCount = result?.vendorNotificationCounts?.unread || 0;
+        const unreadCount = result?.vendorFinanceNotifications?.unreadCount || 0;
 
         if (!isCancelled) {
           setUnreadNotificationsCount(unreadCount);
@@ -151,7 +151,7 @@ export default function AppLayout() {
             getVendorNotifications({ status: "UNREAD", first: 1 })
               .then((notificationsRes) => {
                 if (isCancelled) return;
-                const latest = notificationsRes?.vendorNotifications?.edges?.[0]?.node;
+                const latest = notificationsRes?.vendorFinanceNotifications?.edges?.[0]?.node;
                 const title = latest?.title || "New Notification";
                 const message = latest?.message || "You have received a new update.";
                 showNewNotificationToast(title, message);
