@@ -1,32 +1,31 @@
+export const VENDOR_FINANCE_NOTIFICATION_FIELDS = `
+  id
+  type
+  audience
+  title
+  message
+  isRead
+  createdAt
+  invoiceId
+  orderId
+  payoutId
+  paymentStatus
+  settlementStatus
+  payoutStatus
+  actorName
+  note
+  receiptUrl
+  transferReference
+  paymentDate
+`;
+
 export const GET_VENDOR_NOTIFICATIONS_QUERY = `
-  query GetVendorNotifications(
-    $status: NotificationReadStatus
-    $datePreset: NotificationDatePreset
-    $first: Int = 20
-    $after: String
-  ) {
-    vendorNotifications(
-      status: $status
-      datePreset: $datePreset
-      first: $first
-      after: $after
-    ) {
+  query GetVendorNotifications($first: Int = 20, $status: String) {
+    vendorFinanceNotifications(first: $first, status: $status) {
       edges {
         node {
-          id
-          notificationType
-          title
-          message
-          isRead
-          createdAt
-          orderId
-          reviewId
+          ${VENDOR_FINANCE_NOTIFICATION_FIELDS}
         }
-        cursor
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
       }
       totalCount
       unreadCount
@@ -36,123 +35,57 @@ export const GET_VENDOR_NOTIFICATIONS_QUERY = `
 
 export const GET_VENDOR_NOTIFICATION_DETAIL_QUERY = `
   query GetVendorNotificationDetail($id: ID!) {
-    vendorNotification(id: $id) {
-      id
-      notificationType
-      title
-      message
-      isRead
-      createdAt
-      orderId
-      reviewId
-      order {
-        id
-        orderNumber
-        status
-        customerName
-        amount
-        currency
-        coverImageUrl
-        itemsSummary
-        items {
-          id
-          name
-          quantity
-          imageUrl
-          description
-          allergens
-        }
-      }
-      review {
-        id
-        customerName
-        rating
-        orderNumber
-        occasion
-        comment
-      }
-      payout {
-        id
-        amount
-        currency
-        status
-        receiptUrl
-      }
+    financeNotification(id: $id) {
+      ${VENDOR_FINANCE_NOTIFICATION_FIELDS}
     }
   }
 `;
 
 export const GET_VENDOR_NOTIFICATION_COUNTS_QUERY = `
-  query GetVendorNotificationCounts {
-    vendorNotificationCounts {
-      total
-      unread
-      read
+  query GetVendorNotificationCounts($first: Int = 1) {
+    vendorFinanceNotifications(first: $first) {
+      totalCount
+      unreadCount
     }
   }
 `;
 
 export const MARK_VENDOR_NOTIFICATION_AS_READ_MUTATION = `
   mutation MarkVendorNotificationAsRead($id: ID!) {
-    markVendorNotificationAsRead(id: $id) {
+    markFinanceNotificationRead(id: $id) {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
       notification {
         id
         isRead
       }
-      unreadCount
     }
   }
 `;
 
 export const MARK_VENDOR_NOTIFICATIONS_AS_READ_MUTATION = `
   mutation MarkVendorNotificationsAsRead($ids: [ID!]!) {
-    markVendorNotificationsAsRead(ids: $ids) {
+    markAllFinanceNotificationsRead(audience: "VENDOR") {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
-      updatedIds
-      unreadCount
     }
   }
 `;
 
 export const MARK_ALL_VENDOR_NOTIFICATIONS_AS_READ_MUTATION = `
   mutation MarkAllVendorNotificationsAsRead {
-    markAllVendorNotificationsAsRead {
+    markAllFinanceNotificationsRead(audience: "VENDOR") {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
-      unreadCount
     }
   }
 `;
 
 export const ARCHIVE_VENDOR_NOTIFICATION_MUTATION = `
-  mutation ArchiveVendorNotification($id: ID!) {
-    archiveVendorNotification(id: $id) {
+  mutation ArchiveVendorNotification {
+    markAllFinanceNotificationsRead(audience: "VENDOR") {
       success
       message
-      errors {
-        field
-        message
-        code
-      }
-      archivedId
     }
   }
 `;

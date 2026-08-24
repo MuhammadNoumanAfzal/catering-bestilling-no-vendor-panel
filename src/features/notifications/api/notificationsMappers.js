@@ -177,9 +177,8 @@ function buildFallbackDetailRows(node, type) {
 }
 
 export function mapNotificationNode(node) {
-  const rawType = (node.notificationType || "ALERT").toUpperCase();
+  const rawType = (node.notificationType || node.type || "ALERT").toUpperCase();
 
-  // Map backend NotificationType enum values to frontend display types
   let type = "ALERT";
   if (
     rawType === "NEW_ORDER" ||
@@ -194,7 +193,11 @@ export function mapNotificationNode(node) {
     rawType === "REVIEW"
   ) {
     type = "REVIEW";
-  } else if (rawType === "PAYOUT") {
+  } else if (
+    rawType === "PAYOUT" ||
+    rawType.includes("PAYMENT") ||
+    rawType.includes("SETTLEMENT")
+  ) {
     type = "PAYOUT";
   }
 
@@ -202,17 +205,30 @@ export function mapNotificationNode(node) {
   const livePayload = {
     order: node?.order || null,
     review: node?.review || null,
-    payout: node?.payout || null,
+    payout: node?.payout || (node?.payoutId ? {
+      id: node.payoutId,
+      status: node?.payoutStatus || "",
+      receiptUrl: node?.receiptUrl || "",
+    } : null),
   };
 
-  const payoutReceiptUrl = node?.payout?.receiptUrl || "";
-  const payoutId = node?.payout?.id || "";
+  const payoutReceiptUrl = node?.payout?.receiptUrl || node?.receiptUrl || "";
+  const payoutId = node?.payout?.id || node?.payoutId || "";
+  const messageParts = [node.message || ""];
+
+  if (node?.note) {
+    messageParts.push(`Note: ${node.note}`);
+  }
+
+  if (node?.transferReference) {
+    messageParts.push(`Reference: ${node.transferReference}`);
+  }
 
   return {
     id: node.id,
     type,
     title: node.title || "Notification",
-    message: node.message || "",
+    message: messageParts.filter(Boolean).join(" "),
     actionLabel: type === "PAYOUT" ? "View Receipt" : "View Detail",
     isRead: Boolean(node.isRead),
     highlighted: !node.isRead,
@@ -223,6 +239,12 @@ export function mapNotificationNode(node) {
     reviewId: node.reviewId || "",
     payoutId,
     payoutReceiptUrl,
+    invoiceId: node?.invoiceId || "",
+    note: node?.note || "",
+    transferReference: node?.transferReference || "",
+    paymentDate: node?.paymentDate || "",
+    settlementStatus: node?.settlementStatus || "",
+    paymentStatus: node?.paymentStatus || "",
     detailTitle: buildFallbackDetailTitle(type),
     detailRows: buildFallbackDetailRows({ ...node, orderNumber }, type),
     livePayload,
@@ -241,8 +263,8 @@ export function mapNotificationsConnection(connection) {
     totalCount: connection?.totalCount || 0,
     unreadCount: connection?.unreadCount || 0,
     pageInfo: {
-      hasNextPage: Boolean(connection?.pageInfo?.hasNextPage),
-      endCursor: connection?.pageInfo?.endCursor || null,
+      hasNextPage: false,
+      endCursor: null,
     },
   };
 }

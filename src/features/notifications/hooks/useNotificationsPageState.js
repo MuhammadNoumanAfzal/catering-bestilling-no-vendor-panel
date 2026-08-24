@@ -58,7 +58,7 @@ export default function useNotificationsPageState() {
 
         if (isCancelled) return;
 
-        const mapped = mapNotificationsConnection(result?.vendorNotifications);
+        const mapped = mapNotificationsConnection(result?.vendorFinanceNotifications);
         setNotifications(mapped.items);
         setPageInfo(mapped.pageInfo);
         setTotalCount(mapped.totalCount);
@@ -245,7 +245,7 @@ export default function useNotificationsPageState() {
         after: pageInfo.endCursor,
         ...filterVariables,
       });
-      const mapped = mapNotificationsConnection(result?.vendorNotifications);
+      const mapped = mapNotificationsConnection(result?.vendorFinanceNotifications);
       setNotifications((current) => [...current, ...mapped.items]);
       setPageInfo(mapped.pageInfo);
       setTotalCount(mapped.totalCount);
