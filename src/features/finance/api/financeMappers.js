@@ -111,48 +111,78 @@ export function mapFinanceSummaryCards(data, payoutsData = null) {
     ? payoutsData.vendorPayouts.edges
     : [];
   const payouts = payoutEdges.map((edge) => edge?.node).filter(Boolean);
+  const pendingPayouts = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PENDING");
+  const releasedPayouts = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "RELEASED");
   const paidPayouts = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PAID");
-  const paidCommissionTotal = sumMoney(paidPayouts, "commissionAmount");
-  const paidCommissionCurrency = getMoneyCurrency(paidPayouts, "commissionAmount", summary?.commissionPaid?.currency || "NOK");
+  const processedPayouts = payouts.filter((item) => ["PENDING", "RELEASED", "PAID"].includes(resolvePayoutLifecycleStatus(item)));
+  const grossCustomerPaymentsTotal = sumMoney(processedPayouts, "grossAmount");
+  const grossCustomerPaymentsCurrency = getMoneyCurrency(
+    processedPayouts,
+    "grossAmount",
+    summary?.totalRevenue?.currency || "NOK",
+  );
+  const awaitingPayoutTotal =
+    sumMoney(pendingPayouts, "netAmount") + sumMoney(releasedPayouts, "netAmount");
+  const awaitingPayoutCurrency = getMoneyCurrency(
+    [...pendingPayouts, ...releasedPayouts],
+    "netAmount",
+    summary?.pendingPayout?.currency || "NOK",
+  );
+  const totalCommissionAmount = sumMoney(processedPayouts, "commissionAmount");
+  const totalCommissionCurrency = getMoneyCurrency(
+    processedPayouts,
+    "commissionAmount",
+    summary?.commissionPaid?.currency || "NOK",
+  );
   const completedPayoutTotal = sumMoney(paidPayouts, "netAmount");
   const completedPayoutCurrency = getMoneyCurrency(paidPayouts, "netAmount", summary?.completedPayouts?.currency || "NOK");
 
-  const commissionPaidValue =
-    parseNumber(summary?.commissionPaid?.amount) > 0
-      ? summary?.commissionPaid?.formatted || formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK")
-      : paidCommissionTotal > 0
-        ? formatCurrency(paidCommissionTotal, paidCommissionCurrency)
-        : summary?.commissionPaid?.formatted || formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK");
+  const grossCustomerPaymentsValue =
+    grossCustomerPaymentsTotal > 0
+      ? formatCurrency(grossCustomerPaymentsTotal, grossCustomerPaymentsCurrency)
+      : summary?.totalRevenue?.formatted ||
+        formatCurrency(summary?.totalRevenue?.amount, summary?.totalRevenue?.currency || "NOK");
+
+  const awaitingPayoutValue =
+    awaitingPayoutTotal > 0
+      ? formatCurrency(awaitingPayoutTotal, awaitingPayoutCurrency)
+      : summary?.pendingPayout?.formatted ||
+        formatCurrency(summary?.pendingPayout?.amount, summary?.pendingPayout?.currency || "NOK");
 
   const completedPayoutsValue =
-    parseNumber(summary?.completedPayouts?.amount) > 0
-      ? summary?.completedPayouts?.formatted || formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK")
-      : completedPayoutTotal > 0
-        ? formatCurrency(completedPayoutTotal, completedPayoutCurrency)
-        : summary?.completedPayouts?.formatted || formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK");
+    completedPayoutTotal > 0
+      ? formatCurrency(completedPayoutTotal, completedPayoutCurrency)
+      : summary?.completedPayouts?.formatted ||
+        formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK");
+
+  const totalCommissionValue =
+    totalCommissionAmount > 0
+      ? formatCurrency(totalCommissionAmount, totalCommissionCurrency)
+      : summary?.commissionPaid?.formatted ||
+        formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK");
 
   return [
     {
-      label: "Total Revenue",
-      value: summary?.totalRevenue?.formatted || formatCurrency(summary?.totalRevenue?.amount, summary?.totalRevenue?.currency || "NOK"),
+      label: "Customer Payments",
+      value: grossCustomerPaymentsValue,
       accent: "#ffefe7",
       icon: "camera",
     },
     {
-      label: "Pending Payout",
-      value: summary?.pendingPayout?.formatted || formatCurrency(summary?.pendingPayout?.amount, summary?.pendingPayout?.currency || "NOK"),
+      label: "Awaiting Payout",
+      value: awaitingPayoutValue,
       accent: "#fff2ec",
       icon: "wallet",
     },
     {
-      label: "Completed Payouts",
+      label: "Paid Out To You",
       value: completedPayoutsValue,
       accent: "#fff2ec",
       icon: "close",
     },
     {
-      label: "Commission Paid",
-      value: commissionPaidValue,
+      label: "Platform Commission",
+      value: totalCommissionValue,
       accent: "#fff2ec",
       icon: "clock",
     },
@@ -251,7 +281,7 @@ export function mapPayoutTransactions(data) {
   const connection = data?.vendorPayouts;
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];
 
-  return edges
+  const rows = edges
     .map((edge) => edge?.node)
     .filter(Boolean)
     .map((node) => {
@@ -279,6 +309,11 @@ export function mapPayoutTransactions(data) {
       const rightTime = new Date(right.eventDateRaw || 0).getTime();
       return rightTime - leftTime;
     });
+
+  return {
+    rows,
+    totalCount: rows.length,
+  };
 }
 
 export function mapTransactionDetail(node) {

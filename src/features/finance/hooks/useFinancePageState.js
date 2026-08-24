@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   exportVendorFinanceTransactions,
   getVendorFinanceOverviewChart,
   getVendorFinanceSummary,
-  getVendorInvoices,
   getVendorPayouts,
 } from "../api/financeApi";
 import {
@@ -12,10 +11,8 @@ import {
   getFinanceSummaryVariables,
   mapFinanceChartPoints,
   mapFinanceSummaryCards,
-  mapPayoutTransactions,
   mapPayoutStatusItems,
-  mapTransactionDetail,
-  mapTransactionsConnection,
+  mapPayoutTransactions,
 } from "../api/financeMappers";
 import {
   showVendorErrorAlert,
@@ -27,7 +24,7 @@ const VENDOR_FINANCE_NOTIFICATION_EVENT = "vendor-finance-notification-received"
 const FINANCE_SUMMARY_ERROR_MESSAGE =
   "Unable to load finance summary right now. Please try again shortly.";
 const FINANCE_TRANSACTIONS_ERROR_MESSAGE =
-  "Unable to load finance transactions right now. Please try again shortly.";
+  "Unable to load payout activity right now. Please try again shortly.";
 
 function getSafeFinanceErrorMessage(error, fallbackMessage) {
   const message = String(error?.message || "").trim();
@@ -46,12 +43,13 @@ function getSafeFinanceErrorMessage(error, fallbackMessage) {
   return looksLikeServerTrace ? fallbackMessage : message;
 }
 
-function toInvoiceStatusFilter(status) {
+function toPayoutStatusFilter(status) {
   if (!status || status === "All") {
     return undefined;
   }
 
-  return status.toUpperCase().replace(/\s+/g, "_");
+  const normalized = status.toUpperCase().replace(/\s+/g, "_");
+  return normalized === "RELEASED" ? "PAYOUT_RELEASED" : normalized;
 }
 
 function formatDateLabel(dateValue) {
@@ -65,9 +63,6 @@ function formatDateLabel(dateValue) {
 }
 
 export default function useFinancePageState() {
-  const invoicePageCacheRef = useRef({});
-  const invoicePageInfoRef = useRef({});
-  const invoiceRequestIdRef = useRef(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [headerFilter, setHeaderFilter] = useState("7days");
   const [headerCustomFrom, setHeaderCustomFrom] = useState("");
@@ -84,8 +79,6 @@ export default function useFinancePageState() {
   const [chartPoints, setChartPoints] = useState([]);
   const [payoutStatuses, setPayoutStatuses] = useState([]);
   const [payoutRows, setPayoutRows] = useState([]);
-  const [invoiceRows, setInvoiceRows] = useState([]);
-  const [invoiceTotalCount, setInvoiceTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
@@ -100,7 +93,7 @@ export default function useFinancePageState() {
     [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
   );
 
-  const ordersRangeVariables = useMemo(
+  const payoutTableRangeVariables = useMemo(
     () =>
       getFinanceDateRangeVariables({
         rangePreset: selectedDateOption,
@@ -110,7 +103,7 @@ export default function useFinancePageState() {
     [appliedCustomRange?.from, appliedCustomRange?.to, selectedDateOption],
   );
 
-  const payoutRangeVariables = useMemo(
+  const payoutSummaryRangeVariables = useMemo(
     () =>
       getFinanceDateRangeVariables({
         rangePreset: headerFilter,
@@ -120,14 +113,14 @@ export default function useFinancePageState() {
     [appliedHeaderCustomRange?.from, appliedHeaderCustomRange?.to, headerFilter],
   );
 
-  const invoiceQueryVariables = useMemo(
+  const payoutQueryVariables = useMemo(
     () => ({
-      ...(toInvoiceStatusFilter(activeStatus)
-        ? { status: toInvoiceStatusFilter(activeStatus) }
+      ...(toPayoutStatusFilter(activeStatus)
+        ? { status: toPayoutStatusFilter(activeStatus) }
         : {}),
-      ...ordersRangeVariables,
+      ...payoutTableRangeVariables,
     }),
-    [activeStatus, ordersRangeVariables],
+    [activeStatus, payoutTableRangeVariables],
   );
 
   useEffect(() => {
@@ -145,7 +138,7 @@ export default function useFinancePageState() {
               appliedHeaderCustomRange?.to,
             ),
           }),
-          getVendorPayouts(payoutRangeVariables),
+          getVendorPayouts({ first: 100, ...payoutSummaryRangeVariables }),
         ]);
 
         if (isCancelled) {
@@ -170,14 +163,9 @@ export default function useFinancePageState() {
 
         setSummaryCards(mapFinanceSummaryCards(summaryResult.value, payoutPayload));
         setChartPoints(mapFinanceChartPoints(chartResult.value));
-
-        if (payoutPayload) {
-          setPayoutStatuses(mapPayoutStatusItems(payoutPayload));
-          setPayoutRows(mapPayoutTransactions(payoutPayload));
-        } else {
-          setPayoutStatuses([]);
-          setPayoutRows([]);
-        }
+        setPayoutStatuses(
+          payoutPayload ? mapPayoutStatusItems(payoutPayload) : [],
+        );
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -198,24 +186,13 @@ export default function useFinancePageState() {
     appliedHeaderCustomRange?.to,
     headerFilter,
     headerRangeVariables,
-    payoutRangeVariables,
+    payoutSummaryRangeVariables,
     refreshTick,
   ]);
 
   useEffect(() => {
-    invoicePageCacheRef.current = {};
-    invoicePageInfoRef.current = {};
-    setInvoiceRows([]);
-    setInvoiceTotalCount(0);
-    setIsLoading(true);
-    setCurrentPage(1);
-  }, [invoiceQueryVariables]);
-
-  useEffect(() => {
     function handleFinanceNotificationRefresh() {
       setRefreshTick((current) => current + 1);
-      invoicePageCacheRef.current = {};
-      invoicePageInfoRef.current = {};
       setCurrentPage(1);
     }
 
@@ -233,115 +210,58 @@ export default function useFinancePageState() {
   }, []);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [payoutQueryVariables]);
+
+  useEffect(() => {
     let isCancelled = false;
 
-    if (!Object.keys(invoicePageCacheRef.current).length && currentPage !== 1) {
-      return () => {
-        isCancelled = true;
-      };
-    }
-
-    async function fetchInvoicePage(pageNumber, afterCursor) {
-      const result = await getVendorInvoices({
-        first: PAGE_SIZE,
-        after: afterCursor,
-        ...invoiceQueryVariables,
-      });
-
-      const mapped = mapTransactionsConnection(result);
-
-      invoicePageCacheRef.current[pageNumber] = mapped.rows;
-      invoicePageInfoRef.current[pageNumber] = mapped.pageInfo;
-
-      return mapped;
-    }
-
-    async function loadTransactionsPage() {
-      const requestId = invoiceRequestIdRef.current + 1;
-      invoiceRequestIdRef.current = requestId;
+    async function loadPayoutActivity() {
       setIsLoading(true);
 
       try {
-        let mapped = null;
+        const result = await getVendorPayouts({
+          first: 100,
+          ...payoutQueryVariables,
+        });
 
-        if (invoicePageCacheRef.current[currentPage]) {
-          mapped = {
-            rows: invoicePageCacheRef.current[currentPage],
-            pageInfo: invoicePageInfoRef.current[currentPage] || {},
-            totalCount: invoiceTotalCount,
-          };
-        } else {
-          let startPage = 1;
-          let afterCursor;
-
-          for (let page = currentPage - 1; page >= 1; page -= 1) {
-            const pageInfo = invoicePageInfoRef.current[page];
-
-            if (invoicePageCacheRef.current[page] && pageInfo) {
-              startPage = page + 1;
-              afterCursor = pageInfo.endCursor || undefined;
-              break;
-            }
-          }
-
-          for (let page = startPage; page <= currentPage; page += 1) {
-            if (invoicePageCacheRef.current[page]) {
-              afterCursor =
-                invoicePageInfoRef.current[page]?.endCursor || undefined;
-              mapped = {
-                rows: invoicePageCacheRef.current[page],
-                pageInfo: invoicePageInfoRef.current[page] || {},
-                totalCount: invoiceTotalCount,
-              };
-              continue;
-            }
-
-            mapped = await fetchInvoicePage(page, afterCursor);
-            afterCursor = mapped.pageInfo.endCursor || undefined;
-
-            if (!mapped.pageInfo.hasNextPage && page < currentPage) {
-              break;
-            }
-          }
-        }
-
-        if (
-          isCancelled ||
-          invoiceRequestIdRef.current !== requestId ||
-          !mapped
-        ) {
+        if (isCancelled) {
           return;
         }
 
-        setInvoiceRows(invoicePageCacheRef.current[currentPage] || []);
-        setInvoiceTotalCount(mapped.totalCount);
+        const mapped = mapPayoutTransactions(result);
+        setPayoutRows(mapped.rows);
       } catch (error) {
-        if (!isCancelled && invoiceRequestIdRef.current === requestId) {
+        if (!isCancelled) {
+          setPayoutRows([]);
           await showVendorErrorAlert(
             getSafeFinanceErrorMessage(
               error,
               FINANCE_TRANSACTIONS_ERROR_MESSAGE,
             ),
-            "Transactions unavailable",
+            "Payout activity unavailable",
           );
         }
       } finally {
-        if (!isCancelled && invoiceRequestIdRef.current === requestId) {
+        if (!isCancelled) {
           setIsLoading(false);
         }
       }
     }
 
-    loadTransactionsPage();
+    loadPayoutActivity();
 
     return () => {
       isCancelled = true;
     };
-  }, [currentPage, invoiceQueryVariables, refreshTick]);
+  }, [payoutQueryVariables, refreshTick]);
 
-  const totalItems = invoiceTotalCount;
+  const totalItems = payoutRows.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-  const paginatedOrders = invoiceRows;
+  const paginatedOrders = payoutRows.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   const dateButtonLabel =
     selectedDateOption === "custom" &&
@@ -351,14 +271,14 @@ export default function useFinancePageState() {
       : selectedDateOption === "30days"
         ? "Last 30 Days"
         : selectedDateOption === "lastMonth"
-        ? "Last Month"
-        : selectedDateOption === "thisMonth"
-          ? "This Month"
-          : selectedDateOption === "thisYear"
-            ? "This Year"
-            : selectedDateOption === "custom"
-              ? "Custom Date"
-              : "Last 30 Days";
+          ? "Last Month"
+          : selectedDateOption === "thisMonth"
+            ? "This Month"
+            : selectedDateOption === "thisYear"
+              ? "This Year"
+              : selectedDateOption === "custom"
+                ? "Custom Date"
+                : "Last 30 Days";
 
   const headerFilterLabel =
     headerFilter === "custom" &&
@@ -383,6 +303,7 @@ export default function useFinancePageState() {
     if (nextPage < 1 || nextPage > totalPages) {
       return;
     }
+
     setCurrentPage(nextPage);
   }
 
@@ -401,11 +322,7 @@ export default function useFinancePageState() {
   }
 
   function handleApplyHeaderCustomDate() {
-    if (!headerCustomFrom || !headerCustomTo) {
-      return;
-    }
-
-    if (headerCustomFrom > headerCustomTo) {
+    if (!headerCustomFrom || !headerCustomTo || headerCustomFrom > headerCustomTo) {
       return;
     }
 
@@ -449,17 +366,17 @@ export default function useFinancePageState() {
   }
 
   async function handleRequestTransactionDetail(id) {
-    return mapTransactionDetail(invoiceRows.find((row) => row.id === id) || null);
+    return payoutRows.find((row) => row.id === id) || null;
   }
 
   async function handleExport(format) {
     try {
       setIsExporting(true);
       const result = await exportVendorFinanceTransactions({
-        ...(toInvoiceStatusFilter(activeStatus)
-          ? { status: toInvoiceStatusFilter(activeStatus) }
+        ...(toPayoutStatusFilter(activeStatus)
+          ? { status: toPayoutStatusFilter(activeStatus) }
           : {}),
-        ...ordersRangeVariables,
+        ...payoutTableRangeVariables,
         format,
       });
 
@@ -472,7 +389,7 @@ export default function useFinancePageState() {
       await showVendorErrorAlert(
         getSafeFinanceErrorMessage(
           error,
-          "Unable to export transactions right now. Please try again shortly.",
+          "Unable to export payout activity right now. Please try again shortly.",
         ),
         "Export failed",
       );
@@ -483,18 +400,27 @@ export default function useFinancePageState() {
 
   return {
     activeStatus,
+    chartPoints,
+    currentPage,
     customFrom,
     customTo,
     dateButtonLabel,
-    chartPoints,
     handleApplyHeaderCustomDate,
     handleApplyCustomDate,
+    handleClearDateFilter: () => {
+      setSelectedDateOption("30days");
+      setAppliedCustomRange(null);
+      setCustomFrom("");
+      setCustomTo("");
+      setIsCustomDateOpen(false);
+      setIsDateMenuOpen(false);
+    },
     handleExport,
+    handleHeaderFilterChange,
     handlePageChange,
     handleRequestTransactionDetail,
     handleSelectDateOption,
     handleStatusChange,
-    handleHeaderFilterChange,
     handleToggleDateMenu,
     headerCustomFrom,
     headerCustomTo,
@@ -508,22 +434,13 @@ export default function useFinancePageState() {
     onCustomToChange: setCustomTo,
     onHeaderCustomFromChange: setHeaderCustomFrom,
     onHeaderCustomToChange: setHeaderCustomTo,
+    pageSize: PAGE_SIZE,
+    paginatedOrders,
     payoutRows,
     payoutStatuses,
-    paginatedOrders,
-    pageSize: PAGE_SIZE,
+    selectedDateOption,
     summaryCards,
     totalItems,
     totalPages,
-    currentPage,
-    selectedDateOption,
-    handleClearDateFilter: () => {
-      setSelectedDateOption("30days");
-      setAppliedCustomRange(null);
-      setCustomFrom("");
-      setCustomTo("");
-      setIsCustomDateOpen(false);
-      setIsDateMenuOpen(false);
-    },
   };
 }
