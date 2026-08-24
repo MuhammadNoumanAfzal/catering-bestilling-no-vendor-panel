@@ -41,6 +41,7 @@ const sidebarItems = [
 
 const NOTIFICATION_POLL_INTERVAL_MS = 10000;
 const LAST_SEEN_VENDOR_NOTIFICATION_KEY = "vendor-last-seen-notification-id";
+const VENDOR_FINANCE_NOTIFICATION_EVENT = "vendor-finance-notification-received";
 
 function readLastSeenVendorNotificationId() {
   if (typeof window === "undefined") {
@@ -178,6 +179,14 @@ export default function AppLayout() {
               latestNotification?.message || "You have received a new update.";
             showNewNotificationToast(title, message);
             writeLastSeenVendorNotificationId(latestNotificationId);
+
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(
+                new CustomEvent(VENDOR_FINANCE_NOTIFICATION_EVENT, {
+                  detail: { notification: latestNotification },
+                }),
+              );
+            }
           }
 
           prevLatestNotificationIdRef.current = latestNotificationId;

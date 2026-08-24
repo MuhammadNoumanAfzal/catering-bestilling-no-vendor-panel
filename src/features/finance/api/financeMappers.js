@@ -2,6 +2,21 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function formatPayoutStatusLabel(value) {
+  const normalized = normalizePayoutStatus(value);
+
+  switch (normalized) {
+    case "PAID":
+      return "PAID";
+    case "RELEASED":
+      return "RELEASED";
+    case "PENDING":
+      return "PENDING";
+    default:
+      return normalizeString(value).trim().toUpperCase() || "PENDING";
+  }
+}
+
 function parseNumber(value) {
   const normalized = Number(value);
   return Number.isFinite(normalized) ? normalized : 0;
@@ -230,6 +245,40 @@ export function mapTransactionsConnection(data) {
       endCursor: normalizeString(connection?.pageInfo?.endCursor),
     },
   };
+}
+
+export function mapPayoutTransactions(data) {
+  const connection = data?.vendorPayouts;
+  const edges = Array.isArray(connection?.edges) ? connection.edges : [];
+
+  return edges
+    .map((edge) => edge?.node)
+    .filter(Boolean)
+    .map((node) => {
+      const lifecycleStatus = resolvePayoutLifecycleStatus(node);
+      const invoiceNumber = normalizeString(node.invoiceNumber || "--");
+
+      return {
+        id: `payout-${normalizeString(node.id)}`,
+        payoutId: normalizeString(node.id),
+        payoutNumber: normalizeString(node.payoutNumber || `PAY-${node.id}`),
+        invoiceNumber,
+        eventDate: formatDateLabel(node.paidAt || node.releasedAt || node.createdAt),
+        eventDateRaw: normalizeString(node.paidAt || node.releasedAt || node.createdAt),
+        netAmount: normalizeString(node.netAmount?.formatted || formatCurrency(node.netAmount?.amount, node.netAmount?.currency || "NOK")),
+        commissionAmount: normalizeString(
+          node.commissionAmount?.formatted ||
+            formatCurrency(node.commissionAmount?.amount, node.commissionAmount?.currency || "NOK"),
+        ),
+        paymentStatus: formatPayoutStatusLabel(lifecycleStatus),
+        payoutReference: normalizeString(node.payoutReference),
+      };
+    })
+    .sort((left, right) => {
+      const leftTime = new Date(left.eventDateRaw || 0).getTime();
+      const rightTime = new Date(right.eventDateRaw || 0).getTime();
+      return rightTime - leftTime;
+    });
 }
 
 export function mapTransactionDetail(node) {
