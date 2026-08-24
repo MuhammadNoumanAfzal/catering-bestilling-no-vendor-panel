@@ -95,13 +95,15 @@ export default function SettingsPage() {
         </p>
       </header>
 
-      <VendorApplicationStatusNotice
-        status={noticeStatus}
-        reviewedAt={applicationReview?.reviewedAt}
-        changeRequestMessage={applicationReview?.changeRequestMessage}
-        requestedFields={applicationReview?.requestedFields || []}
-        missingRequirements={applicationReview?.missingRequirements || []}
-      />
+      {!isLoading ? (
+        <VendorApplicationStatusNotice
+          status={noticeStatus}
+          reviewedAt={applicationReview?.reviewedAt}
+          changeRequestMessage={applicationReview?.changeRequestMessage}
+          requestedFields={applicationReview?.requestedFields || []}
+          missingRequirements={applicationReview?.missingRequirements || []}
+        />
+      ) : null}
 
       <SettingsTabs activeTab={activeTab} onChange={setActiveTab} />
 
