@@ -2,6 +2,7 @@ import FinanceOrdersFilters from "../components/FinanceOrdersFilters";
 import FinanceOrdersTable from "../components/FinanceOrdersTable";
 import FinanceOverviewSection from "../components/FinanceOverviewSection";
 import FinancePageHeader from "../components/FinancePageHeader";
+import FinancePayoutsTable from "../components/FinancePayoutsTable";
 import FinanceSummaryGrid from "../components/FinanceSummaryGrid";
 import useFinancePageState from "../hooks/useFinancePageState";
 
@@ -36,6 +37,7 @@ export default function FinancePage() {
     onHeaderCustomToChange,
     pageSize,
     paginatedOrders,
+    payoutRows,
     payoutStatuses,
     summaryCards,
     totalItems,
@@ -97,6 +99,8 @@ export default function FinancePage() {
           totalPages={totalPages}
         />
       </div>
+
+      <FinancePayoutsTable rows={payoutRows} />
     </section>
   );
 }

@@ -12,6 +12,7 @@ import {
   getFinanceSummaryVariables,
   mapFinanceChartPoints,
   mapFinanceSummaryCards,
+  mapPayoutTransactions,
   mapPayoutStatusItems,
   mapTransactionDetail,
   mapTransactionsConnection,
@@ -22,6 +23,7 @@ import {
 } from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
+const VENDOR_FINANCE_NOTIFICATION_EVENT = "vendor-finance-notification-received";
 const FINANCE_SUMMARY_ERROR_MESSAGE =
   "Unable to load finance summary right now. Please try again shortly.";
 const FINANCE_TRANSACTIONS_ERROR_MESSAGE =
@@ -81,10 +83,12 @@ export default function useFinancePageState() {
   const [summaryCards, setSummaryCards] = useState([]);
   const [chartPoints, setChartPoints] = useState([]);
   const [payoutStatuses, setPayoutStatuses] = useState([]);
+  const [payoutRows, setPayoutRows] = useState([]);
   const [invoiceRows, setInvoiceRows] = useState([]);
   const [invoiceTotalCount, setInvoiceTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const headerRangeVariables = useMemo(
     () =>
@@ -169,8 +173,10 @@ export default function useFinancePageState() {
 
         if (payoutPayload) {
           setPayoutStatuses(mapPayoutStatusItems(payoutPayload));
+          setPayoutRows(mapPayoutTransactions(payoutPayload));
         } else {
           setPayoutStatuses([]);
+          setPayoutRows([]);
         }
       } catch (error) {
         if (!isCancelled) {
@@ -193,6 +199,7 @@ export default function useFinancePageState() {
     headerFilter,
     headerRangeVariables,
     payoutRangeVariables,
+    refreshTick,
   ]);
 
   useEffect(() => {
@@ -203,6 +210,27 @@ export default function useFinancePageState() {
     setIsLoading(true);
     setCurrentPage(1);
   }, [invoiceQueryVariables]);
+
+  useEffect(() => {
+    function handleFinanceNotificationRefresh() {
+      setRefreshTick((current) => current + 1);
+      invoicePageCacheRef.current = {};
+      invoicePageInfoRef.current = {};
+      setCurrentPage(1);
+    }
+
+    window.addEventListener(
+      VENDOR_FINANCE_NOTIFICATION_EVENT,
+      handleFinanceNotificationRefresh,
+    );
+
+    return () => {
+      window.removeEventListener(
+        VENDOR_FINANCE_NOTIFICATION_EVENT,
+        handleFinanceNotificationRefresh,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -309,7 +337,7 @@ export default function useFinancePageState() {
     return () => {
       isCancelled = true;
     };
-  }, [currentPage, invoiceQueryVariables]);
+  }, [currentPage, invoiceQueryVariables, refreshTick]);
 
   const totalItems = invoiceTotalCount;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
@@ -480,6 +508,7 @@ export default function useFinancePageState() {
     onCustomToChange: setCustomTo,
     onHeaderCustomFromChange: setHeaderCustomFrom,
     onHeaderCustomToChange: setHeaderCustomTo,
+    payoutRows,
     payoutStatuses,
     paginatedOrders,
     pageSize: PAGE_SIZE,
