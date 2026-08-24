@@ -26,8 +26,95 @@ function formatDateLabel(dateValue) {
   });
 }
 
-export function mapFinanceSummaryCards(data) {
+function normalizePayoutStatus(value) {
+  const normalized = normalizeString(value).trim().toUpperCase().replace(/[\s-]+/g, "_");
+
+  switch (normalized) {
+    case "PAYOUT_PAID":
+    case "PAID":
+    case "SETTLED":
+    case "COMPLETED":
+      return "PAID";
+    case "PAYOUT_RELEASED":
+    case "RELEASED":
+    case "INCLUDED_IN_PAYOUT":
+      return "RELEASED";
+    case "PAYOUT_PENDING":
+    case "PENDING":
+    case "READY_FOR_PAYOUT":
+    case "FUNDED":
+      return "PENDING";
+    default:
+      return normalized;
+  }
+}
+
+function hasValidDate(value) {
+  if (!value) {
+    return false;
+  }
+
+  return !Number.isNaN(new Date(value).getTime());
+}
+
+function resolvePayoutLifecycleStatus(item) {
+  if (!item) {
+    return "PENDING";
+  }
+
+  if (hasValidDate(item?.paidAt)) {
+    return "PAID";
+  }
+
+  if (hasValidDate(item?.releasedAt)) {
+    return "RELEASED";
+  }
+
+  const normalized = normalizePayoutStatus(item?.status);
+
+  if (normalized === "PAID" && !hasValidDate(item?.paidAt)) {
+    return hasValidDate(item?.releasedAt) ? "RELEASED" : "PENDING";
+  }
+
+  return normalized || "PENDING";
+}
+
+function sumMoney(items, field) {
+  return items.reduce((sum, item) => sum + parseNumber(item?.[field]?.amount), 0);
+}
+
+function getMoneyCurrency(items, field, fallback = "NOK") {
+  return (
+    items.find((item) => normalizeString(item?.[field]?.currency))?.[field]?.currency ||
+    fallback
+  );
+}
+
+export function mapFinanceSummaryCards(data, payoutsData = null) {
   const summary = data?.vendorFinanceSummary;
+  const payoutEdges = Array.isArray(payoutsData?.vendorPayouts?.edges)
+    ? payoutsData.vendorPayouts.edges
+    : [];
+  const payouts = payoutEdges.map((edge) => edge?.node).filter(Boolean);
+  const paidPayouts = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PAID");
+  const paidCommissionTotal = sumMoney(paidPayouts, "commissionAmount");
+  const paidCommissionCurrency = getMoneyCurrency(paidPayouts, "commissionAmount", summary?.commissionPaid?.currency || "NOK");
+  const completedPayoutTotal = sumMoney(paidPayouts, "netAmount");
+  const completedPayoutCurrency = getMoneyCurrency(paidPayouts, "netAmount", summary?.completedPayouts?.currency || "NOK");
+
+  const commissionPaidValue =
+    parseNumber(summary?.commissionPaid?.amount) > 0
+      ? summary?.commissionPaid?.formatted || formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK")
+      : paidCommissionTotal > 0
+        ? formatCurrency(paidCommissionTotal, paidCommissionCurrency)
+        : summary?.commissionPaid?.formatted || formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK");
+
+  const completedPayoutsValue =
+    parseNumber(summary?.completedPayouts?.amount) > 0
+      ? summary?.completedPayouts?.formatted || formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK")
+      : completedPayoutTotal > 0
+        ? formatCurrency(completedPayoutTotal, completedPayoutCurrency)
+        : summary?.completedPayouts?.formatted || formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK");
 
   return [
     {
@@ -44,13 +131,13 @@ export function mapFinanceSummaryCards(data) {
     },
     {
       label: "Completed Payouts",
-      value: summary?.completedPayouts?.formatted || formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK"),
+      value: completedPayoutsValue,
       accent: "#fff2ec",
       icon: "close",
     },
     {
       label: "Commission Paid",
-      value: summary?.commissionPaid?.formatted || formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK"),
+      value: commissionPaidValue,
       accent: "#fff2ec",
       icon: "clock",
     },
@@ -74,41 +161,39 @@ export function mapPayoutStatusItems(data) {
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];
   const payouts = edges.map((edge) => edge?.node).filter(Boolean);
 
-  const pending = payouts.filter((item) => normalizeString(item?.status).toUpperCase() === "PENDING");
-  const released = payouts.filter((item) => normalizeString(item?.status).toUpperCase() === "RELEASED");
-  const paid = payouts.filter((item) => normalizeString(item?.status).toUpperCase() === "PAID");
+  const pending = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PENDING");
+  const released = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "RELEASED");
+  const paid = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PAID");
   const latestPaid = [...paid].sort((left, right) => {
     const leftTime = new Date(left?.paidAt || left?.createdAt || 0).getTime();
     const rightTime = new Date(right?.paidAt || right?.createdAt || 0).getTime();
     return rightTime - leftTime;
   })[0];
 
-  const sumAmount = (items, field) =>
-    items.reduce((sum, item) => sum + parseNumber(item?.[field]?.amount), 0);
-
   const pendingCurrency = pending[0]?.netAmount?.currency || payouts[0]?.netAmount?.currency || "NOK";
   const releasedCurrency = released[0]?.netAmount?.currency || pendingCurrency;
+  const paidCurrency = paid[0]?.netAmount?.currency || releasedCurrency;
 
   return [
     {
       title: "Pending Payouts",
       description: `${pending.length} payout${pending.length === 1 ? "" : "s"} waiting for release`,
-      amount: formatCurrency(sumAmount(pending, "netAmount"), pendingCurrency),
+      amount: formatCurrency(sumMoney(pending, "netAmount"), pendingCurrency),
       tone: "orange",
     },
     {
       title: "Released Payouts",
       description: `${released.length} payout${released.length === 1 ? "" : "s"} released by admin`,
-      amount: formatCurrency(sumAmount(released, "netAmount"), releasedCurrency),
+      amount: formatCurrency(sumMoney(released, "netAmount"), releasedCurrency),
       tone: "green",
     },
-    latestPaid
+    paid.length
       ? {
-          title: latestPaid.payoutNumber || "Latest Paid Payout",
-          description: latestPaid.payoutReference
-            ? `Reference: ${latestPaid.payoutReference}`
-            : `Paid ${formatDateLabel(latestPaid.paidAt || latestPaid.createdAt)}`,
-          amount: latestPaid.netAmount?.formatted || formatCurrency(latestPaid.netAmount?.amount, latestPaid.netAmount?.currency || "NOK"),
+          title: "Paid Payouts",
+          description: latestPaid?.payoutReference
+            ? `${paid.length} payout${paid.length === 1 ? "" : "s"} completed · Latest ref ${latestPaid.payoutReference}`
+            : `${paid.length} payout${paid.length === 1 ? "" : "s"} completed`,
+          amount: formatCurrency(sumMoney(paid, "netAmount"), paidCurrency),
           tone: "blue",
         }
       : null,
