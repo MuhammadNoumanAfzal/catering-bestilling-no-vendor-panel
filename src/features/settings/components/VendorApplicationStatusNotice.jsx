@@ -86,12 +86,113 @@ function getStatusConfig(status) {
   }
 }
 
+function hasValue(value) {
+  return Boolean(String(value ?? "").trim());
+}
+
+function hasBusinessProfileCompleted(settings) {
+  return [
+    settings?.businessName,
+    settings?.businessEmail,
+    settings?.phoneNumber,
+    settings?.businessAddress,
+    settings?.businessDescription,
+  ].every(hasValue);
+}
+
+function hasBrandAssetsCompleted(settings) {
+  return Boolean(settings?.profileImage?.fileUrl) && Boolean(settings?.bannerImage?.fileUrl);
+}
+
+function hasBusinessHoursCompleted(settings) {
+  const hours = Array.isArray(settings?.hours) ? settings.hours : [];
+
+  return hours.some(
+    (item) =>
+      item?.enabled &&
+      hasValue(item?.open) &&
+      hasValue(item?.close) &&
+      item.open !== "Closed" &&
+      item.close !== "Closed",
+  );
+}
+
+function hasPayoutDetailsCompleted(settings) {
+  const payoutProfile = settings?.payoutProfile || {};
+
+  return [
+    payoutProfile.accountHolderName,
+    payoutProfile.bankName,
+    payoutProfile.billingAddress,
+    payoutProfile.city,
+    payoutProfile.postalCode,
+    payoutProfile.country,
+  ].every(hasValue) && (hasValue(payoutProfile.accountNumber) || hasValue(payoutProfile.iban));
+}
+
+function getRejectedDocuments(documents = []) {
+  return documents.filter((item) => item?.status === "REJECTED");
+}
+
+function hasRequiredDocumentsUploaded(documents = []) {
+  const requiredDocuments = documents.filter((item) => item?.isRequired);
+
+  return (
+    requiredDocuments.length > 0 &&
+    requiredDocuments.every((item) => Boolean(item?.fileUrl) && item?.status !== "REJECTED")
+  );
+}
+
+function buildChecklistItems({ status, settings, complianceDocuments }) {
+  const normalizedStatus = `${status ?? ""}`.trim().toUpperCase();
+  const checklistItems = [];
+  const rejectedDocuments = getRejectedDocuments(complianceDocuments);
+
+  if (rejectedDocuments.length) {
+    checklistItems.push(
+      `Replace rejected document${rejectedDocuments.length > 1 ? "s" : ""}: ${rejectedDocuments.map((item) => item.title).join(", ")}.`,
+    );
+  }
+
+  if (!hasBusinessProfileCompleted(settings)) {
+    checklistItems.push(
+      "Fill out your business details like business name, email, phone number, address, and description.",
+    );
+  }
+
+  if (!hasBrandAssetsCompleted(settings)) {
+    checklistItems.push("Upload both your logo/profile image and banner image.");
+  }
+
+  if (!hasRequiredDocumentsUploaded(complianceDocuments) && !rejectedDocuments.length) {
+    checklistItems.push("Upload all required compliance documents so your application can move forward.");
+  }
+
+  if (!hasBusinessHoursCompleted(settings)) {
+    checklistItems.push("Add your business opening hours so customers and admin can review your availability.");
+  }
+
+  if (!hasPayoutDetailsCompleted(settings)) {
+    checklistItems.push("Save your payout bank details so finance information is ready for review.");
+  }
+
+  if (normalizedStatus === "CHANGES_REQUESTED") {
+    checklistItems.push("After updating the requested items, send a review request so admin can check them again.");
+  } else if (normalizedStatus === "PENDING_APPROVAL" || normalizedStatus === "REVIEWING") {
+    checklistItems.push("Review your Delivery and Menu pages so timing and menu setup are ready before go-live.");
+  }
+
+  return checklistItems;
+}
+
 export default function VendorApplicationStatusNotice({
   status = "",
   reviewedAt = "",
   changeRequestMessage = "",
   requestedFields = [],
   missingRequirements = [],
+  complianceDocuments = [],
+  settings = null,
 }) {
   const navigate = useNavigate();
   const config = getStatusConfig(status);
@@ -101,6 +202,13 @@ export default function VendorApplicationStatusNotice({
   const detailFields = shouldShowChangeRequestDetails
     ? (requestedFields.length ? requestedFields : missingRequirements)
     : [];
+  const dynamicChecklist = buildChecklistItems({
+    status,
+    settings,
+    complianceDocuments,
+  });
+  const rejectedDocuments = getRejectedDocuments(complianceDocuments);
+  const checklistItems = dynamicChecklist.length ? dynamicChecklist : config.checklist;
 
   if (!config) {
     return null;
@@ -173,6 +281,26 @@ export default function VendorApplicationStatusNotice({
               </p>
             </div>
           ) : null}
+          {rejectedDocuments.length ? (
+            <div className="mt-4 rounded-[18px] border border-[#f1c6c1] bg-[#fff8f7] px-4 py-4">
+              <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#a03f34]">
+                Needs Attention First
+              </p>
+              <p className="mt-2 text-[14px] leading-7 text-[#684741]">
+                One or more compliance documents were rejected. Replace them first so the rest of your review can move forward.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {rejectedDocuments.map((item) => (
+                  <span
+                    key={item.type}
+                    className="rounded-full border border-[#f0d0cb] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#9f4337]"
+                  >
+                    {item.title}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-5">
             <div className="flex items-center justify-between gap-3">
@@ -184,7 +312,7 @@ export default function VendorApplicationStatusNotice({
               </p>
             </div>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {config.checklist.map((item, index) => (
+              {checklistItems.map((item, index) => (
                 <div
                   key={item}
                   className="rounded-[16px] border border-white/80 bg-white/80 px-4 py-4 shadow-[0_8px_22px_rgba(56,34,18,0.04)]"
@@ -238,7 +366,7 @@ export default function VendorApplicationStatusNotice({
               Next Steps
             </p>
             <div className="mt-3 space-y-2">
-              {config.checklist.map((item) => (
+              {checklistItems.map((item) => (
                 <div key={item} className="rounded-[12px] bg-[#fffaf7] px-3 py-2.5 text-[13px] leading-6 text-[#5f4f46]">
                   {item}
                 </div>

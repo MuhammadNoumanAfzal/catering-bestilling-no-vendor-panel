@@ -52,12 +52,42 @@ function getStatusLabel(item) {
   return "Missing";
 }
 
+function getDocumentPriority(item) {
+  if (item.status === "REJECTED") {
+    return 0;
+  }
+
+  if (!item.fileUrl) {
+    return 1;
+  }
+
+  if (item.status === "PENDING") {
+    return 2;
+  }
+
+  if (item.status === "VERIFIED") {
+    return 3;
+  }
+
+  return 4;
+}
+
 export default function SettingsComplianceDocumentsSection({
   disabled = false,
   documents = [],
   onUpload,
   onRefreshStatus,
 }) {
+  const sortedDocuments = [...documents].sort((left, right) => {
+    const priorityDifference = getDocumentPriority(left) - getDocumentPriority(right);
+
+    if (priorityDifference !== 0) {
+      return priorityDifference;
+    }
+
+    return String(left.title || left.type || "").localeCompare(String(right.title || right.type || ""));
+  });
+
   return (
     <SettingsSectionCard
       description="Upload the legal and operational proofs needed before your vendor account can be approved."
@@ -85,7 +115,7 @@ export default function SettingsComplianceDocumentsSection({
       </div>
 
       <div className="mt-4 grid gap-3">
-        {documents.map((item) => (
+        {sortedDocuments.map((item) => (
           <article
             key={item.type}
             className="rounded-[16px] border border-[#e6d9cf] bg-[#fffefd] p-4 shadow-[0_3px_10px_rgba(43,30,20,0.04)]"
