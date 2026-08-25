@@ -27,10 +27,11 @@ function getStatusConfig(status) {
         badge: "bg-[#fff1ea] text-[#c95e2c]",
         title: "Admin requested updates to your application",
         description:
-          "Your vendor panel is still open so you can fix the required information. Review your business profile, images, hours, and account data, then save everything before asking for another review.",
+          "Your vendor panel is still open so you can fix the required information. Review your business profile, address, hours, bank details, documents, images, delivery timing, and menu setup, then save everything before asking for another review.",
         checklist: [
-          "Update the profile fields that are incomplete or incorrect.",
-          "Review logo, banner, business details, and schedule settings.",
+          "Complete business profile details like business name, address, contact number, tax number, and description.",
+          "Upload or correct your logo, banner, and any missing compliance documents.",
+          "Review business hours here, then check Delivery timings and Menu items on their own pages.",
           "Save your corrections so admin can review the latest version.",
         ],
       };
@@ -42,10 +43,11 @@ function getStatusConfig(status) {
         badge: "bg-[#fff3df] text-[#8a5318]",
         title: "Your application is under admin review",
         description:
-          "Your submitted information is being reviewed. You can still keep your business information polished in case admin asks for changes.",
+          "Your submitted information is being reviewed. You can still keep your profile polished by checking business details, images, payout details, delivery timing, and menu completeness.",
         checklist: [
-          "Double-check business details and uploaded images.",
-          "Keep contact information and hours up to date.",
+          "Double-check address, contact details, business hours, and uploaded images.",
+          "Make sure payout bank details and compliance documents are complete.",
+          "Keep delivery schedule and menu items up to date.",
         ],
       };
     case "PENDING_APPROVAL":
@@ -56,11 +58,13 @@ function getStatusConfig(status) {
         badge: "bg-[#fff3df] text-[#8a5318]",
         title: "Your application is waiting for approval",
         description:
-          "You can continue completing your business details while the application is pending. A more complete profile helps the admin approval process move faster.",
+          "You can continue completing your business details while the application is pending. A complete profile with correct address, timing, bank details, documents, images, delivery schedule, and menu helps the admin approval process move faster.",
         checklist: [
-          "Complete missing business and account information.",
-          "Upload a clear logo and cover image if needed.",
-          "Review hours, closures, and notification settings.",
+          "Fill out business and account information, including address, phone number, tax number, and description.",
+          "Upload a clear profile image or logo, banner image, and all required compliance documents.",
+          "Review business hours here and make sure delivery timing is correct on the Delivery page.",
+          "Check your Menu page and add complete menu items so the store is ready to go live.",
+          "Save bank payout details so finance information is ready for review.",
         ],
       };
     case "REJECTED":
@@ -133,10 +137,18 @@ export default function VendorApplicationStatusNotice({
     });
   }
 
+  function handleOpenDelivery() {
+    navigate("/delivery");
+  }
+
+  function handleOpenMenu() {
+    navigate("/menu");
+  }
+
   return (
-    <section className={`mb-4 rounded-[20px] border px-5 py-5 shadow-[0_8px_24px_rgba(56,34,18,0.05)] ${config.tone}`}>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-[760px]">
+    <section className={`mb-4 overflow-hidden rounded-[24px] border shadow-[0_14px_34px_rgba(56,34,18,0.06)] ${config.tone}`}>
+      <div className="grid gap-0 xl:grid-cols-[minmax(0,1.45fr)_360px]">
+        <div className="px-5 py-5 sm:px-6 sm:py-6">
           <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${config.badge}`}>
             {status || "Application Update"}
           </span>
@@ -152,7 +164,7 @@ export default function VendorApplicationStatusNotice({
             </p>
           ) : null}
           {shouldShowChangeRequestDetails && changeRequestMessage ? (
-            <div className="mt-4 rounded-[16px] border border-white/80 bg-white/80 px-4 py-4">
+            <div className="mt-4 rounded-[18px] border border-white/80 bg-white/85 px-4 py-4">
               <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
                 Message From Admin
               </p>
@@ -161,53 +173,123 @@ export default function VendorApplicationStatusNotice({
               </p>
             </div>
           ) : null}
-        </div>
 
-        <div className="min-w-[240px] rounded-[16px] border border-white/80 bg-white/70 p-4 backdrop-blur">
-          <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-            Next Steps
-          </p>
-          <div className="mt-3 space-y-2">
-            {config.checklist.map((item) => (
-              <div key={item} className="rounded-[12px] bg-white px-3 py-2 text-[13px] leading-6 text-[#5f4f46]">
-                {item}
-              </div>
-            ))}
+          <div className="mt-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
+                Approval Checklist
+              </p>
+              <p className="text-[12px] font-semibold text-[#8c776b]">
+                Complete these before go-live
+              </p>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {config.checklist.map((item, index) => (
+                <div
+                  key={item}
+                  className="rounded-[16px] border border-white/80 bg-white/80 px-4 py-4 shadow-[0_8px_22px_rgba(56,34,18,0.04)]"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5e4d8] text-[12px] font-extrabold text-[#c4602f]">
+                      {index + 1}
+                    </span>
+                    <p className="text-[14px] leading-6 text-[#5f4f46]">{item}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          {shouldShowChangeRequestDetails ? (
-            <div className="mt-4 flex flex-col gap-2">
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              className="inline-flex h-[46px] items-center justify-center rounded-[14px] border border-[#ead8ca] bg-white px-4 text-[14px] font-bold text-[#5f4f46] transition hover:bg-[#faf6f2]"
+              onClick={handleOpenDelivery}
+              type="button"
+            >
+              Open Delivery
+            </button>
+            <button
+              className="inline-flex h-[46px] items-center justify-center rounded-[14px] border border-[#ead8ca] bg-white px-4 text-[14px] font-bold text-[#5f4f46] transition hover:bg-[#faf6f2]"
+              onClick={handleOpenMenu}
+              type="button"
+            >
+              Open Menu
+            </button>
+            {shouldShowChangeRequestDetails ? (
               <button
-                className="inline-flex h-[44px] items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[14px] font-bold text-white transition hover:bg-[#c9602c]"
+                className="inline-flex h-[46px] items-center justify-center rounded-[14px] bg-[#d96e39] px-4 text-[14px] font-bold text-white transition hover:bg-[#c9602c]"
                 onClick={handleOpenReviewSupport}
                 type="button"
               >
                 I fixed the changes
               </button>
-              <p className="text-[12px] leading-5 text-[#7a675d]">
-                This opens a support ticket so admin can re-check your updated application.
-              </p>
-            </div>
+            ) : null}
+          </div>
+          {shouldShowChangeRequestDetails ? (
+            <p className="mt-3 text-[12px] leading-5 text-[#7a675d]">
+              This opens a support ticket so admin can re-check your updated application.
+            </p>
           ) : null}
         </div>
-      </div>
 
-      {detailFields.length ? (
-        <div className="mt-4 rounded-[16px] border border-white/80 bg-white/75 p-4">
-          <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-            Requested Items
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {detailFields.map((item) => (
-              <span
-                key={`${item.code}-${item.label}`}
-                className="rounded-full border border-[#ead8ca] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#5f4f46]"
-              >
-                {item.label || item.code}
-              </span>
-            ))}
+        <div className="border-t border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74)_0%,rgba(255,255,255,0.9)_100%)] px-5 py-5 backdrop-blur xl:border-l xl:border-t-0">
+          <div className="rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_24px_rgba(56,34,18,0.04)]">
+            <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
+              Next Steps
+            </p>
+            <div className="mt-3 space-y-2">
+              {config.checklist.map((item) => (
+                <div key={item} className="rounded-[12px] bg-[#fffaf7] px-3 py-2.5 text-[13px] leading-6 text-[#5f4f46]">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {detailFields.length ? (
+            <div className="mt-4 rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_24px_rgba(56,34,18,0.04)]">
+              <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
+                Requested Items
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {detailFields.map((item) => (
+                  <span
+                    key={`${item.code}-${item.label}`}
+                    className="rounded-full border border-[#ead8ca] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#5f4f46]"
+                  >
+                    {item.label || item.code}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="mt-4 rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_24px_rgba(56,34,18,0.04)]">
+            <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
+              Focus Areas
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {[
+                "Business profile",
+                "Logo and banner",
+                "Business hours",
+                "Bank details",
+                "Documents",
+                "Delivery timing",
+                "Menu setup",
+                "Account info",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-[12px] border border-[#efe1d6] bg-[#fffaf7] px-3 py-2 text-[12px] font-semibold text-[#5f4f46]"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      ) : null}
+      </div>
     </section>
   );
 }
