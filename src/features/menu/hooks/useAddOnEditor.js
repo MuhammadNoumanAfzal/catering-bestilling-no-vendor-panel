@@ -26,14 +26,15 @@ import {
 const emptyFieldErrors = {
   addOnName: "",
   price: "",
-  category: "",
+  categories: "",
   mealTypes: "",
 };
 
 function mapAddOnMutationErrors(errors = []) {
   const fieldMap = {
     name: "addOnName",
-    category: "category",
+    category: "categories",
+    categories: "categories",
     priceWithTax: "price",
     foodTypes: "mealTypes",
   };
@@ -112,7 +113,12 @@ export function useAddOnEditor() {
 
         setFormState((current) => ({
           ...current,
-          category: current.category || nextCategoryOptions[0]?.value || "",
+          categories:
+            Array.isArray(current.categories) && current.categories.length
+              ? current.categories
+              : nextCategoryOptions[0]?.value
+                ? [nextCategoryOptions[0].value]
+                : [],
         }));
       } catch (error) {
         if (!isCancelled) {
@@ -136,11 +142,16 @@ export function useAddOnEditor() {
     };
   }, [editId, isDuplicateMode, navigate]);
 
-  const resolvedCategory = useMemo(() => formState.category, [formState.category]);
+  const resolvedCategories = useMemo(
+    () => (Array.isArray(formState.categories) ? formState.categories.filter(Boolean) : []),
+    [formState.categories],
+  );
 
-  const selectedCategoryLabel = useMemo(() => {
-    return categoryOptions.find((option) => option.value === formState.category)?.label || "";
-  }, [categoryOptions, formState.category]);
+  const selectedCategoryLabels = useMemo(() => {
+    return resolvedCategories
+      .map((value) => categoryOptions.find((option) => option.value === value)?.label || "")
+      .filter(Boolean);
+  }, [categoryOptions, resolvedCategories]);
 
   function setField(field, value) {
     setFieldErrors((current) => ({
@@ -157,7 +168,25 @@ export function useAddOnEditor() {
     setFieldErrors(emptyFieldErrors);
     setFormState({
       ...getInitialAddOnState(),
-      category: categoryOptions[0]?.value || "",
+      categories: categoryOptions[0]?.value ? [categoryOptions[0].value] : [],
+    });
+  }
+
+  function toggleCategory(categoryId) {
+    setFieldErrors((current) => ({
+      ...current,
+      categories: "",
+    }));
+    setFormState((current) => {
+      const currentValues = Array.isArray(current.categories) ? current.categories : [];
+      const nextCategories = currentValues.includes(categoryId)
+        ? currentValues.filter((item) => item !== categoryId)
+        : [...currentValues, categoryId];
+
+      return {
+        ...current,
+        categories: nextCategories,
+      };
     });
   }
 
@@ -209,12 +238,12 @@ export function useAddOnEditor() {
       return false;
     }
 
-    if (!resolvedCategory) {
+    if (!resolvedCategories.length) {
       setFieldErrors((current) => ({
         ...current,
-        category: "Please choose a category.",
+        categories: "Please choose at least one category.",
       }));
-      await showVendorErrorAlert("Please choose a category.");
+      await showVendorErrorAlert("Please choose at least one category.");
       return false;
     }
 
@@ -280,16 +309,16 @@ export function useAddOnEditor() {
       return;
     }
 
-    const resolvedCategoryId = formState.category;
+    const resolvedCategoryIds = resolvedCategories;
 
     try {
       setIsSaving(true);
       const variables = buildSaveVendorAddOnVariables(
         {
           ...formState,
-          category: resolvedCategoryId,
+          categories: resolvedCategoryIds,
         },
-        { categoryId: resolvedCategoryId },
+        { categoryIds: resolvedCategoryIds },
       );
       const result = await saveVendorAddOn(variables);
       setFieldErrors(emptyFieldErrors);
@@ -338,8 +367,8 @@ export function useAddOnEditor() {
     isSaving,
     dietaryOptions,
     mealTypeOptions,
-    resolvedCategory,
-    selectedCategoryLabel,
+    resolvedCategories,
+    selectedCategoryLabels,
     actions: {
       handleAddAnother,
       handleAddMealTypeClick,
@@ -350,6 +379,7 @@ export function useAddOnEditor() {
       handleImageUpload,
       handleSave,
       setField,
+      toggleCategory,
       toggleDietaryTag,
     },
   };

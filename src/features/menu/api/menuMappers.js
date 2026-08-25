@@ -67,6 +67,38 @@ function getCategoryItems(categoriesValue) {
   return getEdgeNodes(categoriesValue);
 }
 
+function getCategoryNames(categoriesValue, fallbackCategory = null) {
+  const names = getCategoryItems(categoriesValue)
+    .map((category) => category?.name || "")
+    .filter(Boolean);
+
+  if (names.length) {
+    return names;
+  }
+
+  if (fallbackCategory?.name) {
+    return [fallbackCategory.name];
+  }
+
+  return [];
+}
+
+function getCategoryIds(categoriesValue, fallbackCategory = null) {
+  const ids = getCategoryItems(categoriesValue)
+    .map((category) => category?.id || category?.slug || "")
+    .filter(Boolean);
+
+  if (ids.length) {
+    return ids;
+  }
+
+  if (fallbackCategory?.id || fallbackCategory?.slug) {
+    return [fallbackCategory.id || fallbackCategory.slug];
+  }
+
+  return [];
+}
+
 export function resolveMediaUrl(media) {
   if (!media) {
     return "";
@@ -163,16 +195,18 @@ export function mapCategoriesToOptions(categoriesConnection) {
 
 export function mapVendorAddOnNodeToCard(node) {
   const formattedPrice = node.priceWithTax ? `kr ${node.priceWithTax}` : "";
+  const categoryNames = getCategoryNames(node.categories, node.category);
+  const categorySummary = categoryNames.join(", ");
 
   return {
     id: node.id,
     title: node.name,
-    description: node.category?.name || "Optional add-on",
+    description: categorySummary || "Optional add-on",
     price: formattedPrice,
     meta: formatDietaryTagNames(node.dietaryTags) || "Available add-on",
     image: node.coverImage?.fileUrl || "/heroBg.webp",
     status: statusLabelMap[node.menuStatus] || formatChoiceLabel(node.menuStatus || "active"),
-    badge: node.category?.name || "Add-on",
+    badge: categoryNames[0] || "Add-on",
     tone: node.menuStatus || "active",
     isAddOn: true,
     isApiManaged: true,
@@ -240,7 +274,7 @@ export function mapVendorAddOnDetailToForm(addOn) {
     addOnName: addOn.name || "",
     description: addOn.description || "",
     price: addOn.priceWithTax ? String(addOn.priceWithTax) : "",
-    category: addOn.category?.id || "",
+    categories: getCategoryIds(addOn.categories, addOn.category),
     customCategory: "",
     image: coverImage,
     mealTypes: safeArray(addOn.foodTypes)
@@ -415,7 +449,8 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
 }
 
 export function buildSaveVendorAddOnVariables(formState, options = {}) {
-  const resolvedCategoryId = options.categoryId || formState.category;
+  const resolvedCategoryIds = safeArray(options.categoryIds || formState.categories).filter(Boolean);
+  const primaryCategoryId = resolvedCategoryIds[0] || "";
   const selectedStatus = formState.availableImmediately ? "active" : formState.status || "draft";
   const attachments = formState.image?.fileUrl
     ? [
@@ -432,7 +467,8 @@ export function buildSaveVendorAddOnVariables(formState, options = {}) {
       ...(formState.id ? { id: formState.id } : {}),
       name: formState.addOnName.trim(),
       description: formState.description?.trim() || "",
-      category: resolvedCategoryId,
+      category: primaryCategoryId,
+      categories: resolvedCategoryIds,
       priceWithTax: formatDecimalStringOrNull(formState.price),
       menuStatus: selectedStatus,
       dietaryTags: safeArray(formState.selectedDietary),

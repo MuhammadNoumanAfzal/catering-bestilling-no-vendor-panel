@@ -52,6 +52,10 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
             fileUrl
             fileId
           }
+          categories {
+            id
+            name
+          }
           category {
             id
             name
@@ -185,6 +189,10 @@ export const GET_VENDOR_MENUS_QUERY = `
           coverImage {
             fileUrl
             fileId
+          }
+          categories {
+            id
+            name
           }
           category {
             id
@@ -466,6 +474,10 @@ export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
         fileUrl
         fileId
       }
+      categories {
+        id
+        name
+      }
       category {
         id
         name
@@ -513,6 +525,10 @@ export const SAVE_VENDOR_ADD_ON_MUTATION = `
         coverImage {
           fileUrl
           fileId
+        }
+        categories {
+          id
+          name
         }
         category {
           id

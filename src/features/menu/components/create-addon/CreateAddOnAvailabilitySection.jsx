@@ -72,10 +72,10 @@ export default function CreateAddOnAvailabilitySection({
         </div>
 
         <div>
-          <Label>Selected Category</Label>
+          <Label>Selected Categories</Label>
           <TextInput
             disabled
-            placeholder="No category selected yet"
+            placeholder="No categories selected yet"
             value={customCategory}
           />
         </div>

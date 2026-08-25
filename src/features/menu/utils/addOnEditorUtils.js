@@ -4,7 +4,7 @@ export function getInitialAddOnState() {
     addOnName: "",
     description: "",
     price: "",
-    category: "",
+    categories: [],
     customCategory: "",
     image: null,
     mealTypes: [],
