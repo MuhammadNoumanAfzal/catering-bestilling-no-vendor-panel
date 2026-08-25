@@ -17,7 +17,7 @@ function FieldError({ message }) {
 
 export default function CreateAddOnBasicInfoSection({
   addOnName,
-  category,
+  categories,
   categoryOptions,
   description,
   disabled = false,
@@ -26,7 +26,7 @@ export default function CreateAddOnBasicInfoSection({
   mealTypeOptions,
   mealTypes,
   onAddOnNameChange,
-  onCategorySelect,
+  onCategoryToggle,
   onDescriptionChange,
   onImageSelect,
   onMealTypesChange,
@@ -98,17 +98,17 @@ export default function CreateAddOnBasicInfoSection({
           <div className="rounded-[10px] border border-[#ddd4cb] bg-[#fffaf6] px-3 py-3">
             <Label>Category</Label>
             <p className="mb-2 text-[13px] font-medium text-[#8b7f74]">
-              Create your add-on list for better management.
+              Group this add-on under one or more categories so customers can find it more easily.
             </p>
 
             <span className="mb-2 block text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#4f443d]">
-              Choose a category
+              Choose one or more categories
             </span>
             <div className="flex flex-wrap gap-2">
               {categoryOptions.map((option) => {
                 const optionValue = getOptionValue(option);
                 const optionLabel = getOptionLabel(option);
-                const isSelected = category === optionValue;
+                const isSelected = Array.isArray(categories) && categories.includes(optionValue);
 
                 return (
                   <button
@@ -119,7 +119,7 @@ export default function CreateAddOnBasicInfoSection({
                         : "border-[#d7cec4] bg-white text-[#544840]"
                     } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
                     disabled={disabled}
-                    onClick={() => onCategorySelect(optionValue)}
+                    onClick={() => onCategoryToggle(optionValue)}
                     type="button"
                   >
                     {optionLabel}
@@ -127,7 +127,7 @@ export default function CreateAddOnBasicInfoSection({
                 );
               })}
             </div>
-            <FieldError message={fieldErrors?.category} />
+            <FieldError message={fieldErrors?.categories} />
           </div>
         </div>
       </CreateMenuSectionCard>

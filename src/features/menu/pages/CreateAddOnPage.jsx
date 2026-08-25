@@ -19,8 +19,8 @@ export default function CreateAddOnPage() {
     isSaving,
     dietaryOptions,
     mealTypeOptions,
-    resolvedCategory,
-    selectedCategoryLabel,
+    resolvedCategories,
+    selectedCategoryLabels,
     actions,
   } = useAddOnEditor();
 
@@ -59,7 +59,7 @@ export default function CreateAddOnPage() {
       <div className="space-y-4">
         <CreateAddOnBasicInfoSection
           addOnName={formState.addOnName}
-          category={formState.category}
+          categories={formState.categories}
           categoryOptions={categoryOptions}
           description={formState.description}
           disabled={isSaving}
@@ -68,7 +68,7 @@ export default function CreateAddOnPage() {
           mealTypeOptions={mealTypeOptions}
           mealTypes={formState.mealTypes}
           onAddOnNameChange={(event) => actions.setField("addOnName", event.target.value)}
-          onCategorySelect={(value) => actions.setField("category", value)}
+          onCategoryToggle={actions.toggleCategory}
           onDescriptionChange={(event) => actions.setField("description", event.target.value)}
           onImageSelect={actions.handleImageUpload}
           onMealTypesChange={(value) => actions.setField("mealTypes", value)}
@@ -78,7 +78,10 @@ export default function CreateAddOnPage() {
         <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 max-[980px]:grid-cols-1">
           <CreateAddOnAvailabilitySection
             availableImmediately={formState.availableImmediately}
-            customCategory={selectedCategoryLabel || resolvedCategory}
+            customCategory={
+              selectedCategoryLabels.join(", ") ||
+              resolvedCategories.join(", ")
+            }
             disabled={isSaving}
             dietaryOptions={dietaryOptions}
             onAvailabilityToggle={(value) => {
