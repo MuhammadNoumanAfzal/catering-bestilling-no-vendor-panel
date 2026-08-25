@@ -47,6 +47,8 @@ const emptyFieldErrors = {
   minimumGuests: "",
 };
 
+const MENU_EDITOR_DRAFT_STORAGE_KEY = "vendor-menu-editor-draft";
+
 function normalizeMenuItemsForEditor(menuItems = []) {
   return menuItems.length
     ? menuItems.map((item, index) => ({
@@ -55,6 +57,61 @@ function normalizeMenuItemsForEditor(menuItems = []) {
         isExpanded: item.isExpanded ?? index === 0,
       }))
     : [createEmptyMenuItem()];
+}
+
+function getDraftStorageKey(mode, menuId) {
+  return `${MENU_EDITOR_DRAFT_STORAGE_KEY}:${mode || "create"}:${menuId || "new"}`;
+}
+
+function loadStoredMenuDraft(mode, menuId) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(getDraftStorageKey(mode, menuId));
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistMenuDraft(mode, menuId, payload) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(getDraftStorageKey(mode, menuId), JSON.stringify(payload));
+}
+
+function clearStoredMenuDraft(mode, menuId) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(getDraftStorageKey(mode, menuId));
+}
+
+function sanitizeDraftFormState(state) {
+  return {
+    ...state,
+    isImportModalOpen: false,
+    isAddCategoryModalOpen: false,
+    isAddMealTypeModalOpen: false,
+    isAddOccasionModalOpen: false,
+    isAddAllergenModalOpen: false,
+    menuItems: normalizeMenuItemsForEditor(
+      (Array.isArray(state?.menuItems) ? state.menuItems : []).map((item, index) => ({
+        ...item,
+        isExpanded: item?.isExpanded ?? index === 0,
+      })),
+    ),
+  };
 }
 
 function mapMenuMutationErrors(errors = []) {
@@ -91,6 +148,7 @@ export function useMenuEditor() {
   const isViewMode = mode === "view";
   const isEditMode = mode === "edit";
   const isDuplicateMode = mode === "duplicate";
+  const shouldPersistDraft = !isViewMode && !isEditMode;
 
   const [formState, setFormState] = useState(getInitialMenuState);
   const [categoryOptions, setCategoryOptions] = useState([]);
@@ -173,7 +231,10 @@ export function useMenuEditor() {
           }
         }
 
-        setFormState((current) => ({
+        const storedDraft = shouldPersistDraft ? loadStoredMenuDraft(mode, menuId) : null;
+
+        setFormState((current) => {
+          const baseState = {
           ...current,
           menuItems: normalizeMenuItemsForEditor(current.menuItems),
           productType:
@@ -182,7 +243,28 @@ export function useMenuEditor() {
             nextProductTypeOptions[0]?.value ||
             "",
           pricingMode: current.pricingMode || nextPricingModes[0]?.value || "",
-        }));
+          };
+
+          if (!storedDraft?.formState) {
+            return baseState;
+          }
+
+          return {
+            ...baseState,
+            ...sanitizeDraftFormState(storedDraft.formState),
+            productType:
+              storedDraft.formState.productType ||
+              baseState.productType ||
+              nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
+              nextProductTypeOptions[0]?.value ||
+              "",
+            pricingMode:
+              storedDraft.formState.pricingMode ||
+              baseState.pricingMode ||
+              nextPricingModes[0]?.value ||
+              "",
+          };
+        });
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -203,7 +285,17 @@ export function useMenuEditor() {
     return () => {
       isCancelled = true;
     };
-  }, [isDuplicateMode, menuId, navigate]);
+  }, [isDuplicateMode, menuId, mode, navigate, shouldPersistDraft]);
+
+  useEffect(() => {
+    if (!shouldPersistDraft || isLoading) {
+      return;
+    }
+
+    persistMenuDraft(mode, menuId, {
+      formState: sanitizeDraftFormState(formState),
+    });
+  }, [formState, isLoading, menuId, mode, shouldPersistDraft]);
 
   const filteredAddOns = useMemo(() => {
     const searchValue = formState.addOnSearch.trim().toLowerCase();
@@ -524,6 +616,7 @@ export function useMenuEditor() {
       const variables = buildSaveVendorMenuVariables(formState, statusOverride);
       const result = await saveVendorMenu(variables);
       setFieldErrors(emptyFieldErrors);
+      clearStoredMenuDraft(mode, menuId);
       await showVendorSuccessToast(result.message || "Menu saved successfully.");
       navigate("/menu", { replace: true });
     } catch (error) {
@@ -547,6 +640,9 @@ export function useMenuEditor() {
   }
 
   function handleCancel() {
+    if (shouldPersistDraft) {
+      clearStoredMenuDraft(mode, menuId);
+    }
     navigate("/menu");
   }
 
