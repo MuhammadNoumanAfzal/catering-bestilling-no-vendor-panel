@@ -412,10 +412,10 @@ export default function SettingsBusinessProfilePanel({
 
           <div className="mt-4 rounded-[10px] border border-[#f0dfd3] bg-[#fff8f4] px-4 py-3 text-[12px] text-[#6f635b]">
             <p className="font-semibold text-[#201914]">
-              Verification status: {settings.payoutProfile.verificationStatus || "Pending review"}
+              Payout review: {settings.payoutProfile.verificationStatus || "We are reviewing your details"}
             </p>
             <p className="mt-1">
-              Bank details confirmed: {settings.payoutProfile.bankDetailsVerified ? "Yes" : "Not yet"}
+              Bank details saved: {settings.payoutProfile.bankDetailsVerified ? "Confirmed" : "Waiting for confirmation"}
             </p>
             {settings.payoutProfile.verificationNote ? (
               <p className="mt-2 text-[#8b796c]">{settings.payoutProfile.verificationNote}</p>
@@ -424,18 +424,18 @@ export default function SettingsBusinessProfilePanel({
 
           <div className="mt-4 flex flex-col gap-3 rounded-[12px] border border-[#ecdccf] bg-[#fffdfb] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[13px] font-semibold text-[#201914]">Save your payout details</p>
+              <p className="text-[13px] font-semibold text-[#201914]">Save your bank details</p>
               <p className="mt-1 text-[12px] leading-6 text-[#7a6d63]">
-                Your bank details stay here after you save them, so they will still be available when you refresh the page.
+                Your bank details will stay saved here, so you can come back and update them any time.
               </p>
             </div>
             <button
-              className="inline-flex h-10 min-w-[140px] items-center justify-center rounded-[10px] bg-[#d96e39] px-4 text-[12px] font-bold text-white shadow-[0_8px_18px_rgba(217,110,57,0.22)] transition hover:bg-[#c9602c] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-11 min-w-[176px] items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#d96e39_0%,#c95a2d_100%)] px-5 text-[13px] font-extrabold text-white shadow-[0_14px_28px_rgba(217,110,57,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_32px_rgba(217,110,57,0.34)] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={disabled || isSaving || !hasUnsavedChanges}
               onClick={handleSave}
               type="button"
             >
-              {isSaving ? "Saving details..." : "Save bank details"}
+              {isSaving ? "Saving..." : "Save Bank Details"}
             </button>
           </div>
         </SettingsSectionCard>
