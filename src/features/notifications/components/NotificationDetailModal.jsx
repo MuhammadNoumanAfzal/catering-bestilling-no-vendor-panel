@@ -1,5 +1,6 @@
 import OrderNotificationDetail from "./OrderNotificationDetail";
 import GenericNotificationDetail from "./GenericNotificationDetail";
+import NotificationReceiptModal from "./NotificationReceiptModal";
 
 export default function NotificationDetailModal({
   notification,
@@ -13,6 +14,16 @@ export default function NotificationDetailModal({
   if (notification.type === "ORDER") {
     return (
       <OrderNotificationDetail
+        isLoading={isLoading}
+        notification={notification}
+        onClose={onClose}
+      />
+    );
+  }
+
+  if (notification.type === "PAYOUT") {
+    return (
+      <NotificationReceiptModal
         isLoading={isLoading}
         notification={notification}
         onClose={onClose}
