@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   getVendorNotifications,
   markVendorNotificationAsRead,
@@ -23,12 +22,12 @@ const PAGE_SIZE = 20;
 const POLL_INTERVAL_MS = 30000;
 
 export default function useNotificationsPageState() {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [customRange, setCustomRange] = useState(createDefaultCustomRange);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const [pageInfo, setPageInfo] = useState({ hasNextPage: false, endCursor: null });
   const [totalCount, setTotalCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -138,27 +137,7 @@ export default function useNotificationsPageState() {
     }
   }
 
-  function getNotificationTarget(notification) {
-    const rawType = `${notification?.type ?? ""}`.toUpperCase();
-
-    if (rawType === "ORDER" && notification?.orderId) {
-      return `/orders/${encodeURIComponent(notification.orderId)}`;
-    }
-
-    if (rawType === "REVIEW") {
-      return "/reviews";
-    }
-
-    if (rawType === "PAYOUT") {
-      return "/finance";
-    }
-
-    return null;
-  }
-
   async function handleOpenNotification(notification) {
-    const targetPath = getNotificationTarget(notification);
-
     if (!notification.isRead) {
       setNotifications((current) =>
         activeTab === "Unread"
@@ -193,17 +172,18 @@ export default function useNotificationsPageState() {
         }
       }
     } catch {
-      // Navigation should still continue even if mark-as-read fails.
+      // Opening the modal should still continue even if mark-as-read fails.
     }
 
-    if (targetPath) {
-      navigate(targetPath, {
-        state:
-          notification.type === "REVIEW" && notification.reviewId
-            ? { reviewId: notification.reviewId }
-            : undefined,
-      });
-    }
+    setSelectedNotification({
+      ...notification,
+      isRead: true,
+      highlighted: false,
+    });
+  }
+
+  function handleCloseModal() {
+    setSelectedNotification(null);
   }
 
   async function handleMarkAllRead() {
@@ -263,7 +243,7 @@ export default function useNotificationsPageState() {
     activeTab,
     customRange,
     filterLabel,
-    handleCloseModal: () => {},
+    handleCloseModal,
     handleCustomRangeChange,
     handleLoadMore,
     handleMarkAllRead,
@@ -278,8 +258,8 @@ export default function useNotificationsPageState() {
     pageInfo,
     sections,
     selectedFilter,
-    selectedModalType: null,
-    selectedNotification: null,
+    selectedModalType: selectedNotification?.type || null,
+    selectedNotification,
     setActiveTab,
     setIsFilterOpen,
     totalCount,
