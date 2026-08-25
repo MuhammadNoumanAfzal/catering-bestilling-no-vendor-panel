@@ -42,15 +42,60 @@ function normalizeAttachment(attachment) {
   };
 }
 
+function getAttachmentFileNameFromUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    const pathnameParts = parsedUrl.pathname.split("/").filter(Boolean);
+    return pathnameParts[pathnameParts.length - 1] || "Attachment";
+  } catch {
+    const pathnameParts = String(url || "").split("/").filter(Boolean);
+    return pathnameParts[pathnameParts.length - 1] || "Attachment";
+  }
+}
+
+function extractInlineAttachments(message) {
+  const normalizedMessage = String(message ?? "");
+  const attachments = [];
+  const cleanedMessage = normalizedMessage
+    .replace(/(?:^|\n)\s*Attachment:\s*(https?:\/\/\S+)\s*/gi, (fullMatch, url) => {
+      attachments.push({
+        id: `inline-${attachments.length + 1}-${url}`,
+        fileName: getAttachmentFileNameFromUrl(url),
+        url,
+        mimeType: "",
+        size: 0,
+      });
+      return "\n";
+    })
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  return {
+    message: cleanedMessage,
+    attachments,
+  };
+}
+
 function normalizeConversationItem(message) {
   const side = `${message?.side ?? ""}`.trim().toLowerCase() || "admin";
   const authorRole = `${message?.author?.role ?? side}`.trim();
   const fallbackAuthorName = side === "admin" ? "Support" : "You";
+  const inlineData = extractInlineAttachments(message?.message);
+  const explicitAttachments = Array.isArray(message?.attachments)
+    ? message.attachments.map(normalizeAttachment)
+    : [];
+  const mergedAttachments = [...explicitAttachments];
+
+  inlineData.attachments.forEach((attachment) => {
+    if (!mergedAttachments.some((item) => item.url === attachment.url)) {
+      mergedAttachments.push(attachment);
+    }
+  });
 
   return {
     id: message?.id ?? "",
     side,
-    message: message?.message ?? "",
+    message: inlineData.message,
     createdAt: message?.createdAt ?? "",
     createdAtLabel: formatDisplayDate(message?.createdAt),
     author: {
@@ -58,9 +103,7 @@ function normalizeConversationItem(message) {
       fullName: message?.author?.fullName ?? fallbackAuthorName,
       role: authorRole || (side === "admin" ? "admin" : "vendor"),
     },
-    attachments: Array.isArray(message?.attachments)
-      ? message.attachments.map(normalizeAttachment)
-      : [],
+    attachments: mergedAttachments,
   };
 }
 
