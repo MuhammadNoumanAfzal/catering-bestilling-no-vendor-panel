@@ -59,7 +59,7 @@ function MessageBubble({ item }) {
           <span className="font-bold">{item.author.fullName}</span>
           <span>{item.createdAtLabel}</span>
         </div>
-        {item.message ? <p className="text-[14px] leading-6">{item.message}</p> : null}
+        {item.message ? <p className="break-words text-[14px] leading-6">{item.message}</p> : null}
         {imageAttachments.length ? (
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {imageAttachments.map((attachment) => (
