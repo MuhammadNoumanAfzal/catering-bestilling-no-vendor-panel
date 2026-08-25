@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ExternalLink, Image as ImageIcon, Paperclip } from "lucide-react";
 import Swal from "sweetalert2";
 import {
   getMySupportTicket,
@@ -36,6 +37,10 @@ function getStatusClasses(status) {
 
 function MessageBubble({ item }) {
   const isOwnReply = `${item.side ?? ""}`.toLowerCase() !== "admin";
+  const imageAttachments = item.attachments.filter((attachment) =>
+    /^image\//i.test(String(attachment.mimeType || "")) || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(String(attachment.url || "")),
+  );
+  const fileAttachments = item.attachments.filter((attachment) => !imageAttachments.includes(attachment));
 
   return (
     <div className={["flex", isOwnReply ? "justify-end" : "justify-start"].join(" ")}>
@@ -54,14 +59,45 @@ function MessageBubble({ item }) {
           <span className="font-bold">{item.author.fullName}</span>
           <span>{item.createdAtLabel}</span>
         </div>
-        <p className="text-[14px] leading-6">{item.message}</p>
-        {item.attachments.length ? (
+        {item.message ? <p className="text-[14px] leading-6">{item.message}</p> : null}
+        {imageAttachments.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {imageAttachments.map((attachment) => (
+              <a
+                key={attachment.id}
+                className="group overflow-hidden rounded-[14px] border border-white/20 bg-white/10 no-underline transition hover:bg-white/15"
+                href={attachment.url}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <div className="relative">
+                  <img
+                    alt={attachment.fileName}
+                    className="h-[150px] w-full object-cover"
+                    src={attachment.url}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-[linear-gradient(180deg,transparent_0%,rgba(0,0,0,0.65)_100%)] px-3 py-2 text-white">
+                    <span className="flex min-w-0 items-center gap-2 text-[12px] font-semibold">
+                      <ImageIcon size={13} />
+                      <span className="truncate">{attachment.fileName}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold">
+                      View
+                      <ExternalLink size={12} />
+                    </span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        ) : null}
+        {fileAttachments.length ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            {item.attachments.map((attachment) => (
+            {fileAttachments.map((attachment) => (
               <a
                 key={attachment.id}
                 className={[
-                  "inline-flex rounded-full px-3 py-1 text-[11px] font-semibold no-underline transition",
+                  "inline-flex items-center gap-2 rounded-[10px] px-3 py-2 text-[11px] font-semibold no-underline transition",
                   isOwnReply
                     ? "bg-white/15 text-white hover:bg-white/20"
                     : "bg-[#f6f0ea] text-[#6f6258] hover:bg-[#fff3ec] hover:text-[#cf6e38]",
@@ -70,7 +106,9 @@ function MessageBubble({ item }) {
                 rel="noreferrer"
                 target="_blank"
               >
-                {attachment.fileName}
+                <Paperclip size={12} />
+                <span className="max-w-[220px] truncate">{attachment.fileName}</span>
+                <ExternalLink size={12} />
               </a>
             ))}
           </div>
