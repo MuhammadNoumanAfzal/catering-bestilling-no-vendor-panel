@@ -144,7 +144,6 @@ function hasRequiredDocumentsUploaded(documents = []) {
 }
 
 function buildChecklistItems({ status, settings, complianceDocuments }) {
-  const normalizedStatus = `${status ?? ""}`.trim().toUpperCase();
   const checklistItems = [];
   const rejectedDocuments = getRejectedDocuments(complianceDocuments);
 
@@ -176,12 +175,6 @@ function buildChecklistItems({ status, settings, complianceDocuments }) {
     checklistItems.push("Save your payout bank details so finance information is ready for review.");
   }
 
-  if (normalizedStatus === "CHANGES_REQUESTED") {
-    checklistItems.push("After updating the requested items, send a review request so admin can check them again.");
-  } else if (normalizedStatus === "PENDING_APPROVAL" || normalizedStatus === "REVIEWING") {
-    checklistItems.push("Review your Delivery and Menu pages so timing and menu setup are ready before go-live.");
-  }
-
   return checklistItems;
 }
 
@@ -208,7 +201,14 @@ export default function VendorApplicationStatusNotice({
     complianceDocuments,
   });
   const rejectedDocuments = getRejectedDocuments(complianceDocuments);
-  const checklistItems = dynamicChecklist.length ? dynamicChecklist : config.checklist;
+  const requestBasedChecklist = detailFields
+    .map((item) => item?.label || item?.code || "")
+    .filter(Boolean);
+  const checklistItems = dynamicChecklist.length
+    ? dynamicChecklist
+    : requestBasedChecklist.length
+      ? requestBasedChecklist
+      : [];
 
   if (!config) {
     return null;
@@ -308,24 +308,32 @@ export default function VendorApplicationStatusNotice({
                 Approval Checklist
               </p>
               <p className="text-[12px] font-semibold text-[#8c776b]">
-                Complete these before go-live
+                {checklistItems.length ? "Complete these before go-live" : "Current status"}
               </p>
             </div>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {checklistItems.map((item, index) => (
-                <div
-                  key={item}
-                  className="rounded-[16px] border border-white/80 bg-white/80 px-4 py-4 shadow-[0_8px_22px_rgba(56,34,18,0.04)]"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5e4d8] text-[12px] font-extrabold text-[#c4602f]">
-                      {index + 1}
-                    </span>
-                    <p className="text-[14px] leading-6 text-[#5f4f46]">{item}</p>
+            {checklistItems.length ? (
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {checklistItems.map((item, index) => (
+                  <div
+                    key={item}
+                    className="rounded-[16px] border border-white/80 bg-white/80 px-4 py-4 shadow-[0_8px_22px_rgba(56,34,18,0.04)]"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5e4d8] text-[12px] font-extrabold text-[#c4602f]">
+                        {index + 1}
+                      </span>
+                      <p className="text-[14px] leading-6 text-[#5f4f46]">{item}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-3 rounded-[16px] border border-white/80 bg-white/80 px-4 py-4 shadow-[0_8px_22px_rgba(56,34,18,0.04)]">
+                <p className="text-[14px] leading-6 text-[#5f4f46]">
+                  Your business details currently look complete here. Your application is now mainly waiting for admin review.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
@@ -365,13 +373,19 @@ export default function VendorApplicationStatusNotice({
             <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
               Next Steps
             </p>
-            <div className="mt-3 space-y-2">
-              {checklistItems.map((item) => (
-                <div key={item} className="rounded-[12px] bg-[#fffaf7] px-3 py-2.5 text-[13px] leading-6 text-[#5f4f46]">
-                  {item}
-                </div>
-              ))}
-            </div>
+            {checklistItems.length ? (
+              <div className="mt-3 space-y-2">
+                {checklistItems.map((item) => (
+                  <div key={item} className="rounded-[12px] bg-[#fffaf7] px-3 py-2.5 text-[13px] leading-6 text-[#5f4f46]">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-3 rounded-[12px] bg-[#fffaf7] px-3 py-3 text-[13px] leading-6 text-[#5f4f46]">
+                No missing items are currently flagged on this page.
+              </div>
+            )}
           </div>
 
           {detailFields.length ? (
