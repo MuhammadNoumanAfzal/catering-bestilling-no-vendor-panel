@@ -452,6 +452,51 @@ export const GET_VENDOR_ADD_ONS_QUERY = `
   }
 `;
 
+export const GET_VENDOR_ADD_ONS_QUERY_LEGACY = `
+  query GetVendorAddOns($first: Int = 50, $after: String) {
+    vendorAddOns(first: $first, after: $after) {
+      edges {
+        node {
+          id
+          name
+          description
+          priceWithTax
+          taxPercent
+          menuStatus
+          dietaryTags {
+            id
+            name
+            slug
+            isActive
+            sortOrder
+          }
+          customDietary
+          availableDays
+          coverImage {
+            fileUrl
+            fileId
+          }
+          category {
+            id
+            name
+          }
+          foodTypes {
+            id
+            name
+            slug
+          }
+          createdOn
+          updatedOn
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
 export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
   query GetVendorAddOnDetail($id: ID!) {
     vendorAddOn(id: $id) {
@@ -477,6 +522,43 @@ export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
       categories {
         id
         name
+      }
+      category {
+        id
+        name
+      }
+      foodTypes {
+        id
+        name
+        slug
+      }
+      createdOn
+      updatedOn
+    }
+  }
+`;
+
+export const GET_VENDOR_ADD_ON_DETAIL_QUERY_LEGACY = `
+  query GetVendorAddOnDetail($id: ID!) {
+    vendorAddOn(id: $id) {
+      id
+      name
+      description
+      priceWithTax
+      taxPercent
+      menuStatus
+      dietaryTags {
+        id
+        name
+        slug
+        isActive
+        sortOrder
+      }
+      customDietary
+      availableDays
+      coverImage {
+        fileUrl
+        fileId
       }
       category {
         id
@@ -529,6 +611,55 @@ export const SAVE_VENDOR_ADD_ON_MUTATION = `
         categories {
           id
           name
+        }
+        category {
+          id
+          name
+        }
+        foodTypes {
+          id
+          name
+          slug
+        }
+        createdOn
+        updatedOn
+      }
+    }
+  }
+`;
+
+export const SAVE_VENDOR_ADD_ON_MUTATION_LEGACY = `
+  mutation SaveVendorAddOn(
+    $input: VendorAddOnInput!
+    $attachments: [ProductAttachmentInput]
+  ) {
+    vendorAddOnMutation(input: $input, attachments: $attachments) {
+      success
+      message
+      errors {
+        field
+        message
+        code
+      }
+      instance {
+        id
+        name
+        description
+        priceWithTax
+        taxPercent
+        menuStatus
+        dietaryTags {
+          id
+          name
+          slug
+          isActive
+          sortOrder
+        }
+        customDietary
+        availableDays
+        coverImage {
+          fileUrl
+          fileId
         }
         category {
           id

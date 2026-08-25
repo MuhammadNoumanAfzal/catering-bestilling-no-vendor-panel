@@ -10,12 +10,15 @@ import {
   DELETE_FOOD_TYPE_MUTATION,
   DELETE_OCCASION_MUTATION,
   GET_VENDOR_ADD_ON_DETAIL_QUERY,
+  GET_VENDOR_ADD_ON_DETAIL_QUERY_LEGACY,
   GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY,
   GET_VENDOR_ADD_ONS_QUERY,
+  GET_VENDOR_ADD_ONS_QUERY_LEGACY,
   GET_VENDOR_MENU_DETAIL_QUERY,
   GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY,
   GET_VENDOR_MENUS_QUERY,
   SAVE_VENDOR_ADD_ON_MUTATION,
+  SAVE_VENDOR_ADD_ON_MUTATION_LEGACY,
   SAVE_VENDOR_MENU_MUTATION,
   UPDATE_VENDOR_ADD_ON_STATUS_MUTATION,
   UPDATE_VENDOR_MENU_STATUS_MUTATION,
@@ -32,6 +35,16 @@ function unwrapSuccessfulResult(result, key, fallbackMessage) {
   }
 
   return payload;
+}
+
+function isLegacyCategoriesBackendError(error) {
+  const message = String(error?.message || "").toLowerCase();
+
+  return (
+    message.includes("products_categories") ||
+    message.includes("lunsjavtale_products_categories") ||
+    message.includes("categories does not exist")
+  );
 }
 
 export function getVendorMenuFormBootstrap() {
@@ -54,14 +67,28 @@ export function getVendorAddOnFormBootstrap() {
 }
 
 export function getVendorAddOns(variables = {}) {
-  return executeProtectedGraphqlRequest(GET_VENDOR_ADD_ONS_QUERY, {
+  const requestVariables = {
     first: 50,
     ...variables,
+  };
+
+  return executeProtectedGraphqlRequest(GET_VENDOR_ADD_ONS_QUERY, requestVariables).catch((error) => {
+    if (!isLegacyCategoriesBackendError(error)) {
+      throw error;
+    }
+
+    return executeProtectedGraphqlRequest(GET_VENDOR_ADD_ONS_QUERY_LEGACY, requestVariables);
   });
 }
 
 export function getVendorAddOnDetail(id) {
-  return executeProtectedGraphqlRequest(GET_VENDOR_ADD_ON_DETAIL_QUERY, { id });
+  return executeProtectedGraphqlRequest(GET_VENDOR_ADD_ON_DETAIL_QUERY, { id }).catch((error) => {
+    if (!isLegacyCategoriesBackendError(error)) {
+      throw error;
+    }
+
+    return executeProtectedGraphqlRequest(GET_VENDOR_ADD_ON_DETAIL_QUERY_LEGACY, { id });
+  });
 }
 
 export async function saveVendorMenu(variables) {
@@ -70,8 +97,36 @@ export async function saveVendorMenu(variables) {
 }
 
 export async function saveVendorAddOn(variables) {
-  const result = await executeProtectedGraphqlRequest(SAVE_VENDOR_ADD_ON_MUTATION, variables);
-  return unwrapSuccessfulResult(result, "vendorAddOnMutation", "Unable to save the add-on.");
+  try {
+    const result = await executeProtectedGraphqlRequest(SAVE_VENDOR_ADD_ON_MUTATION, variables);
+    return unwrapSuccessfulResult(result, "vendorAddOnMutation", "Unable to save the add-on.");
+  } catch (error) {
+    if (!isLegacyCategoriesBackendError(error)) {
+      throw error;
+    }
+
+    const legacyVariables = {
+      ...variables,
+      input: {
+        ...variables?.input,
+        categories: undefined,
+        category:
+          variables?.input?.category ||
+          (Array.isArray(variables?.input?.categories) ? variables.input.categories[0] : "") ||
+          "",
+      },
+    };
+    const fallbackResult = await executeProtectedGraphqlRequest(
+      SAVE_VENDOR_ADD_ON_MUTATION_LEGACY,
+      legacyVariables,
+    );
+
+    return unwrapSuccessfulResult(
+      fallbackResult,
+      "vendorAddOnMutation",
+      "Unable to save the add-on.",
+    );
+  }
 }
 
 export async function createVendorCategory(input) {

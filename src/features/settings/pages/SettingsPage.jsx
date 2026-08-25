@@ -102,6 +102,8 @@ export default function SettingsPage() {
           changeRequestMessage={applicationReview?.changeRequestMessage}
           requestedFields={applicationReview?.requestedFields || []}
           missingRequirements={applicationReview?.missingRequirements || []}
+          complianceDocuments={complianceDocuments}
+          settings={settings}
         />
       ) : null}
 
