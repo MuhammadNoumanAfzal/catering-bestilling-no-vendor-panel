@@ -34,10 +34,10 @@ export default function CreateMenuItemsSection({
           return (
             <div
               key={item.id}
-              className={`overflow-hidden rounded-[16px] border transition ${
+              className={`rounded-[16px] border transition ${
                 item.isExpanded
-                  ? "border-[#efc9b4] bg-[#fffdfb] shadow-[0_12px_30px_rgba(58,40,25,0.08)]"
-                  : "border-[#e4dbd2] bg-white"
+                  ? "overflow-visible border-[#efc9b4] bg-[#fffdfb] shadow-[0_12px_30px_rgba(58,40,25,0.08)]"
+                  : "overflow-hidden border-[#e4dbd2] bg-white"
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f1e7de] px-4 py-3">
@@ -140,7 +140,7 @@ export default function CreateMenuItemsSection({
                       ) : null}
                     </div>
 
-                    <div className="mt-3">
+                    <div className="relative z-20 mt-3">
                       <Label>Allergens</Label>
                       <MultiSelectInput
                         disabled={disabled || allergenFeatureUnavailable}
