@@ -57,7 +57,7 @@ function extractInlineAttachments(message) {
   const normalizedMessage = String(message ?? "");
   const attachments = [];
   const cleanedMessage = normalizedMessage
-    .replace(/(?:^|\n)\s*Attachment:\s*(https?:\/\/\S+)\s*/gi, (fullMatch, url) => {
+    .replace(/(?:^|\n|\s)Attachments?:\s*(https?:\/\/\S+)\s*/gi, (fullMatch, url) => {
       attachments.push({
         id: `inline-${attachments.length + 1}-${url}`,
         fileName: getAttachmentFileNameFromUrl(url),
@@ -65,7 +65,7 @@ function extractInlineAttachments(message) {
         mimeType: "",
         size: 0,
       });
-      return "\n";
+      return " ";
     })
     .replace(/\n{3,}/g, "\n\n")
     .trim();
