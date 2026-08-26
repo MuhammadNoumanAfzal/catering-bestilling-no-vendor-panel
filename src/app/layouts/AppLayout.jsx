@@ -177,7 +177,11 @@ export default function AppLayout() {
             const title = latestNotification?.title || "New Notification";
             const message =
               latestNotification?.message || "You have received a new update.";
-            showNewNotificationToast(title, message);
+            showNewNotificationToast(title, message).then((result) => {
+              if (result.isConfirmed) {
+                navigate("/notifications");
+              }
+            });
             writeLastSeenVendorNotificationId(latestNotificationId);
 
             if (typeof window !== "undefined") {

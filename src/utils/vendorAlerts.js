@@ -46,24 +46,26 @@ export function showNewNotificationToast(title, message) {
   return Swal.fire({
     toast: true,
     position: "top-end",
-    icon: "info",
+    icon: "success",
     html: `
       <div class="vendor-notification-toast__body">
-        <span class="vendor-notification-toast__eyebrow">Live update</span>
         <h3 class="vendor-notification-toast__title">${safeTitle}</h3>
         <p class="vendor-notification-toast__message">${safeMessage}</p>
       </div>
     `,
-    showConfirmButton: false,
-    timer: 5000,
-    timerProgressBar: true,
+    showConfirmButton: true,
+    confirmButtonText: "Open",
+    showCloseButton: true,
+    timer: 6000,
     background: POPUP_BACKGROUND,
     color: TEXT_COLOR,
     customClass: {
       popup: "vendor-notification-toast",
       icon: "vendor-notification-toast__icon",
       htmlContainer: "vendor-notification-toast__content",
-      timerProgressBar: "vendor-notification-toast__progress",
+      actions: "vendor-notification-toast__actions",
+      confirmButton: "vendor-notification-toast__confirm",
+      closeButton: "vendor-notification-toast__close",
     },
   });
 }
