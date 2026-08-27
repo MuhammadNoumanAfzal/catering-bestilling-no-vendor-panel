@@ -53,7 +53,7 @@ export default function CreateAddOnBasicInfoSection({
             <TextInput
               disabled={disabled}
               onChange={onAddOnNameChange}
-              placeholder="e.g. Royal Wedding Grand Buffet"
+              placeholder="Enter add-on name"
               value={addOnName}
             />
             <FieldError message={fieldErrors?.addOnName} />

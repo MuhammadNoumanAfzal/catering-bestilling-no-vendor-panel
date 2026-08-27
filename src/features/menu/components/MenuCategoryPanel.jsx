@@ -48,7 +48,7 @@ export default function MenuCategoryPanel({
         <input
           className="type-subpara mt-2 h-[34px] w-full rounded-[7px] border border-[#cdc6be] bg-[#fbfaf8] px-3 text-[#211a16] outline-none transition duration-150 placeholder:text-[#afa49c] focus:border-[#cf6e38] focus:bg-white"
           onChange={(event) => onNewCategoryChange(event.target.value)}
-          placeholder="Enter category name (e.g., Sauces, Premium add-ons)"
+          placeholder="Enter category name"
           type="text"
           value={newCategory}
         />

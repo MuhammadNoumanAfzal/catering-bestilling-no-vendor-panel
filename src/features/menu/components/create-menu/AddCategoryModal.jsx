@@ -11,7 +11,7 @@ export default function AddCategoryModal({
   existingCategories,
   title = "Add New Category",
   fieldLabel = "Category Name",
-  placeholder = "e.g. Cocktail Party, Brunch",
+  placeholder = "Enter category name",
   emptyErrorMessage = "Value cannot be empty.",
   duplicateErrorMessage = "This value already exists.",
   submitLabel = "Add",
