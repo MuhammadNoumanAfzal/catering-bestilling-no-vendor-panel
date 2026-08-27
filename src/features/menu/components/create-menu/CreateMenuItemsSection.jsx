@@ -111,7 +111,7 @@ export default function CreateMenuItemsSection({
                       <TextInput
                         disabled={disabled}
                         onChange={(event) => updateMenuItem(item.id, "title", event.target.value)}
-                        placeholder="Grilled Chicken"
+                        placeholder="Enter item title"
                         value={item.title}
                       />
                       {itemErrors.title ? (

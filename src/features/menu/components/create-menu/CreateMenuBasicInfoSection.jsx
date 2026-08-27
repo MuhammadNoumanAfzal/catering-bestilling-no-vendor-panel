@@ -126,7 +126,7 @@ export default function CreateMenuBasicInfoSection({
           <TextInput
             disabled={disabled}
             onChange={onMenuTitleChange}
-            placeholder="e.g. Royal Wedding Grand Buffet"
+            placeholder="Enter menu title"
             value={menuTitle}
           />
           <FieldError message={fieldErrors?.menuTitle} />
