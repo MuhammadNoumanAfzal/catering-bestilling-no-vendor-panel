@@ -17,7 +17,7 @@ export default function AuthLayout({ children }) {
             <img
               className="h-auto w-[clamp(120px,18vw,178px)]"
               src="/logo.png"
-              alt="Catering bestilling.no"
+              alt="GoCatering"
             />
             {children}
           </div>

@@ -10,7 +10,7 @@ function TransactionDetailModal({ order, onClose }) {
         {/* Modal Header with beautiful color gradient */}
         <div className="relative -mx-5 -mt-5 rounded-t-[18px] bg-gradient-to-r from-[#cf6e38] to-[#e78c58] px-5 py-4 text-white shadow-sm">
           <span className="text-[12px] font-bold uppercase tracking-wider text-white/80">
-            Catering bestilling.no
+            GoCatering
           </span>
           <h2 className="m-0 text-[18px] font-extrabold mt-0.5 text-white">
             Invoice {order.invoiceNumber || order.orderId}

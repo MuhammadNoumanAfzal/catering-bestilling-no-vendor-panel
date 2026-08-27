@@ -27,7 +27,7 @@ export default function AppFooter({ overlay = false }) {
             overlay ? "text-[#2f241d]" : "text-[#2f241d]/90"
           }`}
         >
-          &copy; {new Date().getFullYear()} <span className="font-bold">Cateringbestilling</span>. All rights reserved.
+          &copy; {new Date().getFullYear()} <span className="font-bold">GoCatering</span>. All rights reserved.
         </p>
       </div>
 

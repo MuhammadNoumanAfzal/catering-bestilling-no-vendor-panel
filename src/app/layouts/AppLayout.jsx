@@ -332,7 +332,7 @@ export default function AppLayout() {
 
         <div className="relative flex flex-col gap-4">
           <div className="rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
-            <img className="block h-auto w-32" src="/logo2.webp" alt="Catering bestilling.no" />
+            <img className="block h-auto w-32" src="/logo2.webp" alt="GoCatering" />
             <p className="type-subpara mt-3 text-white/75">Vendor dashboard</p>
           </div>
 
@@ -474,7 +474,7 @@ export default function AppLayout() {
           <div className="hidden flex-col gap-3 max-[960px]:flex">
             <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,#e57a45_0%,#cf6837_100%)] p-4 text-white shadow-[0_14px_28px_rgba(121,61,23,0.18)]">
               <div className="flex items-center justify-between gap-3">
-                <img className="block h-auto w-32" src="/logo2.webp" alt="Catering bestilling.no" />
+                <img className="block h-auto w-32" src="/logo2.webp" alt="GoCatering" />
                 <div className="flex items-center gap-2">
                   <button
                     className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white"
