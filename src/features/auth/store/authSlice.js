@@ -22,7 +22,9 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const session = await loginUserRequest(credentials);
-      persistAuthSession(session);
+      persistAuthSession(session, {
+        rememberMe: Boolean(credentials?.rememberMe),
+      });
       return session;
     } catch (error) {
       return rejectWithValue(error.message || "Login failed.");

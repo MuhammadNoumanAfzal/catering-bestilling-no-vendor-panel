@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [formState, setFormState] = useState({
     identifier: "",
     password: "",
+    rememberMe: false,
   });
 
   if (isAuthenticated) {
@@ -32,6 +33,14 @@ export default function LoginPage() {
         [field]: event.target.value,
       }));
     };
+  }
+
+  function handleRememberMeChange(event) {
+    clearAuthError();
+    setFormState((current) => ({
+      ...current,
+      rememberMe: Boolean(event.target.checked),
+    }));
   }
 
   async function handleLogin() {
@@ -82,6 +91,8 @@ export default function LoginPage() {
           },
         ]}
         rememberMeLabel="Remember me"
+        rememberMeChecked={formState.rememberMe}
+        onRememberMeChange={handleRememberMeChange}
         auxiliaryLinkLabel="Forgot Password?"
         auxiliaryLinkTo="/auth/forgot-password"
         actionDisabled={isLoggingIn || !formState.identifier.trim() || !formState.password.trim()}
