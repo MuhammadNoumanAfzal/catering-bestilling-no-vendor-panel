@@ -7,6 +7,8 @@ import SettingsTextField from "./SettingsTextField";
 import SettingsToggleRow from "./SettingsToggleRow";
 import { getCurrentYear, getTodayDateValue, sanitizeYearInput } from "../../../utils/dateValidation";
 
+const NORWAY_TIME_ZONE = "Europe/Oslo";
+
 export default function SettingsBusinessProfilePanel({
   businessTypeOptions,
   closureTypeOptions,
@@ -31,7 +33,6 @@ export default function SettingsBusinessProfilePanel({
   settings,
   handleSaveClosure,
   handleDeleteClosure,
-  timeZoneOptions,
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -248,14 +249,16 @@ export default function SettingsBusinessProfilePanel({
                 placeholder="Select currency"
                 value={settings.currency}
               />
-              <SettingsSelectField
-                disabled={disabled}
-                label="Time Zone"
-                onChange={handleFieldChange("timeZone")}
-                options={timeZoneOptions}
-                placeholder="Select time zone"
-                value={settings.timeZone}
-              />
+              <div className="space-y-1">
+                <SettingsTextField
+                  disabled
+                  label="Time Zone"
+                  value={settings.timeZone || NORWAY_TIME_ZONE}
+                />
+                <p className="text-[11px] text-[#8a7c70]">
+                  Norway time is applied automatically, including summer and winter time changes.
+                </p>
+              </div>
             </div>
           </SettingsSectionCard>
 

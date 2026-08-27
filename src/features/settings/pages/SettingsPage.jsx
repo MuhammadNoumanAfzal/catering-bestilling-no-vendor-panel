@@ -154,7 +154,6 @@ export default function SettingsPage() {
           settings={settings}
           handleSaveClosure={handleSaveClosure}
           handleDeleteClosure={handleDeleteClosure}
-          timeZoneOptions={settingsOptions.timeZoneOptions}
         />
       )}
 

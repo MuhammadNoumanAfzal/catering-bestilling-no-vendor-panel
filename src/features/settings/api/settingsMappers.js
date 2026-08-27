@@ -1,4 +1,5 @@
 const DEFAULT_HOUR_TIME = "Closed";
+const NORWAY_TIME_ZONE = "Europe/Oslo";
 const WEEK_DAYS = [
   "Monday",
   "Tuesday",
@@ -36,7 +37,7 @@ export const defaultSettingsState = {
   },
   language: "",
   currency: "",
-  timeZone: "",
+  timeZone: NORWAY_TIME_ZONE,
   account: {
     id: "",
     fullName: "",
@@ -99,7 +100,6 @@ export const defaultSettingsOptions = {
   closureTypeOptions: [],
   languageOptions: [],
   currencyOptions: [],
-  timeZoneOptions: [],
 };
 
 function normalizeString(value) {
@@ -220,22 +220,6 @@ function mapCurrencyOptions(items = []) {
       return {
         value: code,
         label: `${label}${symbol}`,
-      };
-    })
-    .filter((item) => item.value && item.label);
-}
-
-function mapTimeZoneOptions(items = []) {
-  return sortOptionItems(getCollectionItems(items))
-    .filter((item) => item?.isActive !== false)
-    .map((item) => {
-      const value = item?.value || "";
-      const label = item?.label || value;
-      const utcOffset = item?.utcOffset ? ` ${item.utcOffset}` : "";
-
-      return {
-        value,
-        label: `${label}${utcOffset}`.trim(),
       };
     })
     .filter((item) => item.value && item.label);
@@ -397,7 +381,7 @@ export function mapVendorSettingsPage(result, options = {}) {
       },
       language: normalizeString(settings.regionalPreferences?.language?.code),
       currency: normalizeString(settings.regionalPreferences?.currency?.code),
-      timeZone: normalizeString(settings.regionalPreferences?.timeZone?.value),
+      timeZone: normalizeString(settings.regionalPreferences?.timeZone?.value || NORWAY_TIME_ZONE),
       account: {
         id: normalizeString(settings.account?.id),
         fullName: normalizeString(settings.account?.fullName),
@@ -435,7 +419,6 @@ export function mapVendorSettingsPage(result, options = {}) {
       closureTypeOptions: mapTaxonomyOptions(bootstrap?.closureTypes),
       languageOptions: mapSimpleOptions(bootstrap?.languages, "code", "label"),
       currencyOptions: mapCurrencyOptions(bootstrap?.currencies),
-      timeZoneOptions: mapTimeZoneOptions(bootstrap?.timeZones),
     },
     applicationReview: {
       ...mappedApplicationReview,
@@ -517,7 +500,7 @@ export function buildRegionalPreferencesInput(settings) {
   return {
     languageCode: settings.language || "",
     currencyCode: settings.currency || "",
-    timeZone: settings.timeZone || "",
+    timeZone: settings.timeZone || NORWAY_TIME_ZONE,
   };
 }
 
