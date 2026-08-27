@@ -29,7 +29,7 @@ function PayoutDetailModal({ payout, onClose }) {
       <div className="w-full max-w-[460px] rounded-[20px] border border-[#e8dfd5] bg-[#fffdfa] p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
         <div className="relative -mx-5 -mt-5 rounded-t-[20px] bg-gradient-to-r from-[#cf6e38] to-[#e78c58] px-5 py-4 text-white shadow-sm">
           <span className="text-[12px] font-bold uppercase tracking-wider text-white/80">
-            Catering bestilling.no
+            GoCatering
           </span>
           <h2 className="mt-1 text-[20px] font-extrabold text-white">
             {payout.payoutNumber || payout.payoutId}
