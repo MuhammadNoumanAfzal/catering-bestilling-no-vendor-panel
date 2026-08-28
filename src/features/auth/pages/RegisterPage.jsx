@@ -118,6 +118,7 @@ export default function RegisterPage() {
   const [formState, setFormState] = useState(initialFormState);
   const [otpCode, setOtpCode] = useState("");
   const [otpError, setOtpError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const passwordStrength = useMemo(
@@ -136,8 +137,18 @@ export default function RegisterPage() {
         ...current,
         [field]: nextValue,
       }));
+      setFormErrors((current) => ({
+        ...current,
+        [field]: "",
+      }));
 
       if (field === "email" && signupStep === SIGNUP_STEP.VERIFY) {
+        setSignupStep(SIGNUP_STEP.FORM);
+        setOtpCode("");
+        setOtpError("");
+      }
+
+      if (field === "phone" && signupStep === SIGNUP_STEP.VERIFY) {
         setSignupStep(SIGNUP_STEP.FORM);
         setOtpCode("");
         setOtpError("");
@@ -146,6 +157,8 @@ export default function RegisterPage() {
   }
 
   async function handleSendOtp() {
+    setFormErrors({});
+
     if (
       !formState.firstName.trim() ||
       !formState.lastName.trim() ||
@@ -213,10 +226,17 @@ export default function RegisterPage() {
       setSignupStep(SIGNUP_STEP.VERIFY);
       await showVendorSuccessToast(result.message || "Verification code sent to your email.");
     } catch (error) {
-      await showVendorErrorAlert(
-        getReadableErrorMessage(error),
-        "Unable to send code",
-      );
+      const phoneError = error?.fieldErrors?.phone?.[0] || "";
+      const emailError = error?.fieldErrors?.email?.[0] || "";
+
+      if (phoneError || emailError) {
+        setFormErrors({
+          ...(phoneError ? { phone: phoneError } : {}),
+          ...(emailError ? { email: emailError } : {}),
+        });
+      }
+
+      await showVendorErrorAlert(getReadableErrorMessage(error), "Unable to send code");
     } finally {
       setIsSendingOtp(false);
     }
@@ -293,14 +313,17 @@ export default function RegisterPage() {
                 },
                 {
                   label: "Email Address",
+                  autoComplete: "email",
                   name: "email",
                   onChange: handleFieldChange("email"),
                   placeholder: "corporate.eats@example.com",
                   type: "email",
                   value: formState.email,
+                  errorText: formErrors.email,
                   helperText: "We will send a verification code after you click Register.",
                 },
                 {
+                  errorText: formErrors.phone,
                   label: "Phone Number",
                   maxLength: 15,
                   name: "phone",
