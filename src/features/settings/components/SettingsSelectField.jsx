@@ -5,7 +5,7 @@ export default function SettingsSelectField({
   label,
   value,
   onChange,
-  options,
+  options = [],
   placeholder,
   disabled,
 }) {
@@ -55,24 +55,30 @@ export default function SettingsSelectField({
         {isOpen ? (
           <div className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-full overflow-hidden rounded-[8px] border border-[#ddd4cc] bg-white py-1 shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
             <div className="max-h-[220px] overflow-y-auto overscroll-contain">
-            {options.map((option) => {
-              const isActive = option.value === value;
+              {options.length ? (
+                options.map((option) => {
+                  const isActive = option.value === value;
 
-              return (
-                <button
-                  key={option.value}
-                  className={`block w-full cursor-pointer px-3 py-1.5 text-left text-[12px] transition ${
-                    isActive
-                      ? "bg-[#fff1eb] font-semibold text-[#d96e39]"
-                      : "text-[#40352f] hover:bg-[#faf5f1]"
-                  }`}
-                  onClick={() => handleSelect(option.value)}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+                  return (
+                    <button
+                      key={option.value}
+                      className={`block w-full cursor-pointer px-3 py-1.5 text-left text-[12px] transition ${
+                        isActive
+                          ? "bg-[#fff1eb] font-semibold text-[#d96e39]"
+                          : "text-[#40352f] hover:bg-[#faf5f1]"
+                      }`}
+                      onClick={() => handleSelect(option.value)}
+                      type="button"
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="px-3 py-2 text-[12px] text-[#8a7c70]">
+                  No options available
+                </div>
+              )}
             </div>
           </div>
         ) : null}
