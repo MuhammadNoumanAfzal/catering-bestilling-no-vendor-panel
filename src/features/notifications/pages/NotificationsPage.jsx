@@ -92,14 +92,21 @@ export default function NotificationsPage() {
             ))}
           </div>
         ) : sections.length ? (
-          sections.map((section) => (
-            <NotificationSection
-              key={section.id}
-              items={section.items}
-              label={section.label}
-              onOpen={handleOpenNotification}
-            />
-          ))
+          sections.map((section, sectionIndex) => {
+            const startIndex = sections
+              .slice(0, sectionIndex)
+              .reduce((total, currentSection) => total + currentSection.items.length, 0);
+
+            return (
+              <NotificationSection
+                key={section.id}
+                items={section.items}
+                label={section.label}
+                onOpen={handleOpenNotification}
+                startIndex={startIndex}
+              />
+            );
+          })
         ) : (
           <div className="rounded-[20px] border border-dashed border-[#ded3ca] bg-[linear-gradient(180deg,#fffdfb_0%,#ffffff_100%)] px-6 py-12 text-center shadow-[0_10px_24px_rgba(45,31,20,0.03)]">
             <h2 className="text-[20px] font-semibold text-[#241c17]">

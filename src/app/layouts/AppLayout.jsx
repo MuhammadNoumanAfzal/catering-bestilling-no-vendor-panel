@@ -158,7 +158,7 @@ export default function AppLayout() {
 
     async function loadNotificationCounts() {
       try {
-        const result = await getVendorNotifications({ first: 1, status: null });
+        const result = await getVendorNotifications({ first: 200, status: null });
         const connection = result?.vendorFinanceNotifications;
         const unreadCount = Number(connection?.unreadCount ?? 0) || 0;
         const latestNotification = connection?.edges?.[0]?.node || null;
@@ -353,8 +353,20 @@ export default function AppLayout() {
                 }
                 to={to}
               >
-                <Icon size={16} />
-                <span className="type-subpara">{label}</span>
+                <div className="relative">
+                  <Icon size={16} />
+                  {label === "Notifications" && unreadNotificationsCount > 0 ? (
+                    <span className="absolute -right-3 -top-2 inline-flex min-w-[16px] items-center justify-center rounded-full bg-[#cf6e38] px-1 py-0.5 text-[8px] font-bold leading-none text-white">
+                      {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                    </span>
+                  ) : null}
+                </div>
+                <span className="type-subpara flex-1">{label}</span>
+                {label === "Notifications" && unreadNotificationsCount > 0 ? (
+                  <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-bold leading-none text-current">
+                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  </span>
+                ) : null}
               </NavLink>
             ))}
           </nav>

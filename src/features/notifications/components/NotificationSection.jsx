@@ -1,6 +1,6 @@
 import NotificationItem from "./NotificationItem";
 
-export default function NotificationSection({ label, items, onOpen }) {
+export default function NotificationSection({ label, items, onOpen, startIndex = 0 }) {
   return (
     <section className="rounded-[20px] border border-[#ebe1d8] bg-[linear-gradient(180deg,#fffdfa_0%,#ffffff_100%)] p-4 shadow-[0_10px_24px_rgba(44,29,19,0.04)]">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -11,11 +11,12 @@ export default function NotificationSection({ label, items, onOpen }) {
       </div>
 
       <div className="flex flex-col gap-3">
-        {items.map((notification) => (
+        {items.map((notification, index) => (
           <NotificationItem
             key={notification.id}
             notification={notification}
             onOpen={onOpen}
+            sequenceNumber={startIndex + index + 1}
           />
         ))}
       </div>
