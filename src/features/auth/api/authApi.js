@@ -14,6 +14,36 @@ function normalizePhoneNumber(phone) {
   return `${phone ?? ""}`.replace(/\s+/g, "").trim();
 }
 
+function createFieldError(message, fieldErrors = null) {
+  const error = new Error(message);
+  error.fieldErrors = fieldErrors;
+  return error;
+}
+
+function mapMutationErrors(errors = []) {
+  if (!Array.isArray(errors) || errors.length === 0) {
+    return null;
+  }
+
+  const groupedErrors = errors.reduce((accumulator, item) => {
+    const field = `${item?.field ?? ""}`.trim();
+    const message = `${item?.message ?? ""}`.trim();
+
+    if (!field || !message) {
+      return accumulator;
+    }
+
+    if (!Array.isArray(accumulator[field])) {
+      accumulator[field] = [];
+    }
+
+    accumulator[field].push(message);
+    return accumulator;
+  }, {});
+
+  return Object.keys(groupedErrors).length ? groupedErrors : null;
+}
+
 function normalizeUser(user) {
   if (!user) {
     return null;
@@ -106,12 +136,16 @@ export async function loginUserRequest({ identifier, password }) {
 export async function sendSignupOtpRequest(formValues) {
   const data = await executeGraphqlRequest(SEND_SIGNUP_OTP_MUTATION, {
     email: formValues.email.trim().toLowerCase(),
+    phone: normalizePhoneNumber(formValues.phone),
   });
 
   const result = data?.sendSignupOtp;
 
   if (!result?.success) {
-    throw new Error(result?.message || "Unable to send verification code right now.");
+    throw createFieldError(
+      result?.message || "Unable to send verification code right now.",
+      mapMutationErrors(result?.errors),
+    );
   }
 
   return {
@@ -137,7 +171,10 @@ export async function verifySignupOtpRequest(formValues) {
   const result = data?.registerUser;
 
   if (!result?.success) {
-    throw new Error(result?.message || "Verification failed. Please try again.");
+    throw createFieldError(
+      result?.message || "Verification failed. Please try again.",
+      mapMutationErrors(result?.errors),
+    );
   }
 
   return {

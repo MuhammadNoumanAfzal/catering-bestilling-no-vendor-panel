@@ -1,8 +1,13 @@
 export const SEND_SIGNUP_OTP_MUTATION = `
-  mutation SendSignupOTP($email: String!) {
-    sendSignupOtp(email: $email) {
+  mutation SendSignupOTP($email: String!, $phone: String) {
+    sendSignupOtp(email: $email, phone: $phone) {
       success
       message
+      errors {
+        field
+        message
+        code
+      }
     }
   }
 `;
