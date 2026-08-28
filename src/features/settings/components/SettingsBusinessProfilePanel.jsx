@@ -242,13 +242,16 @@ export default function SettingsBusinessProfilePanel({
                 value={settings.language}
               />
               <SettingsSelectField
-                disabled={disabled}
-                label="Region / Currency"
+                disabled
+                label="Currency"
                 onChange={handleFieldChange("currency")}
                 options={currencyOptions}
-                placeholder="Select currency"
+                placeholder="Locked currency"
                 value={settings.currency}
               />
+              <p className="text-[11px] text-[#8a7c70]">
+                Currency is locked to the vendor account configuration and cannot be changed here.
+              </p>
               <div className="space-y-1">
                 <SettingsTextField
                   disabled
