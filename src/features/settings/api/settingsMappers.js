@@ -16,6 +16,7 @@ const FALLBACK_CLOSURE_TYPE_OPTIONS = [
   { value: "private_event", label: "Private Event" },
   { value: "emergency", label: "Emergency" },
 ];
+const SUPPORTED_VENDOR_LANGUAGE_CODES = new Set(["en", "no", "nb", "nn"]);
 
 export const defaultSettingsState = {
   businessName: "",
@@ -264,6 +265,12 @@ function mapCurrencyOptions(items = []) {
     .filter((item) => item.value && item.label);
 }
 
+function mapVendorLanguageOptions(items = []) {
+  return mapSimpleOptions(items, "code", "label").filter((item) =>
+    SUPPORTED_VENDOR_LANGUAGE_CODES.has(normalizeString(item.value).trim().toLowerCase()),
+  );
+}
+
 function mapBusinessHours(hours = []) {
   return WEEK_DAYS.map((day) => {
     const matchedHour = hours.find((item) => normalizeString(item?.day) === day);
@@ -459,7 +466,7 @@ export function mapVendorSettingsPage(result, options = {}) {
         bootstrap?.closureTypes,
         settings.specialClosures,
       ),
-      languageOptions: mapSimpleOptions(bootstrap?.languages, "code", "label"),
+      languageOptions: mapVendorLanguageOptions(bootstrap?.languages),
       currencyOptions: mapCurrencyOptions(bootstrap?.currencies),
     },
     applicationReview: {
