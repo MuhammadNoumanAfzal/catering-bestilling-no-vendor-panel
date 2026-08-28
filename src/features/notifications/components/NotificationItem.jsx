@@ -1,4 +1,4 @@
-export default function NotificationItem({ notification, onOpen }) {
+export default function NotificationItem({ notification, onOpen, sequenceNumber = null }) {
   const isHighlighted = notification.highlighted;
 
   return (
@@ -29,7 +29,7 @@ export default function NotificationItem({ notification, onOpen }) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="m-0 truncate text-[16px] font-semibold text-[#1e1712]">
-                  {notification.title}
+                  {sequenceNumber ? `${sequenceNumber}. ` : ""}{notification.title}
                 </h3>
                 {!notification.isRead ? (
                   <span
