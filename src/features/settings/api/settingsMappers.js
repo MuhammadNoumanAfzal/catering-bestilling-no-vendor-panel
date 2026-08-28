@@ -9,6 +9,13 @@ const WEEK_DAYS = [
   "Saturday",
   "Sunday",
 ];
+const FALLBACK_CLOSURE_TYPE_OPTIONS = [
+  { value: "holiday", label: "Holiday" },
+  { value: "vacation", label: "Vacation" },
+  { value: "maintenance", label: "Maintenance" },
+  { value: "private_event", label: "Private Event" },
+  { value: "emergency", label: "Emergency" },
+];
 
 export const defaultSettingsState = {
   businessName: "",
@@ -197,6 +204,38 @@ function mapTaxonomyOptions(items = []) {
       label: item?.name || item?.slug || item?.id || "",
     }))
     .filter((item) => item.value && item.label);
+}
+
+function dedupeOptionItems(items = []) {
+  const seen = new Set();
+
+  return items.filter((item) => {
+    const value = normalizeString(item?.value).trim();
+
+    if (!value || seen.has(value)) {
+      return false;
+    }
+
+    seen.add(value);
+    return true;
+  });
+}
+
+function mapClosureTypeOptions(bootstrapItems = [], closures = []) {
+  const bootstrapOptions = mapTaxonomyOptions(bootstrapItems);
+
+  if (bootstrapOptions.length) {
+    return bootstrapOptions;
+  }
+
+  const derivedOptions = safeArray(closures)
+    .map((item) => ({
+      value: item?.type?.id || item?.type?.slug || item?.type?.name || "",
+      label: item?.type?.name || item?.type?.slug || item?.type?.id || "",
+    }))
+    .filter((item) => item.value && item.label);
+
+  return dedupeOptionItems([...derivedOptions, ...FALLBACK_CLOSURE_TYPE_OPTIONS]);
 }
 
 function mapSimpleOptions(items = [], valueKey, labelKey) {
@@ -416,7 +455,10 @@ export function mapVendorSettingsPage(result, options = {}) {
     options: {
       cuisineOptions: mapTaxonomyOptions(bootstrap?.cuisineTypes),
       businessTypeOptions: mapTaxonomyOptions(bootstrap?.businessTypes),
-      closureTypeOptions: mapTaxonomyOptions(bootstrap?.closureTypes),
+      closureTypeOptions: mapClosureTypeOptions(
+        bootstrap?.closureTypes,
+        settings.specialClosures,
+      ),
       languageOptions: mapSimpleOptions(bootstrap?.languages, "code", "label"),
       currencyOptions: mapCurrencyOptions(bootstrap?.currencies),
     },
