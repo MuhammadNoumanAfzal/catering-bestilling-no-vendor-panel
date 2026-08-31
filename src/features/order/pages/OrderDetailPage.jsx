@@ -105,6 +105,17 @@ function canAdjustOrder(status) {
   return normalizedStatus !== "Delivered" && normalizedStatus !== "Canceled";
 }
 
+function hasOpenVendorAdjustment(adjustment) {
+  const normalizedStatus = `${adjustment?.status ?? ""}`.trim().toUpperCase();
+  if (!normalizedStatus) {
+    return false;
+  }
+
+  return !["APPROVED", "REJECTED", "DECLINED", "CANCELED", "CANCELLED", "DELIVERED"].includes(
+    normalizedStatus,
+  );
+}
+
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -202,13 +213,13 @@ export default function OrderDetailPage() {
       note: "",
     });
 
-    if (nextStatus !== "Modified") {
-      clearPendingAdjustment(decodedOrderId);
-    }
-
     const updatedBackendStatus =
       payload?.instance?.status || payload?.order?.status || nextStatus;
     const normalizedUpdatedStatus = normalizeBackendStatus(updatedBackendStatus);
+
+    if (normalizedUpdatedStatus === "Delivered" || normalizedUpdatedStatus === "Canceled") {
+      clearPendingAdjustment(decodedOrderId);
+    }
 
     setOrderDetail((current) => {
       if (!current) {
@@ -262,6 +273,27 @@ export default function OrderDetailPage() {
     ) || null;
   const requestComparisons = buildRequestFieldComparisons(pendingCustomerRequest);
   const latestAdjustment = Array.isArray(orderDetail.adjustments) ? orderDetail.adjustments[0] : null;
+  const hasPendingVendorAdjustment = hasOpenVendorAdjustment(latestAdjustment);
+
+  async function handleOpenAdjustmentPage() {
+    if (pendingCustomerRequest) {
+      await showVendorErrorAlert(
+        "A customer modification request is already pending for this order. Please approve or reject it before requesting vendor-side changes.",
+        "Adjustment unavailable",
+      );
+      return;
+    }
+
+    if (hasPendingVendorAdjustment) {
+      await showVendorErrorAlert(
+        "A vendor adjustment is already pending for this order. Please wait for the customer to respond before creating another one.",
+        "Adjustment already pending",
+      );
+      return;
+    }
+
+    navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`);
+  }
 
   async function handleApproveModificationRequest() {
     if (!pendingCustomerRequest?.id) {
@@ -384,7 +416,7 @@ export default function OrderDetailPage() {
   async function handleConfirmedActionClick(action) {
     try {
       if (action?.requestAdjustment || /request changes/i.test(action?.label || "")) {
-        navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`);
+        await handleOpenAdjustmentPage();
         return;
       }
 
@@ -644,7 +676,7 @@ export default function OrderDetailPage() {
               onActionClick={handleConfirmedActionClick}
               onOrderAdjustmentClick={
                 canOpenAdjustment
-                  ? () => navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+                  ? handleOpenAdjustmentPage
                   : undefined
               }
               onStatusSelect={handleManualStatusSelect}
@@ -655,7 +687,7 @@ export default function OrderDetailPage() {
               onActionClick={handleLifecycleActionClick}
               onOrderAdjustmentClick={
                 canOpenAdjustment
-                  ? () => navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`)
+                  ? handleOpenAdjustmentPage
                   : undefined
               }
             />

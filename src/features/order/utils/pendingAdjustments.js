@@ -8,6 +8,39 @@ function normalizeId(value) {
   return value == null ? "" : String(value).trim();
 }
 
+function decodeRelayId(value) {
+  const normalizedValue = normalizeId(value);
+  if (!normalizedValue) {
+    return "";
+  }
+
+  try {
+    let base64Value = normalizedValue;
+    while (base64Value.length % 4 !== 0) {
+      base64Value += "=";
+    }
+
+    const decodedValue = atob(base64Value);
+    if (!decodedValue.includes(":")) {
+      return "";
+    }
+
+    const parts = decodedValue.split(":").map((part) => normalizeId(part));
+    return parts[parts.length - 1] || "";
+  } catch {
+    return "";
+  }
+}
+
+function buildIdAliases(orderId) {
+  const normalizedId = normalizeId(orderId);
+  const decodedRelayId = decodeRelayId(normalizedId);
+
+  return Array.from(
+    new Set([normalizedId, decodedRelayId].filter(Boolean)),
+  );
+}
+
 function readStore() {
   if (!canUseStorage()) {
     return {};
@@ -39,41 +72,51 @@ function writeStore(store) {
 }
 
 export function getPendingAdjustment(orderId) {
-  const normalizedId = normalizeId(orderId);
-  if (!normalizedId) {
+  const aliases = buildIdAliases(orderId);
+  if (aliases.length === 0) {
     return null;
   }
 
   const store = readStore();
-  return store[normalizedId] || null;
+  for (const alias of aliases) {
+    if (store[alias]) {
+      return store[alias];
+    }
+  }
+
+  return null;
 }
 
 export function savePendingAdjustment(orderId, adjustment) {
-  const normalizedId = normalizeId(orderId);
-  if (!normalizedId || !adjustment || typeof adjustment !== "object") {
+  const aliases = buildIdAliases(orderId);
+  if (aliases.length === 0 || !adjustment || typeof adjustment !== "object") {
     return;
   }
 
   const store = readStore();
-  store[normalizedId] = {
+  const primaryId = aliases[0];
+  const nextValue = {
     ...adjustment,
-    orderId: normalizedId,
+    orderId: primaryId,
     savedAt: adjustment.savedAt || new Date().toISOString(),
   };
+
+  aliases.forEach((alias) => {
+    store[alias] = nextValue;
+  });
+
   writeStore(store);
 }
 
 export function clearPendingAdjustment(orderId) {
-  const normalizedId = normalizeId(orderId);
-  if (!normalizedId) {
+  const aliases = buildIdAliases(orderId);
+  if (aliases.length === 0) {
     return;
   }
 
   const store = readStore();
-  if (!store[normalizedId]) {
-    return;
-  }
-
-  delete store[normalizedId];
+  aliases.forEach((alias) => {
+    delete store[alias];
+  });
   writeStore(store);
 }

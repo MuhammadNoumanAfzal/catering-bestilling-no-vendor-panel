@@ -560,12 +560,15 @@ export function getStatusMutationValue(status) {
 }
 
 export function mapVendorOrderNode(node) {
-  const pendingAdjustment = getPendingAdjustment(node?.id);
+  const storedPendingAdjustment = getPendingAdjustment(node?.id);
+  const backendPendingAdjustment = normalizePendingVendorAdjustment(node?.pendingVendorAdjustment);
+  const pendingAdjustment = backendPendingAdjustment || storedPendingAdjustment;
   const hasPendingCustomerModification =
     `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+  const hasPendingVendorAdjustment = hasOpenVendorAdjustment(node, pendingAdjustment);
   const displayId = formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id);
   const status =
-    pendingAdjustment || hasPendingCustomerModification
+    hasPendingVendorAdjustment || hasPendingCustomerModification
       ? "Modified"
       : resolveOrderStatus(node);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
@@ -588,7 +591,7 @@ export function mapVendorOrderNode(node) {
     time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
     status,
-    statusTone: pendingAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
+    statusTone: hasPendingVendorAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
     actions: mapAvailableActionsToUi(node?.availableActions, status),
     raw: node,
   };
@@ -638,6 +641,40 @@ export function mapVendorOrderSummary(summary, rows = []) {
     ),
     modified: resolveCount(summaryObject.modified, rowCount("Modified")),
   };
+}
+
+function normalizePendingVendorAdjustment(adjustment) {
+  if (!adjustment || typeof adjustment !== "object" || !adjustment.id) {
+    return null;
+  }
+
+  return {
+    id: normalizeString(adjustment.id),
+    status: normalizeString(adjustment.status) || "PENDING_CUSTOMER_APPROVAL",
+    reason: normalizeString(adjustment.reason),
+    vendorNote: normalizeString(adjustment.vendorNote),
+    proposedEventDate: normalizeString(adjustment.proposedEventDate),
+    proposedDeliveryWindowStart: normalizeString(adjustment.proposedDeliveryWindowStart),
+    proposedGuestCount: toNumber(adjustment.proposedGuestCount, 0),
+    proposedAddressLine1: normalizeString(adjustment.proposedAddressLine1),
+    proposedAddressLine2: normalizeString(adjustment.proposedAddressLine2),
+    proposedCity: normalizeString(adjustment.proposedCity),
+    proposedPostalCode: normalizeString(adjustment.proposedPostalCode),
+    oldTotal: adjustment.oldTotal == null ? null : Number(adjustment.oldTotal),
+    newTotal: adjustment.newTotal == null ? null : Number(adjustment.newTotal),
+    createdOn: normalizeString(adjustment.createdOn),
+    removedItemNames: Array.isArray(adjustment.removedItemNames) ? adjustment.removedItemNames : [],
+    addedItemNames: Array.isArray(adjustment.addedItemNames) ? adjustment.addedItemNames : [],
+  };
+}
+
+function hasOpenVendorAdjustment(node, fallbackAdjustment = null) {
+  const normalizedStatus = `${node?.pendingVendorAdjustment?.status ?? fallbackAdjustment?.status ?? ""}`
+    .trim()
+    .toUpperCase();
+  const hasBackendFlag = Boolean(node?.hasPendingVendorAdjustment);
+
+  return hasBackendFlag || normalizedStatus === "PENDING_CUSTOMER_APPROVAL" || normalizedStatus === "PENDING";
 }
 
 export function createOrderMetrics(summary) {
@@ -707,15 +744,18 @@ export function mapVendorOrderDetail(data, orderId) {
     return null;
   }
 
-  const pendingAdjustment = getPendingAdjustment(node?.id || orderId);
+  const storedPendingAdjustment = getPendingAdjustment(node?.id || orderId);
+  const backendPendingAdjustment = normalizePendingVendorAdjustment(node?.pendingVendorAdjustment);
+  const pendingAdjustment = backendPendingAdjustment || storedPendingAdjustment;
   const carts = getOrderCartsArray(node?.orderCarts);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const hasPendingCustomerModification =
     `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+  const hasPendingVendorAdjustment = hasOpenVendorAdjustment(node, pendingAdjustment);
   const displayId = formatOrderReference(node?.invoiceNumber || node?.orderNumber, node?.id || orderId);
   const status =
-    pendingAdjustment || hasPendingCustomerModification
+    hasPendingVendorAdjustment || hasPendingCustomerModification
       ? "Modified"
       : resolveOrderStatus(node);
   const actions = mapAvailableActionsToUi(node?.availableActions, status);
@@ -744,7 +784,7 @@ export function mapVendorOrderDetail(data, orderId) {
     time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
     guests: resolveGuestCount(node, 0),
     status,
-    statusTone: pendingAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
+    statusTone: hasPendingVendorAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
     customer,
     orderItem,
     addOns,
