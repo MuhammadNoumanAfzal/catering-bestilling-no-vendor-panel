@@ -363,19 +363,6 @@ export const CREATE_VENDOR_ORDER_ADJUSTMENT_MUTATION = `
       adjustment {
         id
         status
-        reason
-        vendorNote
-        customerResponse
-        proposedEventDate
-        proposedDeliveryWindowStart
-        proposedDeliveryWindowEnd
-        proposedGuestCount
-        proposedAddressLine1
-        proposedAddressLine2
-        proposedCity
-        proposedPostalCode
-        removedItemsJson
-        addedItemsJson
         createdOn
       }
     }

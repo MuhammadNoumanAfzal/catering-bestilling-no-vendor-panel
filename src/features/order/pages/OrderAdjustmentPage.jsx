@@ -75,6 +75,28 @@ function extractTime24h(timeValue) {
   return "";
 }
 
+function normalizeTimeInput(value) {
+  const extractedTime = extractTime24h(value);
+  if (extractedTime) {
+    return extractedTime;
+  }
+
+  const digitsOnly = String(value || "").replace(/[^\d]/g, "").slice(0, 4);
+  if (digitsOnly.length <= 2) {
+    return digitsOnly;
+  }
+
+  return `${digitsOnly.slice(0, 2)}:${digitsOnly.slice(2)}`;
+}
+
+function isValidTime24h(value) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value || "").trim());
+}
+
+function formatTimeDisplay24h(value) {
+  return extractTime24h(value) || "Time unavailable";
+}
+
 function extractDateYMD(dateValue) {
   if (!dateValue) return "";
   const dateStr = String(dateValue).trim();
@@ -122,6 +144,47 @@ function normalizeString(value) {
 
 function hasSameText(left, right) {
   return normalizeString(left).trim() === normalizeString(right).trim();
+}
+
+function splitAddressFields(addressValue, fallbackApartment = "") {
+  const fullAddress = normalizeString(addressValue).trim();
+  const fallbackUnit = normalizeString(fallbackApartment).trim();
+
+  if (!fullAddress) {
+    return {
+      addressLine1: "",
+      apartment: fallbackUnit,
+    };
+  }
+
+  const segments = fullAddress
+    .split(",")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  const firstSegment = segments[0] || fullAddress;
+  const apartmentPattern =
+    /\b((?:flat|floor|suite|apt|apartment|unit|room|level)\s*[A-Za-z0-9-]+.*|[A-Za-z0-9-]+\s+floor.*)\b/i;
+  const apartmentMatch = firstSegment.match(apartmentPattern);
+
+  if (!apartmentMatch) {
+    return {
+      addressLine1: firstSegment,
+      apartment: fallbackUnit,
+    };
+  }
+
+  const apartmentText = apartmentMatch[1].trim();
+  const addressLine1 = firstSegment
+    .replace(apartmentMatch[0], "")
+    .replace(/\s{2,}/g, " ")
+    .trim()
+    .replace(/[,-]+$/, "")
+    .trim();
+
+  return {
+    addressLine1: addressLine1 || firstSegment,
+    apartment: fallbackUnit || apartmentText,
+  };
 }
 
 function canAdjustOrder(status) {
@@ -225,8 +288,13 @@ export default function OrderAdjustmentPage() {
         const rawTimeVal = mappedOrder?.raw?.deliveryWindow || mappedOrder?.raw?.eventTime || "";
         setTime(extractTime24h(rawTimeVal));
         setPersonCount(Math.max(1, mappedOrder?.guests || 1));
-        setAddress(mappedOrder?.logistics?.deliveryAddress || "");
-        setApartment(mappedOrder?.raw?.billingAddress?.unitFloor || "");
+        const resolvedApartment = mappedOrder?.raw?.billingAddress?.unitFloor || "";
+        const parsedAddress = splitAddressFields(
+          mappedOrder?.logistics?.deliveryAddress || "",
+          resolvedApartment,
+        );
+        setAddress(parsedAddress.addressLine1);
+        setApartment(parsedAddress.apartment);
         setCity(mappedOrder?.logistics?.city || mappedOrder?.customer?.city || "");
         setPostalCode(mappedOrder?.logistics?.postalCode || mappedOrder?.customer?.postalCode || "");
         setModifiedItemIds([]);
@@ -326,8 +394,12 @@ export default function OrderAdjustmentPage() {
     const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
     const originalTime = extractTime24h(rawTimeVal);
     const originalGuests = Math.max(1, orderDetail?.guests || 1);
-    const originalAddress = orderDetail?.logistics?.deliveryAddress || "";
-    const originalApartment = orderDetail?.raw?.billingAddress?.unitFloor || "";
+    const originalAddressFields = splitAddressFields(
+      orderDetail?.logistics?.deliveryAddress || "",
+      orderDetail?.raw?.billingAddress?.unitFloor || "",
+    );
+    const originalAddress = originalAddressFields.addressLine1;
+    const originalApartment = originalAddressFields.apartment;
     const originalCity = orderDetail?.logistics?.city || orderDetail?.customer?.city || "";
     const originalPostalCode =
       orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
@@ -398,13 +470,24 @@ export default function OrderAdjustmentPage() {
       return;
     }
 
-    if (!reason) {
-      setFormErrors({ reason: "Please select a reason for the change." });
-      await showVendorErrorAlert("Please select a reason for the change.", "Validation Error");
-      return;
-    }
+      if (!reason) {
+        setFormErrors({ reason: "Please select a reason for the change." });
+        await showVendorErrorAlert("Please select a reason for the change.", "Validation Error");
+        return;
+      }
 
-    setFormErrors({});
+      if (time && !isValidTime24h(time)) {
+        setFormErrors({
+          proposedDeliveryWindowStart: "Please enter time in 24-hour format (HH:MM).",
+        });
+        await showVendorErrorAlert(
+          "Please enter time in 24-hour format (HH:MM).",
+          "Validation Error",
+        );
+        return;
+      }
+
+      setFormErrors({});
     setSubmitError("");
     setIsSubmitting(true);
 
@@ -452,8 +535,12 @@ export default function OrderAdjustmentPage() {
       const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
       const originalTime = extractTime24h(rawTimeVal);
       const originalGuests = Math.max(1, orderDetail?.guests || 1);
-      const originalAddress = orderDetail?.logistics?.deliveryAddress || "";
-      const originalApartment = orderDetail?.raw?.billingAddress?.unitFloor || "";
+      const originalAddressFields = splitAddressFields(
+        orderDetail?.logistics?.deliveryAddress || "",
+        orderDetail?.raw?.billingAddress?.unitFloor || "",
+      );
+      const originalAddress = originalAddressFields.addressLine1;
+      const originalApartment = originalAddressFields.apartment;
       const originalCity = orderDetail?.logistics?.city || orderDetail?.customer?.city || "";
       const originalPostalCode = orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
 
@@ -792,14 +879,14 @@ export default function OrderAdjustmentPage() {
                   {modifiedItems.map((item) => (
                     <div
                       key={`removed-${item.id}`}
-                      className="flex items-center gap-3 rounded-[12px] border border-red-200 bg-[#fff5f5] p-3 transition hover:border-red-300"
+                      className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-red-200 bg-[#fff5f5] p-3 transition hover:border-red-300"
                     >
                       <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-red-100 text-[12px] font-extrabold uppercase tracking-wider text-red-500">
                         Rem
                       </div>
-                      <div className="flex flex-1 flex-col leading-[1.3]">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[14px] font-extrabold text-[#1c1510] line-through">{item.name}</span>
+                      <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="break-words text-[14px] font-extrabold text-[#1c1510] line-through">{item.name}</span>
                           <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-red-700">
                             Removed
                           </span>
@@ -811,7 +898,7 @@ export default function OrderAdjustmentPage() {
                       <button
                         type="button"
                         onClick={() => toggleItem(item.id)}
-                        className="h-8 cursor-pointer rounded-[6px] border border-red-300 bg-white px-3 text-[13px] font-extrabold text-red-700 transition hover:border-red-400 hover:bg-red-50 active:scale-95"
+                        className="ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border border-red-300 bg-white px-3 text-[13px] font-extrabold text-red-700 transition hover:border-red-400 hover:bg-red-50 active:scale-95"
                       >
                         Restore
                       </button>
@@ -821,7 +908,7 @@ export default function OrderAdjustmentPage() {
                   {suggestedList.map((item) => (
                     <div
                       key={`added-${item.id}`}
-                      className="flex items-center gap-3 rounded-[12px] border border-green-200 bg-[#f5fff5] p-3 transition hover:border-green-300"
+                      className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-green-200 bg-[#f5fff5] p-3 transition hover:border-green-300"
                     >
                       {item.image ? (
                         <img
@@ -832,9 +919,9 @@ export default function OrderAdjustmentPage() {
                       ) : (
                         <div className="h-10 w-12 shrink-0 rounded-[6px] border border-green-200 bg-[#eef9ef]" />
                       )}
-                      <div className="flex flex-1 flex-col leading-[1.3]">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[14px] font-extrabold text-[#1c1510]">{item.name}</span>
+                      <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="break-words text-[14px] font-extrabold text-[#1c1510]">{item.name}</span>
                           <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-green-700">
                             Added
                           </span>
@@ -846,7 +933,7 @@ export default function OrderAdjustmentPage() {
                       <button
                         type="button"
                         onClick={() => removeSuggestion(item.id)}
-                        className="h-8 cursor-pointer rounded-[6px] border border-green-300 bg-white px-3 text-[13px] font-extrabold text-green-700 transition hover:border-green-400 hover:bg-green-50 active:scale-95"
+                        className="ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border border-green-300 bg-white px-3 text-[13px] font-extrabold text-green-700 transition hover:border-green-400 hover:bg-green-50 active:scale-95"
                       >
                         Remove
                       </button>
@@ -888,9 +975,12 @@ export default function OrderAdjustmentPage() {
                 <div className="relative flex items-center">
                   <Clock size={14} className="absolute left-3 text-[#8a7a6d]" />
                   <input
-                    type="time"
+                    type="text"
                     value={time}
-                    onChange={(event) => setTime(event.target.value)}
+                    onChange={(event) => setTime(normalizeTimeInput(event.target.value))}
+                    inputMode="numeric"
+                    placeholder="18:00"
+                    maxLength={5}
                     className="h-10 w-full rounded-[8px] border border-[#d8cec4] pl-9 pr-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
                   />
                 </div>
@@ -998,7 +1088,7 @@ export default function OrderAdjustmentPage() {
                 <div className="flex items-start justify-between">
                   <span className="font-bold text-[#8a7a6d]">Order Date</span>
                   <span className="text-right font-extrabold text-[#1c1510]">
-                    {orderDetail.date} - {orderDetail.time}
+                    {orderDetail.date} - {formatTimeDisplay24h(orderDetail.time)}
                   </span>
                 </div>
 
@@ -1010,7 +1100,7 @@ export default function OrderAdjustmentPage() {
                 <div className="flex items-start justify-between">
                   <span className="font-bold text-[#8a7a6d]">Delivery Address</span>
                   <span className="max-w-[170px] text-right font-extrabold leading-[1.3] text-[#1c1510]">
-                    {address || "-"}
+                    {[address, apartment, city, postalCode].filter(Boolean).join(", ") || "-"}
                   </span>
                 </div>
 
