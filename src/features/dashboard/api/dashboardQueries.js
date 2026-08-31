@@ -1,5 +1,6 @@
 export const GET_VENDOR_DASHBOARD_QUERY = `
   query GetVendorDashboard(
+    $hoursWindow: Int = 4
     $summaryPreset: String
     $urgentPreset: String
     $reviewsPreset: String
@@ -17,6 +18,7 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
     }
 
     vendorDashboardSummary(
+      hoursWindow: $hoursWindow
       datePreset: $summaryPreset
       dateFrom: $dateFrom
       dateTo: $dateTo

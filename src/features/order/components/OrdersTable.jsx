@@ -178,22 +178,37 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
  
                     return (
                       <div key={action.label} className="relative" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          className={`inline-flex min-h-[28px] cursor-pointer items-center gap-1 rounded-full border px-3.5 text-[13px] font-extrabold leading-none transition duration-150 ${buttonToneClass} ${hasDropdown ? "pr-2" : ""}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (hasDropdown) {
-                              handleMenuToggle(menuKey);
-                            } else {
+                        <div className={`inline-flex items-stretch overflow-hidden rounded-full ${hasDropdown ? "border" : ""} ${hasDropdown ? buttonToneClass : ""}`}>
+                          <button
+                            className={`inline-flex min-h-[28px] cursor-pointer items-center gap-1 border px-3.5 text-[13px] font-extrabold leading-none transition duration-150 ${
+                              hasDropdown
+                                ? "border-0 bg-transparent text-inherit hover:bg-black/5"
+                                : buttonToneClass
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
                               onActionClick(row, action);
-                            }
-                          }}
-                          type="button"
-                        >
-                          {getActionIcon(action.label)}
-                          <span>{action.label}</span>
-                          {hasDropdown ? <ChevronDown size={12} strokeWidth={2.8} className="opacity-90" /> : null}
-                        </button>
+                            }}
+                            type="button"
+                          >
+                            {getActionIcon(action.label)}
+                            <span>{action.label}</span>
+                          </button>
+
+                          {hasDropdown ? (
+                            <button
+                              className="inline-flex min-h-[28px] cursor-pointer items-center border-0 border-l border-white/20 bg-transparent px-2 text-inherit transition hover:bg-black/5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMenuToggle(menuKey);
+                              }}
+                              type="button"
+                              aria-label={`Open status options for ${action.label}`}
+                            >
+                              <ChevronDown size={12} strokeWidth={2.8} className="opacity-90" />
+                            </button>
+                          ) : null}
+                        </div>
  
                         {hasDropdown && isMenuOpen ? (
                           <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-[10px] border border-[#e3d6ca] bg-white/95 p-1 shadow-[0_12px_28px_rgba(38,23,14,0.12)] backdrop-blur-sm">

@@ -399,6 +399,7 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
       : 7;
 
   return {
+    hoursWindow: 4,
     summaryPreset,
     urgentPreset,
     reviewsPreset,

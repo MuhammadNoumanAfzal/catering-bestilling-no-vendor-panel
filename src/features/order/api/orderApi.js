@@ -5,6 +5,7 @@ import {
   GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY,
   GET_VENDOR_ORDER_DETAIL_QUERY,
   GET_VENDOR_ORDERS_QUERY,
+  GET_VENDOR_UPCOMING_ORDERS_QUERY,
   SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
   REJECT_ORDER_MODIFICATION_REQUEST_MUTATION,
   UPDATE_VENDOR_ORDER_STATUS_MUTATION,
@@ -12,6 +13,61 @@ import {
 } from "./orderQueries";
 
 const PAGE_SIZE = 100;
+
+function flattenOrderAddressSnapshot(addressValue) {
+  if (typeof addressValue === "string") {
+    return {
+      deliveryAddress: addressValue.trim(),
+      deliverySuite: "",
+      deliveryCity: "",
+      deliveryPostalCode: "",
+    };
+  }
+
+  if (!addressValue || typeof addressValue !== "object") {
+    return {
+      deliveryAddress: "",
+      deliverySuite: "",
+      deliveryCity: "",
+      deliveryPostalCode: "",
+    };
+  }
+
+  return {
+    deliveryAddress: `${addressValue.addressLine1 ?? addressValue.address ?? ""}`.trim(),
+    deliverySuite: `${addressValue.addressLine2 ?? addressValue.unitFloor ?? ""}`.trim(),
+    deliveryCity: `${addressValue.city ?? ""}`.trim(),
+    deliveryPostalCode: `${addressValue.postalCode ?? addressValue.postCode ?? ""}`.trim(),
+  };
+}
+
+function mapVendorModificationRequest(request) {
+  if (!request || typeof request !== "object") {
+    return null;
+  }
+
+  const requestedAddress = flattenOrderAddressSnapshot(
+    request.proposedSnapshot?.deliveryAddress ?? request.requestedChanges?.deliveryAddress,
+  );
+  const currentAddress = flattenOrderAddressSnapshot(request.currentSnapshot?.deliveryAddress);
+
+  return {
+    ...request,
+    customerNote: request.customerNote || request.vendorNote || "",
+    requestedChanges: {
+      ...(request.proposedSnapshot || request.requestedChanges || {}),
+      ...requestedAddress,
+    },
+    currentSnapshot: {
+      ...(request.currentSnapshot || {}),
+      ...currentAddress,
+    },
+    proposedSnapshot: {
+      ...(request.proposedSnapshot || {}),
+      ...requestedAddress,
+    },
+  };
+}
 
 function unwrapMutationResult(result, key, fallbackMessage) {
   const payload = result?.[key];
@@ -25,6 +81,13 @@ function unwrapMutationResult(result, key, fallbackMessage) {
 
 export function getVendorOrdersPage(variables = {}) {
   return executeProtectedGraphqlRequest(GET_VENDOR_ORDERS_QUERY, {
+    first: PAGE_SIZE,
+    ...variables,
+  });
+}
+
+export function getVendorUpcomingOrdersPage(variables = {}) {
+  return executeProtectedGraphqlRequest(GET_VENDOR_UPCOMING_ORDERS_QUERY, {
     first: PAGE_SIZE,
     ...variables,
   });
@@ -67,6 +130,37 @@ export async function getAllVendorOrders(variables = {}) {
   };
 }
 
+export async function getAllVendorUpcomingOrders(variables = {}) {
+  const allEdges = [];
+  let after = null;
+  let totalCount = 0;
+
+  while (true) {
+    const result = await getVendorUpcomingOrdersPage({
+      ...variables,
+      after,
+    });
+    const connection = result?.vendorUpcomingOrders;
+    const edges = Array.isArray(connection?.edges) ? connection.edges : [];
+
+    totalCount = Number(connection?.totalCount) || totalCount;
+    allEdges.push(...edges);
+
+    if (!connection?.pageInfo?.hasNextPage || !connection?.pageInfo?.endCursor) {
+      break;
+    }
+
+    after = connection.pageInfo.endCursor;
+  }
+
+  return {
+    vendorUpcomingOrders: {
+      edges: allEdges,
+      totalCount,
+    },
+  };
+}
+
 export function getVendorOrderDetail(id) {
   return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, { orderId: id });
 }
@@ -78,7 +172,7 @@ export async function getVendorOrderModificationRequests(orderId) {
   );
 
   return Array.isArray(result?.vendorOrderModificationRequests)
-    ? result.vendorOrderModificationRequests
+    ? result.vendorOrderModificationRequests.map(mapVendorModificationRequest).filter(Boolean)
     : [];
 }
 

@@ -132,18 +132,43 @@ function formatAddressParts(...parts) {
   return parts.map((part) => normalizeString(part).trim()).filter(Boolean).join(", ");
 }
 
+function normalizeAddressSnapshot(addressValue) {
+  if (!addressValue || typeof addressValue !== "object") {
+    return {
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      postalCode: "",
+    };
+  }
+
+  return {
+    addressLine1: firstNonEmpty(addressValue.addressLine1, addressValue.address),
+    addressLine2: firstNonEmpty(addressValue.addressLine2, addressValue.unitFloor),
+    city: firstNonEmpty(addressValue.city),
+    postalCode: firstNonEmpty(addressValue.postalCode, addressValue.postCode),
+  };
+}
+
 function buildAddressFromNode(node) {
   const billingAddress = node?.billingAddress || {};
+  const snapshotAddress = normalizeAddressSnapshot(node?.deliveryAddress);
   const addressLine = firstNonEmpty(
     node?.deliveryAddressStr,
-    node?.deliveryAddress,
+    formatAddressParts(snapshotAddress.addressLine1, snapshotAddress.addressLine2),
     billingAddress?.locationName,
     formatAddressParts(billingAddress?.address, billingAddress?.unitFloor),
   );
 
-  const city = firstNonEmpty(node?.deliveryCity, billingAddress?.city, node?.customerInfo?.city);
+  const city = firstNonEmpty(
+    node?.deliveryCity,
+    snapshotAddress.city,
+    billingAddress?.city,
+    node?.customerInfo?.city,
+  );
   const postalCode = firstNonEmpty(
     node?.deliveryPostalCode,
+    snapshotAddress.postalCode,
     billingAddress?.postCode,
     node?.customerInfo?.postalCode,
   );
@@ -570,7 +595,7 @@ export function mapVendorOrderNode(node) {
 }
 
 export function mapVendorOrdersResult(data) {
-  const connection = data?.vendorOrders || data?.orders;
+  const connection = data?.vendorOrders || data?.vendorUpcomingOrders || data?.orders;
   const edges = Array.isArray(connection?.edges) ? connection.edges : [];
   const rows = edges.map((edge) => mapVendorOrderNode(edge?.node)).filter((row) => row.rawId);
 
@@ -591,6 +616,7 @@ export function mapVendorOrderSummary(summary, rows = []) {
 
   return {
     total: resolveCount(summaryObject.totalOrders ?? summaryObject.total_orders, rows.length),
+    upcoming: toNumber(summaryObject.upcomingOrders ?? summaryObject.upcoming_orders, 0),
     newOrders: resolveCount(
       summaryObject.newOrders ?? summaryObject.new_orders,
       rowCount("New"),
@@ -665,6 +691,7 @@ export function createOrderMetrics(summary) {
 export function createOrderTabs(summary) {
   return [
     { label: "All", count: summary.total },
+    { label: "Upcoming", count: summary.upcoming || 0 },
     { label: "New", count: summary.newOrders },
     { label: "Modified", count: summary.modified },
     { label: "Delivered", count: summary.delivered },

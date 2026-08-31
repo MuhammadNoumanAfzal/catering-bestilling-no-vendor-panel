@@ -139,7 +139,7 @@ export default function DashboardPage() {
                   stat.label === "Total Orders"
                     ? () => navigate("/orders")
                     : stat.label === "Upcoming (Next 4 hrs)"
-                      ? () => navigate("/orders?tab=New")
+                      ? () => navigate("/orders?tab=Upcoming&hours=4")
                       : stat.label === "Urgent Orders"
                         ? () => navigate("/orders?filter=New")
                         : () => navigate("/delivery")

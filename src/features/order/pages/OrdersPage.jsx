@@ -8,7 +8,12 @@ import OrdersTable from "../components/OrdersTable";
 import OrderTabs from "../components/OrderTabs";
 import OrderDetailModal from "../components/OrderDetailModal";
 import { orderFilterChips } from "../data/orderData";
-import { getAllVendorOrders, updateVendorOrderStatus } from "../api/orderApi";
+import { getVendorDashboard } from "../../dashboard/api/dashboardApi";
+import {
+  getAllVendorOrders,
+  getAllVendorUpcomingOrders,
+  updateVendorOrderStatus,
+} from "../api/orderApi";
 import {
   createOrderMetrics,
   createOrderTabs,
@@ -25,6 +30,7 @@ import {
 } from "../../../utils/vendorAlerts";
 
 const PAGE_SIZE = 10;
+const DEFAULT_UPCOMING_HOURS = 4;
 
 function normalizeLabel(value) {
   return String(value || "").toLowerCase().replace(/\s+/g, "");
@@ -162,9 +168,22 @@ function getBackendStatusFilter(activeTab, activeFilter) {
   return undefined;
 }
 
+function isUpcomingTab(tabLabel) {
+  return normalizeLabel(tabLabel) === "upcoming";
+}
+
+function mergeUpcomingSummary(baseSummary, upcomingCount) {
+  return {
+    ...baseSummary,
+    upcoming: Number.isFinite(Number(upcomingCount))
+      ? Number(upcomingCount)
+      : baseSummary.upcoming || 0,
+  };
+}
+
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
   const [activeFilter, setActiveFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -181,18 +200,28 @@ export default function OrdersPage() {
     mapVendorOrderSummary(null, []),
   );
   const [isLoading, setIsLoading] = useState(true);
+  const upcomingHours = useMemo(() => {
+    const parsedValue = Number.parseInt(searchParams.get("hours") || "", 10);
+    return Number.isFinite(parsedValue) && parsedValue > 0
+      ? parsedValue
+      : DEFAULT_UPCOMING_HOURS;
+  }, [searchParams]);
+  const isLiveUpcomingView = isUpcomingTab(activeTab);
 
   const backendQueryVariables = useMemo(() => {
     const search = searchParams.get("search")?.trim() || "";
     const status = getBackendStatusFilter(activeTab, activeFilter);
-    const dateFilters = buildBackendDateFilters(selectedFilter, fromDate, toDate);
+    const dateFilters = isLiveUpcomingView
+      ? {}
+      : buildBackendDateFilters(selectedFilter, fromDate, toDate);
 
     return {
-      ...(search ? { search } : {}),
+      ...(!isLiveUpcomingView && search ? { search } : {}),
       ...(status ? { status } : {}),
+      ...(isLiveUpcomingView ? { hours: upcomingHours } : {}),
       ...dateFilters,
     };
-  }, [activeFilter, activeTab, fromDate, searchParams, selectedFilter, toDate]);
+  }, [activeFilter, activeTab, fromDate, isLiveUpcomingView, searchParams, selectedFilter, toDate, upcomingHours]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -201,13 +230,24 @@ export default function OrdersPage() {
       setIsLoading(true);
 
       try {
-        const result = await getAllVendorOrders(backendQueryVariables);
+        const [result, dashboardResult] = await Promise.all([
+          isLiveUpcomingView
+            ? getAllVendorUpcomingOrders(backendQueryVariables)
+            : getAllVendorOrders(backendQueryVariables),
+          getVendorDashboard({ hoursWindow: upcomingHours }),
+        ]);
         if (isCancelled) {
           return;
         }
 
         const mappedList = mapVendorOrdersResult(result);
-        const mappedSummary = mapVendorOrderSummary(mappedList.summary, mappedList.rows);
+        const liveUpcomingCount = isLiveUpcomingView
+          ? mappedList.totalCount || mappedList.rows.length
+          : dashboardResult?.vendorDashboardSummary?.upcomingOrders;
+        const mappedSummary = mergeUpcomingSummary(
+          mapVendorOrderSummary(mappedList.summary, mappedList.rows),
+          liveUpcomingCount,
+        );
 
         setOrderRows(mappedList.rows);
         setSummaryCounts(mappedSummary);
@@ -231,7 +271,7 @@ export default function OrdersPage() {
     return () => {
       isCancelled = true;
     };
-  }, [backendQueryVariables]);
+  }, [backendQueryVariables, isLiveUpcomingView]);
 
   const dateFilteredRows = orderRows;
 
@@ -246,7 +286,7 @@ export default function OrdersPage() {
 
   const filteredRows = useMemo(() => {
     const baseRows =
-      activeTab === "All"
+      activeTab === "All" || isLiveUpcomingView
         ? dateFilteredRows
         : dateFilteredRows.filter((row) => {
             if (activeTab === "Pending") {
@@ -256,7 +296,7 @@ export default function OrdersPage() {
             return normalizeLabel(row.status) === normalizeLabel(activeTab);
           });
 
-    const chipFilteredRows = activeFilter
+    const chipFilteredRows = activeFilter && !isLiveUpcomingView
       ? baseRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeFilter))
       : baseRows;
 
@@ -273,18 +313,22 @@ export default function OrdersPage() {
     return [...searchedRows].sort((firstRow, secondRow) =>
       parseOrderDateTime(secondRow).getTime() - parseOrderDateTime(firstRow).getTime(),
     );
-  }, [activeFilter, activeTab, dateFilteredRows, searchParams]);
+  }, [activeFilter, activeTab, dateFilteredRows, isLiveUpcomingView, searchParams]);
 
   const dynamicMetrics = useMemo(() => {
     return createOrderMetrics(rangeAwareSummary).map((metric) =>
       metric.label === "Total Orders"
         ? {
             ...metric,
-            helper: selectedFilter === "All Time" ? "All orders" : "Orders in current range",
+            helper: isLiveUpcomingView
+              ? `Live next ${upcomingHours} hours`
+              : selectedFilter === "All Time"
+                ? "All orders"
+                : "Orders in current range",
           }
         : metric,
     );
-  }, [rangeAwareSummary, selectedFilter]);
+  }, [isLiveUpcomingView, rangeAwareSummary, selectedFilter, upcomingHours]);
 
   const orderTabs = useMemo(() => {
     return createOrderTabs(rangeAwareSummary);
@@ -302,7 +346,7 @@ export default function OrdersPage() {
     const nextFilter = searchParams.get("filter");
 
     setActiveTab(nextTab || "All");
-    setActiveFilter(nextFilter || "");
+    setActiveFilter(isUpcomingTab(nextTab || "") ? "" : nextFilter || "");
 
     if (nextTab || nextFilter) {
       setCurrentPage(1);
@@ -310,8 +354,22 @@ export default function OrdersPage() {
   }, [searchParams]);
 
   function handleTabChange(tabLabel) {
-    setActiveTab(tabLabel);
-    setCurrentPage(1);
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (tabLabel === "All") {
+      nextParams.delete("tab");
+      nextParams.delete("hours");
+    } else {
+      nextParams.set("tab", tabLabel);
+      if (isUpcomingTab(tabLabel)) {
+        nextParams.set("hours", String(upcomingHours));
+        nextParams.delete("filter");
+      } else {
+        nextParams.delete("hours");
+      }
+    }
+
+    setSearchParams(nextParams);
   }
 
   function handleFilterChange(filterLabel) {
@@ -351,9 +409,20 @@ export default function OrdersPage() {
       ),
     );
 
-    const refreshedResult = await getAllVendorOrders();
+    const [refreshedResult, dashboardResult] = await Promise.all([
+      isLiveUpcomingView
+        ? getAllVendorUpcomingOrders(backendQueryVariables)
+        : getAllVendorOrders(backendQueryVariables),
+      getVendorDashboard({ hoursWindow: upcomingHours }),
+    ]);
     const mappedList = mapVendorOrdersResult(refreshedResult);
-    const mappedSummary = mapVendorOrderSummary(mappedList.summary, mappedList.rows);
+    const liveUpcomingCount = isLiveUpcomingView
+      ? mappedList.totalCount || mappedList.rows.length
+      : dashboardResult?.vendorDashboardSummary?.upcomingOrders;
+    const mappedSummary = mergeUpcomingSummary(
+      mapVendorOrderSummary(mappedList.summary, mappedList.rows),
+      liveUpcomingCount,
+    );
 
     setOrderRows(mappedList.rows);
     setSummaryCounts(mappedSummary);
@@ -423,6 +492,20 @@ export default function OrdersPage() {
           "Delivered",
           `Order ${row.displayId || row.id} marked as delivered.`,
         );
+        return;
+      }
+
+      if (nextStatus && nextStatus !== normalizeBackendStatus(row.status)) {
+        const result = await confirmOrderStatusAction(actionLabel, row.displayId || row.id);
+        if (!result.isConfirmed) {
+          return;
+        }
+
+        await commitStatusChange(
+          row,
+          nextStatus,
+          `${row.displayId || row.id} updated to ${actionLabel.toLowerCase()}.`,
+        );
       }
     } catch (error) {
       await showVendorErrorAlert(
@@ -458,6 +541,8 @@ export default function OrdersPage() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
         tabs={orderTabs}
+        filterDisabled={isLiveUpcomingView}
+        filterDisabledLabel={`Live next ${upcomingHours} hours`}
         selectedFilter={selectedFilter}
         onFilterSelect={setSelectedFilter}
         fromDate={fromDate}
@@ -472,12 +557,14 @@ export default function OrdersPage() {
           rows={paginatedRows}
           onRowClick={(row) => navigate(`/orders/${encodeURIComponent(row.rawId)}`)}
         />
-        <OrderFilters
-          activeFilter={activeFilter}
-          filters={orderFilterChips}
-          onFilterChange={handleFilterChange}
-          selectedCount={activeFilter ? 1 : 0}
-        />
+        {!isLiveUpcomingView ? (
+          <OrderFilters
+            activeFilter={activeFilter}
+            filters={orderFilterChips}
+            onFilterChange={handleFilterChange}
+            selectedCount={activeFilter ? 1 : 0}
+          />
+        ) : null}
       </div>
 
       <OrderPagination

@@ -79,6 +79,64 @@ export const GET_VENDOR_ORDERS_QUERY = `
   }
 `;
 
+export const GET_VENDOR_UPCOMING_ORDERS_QUERY = `
+  query GetVendorUpcomingOrders($hours: Int = 4, $first: Int!, $after: String) {
+    vendorUpcomingOrders(hours: $hours, first: $first, after: $after) {
+      edges {
+        node {
+          id
+          invoiceNumber
+          orderNumber
+          status
+          pendingModificationRequest {
+            id
+            status
+          }
+          latestModificationRequest {
+            id
+            status
+            resolvedOn
+          }
+          createdOn
+          eventTime
+          customerName
+          eventName
+          guestCount
+          personCount
+          eventDate
+          deliveryDate
+          deliveryWindow
+          deliveryAddress
+          deliveryAddressStr
+          deliveryCity
+          deliveryPostalCode
+          availableActions
+          statuses {
+            status
+            createdOn
+          }
+          pricing {
+            subtotal
+            taxAmount
+            deliveryFee
+            addOnsTotal
+            tipAmount
+            grandTotal
+          }
+          finalPrice
+        }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
+    }
+  }
+`;
+
 export const GET_VENDOR_ORDER_DETAIL_QUERY = `
   query GetVendorOrderDetail($orderId: ID!) {
     vendorOrder(id: $orderId) {
@@ -108,10 +166,53 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       customerName
       eventName
       deliveryAddress
+      deliverySuite
       deliveryCity
       deliveryPostalCode
       deliveryAddressStr
+      delivery {
+        address
+        city
+        status
+        scheduledAt
+        deliveredAt
+      }
       orderNotes
+      pendingModificationRequest {
+        id
+        status
+        reason
+        vendorNote
+        oldTotal
+        newTotal
+        priceDelta
+        requiresAdditionalPayment
+        refundableAmount
+        expiresOn
+        createdOn
+        currentSnapshot {
+          eventDate
+          eventTime
+          personCount
+          deliveryAddress {
+            addressLine1
+            addressLine2
+            city
+            postalCode
+          }
+        }
+        proposedSnapshot {
+          eventDate
+          eventTime
+          personCount
+          deliveryAddress {
+            addressLine1
+            addressLine2
+            city
+            postalCode
+          }
+        }
+      }
       tableware {
         napkins
         utensils
@@ -173,27 +274,39 @@ export const GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY = `
     vendorOrderModificationRequests(orderId: $orderId) {
       id
       status
+      reason
+      vendorNote
+      customerResponse
       requestedBy
       createdOn
-      customerNote
-      requestedChanges {
-        eventDate
-        eventTime
-        personCount
-        deliveryAddress
-        deliverySuite
-        deliveryCity
-        deliveryPostalCode
-        orderNotes
-      }
+      resolvedOn
+      oldTotal
+      newTotal
+      priceDelta
+      requiresAdditionalPayment
+      refundableAmount
       currentSnapshot {
         eventDate
         eventTime
         personCount
-        deliveryAddress
-        deliverySuite
-        deliveryCity
-        deliveryPostalCode
+        deliveryAddress {
+          addressLine1
+          addressLine2
+          city
+          postalCode
+        }
+        orderNotes
+      }
+      proposedSnapshot {
+        eventDate
+        eventTime
+        personCount
+        deliveryAddress {
+          addressLine1
+          addressLine2
+          city
+          postalCode
+        }
         orderNotes
       }
     }
