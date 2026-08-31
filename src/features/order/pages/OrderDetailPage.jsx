@@ -274,6 +274,8 @@ export default function OrderDetailPage() {
   const requestComparisons = buildRequestFieldComparisons(pendingCustomerRequest);
   const latestAdjustment = Array.isArray(orderDetail.adjustments) ? orderDetail.adjustments[0] : null;
   const hasPendingVendorAdjustment = hasOpenVendorAdjustment(latestAdjustment);
+  const shouldShowVendorAdjustmentBanner =
+    Boolean(latestAdjustment) && !pendingCustomerRequest;
   const adjustmentChangesPrice = Boolean(
     latestAdjustment &&
       (
@@ -475,7 +477,7 @@ export default function OrderDetailPage() {
         </div>
       </header>
 
-      {latestAdjustment ? (
+      {shouldShowVendorAdjustmentBanner ? (
         <div className="rounded-[14px] border border-[#f8d9c4] bg-[linear-gradient(180deg,#fff8f3_0%,#fffdfb_100%)] p-4 shadow-[0_6px_18px_rgba(42,27,18,0.06)]">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
