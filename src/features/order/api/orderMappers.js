@@ -274,23 +274,86 @@ function buildOrderItems(items = [], carts = []) {
   };
 }
 
+function normalizeTaxRate(value) {
+  const parsed = parseAmount(value);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+
+  return parsed > 1 ? parsed / 100 : parsed;
+}
+
+function getOrderItemsArray(order) {
+  return Array.isArray(order?.items) ? order.items : [];
+}
+
+function calculateAdjustedSubtotalFromItems(order, guestCount) {
+  const items = getOrderItemsArray(order);
+  const normalizedGuestCount = Math.max(1, toNumber(guestCount, 1));
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  const adjustedSubtotal = items.reduce((sum, item) => {
+    const pricingType = normalizeString(item?.pricingType).trim().toLowerCase();
+    const quantity = Math.max(1, toNumber(item?.quantity, 1));
+    const lineSubtotal = parseAmount(item?.lineSubtotal);
+    const unitPrice = parseAmount(item?.unitPrice);
+
+    if (pricingType === "fixed") {
+      if (lineSubtotal > 0) {
+        return sum + lineSubtotal;
+      }
+
+      return sum + unitPrice * quantity;
+    }
+
+    if (unitPrice > 0) {
+      return sum + unitPrice * quantity * normalizedGuestCount;
+    }
+
+    const itemGuestCount = Math.max(1, resolveGuestCount(order, normalizedGuestCount));
+
+    if (lineSubtotal > 0) {
+      return sum + (lineSubtotal / itemGuestCount) * normalizedGuestCount;
+    }
+
+    return sum;
+  }, 0);
+
+  return adjustedSubtotal > 0 ? adjustedSubtotal : null;
+}
+
 function buildFinancialSummary(order, carts) {
   const pricing = getPricingBlock(order);
-  const baseSubtotal =
+  const guestCount = resolveGuestCount(order);
+  const originalSubtotal =
     parseAmount(pricing.subtotal) ||
     carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0) ||
     parseAmount(order?.finalPrice);
   const deliveryFee = parseAmount(pricing.deliveryFee);
-  const taxAmount = parseAmount(pricing.taxAmount);
   const tipAmount = parseAmount(pricing.tipAmount);
   const addOnsTotal = parseAmount(pricing.addOnsTotal || order?.addOnsTotal);
   const discountAmount = parseAmount(pricing.discountAmount);
   const serviceFee = parseAmount(pricing.serviceFee);
-  const grandTotal =
-    parseAmount(pricing.grandTotal) ||
+  const adjustedSubtotal = calculateAdjustedSubtotalFromItems(order, guestCount);
+  const baseSubtotal = adjustedSubtotal || originalSubtotal;
+  const taxBase = Math.max(0, baseSubtotal + addOnsTotal);
+  const derivedTaxRate =
+    normalizeTaxRate(pricing.taxRate) ||
+    (originalSubtotal + addOnsTotal > 0
+      ? parseAmount(pricing.taxAmount) / (originalSubtotal + addOnsTotal)
+      : 0);
+  const taxAmount = taxBase > 0 ? taxBase * derivedTaxRate : parseAmount(pricing.taxAmount);
+  const calculatedGrandTotal =
     baseSubtotal + deliveryFee + taxAmount + addOnsTotal + tipAmount + serviceFee - discountAmount;
+  const grandTotal =
+    adjustedSubtotal != null
+      ? calculatedGrandTotal
+      : parseAmount(pricing.grandTotal) || calculatedGrandTotal;
 
-  const guestCount = resolveGuestCount(order);
   const companyAllowance = parseAmount(order?.companyAllowance);
   const customerAllowance = parseAmount(order?.customerAllowance);
 
