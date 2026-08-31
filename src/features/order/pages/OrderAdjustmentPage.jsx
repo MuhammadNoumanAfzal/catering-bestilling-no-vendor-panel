@@ -417,6 +417,21 @@ export default function OrderAdjustmentPage() {
     [addedCost, oldTotal, removedCost],
   );
 
+  const originalGuestCount = useMemo(
+    () => Math.max(1, orderDetail?.guests || 1),
+    [orderDetail],
+  );
+
+  const hasPricingChanges = useMemo(
+    () =>
+      modifiedItemIds.length > 0 ||
+      suggestedList.length > 0 ||
+      personCount !== originalGuestCount,
+    [modifiedItemIds.length, originalGuestCount, personCount, suggestedList.length],
+  );
+
+  const effectiveNewTotal = hasPricingChanges ? newTotal : oldTotal;
+
   const hasFormChanges = useMemo(() => {
     const originalDate = extractDateYMD(orderDetail?.raw?.deliveryDate) || "";
     const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
@@ -562,7 +577,7 @@ export default function OrderAdjustmentPage() {
       const originalDate = extractDateYMD(orderDetail?.raw?.deliveryDate) || "";
       const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
       const originalTime = extractTime24h(rawTimeVal);
-      const originalGuests = Math.max(1, orderDetail?.guests || 1);
+      const originalGuests = originalGuestCount;
       const originalAddressFields = splitAddressFields(
         orderDetail?.logistics?.deliveryAddress || "",
         orderDetail?.raw?.billingAddress?.unitFloor || "",
@@ -578,10 +593,13 @@ export default function OrderAdjustmentPage() {
         vendorNote,
         removedItemsJson,
         addedItemsJson,
-        oldTotal,
-        newTotal,
         idempotencyKey: createIdempotencyKey(),
       };
+
+      if (hasPricingChanges) {
+        mutationInput.oldTotal = oldTotal;
+        mutationInput.newTotal = newTotal;
+      }
 
       if (date !== originalDate) {
         mutationInput.proposedEventDate = date || null;
@@ -635,8 +653,8 @@ export default function OrderAdjustmentPage() {
         proposedAddressLine2: mutationInput.proposedAddressLine2 || null,
         proposedCity: mutationInput.proposedCity || null,
         proposedPostalCode: mutationInput.proposedPostalCode || null,
-        oldTotal,
-        newTotal,
+        oldTotal: hasPricingChanges ? oldTotal : null,
+        newTotal: hasPricingChanges ? newTotal : null,
         createdOn: payload?.adjustment?.createdOn || new Date().toISOString(),
       });
 
@@ -1168,9 +1186,11 @@ export default function OrderAdjustmentPage() {
                 </div>
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
-                  <span className="font-bold text-[#8a7a6d]">Updated Total Amount</span>
+                  <span className="font-bold text-[#8a7a6d]">
+                    {hasPricingChanges ? "Updated Total Amount" : "Price Impact"}
+                  </span>
                   <span className="text-right text-[16px] font-black text-[#d96e39]">
-                    {formatCurrency(newTotal)}
+                    {hasPricingChanges ? formatCurrency(effectiveNewTotal) : "No price change"}
                   </span>
                 </div>
               </div>

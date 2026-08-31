@@ -274,6 +274,15 @@ export default function OrderDetailPage() {
   const requestComparisons = buildRequestFieldComparisons(pendingCustomerRequest);
   const latestAdjustment = Array.isArray(orderDetail.adjustments) ? orderDetail.adjustments[0] : null;
   const hasPendingVendorAdjustment = hasOpenVendorAdjustment(latestAdjustment);
+  const adjustmentChangesPrice = Boolean(
+    latestAdjustment &&
+      (
+        (Array.isArray(latestAdjustment.removedItemNames) && latestAdjustment.removedItemNames.length > 0) ||
+        (Array.isArray(latestAdjustment.addedItemNames) && latestAdjustment.addedItemNames.length > 0) ||
+        (latestAdjustment.proposedGuestCount &&
+          Number(latestAdjustment.proposedGuestCount) !== Number(orderDetail?.guests || 0))
+      ),
+  );
 
   async function handleOpenAdjustmentPage() {
     if (pendingCustomerRequest) {
@@ -535,7 +544,8 @@ export default function OrderDetailPage() {
             ) : null}
           </div>
 
-          {typeof latestAdjustment.oldTotal === "number" || typeof latestAdjustment.newTotal === "number" ? (
+          {adjustmentChangesPrice &&
+          (typeof latestAdjustment.oldTotal === "number" || typeof latestAdjustment.newTotal === "number") ? (
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
