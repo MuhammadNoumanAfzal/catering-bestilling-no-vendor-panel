@@ -1,4 +1,4 @@
-import { getPendingAdjustment } from "../utils/pendingAdjustments";
+import { clearPendingAdjustment, getPendingAdjustment } from "../utils/pendingAdjustments";
 
 function normalizeString(value) {
   return value == null ? "" : String(value);
@@ -562,7 +562,16 @@ export function getStatusMutationValue(status) {
 export function mapVendorOrderNode(node) {
   const storedPendingAdjustment = getPendingAdjustment(node?.id);
   const backendPendingAdjustment = normalizePendingVendorAdjustment(node?.pendingVendorAdjustment);
-  const pendingAdjustment = backendPendingAdjustment || storedPendingAdjustment;
+  const latestVendorAdjustment = normalizePendingVendorAdjustment(node?.latestVendorAdjustment);
+  const shouldIgnoreStoredPendingAdjustment =
+    !backendPendingAdjustment && isClosedVendorAdjustment(latestVendorAdjustment);
+
+  if (shouldIgnoreStoredPendingAdjustment) {
+    clearPendingAdjustment(node?.id);
+  }
+
+  const pendingAdjustment =
+    backendPendingAdjustment || (shouldIgnoreStoredPendingAdjustment ? null : storedPendingAdjustment);
   const hasPendingCustomerModification =
     `${node?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
   const hasPendingVendorAdjustment = hasOpenVendorAdjustment(node, pendingAdjustment);
@@ -570,12 +579,15 @@ export function mapVendorOrderNode(node) {
   const status =
     hasPendingVendorAdjustment || hasPendingCustomerModification
       ? "Modified"
+      : isRejectedVendorAdjustment(latestVendorAdjustment)
+        ? "Canceled"
       : resolveOrderStatus(node);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
   const carts = getOrderCartsArray(node?.orderCarts);
   const primaryTitle = firstNonEmpty(carts[0]?.item?.title, carts[0]?.item?.name);
   const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
+  const actions = status === "Canceled" ? [] : mapAvailableActionsToUi(node?.availableActions, status);
 
   return {
     rawId: normalizeString(node?.id),
@@ -592,7 +604,7 @@ export function mapVendorOrderNode(node) {
     total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
     status,
     statusTone: hasPendingVendorAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
-    actions: mapAvailableActionsToUi(node?.availableActions, status),
+    actions,
     raw: node,
   };
 }
@@ -666,6 +678,18 @@ function normalizePendingVendorAdjustment(adjustment) {
     removedItemNames: Array.isArray(adjustment.removedItemNames) ? adjustment.removedItemNames : [],
     addedItemNames: Array.isArray(adjustment.addedItemNames) ? adjustment.addedItemNames : [],
   };
+}
+
+function isClosedVendorAdjustment(adjustment) {
+  const normalizedStatus = `${adjustment?.status ?? ""}`.trim().toUpperCase();
+  return ["APPROVED", "REJECTED", "DECLINED", "CANCELED", "CANCELLED", "DELIVERED"].includes(
+    normalizedStatus,
+  );
+}
+
+function isRejectedVendorAdjustment(adjustment) {
+  const normalizedStatus = `${adjustment?.status ?? ""}`.trim().toUpperCase();
+  return ["REJECTED", "DECLINED", "CANCELED", "CANCELLED"].includes(normalizedStatus);
 }
 
 function hasOpenVendorAdjustment(node, fallbackAdjustment = null) {
@@ -746,7 +770,16 @@ export function mapVendorOrderDetail(data, orderId) {
 
   const storedPendingAdjustment = getPendingAdjustment(node?.id || orderId);
   const backendPendingAdjustment = normalizePendingVendorAdjustment(node?.pendingVendorAdjustment);
-  const pendingAdjustment = backendPendingAdjustment || storedPendingAdjustment;
+  const latestVendorAdjustment = normalizePendingVendorAdjustment(node?.latestVendorAdjustment);
+  const shouldIgnoreStoredPendingAdjustment =
+    !backendPendingAdjustment && isClosedVendorAdjustment(latestVendorAdjustment);
+
+  if (shouldIgnoreStoredPendingAdjustment) {
+    clearPendingAdjustment(node?.id || orderId);
+  }
+
+  const pendingAdjustment =
+    backendPendingAdjustment || (shouldIgnoreStoredPendingAdjustment ? null : storedPendingAdjustment);
   const carts = getOrderCartsArray(node?.orderCarts);
   const deliveryDate = node?.eventDate || node?.deliveryDate || node?.placedAt || node?.createdOn;
   const { dateLabel, timeLabel } = formatDateParts(deliveryDate);
@@ -757,8 +790,10 @@ export function mapVendorOrderDetail(data, orderId) {
   const status =
     hasPendingVendorAdjustment || hasPendingCustomerModification
       ? "Modified"
+      : isRejectedVendorAdjustment(latestVendorAdjustment)
+        ? "Canceled"
       : resolveOrderStatus(node);
-  const actions = mapAvailableActionsToUi(node?.availableActions, status);
+  const actions = status === "Canceled" ? [] : mapAvailableActionsToUi(node?.availableActions, status);
   const customer = buildCustomerFromApi(node);
   const orderItems = Array.isArray(node?.items) ? node.items : [];
   const orderItem = buildOrderItems(orderItems, carts);
@@ -805,6 +840,7 @@ export function mapVendorOrderDetail(data, orderId) {
     availableActions: Array.isArray(node?.availableActions) ? node.availableActions : [],
     statuses: Array.isArray(node?.statuses) ? node.statuses : [],
     adjustments: pendingAdjustment ? [pendingAdjustment] : [],
+    latestVendorAdjustment,
     tableware: node?.tableware ? {
       napkins: Boolean(node.tableware.napkins),
       utensils: Boolean(node.tableware.utensils),

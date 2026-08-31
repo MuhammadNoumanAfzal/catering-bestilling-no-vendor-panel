@@ -43,6 +43,10 @@ export const GET_VENDOR_ORDERS_QUERY = `
             id
             status
           }
+          latestVendorAdjustment {
+            id
+            status
+          }
           pendingModificationRequest {
             id
             status
@@ -95,6 +99,10 @@ export const GET_VENDOR_UPCOMING_ORDERS_QUERY = `
           status
           hasPendingVendorAdjustment
           pendingVendorAdjustment {
+            id
+            status
+          }
+          latestVendorAdjustment {
             id
             status
           }
@@ -156,6 +164,22 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       status
       hasPendingVendorAdjustment
       pendingVendorAdjustment {
+        id
+        status
+        vendorNote
+        reason
+        proposedEventDate
+        proposedDeliveryWindowStart
+        proposedGuestCount
+        proposedAddressLine1
+        proposedAddressLine2
+        proposedCity
+        proposedPostalCode
+        oldTotal
+        newTotal
+        createdOn
+      }
+      latestVendorAdjustment {
         id
         status
         vendorNote

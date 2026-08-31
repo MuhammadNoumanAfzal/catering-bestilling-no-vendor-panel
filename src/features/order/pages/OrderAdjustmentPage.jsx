@@ -1,4 +1,4 @@
-import { AlertTriangle, Calendar, ChevronRight, Clock, Minus, Plus, Search } from "lucide-react";
+import { AlertTriangle, ChevronRight, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showOrderStatusUpdated, showVendorErrorAlert } from "../../../utils/vendorAlerts";
@@ -12,22 +12,12 @@ import { savePendingAdjustment } from "../utils/pendingAdjustments";
 
 const REASON_OPTIONS = [
   "Item unavailable",
-  "Price adjustment",
-  "Delivery time issue",
-  "Minimum guest count issue",
   "Need item replacement",
-  "Cancel Order",
-  "Reject Order",
 ];
 
 const REASON_ENUM_MAP = {
   "Item unavailable": "ITEM_UNAVAILABLE",
-  "Price adjustment": "OTHER",
-  "Delivery time issue": "DELIVERY_TIME_CONFLICT",
-  "Minimum guest count issue": "OTHER",
   "Need item replacement": "OTHER",
-  "Cancel Order": "OTHER",
-  "Reject Order": "OTHER",
 };
 
 function createIdempotencyKey() {
@@ -57,54 +47,6 @@ function extractDatabaseId(id) {
   }
 
   return strId;
-}
-
-function extractTime24h(timeValue) {
-  if (!timeValue) return "";
-  const timeStr = String(timeValue).trim();
-  // Match standard HH:MM
-  const hhmmMatch = timeStr.match(/^([01]\d|2[0-3]):[0-5]\d/);
-  if (hhmmMatch) {
-    return hhmmMatch[0];
-  }
-  // Match HH:MM anywhere (e.g. from range "12:00 - 14:00" or datetime)
-  const rangeMatch = timeStr.match(/([01]\d|2[0-3]):[0-5]\d/);
-  if (rangeMatch) {
-    return rangeMatch[0];
-  }
-  return "";
-}
-
-function normalizeTimeInput(value) {
-  const extractedTime = extractTime24h(value);
-  if (extractedTime) {
-    return extractedTime;
-  }
-
-  const digitsOnly = String(value || "").replace(/[^\d]/g, "").slice(0, 4);
-  if (digitsOnly.length <= 2) {
-    return digitsOnly;
-  }
-
-  return `${digitsOnly.slice(0, 2)}:${digitsOnly.slice(2)}`;
-}
-
-function isValidTime24h(value) {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value || "").trim());
-}
-
-function formatTimeDisplay24h(value) {
-  return extractTime24h(value) || "Time unavailable";
-}
-
-function extractDateYMD(dateValue) {
-  if (!dateValue) return "";
-  const dateStr = String(dateValue).trim();
-  const ymdMatch = dateStr.match(/^\d{4}-\d{2}-\d{2}/);
-  if (ymdMatch) {
-    return ymdMatch[0];
-  }
-  return dateStr;
 }
 
 function mapErrorsByField(errors) {
@@ -140,51 +82,6 @@ function formatCurrency(amount) {
 
 function normalizeString(value) {
   return value == null ? "" : String(value);
-}
-
-function hasSameText(left, right) {
-  return normalizeString(left).trim() === normalizeString(right).trim();
-}
-
-function splitAddressFields(addressValue, fallbackApartment = "") {
-  const fullAddress = normalizeString(addressValue).trim();
-  const fallbackUnit = normalizeString(fallbackApartment).trim();
-
-  if (!fullAddress) {
-    return {
-      addressLine1: "",
-      apartment: fallbackUnit,
-    };
-  }
-
-  const segments = fullAddress
-    .split(",")
-    .map((segment) => segment.trim())
-    .filter(Boolean);
-  const firstSegment = segments[0] || fullAddress;
-  const apartmentPattern =
-    /\b((?:flat|floor|suite|apt|apartment|unit|room|level)\s*[A-Za-z0-9-]+.*|[A-Za-z0-9-]+\s+floor.*)\b/i;
-  const apartmentMatch = firstSegment.match(apartmentPattern);
-
-  if (!apartmentMatch) {
-    return {
-      addressLine1: firstSegment,
-      apartment: fallbackUnit,
-    };
-  }
-
-  const apartmentText = apartmentMatch[1].trim();
-  const addressLine1 = firstSegment
-    .replace(apartmentMatch[0], "")
-    .replace(/\s{2,}/g, " ")
-    .trim()
-    .replace(/[,-]+$/, "")
-    .trim();
-
-  return {
-    addressLine1: addressLine1 || firstSegment,
-    apartment: fallbackUnit || apartmentText,
-  };
 }
 
 function canAdjustOrder(status) {
@@ -264,14 +161,6 @@ export default function OrderAdjustmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
 
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [personCount, setPersonCount] = useState(1);
-  const [address, setAddress] = useState("");
-  const [apartment, setApartment] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-
   useEffect(() => {
     let isCancelled = false;
 
@@ -312,19 +201,6 @@ export default function OrderAdjustmentPage() {
         }
 
         setOrderDetail(mappedOrder);
-        setDate(extractDateYMD(mappedOrder?.raw?.deliveryDate) || "");
-        const rawTimeVal = mappedOrder?.raw?.deliveryWindow || mappedOrder?.raw?.eventTime || "";
-        setTime(extractTime24h(rawTimeVal));
-        setPersonCount(Math.max(1, mappedOrder?.guests || 1));
-        const resolvedApartment = mappedOrder?.raw?.billingAddress?.unitFloor || "";
-        const parsedAddress = splitAddressFields(
-          mappedOrder?.logistics?.deliveryAddress || "",
-          resolvedApartment,
-        );
-        setAddress(parsedAddress.addressLine1);
-        setApartment(parsedAddress.apartment);
-        setCity(mappedOrder?.logistics?.city || mappedOrder?.customer?.city || "");
-        setPostalCode(mappedOrder?.logistics?.postalCode || mappedOrder?.customer?.postalCode || "");
         setModifiedItemIds([]);
         setSuggestedList([]);
       } catch (error) {
@@ -417,62 +293,27 @@ export default function OrderAdjustmentPage() {
     [addedCost, oldTotal, removedCost],
   );
 
-  const originalGuestCount = useMemo(
-    () => Math.max(1, orderDetail?.guests || 1),
-    [orderDetail],
-  );
-
   const hasPricingChanges = useMemo(
     () =>
       modifiedItemIds.length > 0 ||
-      suggestedList.length > 0 ||
-      personCount !== originalGuestCount,
-    [modifiedItemIds.length, originalGuestCount, personCount, suggestedList.length],
+      suggestedList.length > 0,
+    [modifiedItemIds.length, suggestedList.length],
   );
 
   const effectiveNewTotal = hasPricingChanges ? newTotal : oldTotal;
 
   const hasFormChanges = useMemo(() => {
-    const originalDate = extractDateYMD(orderDetail?.raw?.deliveryDate) || "";
-    const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
-    const originalTime = extractTime24h(rawTimeVal);
-    const originalGuests = Math.max(1, orderDetail?.guests || 1);
-    const originalAddressFields = splitAddressFields(
-      orderDetail?.logistics?.deliveryAddress || "",
-      orderDetail?.raw?.billingAddress?.unitFloor || "",
-    );
-    const originalAddress = originalAddressFields.addressLine1;
-    const originalApartment = originalAddressFields.apartment;
-    const originalCity = orderDetail?.logistics?.city || orderDetail?.customer?.city || "";
-    const originalPostalCode =
-      orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
-
     return (
       Boolean(reason) ||
       modifiedItemIds.length > 0 ||
       suggestedList.length > 0 ||
-      !hasSameText(additionalDetails, "") ||
-      !hasSameText(date, originalDate) ||
-      !hasSameText(time, originalTime) ||
-      personCount !== originalGuests ||
-      !hasSameText(address, originalAddress) ||
-      !hasSameText(apartment, originalApartment) ||
-      !hasSameText(city, originalCity) ||
-      !hasSameText(postalCode, originalPostalCode)
+      Boolean(normalizeString(additionalDetails).trim())
     );
   }, [
     additionalDetails,
-    address,
-    apartment,
-    city,
-    date,
     modifiedItemIds.length,
-    orderDetail,
-    personCount,
-    postalCode,
     reason,
     suggestedList.length,
-    time,
   ]);
 
   function toggleItem(itemId) {
@@ -519,17 +360,6 @@ export default function OrderAdjustmentPage() {
         return;
       }
 
-      if (time && !isValidTime24h(time)) {
-        setFormErrors({
-          proposedDeliveryWindowStart: "Please enter time in 24-hour format (HH:MM).",
-        });
-        await showVendorErrorAlert(
-          "Please enter time in 24-hour format (HH:MM).",
-          "Validation Error",
-        );
-        return;
-      }
-
       setFormErrors({});
     setSubmitError("");
     setIsSubmitting(true);
@@ -567,26 +397,6 @@ export default function OrderAdjustmentPage() {
         .filter(Boolean)
         .join("\n");
 
-      const cleanTime = (time || "").trim();
-      const proposedTime = cleanTime
-        ? cleanTime.split(":").length === 2
-          ? `${cleanTime}:00`
-          : cleanTime
-        : null;
-
-      const originalDate = extractDateYMD(orderDetail?.raw?.deliveryDate) || "";
-      const rawTimeVal = orderDetail?.raw?.deliveryWindow || orderDetail?.raw?.eventTime || "";
-      const originalTime = extractTime24h(rawTimeVal);
-      const originalGuests = originalGuestCount;
-      const originalAddressFields = splitAddressFields(
-        orderDetail?.logistics?.deliveryAddress || "",
-        orderDetail?.raw?.billingAddress?.unitFloor || "",
-      );
-      const originalAddress = originalAddressFields.addressLine1;
-      const originalApartment = originalAddressFields.apartment;
-      const originalCity = orderDetail?.logistics?.city || orderDetail?.customer?.city || "";
-      const originalPostalCode = orderDetail?.logistics?.postalCode || orderDetail?.customer?.postalCode || "";
-
       const mutationInput = {
         orderId: orderDetail?.rawId || decodedOrderId,
         reason: REASON_ENUM_MAP[reason] || "OTHER",
@@ -599,28 +409,6 @@ export default function OrderAdjustmentPage() {
       if (hasPricingChanges) {
         mutationInput.oldTotal = oldTotal;
         mutationInput.newTotal = newTotal;
-      }
-
-      if (date !== originalDate) {
-        mutationInput.proposedEventDate = date || null;
-      }
-      if (cleanTime !== originalTime) {
-        mutationInput.proposedDeliveryWindowStart = proposedTime;
-      }
-      if (personCount !== originalGuests) {
-        mutationInput.proposedGuestCount = personCount;
-      }
-      if (address !== originalAddress) {
-        mutationInput.proposedAddressLine1 = address || null;
-      }
-      if (apartment !== originalApartment) {
-        mutationInput.proposedAddressLine2 = apartment || null;
-      }
-      if (city !== originalCity) {
-        mutationInput.proposedCity = city || null;
-      }
-      if (postalCode !== originalPostalCode) {
-        mutationInput.proposedPostalCode = postalCode || null;
       }
 
       const payload = await createVendorOrderAdjustment(mutationInput);
@@ -646,13 +434,13 @@ export default function OrderAdjustmentPage() {
         addedItemsJson,
         removedItemNames: modifiedItems.map((item) => item.name),
         addedItemNames: suggestedList.map((item) => item.name),
-        proposedEventDate: mutationInput.proposedEventDate || null,
-        proposedDeliveryWindowStart: mutationInput.proposedDeliveryWindowStart || null,
-        proposedGuestCount: mutationInput.proposedGuestCount || null,
-        proposedAddressLine1: mutationInput.proposedAddressLine1 || null,
-        proposedAddressLine2: mutationInput.proposedAddressLine2 || null,
-        proposedCity: mutationInput.proposedCity || null,
-        proposedPostalCode: mutationInput.proposedPostalCode || null,
+        proposedEventDate: null,
+        proposedDeliveryWindowStart: null,
+        proposedGuestCount: null,
+        proposedAddressLine1: null,
+        proposedAddressLine2: null,
+        proposedCity: null,
+        proposedPostalCode: null,
         oldTotal: hasPricingChanges ? oldTotal : null,
         newTotal: hasPricingChanges ? newTotal : null,
         createdOn: payload?.adjustment?.createdOn || new Date().toISOString(),
@@ -999,118 +787,9 @@ export default function OrderAdjustmentPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">Date</span>
-                <div className="relative flex items-center">
-                  <Calendar size={14} className="absolute left-3 text-[#8a7a6d]" />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(event) => setDate(event.target.value)}
-                    className="h-10 w-full rounded-[8px] border border-[#d8cec4] pl-9 pr-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
-                  />
-                </div>
-                {formErrors.proposedEventDate ? (
-                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedEventDate}</span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">Time</span>
-                <div className="relative flex items-center">
-                  <Clock size={14} className="absolute left-3 text-[#8a7a6d]" />
-                  <input
-                    type="text"
-                    value={time}
-                    onChange={(event) => setTime(normalizeTimeInput(event.target.value))}
-                    inputMode="numeric"
-                    placeholder="18:00"
-                    maxLength={5}
-                    className="h-10 w-full rounded-[8px] border border-[#d8cec4] pl-9 pr-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
-                  />
-                </div>
-                {formErrors.proposedDeliveryWindowStart ? (
-                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedDeliveryWindowStart}</span>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="flex max-w-[200px] flex-col gap-1.5">
-              <span className="text-[13px] font-extrabold text-[#1c1510]">Person Count</span>
-              <div className="flex h-10 items-center justify-between overflow-hidden rounded-[8px] border border-[#d8cec4] bg-white">
-                <button
-                  type="button"
-                  onClick={() => setPersonCount((current) => Math.max(1, current - 1))}
-                  className="flex h-full w-10 cursor-pointer items-center justify-center text-[#7a6d63] transition hover:bg-[#faf7f4]"
-                >
-                  <Minus size={14} strokeWidth={2.5} />
-                </button>
-                <span className="text-[14px] font-extrabold text-[#1c1510]">{personCount}</span>
-                <button
-                  type="button"
-                  onClick={() => setPersonCount((current) => current + 1)}
-                  className="flex h-full w-10 cursor-pointer items-center justify-center text-[#7a6d63] transition hover:bg-[#faf7f4]"
-                >
-                  <Plus size={14} strokeWidth={2.5} />
-                </button>
-              </div>
-              {formErrors.proposedGuestCount ? (
-                <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedGuestCount}</span>
-              ) : null}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">Address</span>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(event) => setAddress(event.target.value)}
-                  className="h-10 w-full rounded-[8px] border border-[#d8cec4] px-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
-                />
-                {formErrors.proposedAddressLine1 ? (
-                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedAddressLine1}</span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">Apartment/Floor (Optional)</span>
-                <input
-                  type="text"
-                  value={apartment}
-                  onChange={(event) => setApartment(event.target.value)}
-                  className="h-10 w-full rounded-[8px] border border-[#d8cec4] px-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">City</span>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(event) => setCity(event.target.value)}
-                  className="h-10 w-full rounded-[8px] border border-[#d8cec4] px-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
-                />
-                {formErrors.proposedCity ? (
-                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedCity}</span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">Postal Code</span>
-                <input
-                  type="text"
-                  value={postalCode}
-                  onChange={(event) => setPostalCode(event.target.value)}
-                  className="h-10 w-full rounded-[8px] border border-[#d8cec4] px-3 text-[13px] font-bold text-[#1c1510] transition focus:border-[#cf6e38] focus:outline-none"
-                />
-                {formErrors.proposedPostalCode ? (
-                  <span className="text-[12px] font-bold text-[#b42318]">{formErrors.proposedPostalCode}</span>
-                ) : null}
-              </div>
+            <div className="rounded-[10px] border border-[#efe6de] bg-[#fcf8f4] px-4 py-3 text-[13px] font-semibold leading-[1.6] text-[#6f655d]">
+              Vendors can only request item removals or replacement suggestions from this screen.
+              Event date, time, guest count, and delivery address remain locked.
             </div>
           </div>
 
@@ -1134,19 +813,19 @@ export default function OrderAdjustmentPage() {
                 <div className="flex items-start justify-between">
                   <span className="font-bold text-[#8a7a6d]">Order Date</span>
                   <span className="text-right font-extrabold text-[#1c1510]">
-                    {orderDetail.date} - {formatTimeDisplay24h(orderDetail.time)}
+                    {orderDetail.date} - {orderDetail.time || "-"}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between">
                   <span className="font-bold text-[#8a7a6d]">Persons</span>
-                  <span className="text-right font-extrabold text-[#1c1510]">{personCount}</span>
+                  <span className="text-right font-extrabold text-[#1c1510]">{orderDetail.guests}</span>
                 </div>
 
                 <div className="flex items-start justify-between">
                   <span className="font-bold text-[#8a7a6d]">Delivery Address</span>
                   <span className="max-w-[170px] text-right font-extrabold leading-[1.3] text-[#1c1510]">
-                    {[address, apartment, city, postalCode].filter(Boolean).join(", ") || "-"}
+                    {orderDetail.logistics?.fullAddress || orderDetail.logistics?.deliveryAddress || "-"}
                   </span>
                 </div>
 
