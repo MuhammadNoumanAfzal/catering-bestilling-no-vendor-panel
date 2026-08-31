@@ -192,6 +192,17 @@ function canAdjustOrder(status) {
   return normalizedStatus !== "Delivered" && normalizedStatus !== "Canceled";
 }
 
+function hasOpenAdjustmentRequest(adjustment) {
+  const normalizedStatus = `${adjustment?.status ?? ""}`.trim().toUpperCase();
+  if (!normalizedStatus) {
+    return false;
+  }
+
+  return !["APPROVED", "REJECTED", "DECLINED", "CANCELED", "CANCELLED", "DELIVERED"].includes(
+    normalizedStatus,
+  );
+}
+
 function buildRemovableItems(orderDetail) {
   const orderItems = Array.isArray(orderDetail?.raw?.items) ? orderDetail.raw.items : [];
   const carts = Array.isArray(orderDetail?.raw?.orderCarts) ? orderDetail.raw.orderCarts : [];
@@ -277,6 +288,23 @@ export default function OrderAdjustmentPage() {
         if (!canAdjustOrder(mappedOrder?.status)) {
           await showVendorErrorAlert(
             "Order adjustment is only available before an order is delivered or canceled.",
+            "Adjustment unavailable",
+          );
+          navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
+          return;
+        }
+
+        const hasPendingCustomerModification =
+          `${mappedOrder?.raw?.pendingModificationRequest?.status ?? ""}`.trim().toUpperCase() === "PENDING";
+        const existingAdjustment = Array.isArray(mappedOrder?.adjustments)
+          ? mappedOrder.adjustments[0]
+          : null;
+
+        if (hasPendingCustomerModification || hasOpenAdjustmentRequest(existingAdjustment)) {
+          await showVendorErrorAlert(
+            hasPendingCustomerModification
+              ? "A customer modification request is already pending for this order. Please resolve it from the order details page first."
+              : "A vendor adjustment is already pending for this order. Please wait for the customer to respond from the order details page.",
             "Adjustment unavailable",
           );
           navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
