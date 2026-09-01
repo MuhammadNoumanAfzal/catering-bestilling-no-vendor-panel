@@ -60,21 +60,24 @@ async function getMessaging() {
 }
 
 export async function startFirebasePush(onForegroundMessage) {
-  if (
-    typeof window === "undefined" ||
-    !hasFirebaseConfiguration() ||
-    !("serviceWorker" in navigator) ||
-    !("Notification" in window)
-  ) {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("Notification" in window)) {
     return { token: null, unsubscribe: () => {} };
   }
+
+  if (!hasFirebaseConfiguration()) {
+    console.warn("Firebase push is disabled because Firebase environment values are missing.");
+    return { token: null, unsubscribe: () => {} };
+  }
+
+  // Register before requesting permission so the app is visible in DevTools even when permission is blocked.
+  const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
 
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
+    console.warn(`Firebase push is waiting for notification permission: ${permission}.`);
     return { token: null, unsubscribe: () => {} };
   }
 
-  const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
   const messaging = await getMessaging();
   const token = await messaging.getToken({
     vapidKey: VAPID_KEY,

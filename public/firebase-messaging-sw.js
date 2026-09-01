@@ -13,4 +13,6 @@ const firebaseConfig = {
 
 if (!Object.values(firebaseConfig).some((value) => value.startsWith("REPLACE_WITH_"))) {
   firebase.initializeApp(firebaseConfig);
+  // Initialize Messaging so Firebase handles notification payloads in the background.
+  firebase.messaging();
 }
