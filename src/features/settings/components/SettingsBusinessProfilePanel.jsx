@@ -1,4 +1,3 @@
-import SettingsBusinessHoursSection from "./SettingsBusinessHoursSection";
 import SettingsComplianceDocumentsSection from "./SettingsComplianceDocumentsSection";
 import SettingsSpecialClosuresSection from "./SettingsSpecialClosuresSection";
 import SettingsSectionCard from "./SettingsSectionCard";
@@ -17,7 +16,6 @@ export default function SettingsBusinessProfilePanel({
   disabled = false,
   fieldErrors = {},
   complianceDocuments = [],
-  handleBusinessHourChange,
   handleComplianceDocumentUpload,
   handleComplianceDocumentsRefresh,
   handleDeactivateStore,
@@ -26,7 +24,6 @@ export default function SettingsBusinessProfilePanel({
   handleNotificationToggle,
   handleResetAllSettings,
   handleSave,
-  handleToggleBusinessDay,
   hasUnsavedChanges = false,
   isSaving = false,
   languageOptions,
@@ -174,12 +171,6 @@ export default function SettingsBusinessProfilePanel({
             </div>
           </SettingsSectionCard>
 
-          <SettingsBusinessHoursSection
-            disabled={disabled}
-            hours={settings.hours}
-            onChangeTime={handleBusinessHourChange}
-            onToggleDay={handleToggleBusinessDay}
-          />
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">

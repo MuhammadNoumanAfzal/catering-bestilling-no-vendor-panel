@@ -42,7 +42,6 @@ export default function SettingsPage() {
     complianceDocuments,
     handleAccountFieldChange,
     handleBannerImageUpload,
-    handleBusinessHourChange,
     handleComplianceDocumentsRefresh,
     handleComplianceDocumentUpload,
     handleCancel,
@@ -58,7 +57,6 @@ export default function SettingsPage() {
     handleResetAllSettings,
     handleSave,
     handleSaveClosure,
-    handleToggleBusinessDay,
     handleTogglePasswordVisibility,
     hasUnsavedChanges,
     isLoading,
@@ -138,7 +136,6 @@ export default function SettingsPage() {
           currencyOptions={settingsOptions.currencyOptions}
           disabled={isLoading || isSaving}
           fieldErrors={fieldErrors}
-          handleBusinessHourChange={handleBusinessHourChange}
           handleComplianceDocumentsRefresh={handleComplianceDocumentsRefresh}
           handleComplianceDocumentUpload={handleComplianceDocumentUpload}
           handleDeactivateStore={handleDeactivateStore}
@@ -147,7 +144,6 @@ export default function SettingsPage() {
           handleNotificationToggle={handleNotificationToggle}
           handleResetAllSettings={handleResetAllSettings}
           handleSave={handleSave}
-          handleToggleBusinessDay={handleToggleBusinessDay}
           hasUnsavedChanges={hasUnsavedChanges}
           isSaving={isSaving}
           languageOptions={settingsOptions.languageOptions}

@@ -1,72 +1,18 @@
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
-import { Label, SelectInput, TextInput, ToggleSwitch } from "./CreateMenuFields";
-import { getTodayDateValue } from "../../../../utils/dateValidation";
+import { Label } from "./CreateMenuFields";
 
 export default function CreateMenuAvailabilitySection({
-  availabilityDays,
   disabled = false,
   dietaryOptions,
-  leadTime,
-  leadTimeOptions,
-  onLeadTimeChange,
-  selectedDays,
   selectedDietary,
-  toggleDay,
   toggleDietary,
-  hasAvailabilityWindow,
-  onHasAvailabilityWindowChange,
-  availabilityStart,
-  onAvailabilityStartChange,
-  availabilityEnd,
-  onAvailabilityEndChange,
 }) {
-  const minDate = getTodayDateValue();
-
   return (
     <CreateMenuSectionCard
-      description="General details about this catering package."
-      title="Availability"
+      description="Help customers identify menu options that suit their needs."
+      title="Dietary Tags"
     >
       <div>
-        <div className="flex flex-wrap gap-3">
-          {availabilityDays.map((day) => {
-            const dayValue = day.value || day;
-            const dayLabel = day.label || day;
-            const isActive = selectedDays.includes(dayValue);
-
-            return (
-              <button
-                key={dayValue}
-                className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border text-[13px] font-bold transition ${
-                  isActive
-                    ? "border-[#cf6e38] bg-[#fff0e9] text-[#cf6e38]"
-                    : "border-[#bdb2a9] bg-white text-[#29211d]"
-                } ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-                disabled={disabled}
-                onClick={() => toggleDay(dayValue)}
-                type="button"
-              >
-                {dayLabel}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4">
-          <div>
-            <Label>Min. Lead Time (Hours)</Label>
-            <SelectInput
-              disabled={disabled}
-              onChange={onLeadTimeChange}
-              options={leadTimeOptions}
-              placeholder="24"
-              value={leadTime}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 border-t border-[#e7ded6] pt-4">
         <Label>Dietary Tags</Label>
         <div className="flex flex-wrap gap-2">
           {dietaryOptions.map((tag) => {
@@ -90,54 +36,6 @@ export default function CreateMenuAvailabilitySection({
               </button>
             );
           })}
-        </div>
-      </div>
-
-      <div className="mt-4 border-t border-[#e7ded6] pt-4">
-        <span className="mb-1 block text-[14px] font-bold text-[#211913]">
-          Delivery Availability Window (Optional)
-        </span>
-        <p className="mb-3 text-[12px] font-medium leading-tight text-[#746a62]">
-          Choose the date range when customers can order this menu for delivery.
-        </p>
-
-        <div className="mb-4">
-          <ToggleSwitch
-            checked={hasAvailabilityWindow}
-            disabled={disabled}
-            onChange={onHasAvailabilityWindowChange}
-            label="Enable Availability Window"
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#7b6d62]">
-              Available From
-            </span>
-            <TextInput
-              disabled={disabled || !hasAvailabilityWindow}
-              min={minDate}
-              onChange={onAvailabilityStartChange}
-              placeholder="Select start date..."
-              type="date"
-              value={availabilityStart}
-            />
-          </div>
-          <span className="mt-5 font-bold text-[#9a8e85]">-</span>
-          <div className="flex-1">
-            <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#7b6d62]">
-              Available Until
-            </span>
-            <TextInput
-              disabled={disabled || !hasAvailabilityWindow}
-              min={availabilityStart || minDate}
-              onChange={onAvailabilityEndChange}
-              placeholder="Select end date..."
-              type="date"
-              value={availabilityEnd}
-            />
-          </div>
         </div>
       </div>
     </CreateMenuSectionCard>

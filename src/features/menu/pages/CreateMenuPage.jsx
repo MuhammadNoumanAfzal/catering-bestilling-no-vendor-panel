@@ -8,7 +8,6 @@ import CreateMenuBasicInfoSection from "../components/create-menu/CreateMenuBasi
 import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSection";
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
 import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
-import { availabilityDays, leadTimeOptions } from "../menuConstants";
 import { useMenuEditor } from "../hooks/useMenuEditor";
 
 export default function CreateMenuPage() {
@@ -160,28 +159,10 @@ export default function CreateMenuPage() {
 
         <div className="flex flex-col gap-4">
           <CreateMenuAvailabilitySection
-            availabilityDays={availabilityDays}
             disabled={isViewMode || isSaving}
             dietaryOptions={dietaryOptions}
-            leadTime={formState.leadTime}
-            leadTimeOptions={leadTimeOptions}
-            onLeadTimeChange={(event) => actions.setField("leadTime", event.target.value)}
-            selectedDays={formState.selectedDays}
             selectedDietary={formState.selectedDietary}
-            toggleDay={actions.toggleDay}
             toggleDietary={actions.toggleDietary}
-            hasAvailabilityWindow={formState.hasAvailabilityWindow}
-            onHasAvailabilityWindowChange={(value) =>
-              actions.setField("hasAvailabilityWindow", value)
-            }
-            availabilityStart={formState.availabilityStart}
-            onAvailabilityStartChange={(event) =>
-              actions.setField("availabilityStart", event.target.value)
-            }
-            availabilityEnd={formState.availabilityEnd}
-            onAvailabilityEndChange={(event) =>
-              actions.setField("availabilityEnd", event.target.value)
-            }
           />
 
 

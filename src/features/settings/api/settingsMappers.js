@@ -615,7 +615,6 @@ export function getComparableSettingsState(settings) {
     regionalPreferences: buildRegionalPreferencesInput(settings),
     payoutProfile: buildPayoutProfileInput(settings),
     account: buildAccountProfileInput(settings),
-    hours: buildBusinessHoursInput(settings),
     closures: [...(settings.closures || [])].map((item) => ({
       id: item.id,
       type: item.type,
