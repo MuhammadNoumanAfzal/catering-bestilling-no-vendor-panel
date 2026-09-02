@@ -32,8 +32,8 @@ export default function SettingsBusinessProfilePanel({
   handleDeleteClosure,
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(320px,1fr)] gap-4 max-[1120px]:grid-cols-1">
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(320px,1fr)] items-start gap-3 max-[1120px]:grid-cols-1">
         <div className="flex min-w-0 flex-col gap-3">
           <SettingsSectionCard
             description="Update how your brand and customers see your business."
@@ -170,6 +170,32 @@ export default function SettingsBusinessProfilePanel({
               />
             </div>
           </SettingsSectionCard>
+
+          <SettingsSectionCard
+            description="Add the bank details the platform should use when sending your manual payouts."
+            title="Payout Bank Details"
+          >
+            <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
+              <SettingsTextField disabled={disabled} label="Account Holder Name" onChange={handleFieldChange("payoutProfile.accountHolderName")} placeholder="Enter account holder name" value={settings.payoutProfile.accountHolderName} />
+              <SettingsTextField disabled={disabled} label="Bank Name" onChange={handleFieldChange("payoutProfile.bankName")} placeholder="Enter bank name" value={settings.payoutProfile.bankName} />
+              <SettingsTextField disabled={disabled} label="Account Number" onChange={handleFieldChange("payoutProfile.accountNumber")} placeholder="Enter account number" value={settings.payoutProfile.accountNumber} />
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#ecdccf] bg-[#fffdfb] px-4 py-3">
+              <div><p className="text-[13px] font-semibold text-[#201914]">Payout review: {settings.payoutProfile.verificationStatus || "Pending review"}</p><p className="mt-1 text-[12px] text-[#7a6d63]">{settings.payoutProfile.bankDetailsVerified ? "Bank details confirmed" : "Waiting for admin confirmation"}</p></div>
+              <button className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[12px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={disabled || isSaving || !hasUnsavedChanges} onClick={handleSave} type="button">{isSaving ? "Saving..." : "Save Bank Details"}</button>
+            </div>
+          </SettingsSectionCard>
+
+          <div id="special-closures-section">
+            <SettingsSpecialClosuresSection
+              closureTypeOptions={closureTypeOptions}
+              closures={settings.closures}
+              disabled={disabled}
+              minDate={getTodayDateValue()}
+              onAddOrUpdateClosure={handleSaveClosure}
+              onDeleteClosure={handleDeleteClosure}
+            />
+          </div>
 
         </div>
 
@@ -319,11 +345,19 @@ export default function SettingsBusinessProfilePanel({
               </div>
             </div>
           </SettingsSectionCard>
+
+          <SettingsComplianceDocumentsSection
+            disabled={disabled}
+            documents={complianceDocuments}
+            onRefreshStatus={handleComplianceDocumentsRefresh}
+            onUpload={handleComplianceDocumentUpload}
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 items-start gap-4 max-[1120px]:grid-cols-1">
-        <SettingsSectionCard
+      <div className="hidden grid-cols-2 items-start gap-3 max-[1120px]:grid-cols-1">
+        <div className="flex min-w-0 flex-col gap-3">
+          <SettingsSectionCard
           description="Add the bank details the platform should use when sending your manual payouts."
           title="Payout Bank Details"
         >
@@ -379,7 +413,19 @@ export default function SettingsBusinessProfilePanel({
               {isSaving ? "Saving..." : "Save Bank Details"}
             </button>
           </div>
-        </SettingsSectionCard>
+          </SettingsSectionCard>
+
+          <div id="special-closures-section">
+            <SettingsSpecialClosuresSection
+              closureTypeOptions={closureTypeOptions}
+              closures={settings.closures}
+              disabled={disabled}
+              minDate={getTodayDateValue()}
+              onAddOrUpdateClosure={handleSaveClosure}
+              onDeleteClosure={handleDeleteClosure}
+            />
+          </div>
+        </div>
 
         <SettingsComplianceDocumentsSection
           disabled={disabled}
@@ -389,16 +435,6 @@ export default function SettingsBusinessProfilePanel({
         />
       </div>
 
-      <div id="special-closures-section">
-        <SettingsSpecialClosuresSection
-          closureTypeOptions={closureTypeOptions}
-          closures={settings.closures}
-          disabled={disabled}
-          minDate={getTodayDateValue()}
-          onAddOrUpdateClosure={handleSaveClosure}
-          onDeleteClosure={handleDeleteClosure}
-        />
-      </div>
     </div>
   );
 }
