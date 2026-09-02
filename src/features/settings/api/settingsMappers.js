@@ -560,19 +560,9 @@ export function buildRegionalPreferencesInput(settings) {
 
 export function buildPayoutProfileInput(settings) {
   return {
-    payoutMethod: normalizeString(settings.payoutProfile?.payoutMethod).trim() || "BANK_TRANSFER",
     accountHolderName: normalizeString(settings.payoutProfile?.accountHolderName).trim(),
-    bankName: normalizeString(settings.payoutProfile?.bankName).trim() || null,
-    accountNumber: normalizeString(settings.payoutProfile?.accountNumber).trim() || null,
-    iban: normalizeString(settings.payoutProfile?.iban).trim() || null,
-    swiftBic: normalizeString(settings.payoutProfile?.swiftBic).trim() || null,
-    routingNumber: normalizeString(settings.payoutProfile?.routingNumber).trim() || null,
-    branchName: normalizeString(settings.payoutProfile?.branchName).trim() || null,
-    branchCode: normalizeString(settings.payoutProfile?.branchCode).trim() || null,
-    billingAddress: normalizeString(settings.payoutProfile?.billingAddress).trim() || null,
-    city: normalizeString(settings.payoutProfile?.city).trim() || null,
-    postalCode: normalizeString(settings.payoutProfile?.postalCode).trim() || null,
-    country: normalizeString(settings.payoutProfile?.country).trim() || null,
+    bankName: normalizeString(settings.payoutProfile?.bankName).trim(),
+    accountNumber: normalizeString(settings.payoutProfile?.accountNumber).trim(),
   };
 }
 

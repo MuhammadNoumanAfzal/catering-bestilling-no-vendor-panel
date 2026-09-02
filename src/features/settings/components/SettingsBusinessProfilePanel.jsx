@@ -349,69 +349,6 @@ export default function SettingsBusinessProfilePanel({
               placeholder="Enter account number"
               value={settings.payoutProfile.accountNumber}
             />
-            <SettingsTextField
-              disabled={disabled}
-              label="IBAN"
-              onChange={handleFieldChange("payoutProfile.iban")}
-              placeholder="Enter IBAN"
-              value={settings.payoutProfile.iban}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="SWIFT / BIC"
-              onChange={handleFieldChange("payoutProfile.swiftBic")}
-              placeholder="Enter SWIFT / BIC"
-              value={settings.payoutProfile.swiftBic}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="Routing Number"
-              onChange={handleFieldChange("payoutProfile.routingNumber")}
-              placeholder="Enter routing number"
-              value={settings.payoutProfile.routingNumber}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="Branch Name"
-              onChange={handleFieldChange("payoutProfile.branchName")}
-              placeholder="Enter branch name"
-              value={settings.payoutProfile.branchName}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="Branch Code"
-              onChange={handleFieldChange("payoutProfile.branchCode")}
-              placeholder="Enter branch code"
-              value={settings.payoutProfile.branchCode}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="Billing Address"
-              onChange={handleFieldChange("payoutProfile.billingAddress")}
-              placeholder="Enter billing address"
-              value={settings.payoutProfile.billingAddress}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="City"
-              onChange={handleFieldChange("payoutProfile.city")}
-              placeholder="Enter city"
-              value={settings.payoutProfile.city}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="Postal Code"
-              onChange={handleFieldChange("payoutProfile.postalCode")}
-              placeholder="Enter postal code"
-              value={settings.payoutProfile.postalCode}
-            />
-            <SettingsTextField
-              disabled={disabled}
-              label="Country"
-              onChange={handleFieldChange("payoutProfile.country")}
-              placeholder="Enter country"
-              value={settings.payoutProfile.country}
-            />
           </div>
 
           <div className="mt-4 rounded-[10px] border border-[#f0dfd3] bg-[#fff8f4] px-4 py-3 text-[12px] text-[#6f635b]">
