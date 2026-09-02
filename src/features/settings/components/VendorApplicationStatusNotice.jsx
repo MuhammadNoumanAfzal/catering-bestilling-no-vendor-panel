@@ -27,11 +27,11 @@ function getStatusConfig(status) {
         badge: "bg-[#fff1ea] text-[#c95e2c]",
         title: "Admin requested updates to your application",
         description:
-          "Your vendor panel is still open so you can fix the required information. Review your business profile, address, hours, bank details, documents, images, delivery timing, and menu setup, then save everything before asking for another review.",
+          "Your vendor panel is still open so you can fix the required information. Review your business profile, address, bank details, documents, images, delivery timing, and menu setup, then save everything before asking for another review.",
         checklist: [
           "Complete business profile details like business name, address, contact number, tax number, and description.",
           "Upload or correct your logo, banner, and any missing compliance documents.",
-          "Review business hours here, then check Delivery timings and Menu items on their own pages.",
+          "Check delivery timings and menu items on their own pages.",
           "Save your corrections so admin can review the latest version.",
         ],
       };
@@ -45,7 +45,7 @@ function getStatusConfig(status) {
         description:
           "Your submitted information is being reviewed. You can still keep your profile polished by checking business details, images, payout details, delivery timing, and menu completeness.",
         checklist: [
-          "Double-check address, contact details, business hours, and uploaded images.",
+          "Double-check address, contact details, and uploaded images.",
           "Make sure payout bank details and compliance documents are complete.",
           "Keep delivery schedule and menu items up to date.",
         ],
@@ -62,7 +62,7 @@ function getStatusConfig(status) {
         checklist: [
           "Fill out business and account information, including address, phone number, tax number, and description.",
           "Upload a clear profile image or logo, banner image, and all required compliance documents.",
-          "Review business hours here and make sure delivery timing is correct on the Delivery page.",
+          "Make sure delivery timing is correct on the Delivery page.",
           "Check your Menu page and add complete menu items so the store is ready to go live.",
           "Save bank payout details so finance information is ready for review.",
         ],
@@ -104,19 +104,6 @@ function hasBrandAssetsCompleted(settings) {
   return Boolean(settings?.profileImage?.fileUrl) && Boolean(settings?.bannerImage?.fileUrl);
 }
 
-function hasBusinessHoursCompleted(settings) {
-  const hours = Array.isArray(settings?.hours) ? settings.hours : [];
-
-  return hours.some(
-    (item) =>
-      item?.enabled &&
-      hasValue(item?.open) &&
-      hasValue(item?.close) &&
-      item.open !== "Closed" &&
-      item.close !== "Closed",
-  );
-}
-
 function hasPayoutDetailsCompleted(settings) {
   const payoutProfile = settings?.payoutProfile || {};
 
@@ -143,7 +130,7 @@ function hasRequiredDocumentsUploaded(documents = []) {
   );
 }
 
-function buildChecklistItems({ status, settings, complianceDocuments }) {
+function buildChecklistItems({ settings, complianceDocuments }) {
   const checklistItems = [];
   const rejectedDocuments = getRejectedDocuments(complianceDocuments);
 
@@ -165,10 +152,6 @@ function buildChecklistItems({ status, settings, complianceDocuments }) {
 
   if (!hasRequiredDocumentsUploaded(complianceDocuments) && !rejectedDocuments.length) {
     checklistItems.push("Upload all required compliance documents so your application can move forward.");
-  }
-
-  if (!hasBusinessHoursCompleted(settings)) {
-    checklistItems.push("Add your business opening hours so customers and admin can review your availability.");
   }
 
   if (!hasPayoutDetailsCompleted(settings)) {
@@ -196,7 +179,6 @@ export default function VendorApplicationStatusNotice({
     ? (requestedFields.length ? requestedFields : missingRequirements)
     : [];
   const dynamicChecklist = buildChecklistItems({
-    status,
     settings,
     complianceDocuments,
   });
@@ -414,7 +396,6 @@ export default function VendorApplicationStatusNotice({
               {[
                 "Business profile",
                 "Logo and banner",
-                "Business hours",
                 "Bank details",
                 "Documents",
                 "Delivery timing",

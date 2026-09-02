@@ -9,7 +9,6 @@ import {
   getVendorSettingsPage,
   resetVendorSettingsToDefault,
   updateVendorAccountProfile,
-  updateVendorBusinessHours,
   updateVendorBusinessProfile,
   updateVendorSettingsImages,
   updateVendorNotificationPreferences,
@@ -21,7 +20,6 @@ import {
 import {
   defaultApplicationReviewState,
   buildAccountProfileInput,
-  buildBusinessHoursInput,
   buildBusinessProfileInput,
   buildVendorSettingsImagesInput,
   buildNotificationPreferencesInput,
@@ -133,14 +131,6 @@ const emptyFieldErrors = {
   confirmPassword: "",
 };
 
-function hasPasswordChanges(passwordForm) {
-  return (
-    String(passwordForm.currentPassword || "").trim() ||
-    String(passwordForm.newPassword || "").trim() ||
-    String(passwordForm.confirmPassword || "").trim()
-  );
-}
-
 function hasPasswordChangeIntent(passwordForm) {
   return (
     String(passwordForm.newPassword || "").trim() ||
@@ -230,19 +220,6 @@ function mapMutationErrorsByField(errors = []) {
 
     return accumulator;
   }, {});
-}
-
-function mapApiHoursToState(hours = []) {
-  return hours.map((item) => ({
-    id: item.id || "",
-    day: item.day,
-    enabled: Boolean(item.enabled),
-    timeRange: item.enabled
-      ? item.timeRange || [item.openTime, item.closeTime].filter(Boolean).join("-")
-      : "Closed",
-    open: item.enabled ? item.openTime : "Closed",
-    close: item.enabled ? item.closeTime : "Closed",
-  }));
 }
 
 function resolveNavbarProfileImage(settings) {
@@ -464,58 +441,6 @@ export default function useSettingsPageState() {
         ...current.notifications,
         [field]: !current.notifications[field],
       },
-    }));
-  }
-
-  function handleToggleBusinessDay(day) {
-    setSettings((current) => ({
-      ...current,
-      hours: current.hours.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              enabled: !item.enabled,
-              timeRange: !item.enabled ? "08:00-12:00" : "Closed",
-              open: !item.enabled ? "08:00" : "Closed",
-              close: !item.enabled ? "12:00" : "Closed",
-            }
-          : item,
-      ),
-    }));
-  }
-
-  function handleBusinessHourChange(day, field, value) {
-    setSettings((current) => ({
-      ...current,
-      hours: current.hours.map((item) => {
-        if (item.day !== day) {
-          return item;
-        }
-
-        const nextItem =
-          field === "open"
-            ? {
-                ...item,
-                open: value,
-                close: "Closed",
-              }
-            : {
-                ...item,
-                close: value,
-              };
-
-        return {
-          ...nextItem,
-          timeRange:
-            nextItem.enabled &&
-            nextItem.open &&
-            nextItem.close &&
-            nextItem.open !== "Closed" &&
-            nextItem.close !== "Closed"
-              ? `${nextItem.open}-${nextItem.close}`
-              : "Closed",
-        };
-      }),
     }));
   }
 
@@ -958,24 +883,6 @@ export default function useSettingsPageState() {
         confirmations.push(result.message || "Regional preferences saved.");
       }
 
-      if (
-        JSON.stringify(comparableSaved.hours) !==
-        JSON.stringify(comparableCurrent.hours)
-      ) {
-        const result = await updateVendorBusinessHours(buildBusinessHoursInput(settings));
-
-        if (!result.success) {
-          await showVendorErrorAlert(result.message || "Unable to save business hours.");
-          return;
-        }
-
-        nextSettings = {
-          ...nextSettings,
-          hours: mapApiHoursToState(result.businessHours || []),
-        };
-        confirmations.push(result.message || "Business hours saved.");
-      }
-
       if (hasPasswordChangeIntent(passwordForm)) {
         const result = await changeVendorPassword(buildPasswordChangeInput(passwordForm));
 
@@ -1269,7 +1176,6 @@ export default function useSettingsPageState() {
     applicationReview,
     complianceDocuments,
     handleAccountFieldChange,
-    handleBusinessHourChange,
     handleComplianceDocumentsRefresh,
     handleComplianceDocumentUpload,
     handleCancel,
@@ -1286,7 +1192,6 @@ export default function useSettingsPageState() {
     handleResetAllSettings,
     handleSave,
     handleSaveClosure,
-    handleToggleBusinessDay,
     handleTogglePasswordVisibility,
     hasUnsavedChanges,
     fieldErrors,

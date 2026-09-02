@@ -67,10 +67,6 @@ function buildBusinessProfilePrompt(settings) {
     missingLabels.push("cover photo");
   }
 
-  if (!settings.hours?.some((item) => item.enabled && item.open !== "Closed" && item.close !== "Closed")) {
-    missingLabels.push("business hours");
-  }
-
   return {
     isVisible: missingLabels.length > 0,
     missingCount: missingLabels.length,

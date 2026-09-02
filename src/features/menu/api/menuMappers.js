@@ -369,8 +369,6 @@ export function mapVendorMenuDetailToForm(menu) {
 export function buildSaveVendorMenuVariables(formState, statusOverride, options = {}) {
   const includeAllergens = options.includeAllergens !== false;
   const selectedStatus = statusOverride || formState.status || "draft";
-  const normalizedLeadTimeHours = Number(formState.leadTime || 24);
-
   const input = {
     ...(formState.id ? { id: formState.id } : {}),
     name: formState.menuTitle.trim(),
@@ -384,22 +382,9 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
     pricingType: formState.pricingMode,
     minimumGuests: parseIntegerOrNull(formState.minimumGuests),
     menuStatus: selectedStatus,
-    minLeadTimeHours: normalizedLeadTimeHours,
-    minLeadTimeDays: Math.max(1, Math.ceil(normalizedLeadTimeHours / 24)),
-    availableDays: safeArray(formState.selectedDays),
-    blackoutDates: formState.blackoutDate ? [formState.blackoutDate] : [],
     dietaryTags: safeArray(formState.selectedDietary),
     customDietary: formState.customDietary?.trim() || "",
-    isAvailabilityWindowEnabled: Boolean(formState.hasAvailabilityWindow),
   };
-
-  if (formState.hasAvailabilityWindow && formState.availabilityStart) {
-    input.availableFrom = formState.availabilityStart;
-  }
-
-  if (formState.hasAvailabilityWindow && formState.availabilityEnd) {
-    input.availableUntil = formState.availabilityEnd;
-  }
 
   if (formState.coverImage?.fileUrl) {
     input.coverImageUrl = formState.coverImage.fileUrl;
