@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Printer } from "lucide-react";
 import Swal from "sweetalert2";
 import ConfirmedLifecyclePanel from "../components/order-details/ConfirmedLifecyclePanel";
 import CustomerInfoPanel from "../components/order-details/CustomerInfoPanel";
@@ -7,6 +8,7 @@ import FinancialSummaryPanel from "../components/order-details/FinancialSummaryP
 import LifecyclePanel from "../components/order-details/LifecyclePanel";
 import LogisticsPanel from "../components/order-details/LogisticsPanel";
 import OrderItemsPanel from "../components/order-details/OrderItemsPanel";
+import { printVendorOrder } from "../utils/printOrder";
 import {
   approveOrderModificationRequest,
   getVendorOrderDetail,
@@ -474,6 +476,13 @@ export default function OrderDetailPage() {
           <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
             {orderDetail.date} | {orderDetail.time}
           </p>
+          <button
+            className="inline-flex items-center gap-2 rounded-[8px] border border-[#d8c9be] bg-white px-3 py-2 text-[12px] font-extrabold text-[#2b231e] transition hover:border-[#cf6e38] hover:text-[#cf6e38]"
+            onClick={() => printVendorOrder(orderDetail)}
+            type="button"
+          >
+            <Printer size={15} /> Print Order
+          </button>
         </div>
       </header>
 

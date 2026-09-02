@@ -1,8 +1,9 @@
-import { ChevronDown, X, Calendar, Clock, MapPin, Users, AlertTriangle } from "lucide-react";
+import { ChevronDown, X, Calendar, Clock, MapPin, Users, AlertTriangle, Printer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getVendorOrderDetail } from "../api/orderApi";
 import { mapVendorOrderDetail } from "../api/orderMappers";
 import { showVendorErrorAlert } from "../../../utils/vendorAlerts";
+import { printVendorOrder } from "../utils/printOrder";
 
 const statusToneClasses = {
   "is-new": "border border-[#bde3f9] bg-[#e3f4ff] text-[#1d70a2]",
@@ -404,7 +405,14 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
         </div>
 
         {/* Footer actions */}
-        <div className="mt-4 border-t border-[#efe6de] pt-3 flex justify-end shrink-0">
+        <div className="mt-4 flex justify-between border-t border-[#efe6de] pt-3 shrink-0">
+          <button
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[#d8c9be] bg-white px-4 text-[13px] font-extrabold text-[#2b231e] transition hover:border-[#cf6e38] hover:text-[#cf6e38]"
+            onClick={() => printVendorOrder(fetchedOrderDetail || orderDetail)}
+            type="button"
+          >
+            <Printer size={14} /> Print Order
+          </button>
           <button
             className="h-9 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[14px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition"
             onClick={onClose}
