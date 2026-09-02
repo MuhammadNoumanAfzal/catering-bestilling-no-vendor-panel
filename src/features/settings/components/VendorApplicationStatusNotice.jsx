@@ -110,11 +110,8 @@ function hasPayoutDetailsCompleted(settings) {
   return [
     payoutProfile.accountHolderName,
     payoutProfile.bankName,
-    payoutProfile.billingAddress,
-    payoutProfile.city,
-    payoutProfile.postalCode,
-    payoutProfile.country,
-  ].every(hasValue) && (hasValue(payoutProfile.accountNumber) || hasValue(payoutProfile.iban));
+    payoutProfile.accountNumber,
+  ].every(hasValue);
 }
 
 function getRejectedDocuments(documents = []) {
