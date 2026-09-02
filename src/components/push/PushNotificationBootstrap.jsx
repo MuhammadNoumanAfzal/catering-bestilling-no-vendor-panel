@@ -40,6 +40,27 @@ function openPushLink(link, navigate) {
   }
 }
 
+function showForegroundBrowserNotification(title, body, link, navigate) {
+  if (Notification.permission !== "granted") {
+    return;
+  }
+
+  try {
+    const notification = new Notification(title, {
+      body,
+      icon: "/favicon.ico",
+    });
+
+    notification.onclick = () => {
+      window.focus();
+      openPushLink(link, navigate);
+      notification.close();
+    };
+  } catch (error) {
+    console.warn("Unable to show foreground browser notification:", error);
+  }
+}
+
 export default function PushNotificationBootstrap() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -59,6 +80,8 @@ export default function PushNotificationBootstrap() {
           const title = payload?.notification?.title || payload?.data?.title || "New notification";
           const body = payload?.notification?.body || payload?.data?.body || "You have a new update.";
           const link = getPushLink(payload);
+
+          showForegroundBrowserNotification(title, body, link, navigate);
 
           void showNewNotificationToast(title, body).then((result) => {
             if (result.isConfirmed) {
