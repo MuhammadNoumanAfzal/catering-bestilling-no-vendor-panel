@@ -72,6 +72,20 @@ export default function SettingsBusinessProfilePanel({
                 value={settings.businessAddress}
               />
               <SettingsTextField
+                disabled={disabled}
+                label="Company ID Number"
+                onChange={handleFieldChange("taxId")}
+                placeholder="Enter company ID number"
+                value={settings.taxId}
+              />
+              <SettingsTextField
+                disabled={disabled}
+                label="City"
+                onChange={handleFieldChange("payoutProfile.city")}
+                placeholder="Enter city"
+                value={settings.payoutProfile.city}
+              />
+              <SettingsTextField
                 disabled
                 label="Postal Code"
                 onChange={handleFieldChange("postalCode")}
@@ -156,13 +170,6 @@ export default function SettingsBusinessProfilePanel({
                 pattern="[0-9]{4}"
                 type="number"
                 value={settings.establishedYear}
-              />
-              <SettingsTextField
-                disabled={disabled}
-                label="Tax / Organization Number (Optional)"
-                onChange={handleFieldChange("taxId")}
-                placeholder="Enter number"
-                value={settings.taxId}
               />
             </div>
           </SettingsSectionCard>
