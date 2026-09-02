@@ -15,7 +15,10 @@ const REGISTER_DEVICE_TOKEN_MUTATION = `
 `;
 
 function getPushLink(payload) {
-  return String(payload?.data?.link || payload?.fcmOptions?.link || "").trim();
+  const link = String(payload?.data?.link || payload?.fcmOptions?.link || "").trim();
+
+  // The API guide uses /vendor/orders, but this standalone portal serves orders at /orders.
+  return link.replace(/^\/vendor\/orders(?=\/|$)/, "/orders");
 }
 
 function openPushLink(link, navigate) {
