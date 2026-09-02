@@ -33,11 +33,16 @@ function buildValidationState(result) {
   };
 }
 
+function formatNorwegianPostCode(value) {
+  const postCode = `${value ?? ""}`.trim();
+  return /^\d{1,4}$/.test(postCode) ? postCode.padStart(4, "0") : postCode;
+}
+
 function normalizeServiceArea(area) {
   return {
     id: area.id,
     name: area.name || "",
-    postCode: area.postCode || "",
+    postCode: formatNorwegianPostCode(area.postCode),
     isActive: area.isActive !== false,
   };
 }

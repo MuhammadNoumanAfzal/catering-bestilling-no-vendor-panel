@@ -18,6 +18,11 @@ const FALLBACK_CLOSURE_TYPE_OPTIONS = [
 ];
 const SUPPORTED_VENDOR_LANGUAGE_CODES = new Set(["en", "no", "nb", "nn"]);
 
+function formatNorwegianPostCode(value) {
+  const postCode = normalizeString(value).trim();
+  return /^\d{1,4}$/.test(postCode) ? postCode.padStart(4, "0") : postCode;
+}
+
 export const defaultSettingsState = {
   businessName: "",
   businessEmail: "",
@@ -392,7 +397,7 @@ export function mapVendorSettingsPage(result, options = {}) {
       businessEmail: normalizeString(settings.businessProfile?.businessEmail),
       phoneNumber: normalizeString(settings.businessProfile?.phoneNumber),
       businessAddress: normalizeString(settings.businessProfile?.businessAddress),
-      postalCode: normalizeString(authUser?.postCode),
+      postalCode: formatNorwegianPostCode(authUser?.postCode),
       businessDescription: normalizeString(settings.businessProfile?.businessDescription),
       cuisineType:
         settings.businessProfile?.cuisineType?.id ||
@@ -453,7 +458,7 @@ export function mapVendorSettingsPage(result, options = {}) {
         branchCode: normalizeString(result?.myVendorPayoutProfile?.branchCode),
         billingAddress: normalizeString(result?.myVendorPayoutProfile?.billingAddress),
         city: normalizeString(result?.myVendorPayoutProfile?.city),
-        postalCode: normalizeString(result?.myVendorPayoutProfile?.postalCode),
+        postalCode: formatNorwegianPostCode(result?.myVendorPayoutProfile?.postalCode),
         country: normalizeString(result?.myVendorPayoutProfile?.country || "Norway"),
       },
       hours: mapBusinessHours(settings.businessHours),

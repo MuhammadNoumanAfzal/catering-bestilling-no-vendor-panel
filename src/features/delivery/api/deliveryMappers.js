@@ -29,6 +29,11 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function formatNorwegianPostCode(value) {
+  const postCode = normalizeString(value).trim();
+  return /^\d{1,4}$/.test(postCode) ? postCode.padStart(4, "0") : postCode;
+}
+
 function normalizeNullableString(value) {
   const nextValue = normalizeString(value).trim();
   return nextValue || "";
@@ -97,7 +102,7 @@ function normalizeServiceArea(area) {
   return {
     id: area?.id || "",
     name: normalizeString(area?.name),
-    postCode: normalizeString(area?.postCode),
+    postCode: formatNorwegianPostCode(area?.postCode),
     isActive: area?.isActive !== false,
   };
 }
