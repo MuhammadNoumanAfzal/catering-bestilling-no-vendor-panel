@@ -16,7 +16,7 @@ export default function AuthLayout({ children }) {
           <div className="relative z-[1] flex min-h-[calc(100vh-90px)] flex-col items-center justify-center gap-[22px] px-4 pb-[118px] pt-8 max-[720px]:min-h-0 max-[720px]:pb-[140px]">
             <img
               className="h-auto w-[clamp(120px,18vw,178px)]"
-              src="/logo.png"
+              src="/logo (2).png"
               alt="GoCatering"
             />
             {children}
