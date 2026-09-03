@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronRight, Minus, Plus, Search } from "lucide-react";
+import { AlertTriangle, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showOrderStatusUpdated, showVendorErrorAlert } from "../../../utils/vendorAlerts";
@@ -9,6 +9,7 @@ import {
 } from "../api/orderApi";
 import { mapVendorOrderDetail, normalizeBackendStatus } from "../api/orderMappers";
 import { savePendingAdjustment } from "../utils/pendingAdjustments";
+import { getVendorMenus } from "../../menu/api/menuApi";
 
 const REASON_OPTIONS = [
   "Item unavailable",
@@ -156,9 +157,12 @@ export default function OrderAdjustmentPage() {
   const [modifiedItemIds, setModifiedItemIds] = useState([]);
   const [modifiedItemQuantities, setModifiedItemQuantities] = useState({});
   const [requestedMenuItemChanges, setRequestedMenuItemChanges] = useState({});
+  const [activeReplacementKey, setActiveReplacementKey] = useState("");
+  const [pendingReplacementItem, setPendingReplacementItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestedList, setSuggestedList] = useState([]);
   const [availableSuggestions, setAvailableSuggestions] = useState([]);
+  const [vendorMenuItemSuggestions, setVendorMenuItemSuggestions] = useState([]);
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [formErrors, setFormErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
@@ -233,6 +237,42 @@ export default function OrderAdjustmentPage() {
   useEffect(() => {
     let isCancelled = false;
 
+    getVendorMenus()
+      .then((result) => {
+        if (isCancelled) return;
+
+        const menus = Array.isArray(result?.vendorMenus?.edges)
+          ? result.vendorMenus.edges.map((edge) => edge?.node).filter(Boolean)
+          : [];
+        const includedDishes = menus.flatMap((menu) =>
+          (Array.isArray(menu.menuItems) ? menu.menuItems : [])
+            .filter((item) => item?.title || item?.name)
+            .map((item) => ({
+              id: `included-dish-${menu.id}-${item.id || item.title}`,
+              name: item.title || item.name,
+              description: item.description || "",
+              sourceMenuName: menu.title || menu.name || "Vendor menu",
+              sourceMenuId: menu.id,
+              menuItemId: item.id,
+              image: item.coverImage?.fileUrl || item.image?.fileUrl || menu.coverImage?.fileUrl || "",
+              isMenuItemSuggestion: true,
+              price: 0,
+            })),
+        );
+        setVendorMenuItemSuggestions(includedDishes);
+      })
+      .catch(() => {
+        if (!isCancelled) setVendorMenuItemSuggestions([]);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
     async function loadSuggestions() {
       const query = searchTerm.trim();
 
@@ -246,11 +286,18 @@ export default function OrderAdjustmentPage() {
       try {
         const items = await searchVendorAdjustmentItems({ search: query, first: 10 });
         if (!isCancelled) {
-          setAvailableSuggestions(items);
+          const matchingIncludedDishes = vendorMenuItemSuggestions.filter((item) =>
+            `${item.name} ${item.description} ${item.sourceMenuName}`.toLowerCase().includes(query.toLowerCase()),
+          );
+          setAvailableSuggestions([...matchingIncludedDishes, ...items]);
         }
       } catch {
         if (!isCancelled) {
-          setAvailableSuggestions([]);
+          setAvailableSuggestions(
+            vendorMenuItemSuggestions.filter((item) =>
+              `${item.name} ${item.description} ${item.sourceMenuName}`.toLowerCase().includes(query.toLowerCase()),
+            ),
+          );
         }
       } finally {
         if (!isCancelled) {
@@ -265,7 +312,28 @@ export default function OrderAdjustmentPage() {
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [searchTerm]);
+  }, [searchTerm, vendorMenuItemSuggestions]);
+
+  useEffect(() => {
+    if (!activeReplacementKey || !pendingReplacementItem) {
+      return;
+    }
+
+    setRequestedMenuItemChanges((current) => {
+      if (!current[activeReplacementKey]) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [activeReplacementKey]: {
+          ...current[activeReplacementKey],
+          replacement: pendingReplacementItem,
+        },
+      };
+    });
+    setPendingReplacementItem(null);
+  }, [activeReplacementKey, pendingReplacementItem]);
 
   const removableItems = useMemo(() => buildRemovableItems(orderDetail), [orderDetail]);
 
@@ -301,7 +369,9 @@ export default function OrderAdjustmentPage() {
   );
 
   const addedCost = useMemo(
-    () => suggestedList.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0),
+    () => suggestedList
+      .filter((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion)
+      .reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0),
     [suggestedList],
   );
 
@@ -313,8 +383,8 @@ export default function OrderAdjustmentPage() {
   const hasPricingChanges = useMemo(
     () =>
       modifiedItemIds.length > 0 ||
-      suggestedList.length > 0,
-    [modifiedItemIds.length, suggestedList.length],
+      suggestedList.some((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion),
+    [modifiedItemIds.length, suggestedList],
   );
 
   const effectiveNewTotal = hasPricingChanges ? newTotal : oldTotal;
@@ -334,6 +404,9 @@ export default function OrderAdjustmentPage() {
     reason,
     suggestedList.length,
   ]);
+  const hasCompletedDishReplacements = Object.values(requestedMenuItemChanges).some(
+    (item) => item.replacement,
+  );
 
   function toggleItem(itemId) {
     setModifiedItemIds((currentIds) =>
@@ -357,24 +430,67 @@ export default function OrderAdjustmentPage() {
   function toggleMenuItemChange(orderItem, menuItem) {
     const key = `${orderItem.id}:${menuItem.id || menuItem.title || menuItem.name}`;
 
-    setRequestedMenuItemChanges((current) => {
-      if (current[key]) {
-        const remaining = { ...current };
-        delete remaining[key];
-        return remaining;
-      }
+    if (requestedMenuItemChanges[key]) {
+      const remaining = { ...requestedMenuItemChanges };
+      delete remaining[key];
+      setRequestedMenuItemChanges(remaining);
+      if (activeReplacementKey === key) setActiveReplacementKey("");
+      return;
+    }
 
-      return {
-        ...current,
-        [key]: {
-          menuName: orderItem.name,
-          itemName: menuItem.title || menuItem.name || "Included item",
-        },
-      };
+    setRequestedMenuItemChanges((current) => ({
+      ...current,
+      [key]: {
+        orderItemId: orderItem.itemId || orderItem.id,
+        removedMenuItemId: menuItem.id,
+        menuName: orderItem.name,
+        itemName: menuItem.title || menuItem.name || "Included item",
+        replacement: null,
+      },
+    }));
+    setActiveReplacementKey(key);
+  }
+
+  function assignMenuItemReplacement(item) {
+    const replacement = {
+      menuId: item.sourceMenuId,
+      menuItemId: item.menuItemId,
+      menuName: item.sourceMenuName,
+      itemName: item.name,
+    };
+
+    if (!activeReplacementKey) {
+      setPendingReplacementItem(replacement);
+      return;
+    }
+
+    const selectedDish = requestedMenuItemChanges[activeReplacementKey];
+    if (!selectedDish) {
+      setPendingReplacementItem(replacement);
+      return;
+    }
+
+    setRequestedMenuItemChanges((current) => ({
+      ...current,
+      [activeReplacementKey]: {
+        ...selectedDish,
+        replacement,
+      },
+    }));
+    setPendingReplacementItem(null);
+    setFormErrors((current) => {
+      const next = { ...current };
+      delete next.replacement;
+      return next;
     });
   }
 
   function addSuggestion(item) {
+    if (item.isMenuItemSuggestion) {
+      assignMenuItemReplacement(item);
+      return;
+    }
+
     setSuggestedList((currentItems) =>
       currentItems.some((currentItem) => currentItem.id === item.id)
         ? currentItems
@@ -426,8 +542,27 @@ export default function OrderAdjustmentPage() {
 
     let removedItemsJson = [];
     let addedItemsJson = [];
+    let includedDishReplacements = [];
 
     try {
+      const requestedDishChanges = Object.values(requestedMenuItemChanges);
+      if (requestedDishChanges.some((item) => !item.replacement)) {
+        setFormErrors({ replacement: "Choose a replacement dish for every selected included dish." });
+        await showVendorErrorAlert(
+          "Choose a replacement dish for every selected included dish before sending the request.",
+          "Replacement required",
+        );
+        return;
+      }
+
+      includedDishReplacements = requestedDishChanges.map((item) => ({
+        orderItemId: item.orderItemId,
+        removedMenuItemId: item.removedMenuItemId,
+        replacementMenuId: item.replacement.menuId,
+        replacementMenuItemId: item.replacement.menuItemId,
+        quantity: 1,
+      }));
+
       removedItemsJson = modifiedItems
         .map((item) => ({
           productId: item.productId || item.backendId || item.id || null,
@@ -436,6 +571,7 @@ export default function OrderAdjustmentPage() {
         .filter((item) => item.productId);
 
       addedItemsJson = suggestedList
+        .filter((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion)
         .map((item) => ({
           productId: item.backendId || item.id || null,
           quantity: Math.max(1, Number(item.quantity ?? 1) || 1),
@@ -447,14 +583,17 @@ export default function OrderAdjustmentPage() {
 
       const vendorNote = [
         additionalDetails.trim(),
-        suggestedList.length
-          ? `Suggested additions: ${suggestedList.map((item) => item.name).join(", ")}`
+        suggestedList.some((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion)
+          ? `Suggested menu additions: ${suggestedList.filter((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion).map((item) => item.name).join(", ")}`
+          : "",
+        suggestedList.filter((item) => item.isCustomAlternative).length
+          ? `Custom alternative suggestions: ${suggestedList.filter((item) => item.isCustomAlternative).map((item) => `${item.name}${item.description ? ` (${item.description})` : ""}`).join("; ")}`
           : "",
         modifiedItems.length
           ? `Requested removals: ${modifiedItems.map((item) => item.name).join(", ")}`
           : "",
-        Object.values(requestedMenuItemChanges).length
-          ? `Requested included-dish changes: ${Object.values(requestedMenuItemChanges).map((item) => `${item.menuName} - ${item.itemName}`).join(", ")}`
+        requestedDishChanges.length
+          ? `Included dish replacements: ${requestedDishChanges.map((item) => `${item.menuName} - ${item.itemName} to ${item.replacement.menuName} - ${item.replacement.itemName}`).join("; ")}`
           : "",
       ]
         .filter(Boolean)
@@ -466,6 +605,7 @@ export default function OrderAdjustmentPage() {
         vendorNote,
         removedItemsJson,
         addedItemsJson,
+        includedDishReplacements,
         idempotencyKey: createIdempotencyKey(),
       };
 
@@ -700,6 +840,8 @@ export default function OrderAdjustmentPage() {
                             {item.menuItems.map((menuItem, menuItemIndex) => {
                               const menuItemKey = `${item.id}:${menuItem.id || menuItem.title || menuItem.name}`;
                               const isRequested = Boolean(requestedMenuItemChanges[menuItemKey]);
+                              const requestedChange = requestedMenuItemChanges[menuItemKey];
+                              const isActiveReplacement = activeReplacementKey === menuItemKey;
 
                               return (
                                 <div key={menuItemKey} className={`flex items-start justify-between gap-3 rounded-[8px] border px-3 py-2.5 ${isRequested ? "border-[#f1c0a8] bg-[#fff7f1]" : "border-[#eee5de] bg-[#fcfbfa]"}`}>
@@ -707,13 +849,18 @@ export default function OrderAdjustmentPage() {
                                     <p className="m-0 text-[12px] font-extrabold text-[#3d3028]">{menuItemIndex + 1}. {menuItem.title || menuItem.name || "Included item"}</p>
                                     {menuItem.description ? <p className="mt-1 text-[11px] leading-4 text-[#817268]">{menuItem.description}</p> : null}
                                   </div>
-                                  <button
-                                    className={`shrink-0 rounded-[6px] border px-2.5 py-1.5 text-[10px] font-bold transition ${isRequested ? "border-[#d96e39] bg-[#d96e39] text-white" : "border-[#ddd2c8] bg-white text-[#6f6258] hover:border-[#d96e39] hover:text-[#c75c2b]"}`}
-                                    onClick={() => toggleMenuItemChange(item, menuItem)}
-                                    type="button"
-                                  >
-                                    {isRequested ? "Requested" : "Request change"}
-                                  </button>
+                                  <div className="flex shrink-0 flex-col items-end gap-1">
+                                    <button
+                                      className={`rounded-[6px] border px-2.5 py-1.5 text-[10px] font-bold transition ${isRequested ? "border-[#d96e39] bg-[#d96e39] text-white" : "border-[#ddd2c8] bg-white text-[#6f6258] hover:border-[#d96e39] hover:text-[#c75c2b]"}`}
+                                      onClick={() => isRequested ? setActiveReplacementKey(menuItemKey) : toggleMenuItemChange(item, menuItem)}
+                                      type="button"
+                                    >
+                                      {requestedChange?.replacement ? "Change replacement" : isActiveReplacement ? "Choose below" : isRequested ? "Select replacement" : "Request change"}
+                                    </button>
+                                    {isRequested ? (
+                                      <button type="button" onClick={() => toggleMenuItemChange(item, menuItem)} className="text-[10px] font-semibold text-[#a05e38] hover:underline">Remove</button>
+                                    ) : null}
+                                  </div>
                                 </div>
                               );
                             })}
@@ -733,18 +880,41 @@ export default function OrderAdjustmentPage() {
             <div className="flex flex-col gap-1.5">
               <span className="text-[16px] font-extrabold text-[#1c1510]">3. Suggestion (Optional)</span>
               <span className="text-[13px] font-bold text-[#8a7a6d]">
-                Suggest alternative items that could better fit the customer's needs.
+                Search a replacement from your menus for the customer to review.
               </span>
 
-              <div className="relative flex items-center">
-                <Search size={14} className="absolute left-3 text-[#8a7a6d]" />
-                <input
-                  type="text"
-                  placeholder="Search items to suggest..."
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  className="h-10 w-full rounded-[8px] border border-[#d8cec4] bg-white pl-9 pr-3 text-[13px] font-semibold text-[#1c1510] placeholder-[#a49a90] transition focus:border-[#cf6e38] focus:outline-none"
-                />
+              {activeReplacementKey && requestedMenuItemChanges[activeReplacementKey] ? (
+                <div className="rounded-[10px] border border-[#f1c0a8] bg-[#fff7f1] px-3 py-2 text-[12px] font-semibold text-[#9a4e28]">
+                  Replacing: <strong>{requestedMenuItemChanges[activeReplacementKey].menuName} - {requestedMenuItemChanges[activeReplacementKey].itemName}</strong>. Choose a dish below.
+                </div>
+              ) : pendingReplacementItem ? (
+                <div className="rounded-[10px] border border-[#f1c0a8] bg-[#fff7f1] px-3 py-2 text-[12px] font-semibold text-[#9a4e28]">
+                  Replacement selected: <strong>{pendingReplacementItem.menuName} - {pendingReplacementItem.itemName}</strong>. Now select the ordered dish above using <strong>Request change</strong>.
+                </div>
+              ) : (
+                <div className="rounded-[10px] border border-[#d9e5f3] bg-[#f5f9ff] px-3 py-2 text-[12px] font-semibold text-[#426487]">
+                  First select an ordered included dish above using <strong>Request change</strong>, then choose its replacement here.
+                </div>
+              )}
+
+              <div className="rounded-[12px] border border-[#efe6de] bg-[#fffaf6] p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[13px] font-extrabold text-[#1c1510]">From your menu</p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">Search any item from your published menus.</p>
+                  </div>
+                  <span className="rounded-full bg-[#fff0e6] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#c75c2b]">Menu item</span>
+                </div>
+                <div className="relative mt-3 flex items-center">
+                  <Search size={14} className="absolute left-3 text-[#8a7a6d]" />
+                  <input
+                    type="text"
+                    placeholder="Search your menu items..."
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    className="h-10 w-full rounded-[8px] border border-[#d8cec4] bg-white pl-9 pr-3 text-[13px] font-semibold text-[#1c1510] placeholder-[#a49a90] transition focus:border-[#cf6e38] focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div className="relative mt-1">
@@ -764,7 +934,10 @@ export default function OrderAdjustmentPage() {
                           className="h-24 w-full rounded-[8px] object-cover"
                         />
                       ) : (
-                        <div className="h-24 w-full rounded-[8px] bg-[#f7f2ec]" />
+                        <div className="flex h-24 w-full flex-col items-center justify-center rounded-[8px] bg-[#f7f2ec] text-[#b28c73]">
+                          <UtensilsCrossed size={22} />
+                          <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em]">Menu dish</span>
+                        </div>
                       )}
                       <div className="flex flex-col gap-0.5">
                         <strong className="text-[14px] font-extrabold text-[#1c1510]">{item.name}</strong>
@@ -772,15 +945,21 @@ export default function OrderAdjustmentPage() {
                           {item.description || "No description available"}
                         </span>
                       </div>
-                      <span className="mt-1 text-[13px] font-extrabold text-[#cf6e38]">
-                        {formatCurrency(item.price)}
-                      </span>
+                      {item.isMenuItemSuggestion ? (
+                        <span className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#5d8b68]">
+                          Included in menu price
+                        </span>
+                      ) : (
+                        <span className="mt-1 text-[13px] font-extrabold text-[#cf6e38]">
+                          {formatCurrency(item.price)}
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() => addSuggestion(item)}
                         className="mt-1 flex h-8 w-full cursor-pointer items-center justify-center rounded-[6px] border border-[#ffe2cc] bg-[#fff2ec] text-[13px] font-bold text-[#d96e39] transition hover:border-[#d96e39] hover:bg-[#d96e39] hover:text-white active:scale-95"
                       >
-                        + Add Item
+                        {item.isMenuItemSuggestion ? activeReplacementKey ? "Use as replacement" : "Select replacement" : "+ Add item"}
                       </button>
                     </div>
                   ))}
@@ -794,6 +973,10 @@ export default function OrderAdjustmentPage() {
                   <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">No matching items found.</div>
                 ) : null}
 
+                {formErrors.replacement ? (
+                  <p className="mt-2 text-[12px] font-bold text-[#b42318]">{formErrors.replacement}</p>
+                ) : null}
+
                 <button
                   type="button"
                   onClick={scrollSuggestions}
@@ -802,11 +985,12 @@ export default function OrderAdjustmentPage() {
                   <ChevronRight size={16} />
                 </button>
               </div>
+
             </div>
 
             <div className="flex flex-col gap-2">
               <span className="text-[16px] font-extrabold text-[#1c1510]">Adjusted Items</span>
-              {modifiedItems.length === 0 && suggestedList.length === 0 ? (
+              {modifiedItems.length === 0 && suggestedList.length === 0 && !hasCompletedDishReplacements ? (
                 <div className="rounded-[12px] border border-dashed border-[#d8cec4] bg-[#faf9f6] p-4 text-center text-[13px] font-medium italic text-[#8a7a6d]">
                   No items modified or added yet. Select order items above or search suggestions to make adjustments.
                 </div>
@@ -841,10 +1025,29 @@ export default function OrderAdjustmentPage() {
                     </div>
                   ))}
 
+                  {Object.values(requestedMenuItemChanges)
+                    .filter((item) => item.replacement)
+                    .map((item) => (
+                      <div
+                        key={`${item.orderItemId}-${item.removedMenuItemId}`}
+                        className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-[#ead8ca] bg-[#fffaf6] p-3"
+                      >
+                        <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-[#dfc2ac] bg-[#fff0e6] text-[11px] font-extrabold uppercase tracking-wider text-[#c75c2b]">
+                          Swap
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9a8572]">Included dish replacement</p>
+                          <p className="mt-1 text-[13px] font-bold text-[#6f6258] line-through">{item.menuName} - {item.itemName}</p>
+                          <p className="mt-1 text-[14px] font-extrabold text-[#1c1510]">{item.replacement.menuName} - {item.replacement.itemName}</p>
+                          <p className="mt-1 text-[11px] font-semibold text-[#5d8b68]">Included in the existing menu price</p>
+                        </div>
+                      </div>
+                    ))}
+
                   {suggestedList.map((item) => (
                     <div
                       key={`added-${item.id}`}
-                      className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-green-200 bg-[#f5fff5] p-3 transition hover:border-green-300"
+                      className={`flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border p-3 transition ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#ead8ca] bg-[#fffaf6] hover:border-[#dfc2ac]" : "border-green-200 bg-[#f5fff5] hover:border-green-300"}`}
                     >
                       {item.image ? (
                         <img
@@ -858,23 +1061,26 @@ export default function OrderAdjustmentPage() {
                       <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="break-words text-[14px] font-extrabold text-[#1c1510]">{item.name}</span>
-                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-green-700">
-                            Added
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider ${item.isCustomAlternative || item.isMenuItemSuggestion ? "bg-[#fff0e6] text-[#c75c2b]" : "bg-green-100 text-green-700"}`}>
+                            {item.isCustomAlternative ? "Custom alternative" : item.isMenuItemSuggestion ? "From another menu" : "Added"}
                           </span>
                         </div>
-                        <span className="text-[13px] font-extrabold text-green-600">
-                          +{formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}
+                        {item.isMenuItemSuggestion ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">From {item.sourceMenuName}{item.description ? ` - ${item.description}` : ""}</span> : item.description ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{item.description}</span> : null}
+                        <span className={`text-[13px] font-extrabold ${item.isCustomAlternative || item.isMenuItemSuggestion ? "text-[#a06a48]" : "text-green-600"}`}>
+                          {item.isMenuItemSuggestion ? "Included in existing menu price" : item.isCustomAlternative ? "Price to be confirmed with customer" : `+${formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}`}
                         </span>
                       </div>
-                      <div className="flex items-center rounded-[7px] border border-green-300 bg-white">
-                        <button className="flex h-7 w-7 items-center justify-center text-green-700 disabled:opacity-40" disabled={Number(item.quantity || 1) <= 1} onClick={() => updateSuggestionQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
-                        <span className="min-w-7 text-center text-[12px] font-extrabold text-green-700">{item.quantity || 1}</span>
-                        <button className="flex h-7 w-7 items-center justify-center text-green-700" onClick={() => updateSuggestionQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
-                      </div>
+                      {!item.isCustomAlternative && !item.isMenuItemSuggestion ? (
+                        <div className="flex items-center rounded-[7px] border border-green-300 bg-white">
+                          <button className="flex h-7 w-7 items-center justify-center text-green-700 disabled:opacity-40" disabled={Number(item.quantity || 1) <= 1} onClick={() => updateSuggestionQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
+                          <span className="min-w-7 text-center text-[12px] font-extrabold text-green-700">{item.quantity || 1}</span>
+                          <button className="flex h-7 w-7 items-center justify-center text-green-700" onClick={() => updateSuggestionQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
+                        </div>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => removeSuggestion(item.id)}
-                        className="ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border border-green-300 bg-white px-3 text-[13px] font-extrabold text-green-700 transition hover:border-green-400 hover:bg-green-50 active:scale-95"
+                        className={`ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border bg-white px-3 text-[13px] font-extrabold transition active:scale-95 ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#dfc2ac] text-[#a05e38] hover:bg-[#fff5ef]" : "border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50"}`}
                       >
                         Remove
                       </button>
@@ -957,7 +1163,7 @@ export default function OrderAdjustmentPage() {
                   </div>
                 ) : null}
 
-                {suggestedList.length > 0 ? (
+                {suggestedList.some((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion) ? (
                   <div className="flex items-start justify-between font-bold text-green-600">
                     <span>Added Items Offset</span>
                     <span className="text-right">+{formatCurrency(addedCost)}</span>
