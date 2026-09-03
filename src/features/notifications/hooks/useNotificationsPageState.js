@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getVendorNotifications,
   markVendorNotificationAsRead,
@@ -22,6 +23,7 @@ const PAGE_SIZE = 20;
 const POLL_INTERVAL_MS = 30000;
 
 export default function useNotificationsPageState() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [customRange, setCustomRange] = useState(createDefaultCustomRange);
@@ -173,6 +175,21 @@ export default function useNotificationsPageState() {
       }
     } catch {
       // Opening the modal should still continue even if mark-as-read fails.
+    }
+
+    if (notification.type === "ORDER" && notification.orderId) {
+      navigate(`/orders/${encodeURIComponent(notification.orderId)}`);
+      return;
+    }
+
+    if (notification.type === "REVIEW") {
+      navigate("/reviews");
+      return;
+    }
+
+    if (notification.type === "PAYOUT") {
+      navigate("/finance");
+      return;
     }
 
     setSelectedNotification({
