@@ -351,10 +351,10 @@ export function mapVendorMenuDetailToForm(menu) {
           return allergen?.id || allergen?.slug || "";
         })
         .filter(Boolean),
-      image: item.imageUrl
+      image: item.coverImage?.fileUrl || item.image?.fileUrl || item.imageUrl
         ? normalizeUploadedAsset({
-            fileId: item.fileId,
-            fileUrl: item.imageUrl,
+            fileId: item.coverImage?.fileId || item.image?.fileId || item.fileId,
+            fileUrl: item.coverImage?.fileUrl || item.image?.fileUrl || item.imageUrl,
           })
         : null,
     })),
@@ -417,8 +417,8 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
       }
 
       if (item.image?.fileUrl) {
-        nextItem.imageUrl = item.image.fileUrl;
-        nextItem.fileId = item.image.fileId;
+        nextItem.coverImageUrl = item.image.fileUrl;
+        nextItem.coverImageFileId = item.image.fileId;
       }
 
       return nextItem;

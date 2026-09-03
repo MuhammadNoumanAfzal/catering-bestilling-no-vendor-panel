@@ -545,7 +545,7 @@ export function useMenuEditor() {
       id: item.id,
       title: item.title || "",
       description: item.description || "",
-      image: item.imageUrl || "",
+      image: item.coverImage?.fileUrl || item.image?.fileUrl || item.imageUrl || "",
       allergens: item.allergens || [],
     }));
   }

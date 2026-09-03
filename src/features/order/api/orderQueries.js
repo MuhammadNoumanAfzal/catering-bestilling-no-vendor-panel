@@ -313,6 +313,10 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             id
             title
             description
+            coverImage {
+              fileUrl
+              fileId
+            }
             allergens {
               id
               name
@@ -420,6 +424,23 @@ export const CREATE_VENDOR_ORDER_ADJUSTMENT_MUTATION = `
         id
         status
         createdOn
+        includedDishReplacements {
+          orderItemId
+          quantity
+          removedMenuItem {
+            id
+            title
+            description
+            coverImage { fileUrl }
+          }
+          replacementMenu { id name }
+          replacementMenuItem {
+            id
+            title
+            description
+            coverImage { fileUrl }
+          }
+        }
       }
     }
   }
