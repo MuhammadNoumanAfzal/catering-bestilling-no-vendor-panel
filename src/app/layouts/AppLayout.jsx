@@ -362,11 +362,6 @@ export default function AppLayout() {
                   ) : null}
                 </div>
                 <span className="type-subpara flex-1">{label}</span>
-                {label === "Notifications" && unreadNotificationsCount > 0 ? (
-                  <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-bold leading-none text-current">
-                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
-                  </span>
-                ) : null}
               </NavLink>
             ))}
           </nav>

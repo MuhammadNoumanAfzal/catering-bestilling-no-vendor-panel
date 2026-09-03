@@ -112,6 +112,11 @@ function isOrderLikeNotification(node) {
   );
 }
 
+function isNewOrder(order) {
+  const status = String(order?.status || order?.statusLabel || "").trim().toUpperCase();
+  return ["NEW", "PENDING", "PLACED"].includes(status);
+}
+
 function buildSyntheticOrderNotificationNode(order, notificationState) {
   const customerName = String(order?.customerName || "").trim();
   const orderNumber = String(order?.orderNumber || order?.invoiceNumber || order?.id || "").trim();
@@ -184,7 +189,7 @@ async function fetchSyntheticOrderNotificationNodes(variables = {}) {
 
   const syntheticItems = orderEdges
     .map((edge) => edge?.node)
-    .filter((node) => node?.id)
+    .filter((node) => node?.id && isNewOrder(node))
     .map((order) => buildSyntheticOrderNotificationNode(order, notificationState));
 
   return filterSyntheticNotificationsByStatus(syntheticItems, variables?.status);
@@ -194,15 +199,21 @@ function mergeVendorNotificationConnections(financeConnection, syntheticNodes) {
   const financeEdges = Array.isArray(financeConnection?.edges)
     ? financeConnection.edges.filter(Boolean)
     : [];
-  const orderIdsAlreadyInFeed = new Set(
+  const orderReferencesAlreadyInFeed = new Set(
     financeEdges
       .map((edge) => edge?.node)
-      .filter((node) => node?.orderId && isOrderLikeNotification(node))
-      .map((node) => String(node.orderId)),
+      .filter(isOrderLikeNotification)
+      .flatMap((node) => [node?.orderId, node?.order?.id, node?.orderNumber])
+      .filter(Boolean)
+      .map(String),
   );
 
   const syntheticEdges = syntheticNodes
-    .filter((node) => !orderIdsAlreadyInFeed.has(String(node?.orderId || "")))
+    .filter(
+      (node) =>
+        !orderReferencesAlreadyInFeed.has(String(node?.orderId || "")) &&
+        !orderReferencesAlreadyInFeed.has(String(node?.orderNumber || "")),
+    )
     .map((node) => ({
       cursor: `synthetic:${node.id}`,
       node,
