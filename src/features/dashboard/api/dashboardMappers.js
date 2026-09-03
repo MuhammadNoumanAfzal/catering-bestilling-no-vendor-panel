@@ -295,6 +295,7 @@ export function mapDashboardResponse(
 
       return {
         rawId: normalizeString(node.id),
+        rawStatus: normalizeString(node.status || node.statusLabel).toUpperCase(),
         id: `#${normalizeString(node.orderNumber || node.id)}`,
         title: normalizeString(node.eventName) || "Order",
         amount: formatCurrency(node.finalPrice, currency),
@@ -304,7 +305,8 @@ export function mapDashboardResponse(
         address: `Customer: ${displayCustomer}`,
         tone: mapUrgentOrderTone(node.deliveryDate),
       };
-    });
+    })
+    .filter((order) => ["NEW", "PENDING", "PLACED"].includes(order.rawStatus));
 
   const dashboardKitchenSummary =
     kitchenSummary ||
@@ -348,7 +350,7 @@ export function mapDashboardResponse(
       normalizeString(me?.email).trim(),
     overviewCards,
     urgentOrders,
-    urgentOrdersCount: toNumber(data?.vendorUrgentOrders?.totalCount, urgentOrders.length),
+    urgentOrdersCount: urgentOrders.length,
     kitchenStatus,
     chartValues,
     chartYAxisLabels,

@@ -74,6 +74,23 @@ function buildBusinessProfilePrompt(settings) {
   };
 }
 
+function buildNewOrderRequests(rows = []) {
+  return rows
+    .filter((row) => row?.status === "New")
+    .map((row) => ({
+      rawId: row.rawId,
+      rawStatus: "NEW",
+      id: row.displayId || `#${row.id}`,
+      title: row.event || "Order",
+      amount: row.total || "NOK 0.00",
+      statusLabel: "New",
+      guests: `${Number(row.guests || 0)} guests`,
+      timing: `${row.date || "Delivery date pending"} ${row.time ? `at ${row.time}` : ""}`.trim(),
+      address: `Customer: ${row.customer || "Customer unavailable"}`,
+      tone: "is-warning",
+    }));
+}
+
 export default function useDashboardPageState() {
   const navigate = useNavigate();
   const [dateFilter, setDateFilter] = useState("Last 7 Days");
@@ -121,14 +138,19 @@ export default function useDashboardPageState() {
 
         const mappedOrders = mapVendorOrdersResult(ordersResult);
         const kitchenSummary = mapVendorOrderSummary(null, mappedOrders.rows);
+        const newOrderRequests = buildNewOrderRequests(mappedOrders.rows);
 
         setDashboard(
-          mapDashboardResponse(result, {
-            dateFilterLabel: dateFilter,
-            customDateLabel,
-            kitchenSummary,
-            totalOrdersOverride: mappedOrders.totalCount || kitchenSummary.total || 0,
-          }),
+          {
+            ...mapDashboardResponse(result, {
+              dateFilterLabel: dateFilter,
+              customDateLabel,
+              kitchenSummary,
+              totalOrdersOverride: mappedOrders.totalCount || kitchenSummary.total || 0,
+            }),
+            urgentOrders: newOrderRequests,
+            urgentOrdersCount: newOrderRequests.length,
+          },
         );
 
         const mappedSettingsPage = mapVendorSettingsPage(settingsResult);
@@ -179,8 +201,8 @@ export default function useDashboardPageState() {
     [dashboard.kitchenStatus, navigate],
   );
 
-  async function handleUrgentOrderPrimaryAction(order) {
-    const result = await confirmOrderStatusAction("Start preparing", order.id);
+  async function handleNewOrderAccept(order) {
+    const result = await confirmOrderStatusAction("Accept order", order.id);
 
     if (!result.isConfirmed || !order?.rawId) {
       return;
@@ -190,25 +212,20 @@ export default function useDashboardPageState() {
       setIsRefreshing(true);
       await updateVendorOrderStatus({
         id: order.rawId,
-        status: "Preparing",
+        status: "Accepted",
       });
 
       setDashboard((current) => ({
         ...current,
         urgentOrders: current.urgentOrders.filter((item) => item.rawId !== order.rawId),
         urgentOrdersCount: Math.max(0, current.urgentOrdersCount - 1),
-        kitchenStatus: current.kitchenStatus.map((item) =>
-          item.label === "Preparing"
-            ? { ...item, value: String(Number(item.value || 0) + 1) }
-            : item,
-        ),
       }));
 
-      await showOrderStatusUpdated(`${order.id} moved to preparing.`);
+      await showOrderStatusUpdated(`${order.id} accepted.`);
       navigate(`/orders/${order.rawId}`);
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to update this urgent order right now.",
+        error.message || "Unable to accept this order right now.",
         "Order update failed",
       );
     } finally {
@@ -216,7 +233,33 @@ export default function useDashboardPageState() {
     }
   }
 
-  function handleUrgentOrderSecondaryAction(order) {
+  async function handleNewOrderReject(order) {
+    const result = await confirmOrderStatusAction("Reject order", order.id);
+
+    if (!result.isConfirmed || !order?.rawId) {
+      return;
+    }
+
+    try {
+      setIsRefreshing(true);
+      await updateVendorOrderStatus({ id: order.rawId, status: "Canceled" });
+      setDashboard((current) => ({
+        ...current,
+        urgentOrders: current.urgentOrders.filter((item) => item.rawId !== order.rawId),
+        urgentOrdersCount: Math.max(0, current.urgentOrdersCount - 1),
+      }));
+      await showOrderStatusUpdated(`${order.id} rejected.`);
+    } catch (error) {
+      await showVendorErrorAlert(
+        error.message || "Unable to reject this order right now.",
+        "Order update failed",
+      );
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
+  function handleNewOrderViewDetails(order) {
     if (!order?.rawId) {
       return;
     }
@@ -238,8 +281,9 @@ export default function useDashboardPageState() {
     dashboardKitchenStatus,
     dashboardQuickActions,
     handleDateFilterChange,
-    handleUrgentOrderPrimaryAction,
-    handleUrgentOrderSecondaryAction,
+    handleNewOrderAccept,
+    handleNewOrderReject,
+    handleNewOrderViewDetails,
     isLoading,
     isRefreshing,
     overviewCards: dashboard.overviewCards,
