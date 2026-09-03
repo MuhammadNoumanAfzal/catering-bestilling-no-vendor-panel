@@ -156,7 +156,14 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 </div>
               </td>
               <td className="px-4 py-4">
-                {renderStatusBadge(row.status, row.statusTone)}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {renderStatusBadge(row.status, row.statusTone)}
+                  {row.hasPendingVendorAdjustment ? (
+                    <span className="inline-flex min-h-[24px] items-center rounded-full border border-[#fed0b3] bg-[#fff2e8] px-2.5 py-0.5 text-[11px] font-extrabold leading-none text-[#c95f2a]">
+                      Modification request pending
+                    </span>
+                  ) : null}
+                </div>
               </td>
               <td 
                 className="px-4 py-4"
