@@ -118,6 +118,23 @@ function hasOpenVendorAdjustment(adjustment) {
   );
 }
 
+function splitVendorAdjustmentNote(value) {
+  const lines = `${value || ""}`.split("\n").filter(Boolean);
+  const requestedDishChanges = [];
+  const remainingLines = [];
+
+  lines.forEach((line) => {
+    const prefix = "Requested included-dish changes: ";
+    if (line.startsWith(prefix)) {
+      requestedDishChanges.push(...line.slice(prefix.length).split(", ").filter(Boolean));
+      return;
+    }
+    remainingLines.push(line);
+  });
+
+  return { requestedDishChanges, vendorNote: remainingLines.join("\n") };
+}
+
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -275,6 +292,7 @@ export default function OrderDetailPage() {
     ) || null;
   const requestComparisons = buildRequestFieldComparisons(pendingCustomerRequest);
   const latestAdjustment = Array.isArray(orderDetail.adjustments) ? orderDetail.adjustments[0] : null;
+  const adjustmentNote = splitVendorAdjustmentNote(latestAdjustment?.vendorNote);
   const hasPendingVendorAdjustment = hasOpenVendorAdjustment(latestAdjustment);
   const shouldShowVendorAdjustmentBanner =
     Boolean(latestAdjustment) && !pendingCustomerRequest;
@@ -513,7 +531,7 @@ export default function OrderDetailPage() {
               <p className="mt-2 text-[14px] font-semibold leading-[1.5] text-[#2b231e]">
                 {latestAdjustment.removedItemNames?.length
                   ? latestAdjustment.removedItemNames.join(", ")
-                  : "No item removals proposed."}
+                  : "No full menu removals proposed."}
               </p>
             </div>
             <div className="rounded-[10px] border border-[#efe6de] bg-white p-3">
@@ -527,6 +545,25 @@ export default function OrderDetailPage() {
               </p>
             </div>
           </div>
+
+          {adjustmentNote.requestedDishChanges.length ? (
+            <div className="mt-3 rounded-[12px] border border-[#f1c7af] bg-[linear-gradient(135deg,#fff8f3_0%,#fffdfb_100%)] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#c25b2c]">Requested dish changes</p>
+                  <p className="mt-1 text-[13px] leading-5 text-[#745d50]">The vendor has requested changes to these included dishes. No full menu item is being removed.</p>
+                </div>
+                <span className="rounded-full bg-[#fff0e7] px-2.5 py-1 text-[11px] font-extrabold text-[#c25b2c]">{adjustmentNote.requestedDishChanges.length} selected</span>
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {adjustmentNote.requestedDishChanges.map((item) => (
+                  <div key={item} className="rounded-[8px] border border-[#f0dacb] bg-white px-3 py-2 text-[13px] font-semibold text-[#3f3028]">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
             {latestAdjustment.proposedEventDate ? (
@@ -573,13 +610,13 @@ export default function OrderDetailPage() {
             </div>
           ) : null}
 
-          {latestAdjustment.vendorNote ? (
+          {adjustmentNote.vendorNote ? (
             <div className="mt-3 rounded-[10px] border border-[#efe6de] bg-white p-3">
               <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
                 Vendor Note
               </span>
               <p className="mt-2 whitespace-pre-line text-[13px] font-semibold leading-[1.6] text-[#2b231e]">
-                {latestAdjustment.vendorNote}
+                {adjustmentNote.vendorNote}
               </p>
             </div>
           ) : null}
