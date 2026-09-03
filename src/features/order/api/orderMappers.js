@@ -667,6 +667,7 @@ export function mapVendorOrderNode(node) {
     total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
     status,
     statusTone: hasPendingVendorAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
+    hasPendingVendorAdjustment,
     actions,
     raw: node,
   };
@@ -883,6 +884,7 @@ export function mapVendorOrderDetail(data, orderId) {
     guests: resolveGuestCount(node, 0),
     status,
     statusTone: hasPendingVendorAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
+    hasPendingVendorAdjustment,
     customer,
     orderItem,
     addOns,
