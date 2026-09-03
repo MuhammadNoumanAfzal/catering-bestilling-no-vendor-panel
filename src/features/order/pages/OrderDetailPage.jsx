@@ -121,6 +121,7 @@ function hasOpenVendorAdjustment(adjustment) {
 function splitVendorAdjustmentNote(value) {
   const lines = `${value || ""}`.split("\n").filter(Boolean);
   const requestedDishChanges = [];
+  const includedDishReplacements = [];
   const remainingLines = [];
 
   lines.forEach((line) => {
@@ -129,10 +130,27 @@ function splitVendorAdjustmentNote(value) {
       requestedDishChanges.push(...line.slice(prefix.length).split(", ").filter(Boolean));
       return;
     }
+
+    const replacementPrefix = "Included dish replacements: ";
+    if (line.startsWith(replacementPrefix)) {
+      line
+        .slice(replacementPrefix.length)
+        .split(";")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .forEach((item) => {
+          const [previousDish, replacementDish] = item.split(" to ").map((part) => part.trim());
+          includedDishReplacements.push({
+            previousDish: previousDish || item,
+            replacementDish: replacementDish || "Replacement dish",
+          });
+        });
+      return;
+    }
     remainingLines.push(line);
   });
 
-  return { requestedDishChanges, vendorNote: remainingLines.join("\n") };
+  return { requestedDishChanges, includedDishReplacements, vendorNote: remainingLines.join("\n") };
 }
 
 export default function OrderDetailPage() {
@@ -523,30 +541,28 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-[10px] border border-[#efe6de] bg-white p-3">
-              <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                Removed Items
-              </p>
-              <p className="mt-2 text-[14px] font-semibold leading-[1.5] text-[#2b231e]">
-                {latestAdjustment.removedItemNames?.length
-                  ? latestAdjustment.removedItemNames.join(", ")
-                  : "No full menu removals proposed."}
-              </p>
+          {adjustmentNote.includedDishReplacements.length ? (
+            <div className="mt-3 rounded-[12px] border border-[#f1c7af] bg-[linear-gradient(135deg,#fff8f3_0%,#fffdfb_100%)] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#c25b2c]">Included dish replacements</p>
+                  <p className="mt-1 text-[13px] leading-5 text-[#745d50]">These dishes will be changed within the existing menu price.</p>
+                </div>
+                <span className="rounded-full bg-[#fff0e7] px-2.5 py-1 text-[11px] font-extrabold text-[#c25b2c]">{adjustmentNote.includedDishReplacements.length} replacements</span>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {adjustmentNote.includedDishReplacements.map((item, index) => (
+                  <article key={`${item.previousDish}-${index}`} className="rounded-[10px] border border-[#f0dacb] bg-white p-3">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#a18979]">Was included</p>
+                    <p className="mt-1 text-[13px] font-bold leading-5 text-[#7d5542] line-through">{item.previousDish}</p>
+                    <div className="my-2 h-px bg-[#f1e4da]" />
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#5d8b68]">Replace with</p>
+                    <p className="mt-1 text-[13px] font-extrabold leading-5 text-[#243a2b]">{item.replacementDish}</p>
+                  </article>
+                ))}
+              </div>
             </div>
-            <div className="rounded-[10px] border border-[#efe6de] bg-white p-3">
-              <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                Added Items
-              </p>
-              <p className="mt-2 text-[14px] font-semibold leading-[1.5] text-[#2b231e]">
-                {latestAdjustment.addedItemNames?.length
-                  ? latestAdjustment.addedItemNames.join(", ")
-                  : "No replacement items proposed."}
-              </p>
-            </div>
-          </div>
-
-          {adjustmentNote.requestedDishChanges.length ? (
+          ) : adjustmentNote.requestedDishChanges.length ? (
             <div className="mt-3 rounded-[12px] border border-[#f1c7af] bg-[linear-gradient(135deg,#fff8f3_0%,#fffdfb_100%)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -564,33 +580,6 @@ export default function OrderDetailPage() {
               </div>
             </div>
           ) : null}
-
-          <div className="mt-3 grid gap-3 lg:grid-cols-3">
-            {latestAdjustment.proposedEventDate ? (
-              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
-                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                  Proposed Date
-                </span>
-                {latestAdjustment.proposedEventDate}
-              </div>
-            ) : null}
-            {latestAdjustment.proposedDeliveryWindowStart ? (
-              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
-                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                  Proposed Time
-                </span>
-                {latestAdjustment.proposedDeliveryWindowStart}
-              </div>
-            ) : null}
-            {latestAdjustment.proposedGuestCount ? (
-              <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
-                <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                  Proposed Guests
-                </span>
-                {latestAdjustment.proposedGuestCount}
-              </div>
-            ) : null}
-          </div>
 
           {adjustmentChangesPrice &&
           (typeof latestAdjustment.oldTotal === "number" || typeof latestAdjustment.newTotal === "number") ? (

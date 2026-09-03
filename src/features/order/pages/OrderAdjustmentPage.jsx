@@ -1,7 +1,7 @@
 import { AlertTriangle, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { showOrderStatusUpdated, showVendorErrorAlert } from "../../../utils/vendorAlerts";
+import { showOrderStatusUpdated, showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
 import {
   createVendorOrderAdjustment,
   getVendorOrderDetail,
@@ -409,12 +409,16 @@ export default function OrderAdjustmentPage() {
   );
 
   function toggleItem(itemId) {
+    const item = removableItems.find((currentItem) => currentItem.id === itemId);
+    const isRemoving = !modifiedItemIds.includes(itemId);
     setModifiedItemIds((currentIds) =>
       currentIds.includes(itemId) ? currentIds.filter((currentId) => currentId !== itemId) : [...currentIds, itemId],
     );
-    const item = removableItems.find((currentItem) => currentItem.id === itemId);
     if (item) {
       setModifiedItemQuantities((current) => ({ ...current, [itemId]: current[itemId] || item.quantity }));
+      void showVendorSuccessToast(
+        isRemoving ? `${item.name} added to the adjustment.` : `${item.name} restored to the order.`,
+      );
     }
   }
 
@@ -435,6 +439,7 @@ export default function OrderAdjustmentPage() {
       delete remaining[key];
       setRequestedMenuItemChanges(remaining);
       if (activeReplacementKey === key) setActiveReplacementKey("");
+      void showVendorSuccessToast(`${menuItem.title || menuItem.name || "Included dish"} removed from the adjustment.`);
       return;
     }
 
@@ -449,6 +454,7 @@ export default function OrderAdjustmentPage() {
       },
     }));
     setActiveReplacementKey(key);
+    void showVendorSuccessToast(`Select a replacement for ${menuItem.title || menuItem.name || "this included dish"}.`);
   }
 
   function assignMenuItemReplacement(item) {
@@ -478,6 +484,7 @@ export default function OrderAdjustmentPage() {
       },
     }));
     setPendingReplacementItem(null);
+    void showVendorSuccessToast(`${replacement.itemName} selected as the replacement.`);
     setFormErrors((current) => {
       const next = { ...current };
       delete next.replacement;
@@ -496,6 +503,7 @@ export default function OrderAdjustmentPage() {
         ? currentItems
         : [...currentItems, { ...item, quantity: 1 }],
     );
+    void showVendorSuccessToast(`${item.name} added to the adjustment.`);
   }
 
   function updateSuggestionQuantity(itemId, change) {
@@ -509,9 +517,13 @@ export default function OrderAdjustmentPage() {
   }
 
   function removeSuggestion(itemId) {
+    const item = suggestedList.find((currentItem) => currentItem.id === itemId);
     setSuggestedList((currentItems) =>
       currentItems.filter((currentItem) => currentItem.id !== itemId),
     );
+    if (item) {
+      void showVendorSuccessToast(`${item.name} removed from the adjustment.`);
+    }
   }
 
   function scrollSuggestions() {
@@ -769,29 +781,17 @@ export default function OrderAdjustmentPage() {
             <div className="flex flex-col gap-1.5">
               <span className="text-[16px] font-extrabold text-[#1c1510]">2. Items to Modify</span>
               <span className="text-[13px] font-bold text-[#8a7a6d]">
-                Select an order item, then choose how many should be removed or replaced.
+                Select an included dish, then choose a replacement from one of your menus.
               </span>
               <div className="flex flex-col gap-2 rounded-[10px] border border-[#efe6de] bg-[#faf9f6] p-1.5">
                 {removableItems.length > 0 ? removableItems.map((item) => {
-                  const isChecked = modifiedItemIds.includes(item.id);
-
                   return (
                     <article
                       key={item.id}
-                      className={`rounded-[12px] border p-3.5 transition ${
-                        isChecked
-                          ? "border-[#fecaca] bg-[#fff8f8]"
-                          : "border-[#f2ece6] bg-white hover:bg-[#faf9f6]"
-                      }`}
+                      className="rounded-[12px] border border-[#f2ece6] bg-white p-3.5 transition hover:bg-[#faf9f6]"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex min-w-0 items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleItem(item.id)}
-                          className="mt-1 h-4 w-4 shrink-0 accent-[#cf6e38]"
-                        />
                         {item.image ? (
                           <img
                             alt={item.name}
@@ -803,9 +803,7 @@ export default function OrderAdjustmentPage() {
                         )}
                         <div className="flex min-w-0 flex-col">
                           <span
-                            className={`text-[14px] font-extrabold ${
-                              isChecked ? "text-red-700 line-through" : "text-[#2b231e]"
-                            }`}
+                            className="text-[14px] font-extrabold text-[#2b231e]"
                           >
                             {item.name}
                           </span>
@@ -821,13 +819,6 @@ export default function OrderAdjustmentPage() {
                         </div>
                       <div className="flex flex-col items-end gap-2">
                         <span className="text-[14px] font-extrabold text-[#2b231e]">{formatCurrency(item.totalPrice)}</span>
-                        {isChecked ? (
-                          <div className="flex items-center rounded-[7px] border border-[#f1c5c0] bg-white">
-                            <button className="flex h-7 w-7 items-center justify-center text-red-700 disabled:opacity-40" disabled={(modifiedItemQuantities[item.id] || item.quantity) <= 1} onClick={() => updateModifiedQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
-                            <span className="min-w-7 text-center text-[12px] font-extrabold text-red-700">{modifiedItemQuantities[item.id] || item.quantity}</span>
-                            <button className="flex h-7 w-7 items-center justify-center text-red-700 disabled:opacity-40" disabled={(modifiedItemQuantities[item.id] || item.quantity) >= item.quantity} onClick={() => updateModifiedQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
-                          </div>
-                        ) : null}
                       </div>
                       </div>
                       {item.menuItems.length ? (
