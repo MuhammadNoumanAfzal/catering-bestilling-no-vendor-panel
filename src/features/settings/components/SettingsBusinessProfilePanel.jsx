@@ -1,4 +1,3 @@
-import SettingsComplianceDocumentsSection from "./SettingsComplianceDocumentsSection";
 import SettingsSpecialClosuresSection from "./SettingsSpecialClosuresSection";
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
@@ -15,9 +14,6 @@ export default function SettingsBusinessProfilePanel({
   currencyOptions,
   disabled = false,
   fieldErrors = {},
-  complianceDocuments = [],
-  handleComplianceDocumentUpload,
-  handleComplianceDocumentsRefresh,
   handleDeactivateStore,
   handleDeleteStore,
   handleFieldChange,
@@ -346,12 +342,6 @@ export default function SettingsBusinessProfilePanel({
             </div>
           </SettingsSectionCard>
 
-          <SettingsComplianceDocumentsSection
-            disabled={disabled}
-            documents={complianceDocuments}
-            onRefreshStatus={handleComplianceDocumentsRefresh}
-            onUpload={handleComplianceDocumentUpload}
-          />
         </div>
       </div>
 
@@ -427,12 +417,6 @@ export default function SettingsBusinessProfilePanel({
           </div>
         </div>
 
-        <SettingsComplianceDocumentsSection
-          disabled={disabled}
-          documents={complianceDocuments}
-          onRefreshStatus={handleComplianceDocumentsRefresh}
-          onUpload={handleComplianceDocumentUpload}
-        />
       </div>
 
     </div>

@@ -560,6 +560,7 @@ export function buildRegionalPreferencesInput(settings) {
 
 export function buildPayoutProfileInput(settings) {
   return {
+    payoutMethod: normalizeString(settings.payoutProfile?.payoutMethod || "BANK_TRANSFER"),
     accountHolderName: normalizeString(settings.payoutProfile?.accountHolderName).trim(),
     bankName: normalizeString(settings.payoutProfile?.bankName).trim(),
     accountNumber: normalizeString(settings.payoutProfile?.accountNumber).trim(),

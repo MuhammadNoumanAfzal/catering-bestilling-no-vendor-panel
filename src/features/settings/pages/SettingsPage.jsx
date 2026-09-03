@@ -39,11 +39,8 @@ export default function SettingsPage() {
     activeTab,
     authUser,
     applicationReview,
-    complianceDocuments,
     handleAccountFieldChange,
     handleBannerImageUpload,
-    handleComplianceDocumentsRefresh,
-    handleComplianceDocumentUpload,
     handleCancel,
     handleDeactivateStore,
     handleDeleteClosure,
@@ -100,7 +97,6 @@ export default function SettingsPage() {
           changeRequestMessage={applicationReview?.changeRequestMessage}
           requestedFields={applicationReview?.requestedFields || []}
           missingRequirements={applicationReview?.missingRequirements || []}
-          complianceDocuments={complianceDocuments}
           settings={settings}
         />
       ) : null}
@@ -130,14 +126,11 @@ export default function SettingsPage() {
       ) : (
         <SettingsBusinessProfilePanel
           businessTypeOptions={settingsOptions.businessTypeOptions}
-          complianceDocuments={complianceDocuments}
           closureTypeOptions={settingsOptions.closureTypeOptions}
           cuisineOptions={settingsOptions.cuisineOptions}
           currencyOptions={settingsOptions.currencyOptions}
           disabled={isLoading || isSaving}
           fieldErrors={fieldErrors}
-          handleComplianceDocumentsRefresh={handleComplianceDocumentsRefresh}
-          handleComplianceDocumentUpload={handleComplianceDocumentUpload}
           handleDeactivateStore={handleDeactivateStore}
           handleDeleteStore={handleDeleteStore}
           handleFieldChange={handleFieldChange}

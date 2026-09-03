@@ -27,10 +27,10 @@ function getStatusConfig(status) {
         badge: "bg-[#fff1ea] text-[#c95e2c]",
         title: "Admin requested updates to your application",
         description:
-          "Your vendor panel is still open so you can fix the required information. Review your business profile, address, bank details, documents, images, delivery timing, and menu setup, then save everything before asking for another review.",
+          "Your vendor panel is still open so you can fix the required information. Review your business profile, address, bank details, images, delivery timing, and menu setup, then save everything before asking for another review.",
         checklist: [
           "Complete business profile details like business name, address, contact number, tax number, and description.",
-          "Upload or correct your logo, banner, and any missing compliance documents.",
+          "Upload or correct your logo and banner.",
           "Check delivery timings and menu items on their own pages.",
           "Save your corrections so admin can review the latest version.",
         ],
@@ -46,7 +46,7 @@ function getStatusConfig(status) {
           "Your submitted information is being reviewed. You can still keep your profile polished by checking business details, images, payout details, delivery timing, and menu completeness.",
         checklist: [
           "Double-check address, contact details, and uploaded images.",
-          "Make sure payout bank details and compliance documents are complete.",
+          "Make sure payout bank details are complete.",
           "Keep delivery schedule and menu items up to date.",
         ],
       };
@@ -58,10 +58,10 @@ function getStatusConfig(status) {
         badge: "bg-[#fff3df] text-[#8a5318]",
         title: "Your application is waiting for approval",
         description:
-          "You can continue completing your business details while the application is pending. A complete profile with correct address, timing, bank details, documents, images, delivery schedule, and menu helps the admin approval process move faster.",
+          "You can continue completing your business details while the application is pending. A complete profile with correct address, timing, bank details, images, delivery schedule, and menu helps the admin approval process move faster.",
         checklist: [
           "Fill out business and account information, including address, phone number, tax number, and description.",
-          "Upload a clear profile image or logo, banner image, and all required compliance documents.",
+          "Upload a clear profile image or logo and banner image.",
           "Make sure delivery timing is correct on the Delivery page.",
           "Check your Menu page and add complete menu items so the store is ready to go live.",
           "Save bank payout details so finance information is ready for review.",
@@ -114,28 +114,8 @@ function hasPayoutDetailsCompleted(settings) {
   ].every(hasValue);
 }
 
-function getRejectedDocuments(documents = []) {
-  return documents.filter((item) => item?.status === "REJECTED");
-}
-
-function hasRequiredDocumentsUploaded(documents = []) {
-  const requiredDocuments = documents.filter((item) => item?.isRequired);
-
-  return (
-    requiredDocuments.length > 0 &&
-    requiredDocuments.every((item) => Boolean(item?.fileUrl) && item?.status !== "REJECTED")
-  );
-}
-
-function buildChecklistItems({ settings, complianceDocuments }) {
+function buildChecklistItems({ settings }) {
   const checklistItems = [];
-  const rejectedDocuments = getRejectedDocuments(complianceDocuments);
-
-  if (rejectedDocuments.length) {
-    checklistItems.push(
-      `Replace rejected document${rejectedDocuments.length > 1 ? "s" : ""}: ${rejectedDocuments.map((item) => item.title).join(", ")}.`,
-    );
-  }
 
   if (!hasBusinessProfileCompleted(settings)) {
     checklistItems.push(
@@ -145,10 +125,6 @@ function buildChecklistItems({ settings, complianceDocuments }) {
 
   if (!hasBrandAssetsCompleted(settings)) {
     checklistItems.push("Upload both your logo/profile image and banner image.");
-  }
-
-  if (!hasRequiredDocumentsUploaded(complianceDocuments) && !rejectedDocuments.length) {
-    checklistItems.push("Upload all required compliance documents so your application can move forward.");
   }
 
   if (!hasPayoutDetailsCompleted(settings)) {
@@ -164,7 +140,6 @@ export default function VendorApplicationStatusNotice({
   changeRequestMessage = "",
   requestedFields = [],
   missingRequirements = [],
-  complianceDocuments = [],
   settings = null,
 }) {
   const navigate = useNavigate();
@@ -177,9 +152,7 @@ export default function VendorApplicationStatusNotice({
     : [];
   const dynamicChecklist = buildChecklistItems({
     settings,
-    complianceDocuments,
   });
-  const rejectedDocuments = getRejectedDocuments(complianceDocuments);
   const requestBasedChecklist = detailFields
     .map((item) => item?.label || item?.code || "")
     .filter(Boolean);
@@ -258,26 +231,6 @@ export default function VendorApplicationStatusNotice({
               <p className="mt-2 text-[14px] leading-7 text-[#4f433c]">
                 {changeRequestMessage}
               </p>
-            </div>
-          ) : null}
-          {rejectedDocuments.length ? (
-            <div className="mt-4 rounded-[18px] border border-[#f1c6c1] bg-[#fff8f7] px-4 py-4">
-              <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#a03f34]">
-                Needs Attention First
-              </p>
-              <p className="mt-2 text-[14px] leading-7 text-[#684741]">
-                One or more compliance documents were rejected. Replace them first so the rest of your review can move forward.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {rejectedDocuments.map((item) => (
-                  <span
-                    key={item.type}
-                    className="rounded-full border border-[#f0d0cb] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#9f4337]"
-                  >
-                    {item.title}
-                  </span>
-                ))}
-              </div>
             </div>
           ) : null}
 
@@ -394,7 +347,6 @@ export default function VendorApplicationStatusNotice({
                 "Business profile",
                 "Logo and banner",
                 "Bank details",
-                "Documents",
                 "Delivery timing",
                 "Menu setup",
                 "Account info",
