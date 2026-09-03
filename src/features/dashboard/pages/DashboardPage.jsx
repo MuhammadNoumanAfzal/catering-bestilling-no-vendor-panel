@@ -20,8 +20,9 @@ export default function DashboardPage() {
     dashboardKitchenStatus,
     dashboardQuickActions,
     handleDateFilterChange,
-    handleUrgentOrderPrimaryAction,
-    handleUrgentOrderSecondaryAction,
+    handleNewOrderAccept,
+    handleNewOrderReject,
+    handleNewOrderViewDetails,
     isLoading,
     isRefreshing,
     overviewCards,
@@ -149,7 +150,7 @@ export default function DashboardPage() {
       </section>
 
       <SectionCard
-        title="Urgent Orders"
+        title="New Order Requests"
         badgeCount={urgentOrdersCount}
         actionLabel="View all"
         onActionClick={() => navigate("/orders?filter=New")}
@@ -168,14 +169,15 @@ export default function DashboardPage() {
             {urgentOrders.map((order) => (
               <OrderCard
                 key={order.id}
-                onPrimaryAction={handleUrgentOrderPrimaryAction}
-                onSecondaryAction={handleUrgentOrderSecondaryAction}
+                onAccept={handleNewOrderAccept}
+                onReject={handleNewOrderReject}
+                onViewDetails={handleNewOrderViewDetails}
                 order={order}
               />
             ))}
           </div>
         ) : (
-          <p className="type-para text-[#6f645b]">No urgent orders found for the selected range.</p>
+          <p className="type-para text-[#6f645b]">No new order requests need a decision right now.</p>
         )}
       </SectionCard>
 
