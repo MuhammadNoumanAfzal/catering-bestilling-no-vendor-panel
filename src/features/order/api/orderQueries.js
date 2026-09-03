@@ -313,6 +313,11 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             id
             title
             description
+            allergens {
+              id
+              name
+              slug
+            }
           }
         }
       }
