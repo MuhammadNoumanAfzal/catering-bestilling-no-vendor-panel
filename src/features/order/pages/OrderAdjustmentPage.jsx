@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronRight, Search } from "lucide-react";
+import { AlertTriangle, ChevronRight, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showOrderStatusUpdated, showVendorErrorAlert } from "../../../utils/vendorAlerts";
@@ -122,6 +122,7 @@ function buildRemovableItems(orderDetail) {
         totalPrice: parseCurrencyValue(item?.lineTotal ?? item?.lineSubtotal ?? item?.unitPrice),
         image: product?.coverImage?.fileUrl || "",
         description: product?.description || item?.description || addonsLabel,
+        menuItems: Array.isArray(product?.menuItems) ? product.menuItems : [],
       };
     });
   }
@@ -138,6 +139,7 @@ function buildRemovableItems(orderDetail) {
       totalPrice: parseCurrencyValue(cart?.totalPriceWithTax ?? cart?.priceWithTax),
       image: item?.coverImage?.fileUrl || "",
       description: item?.description || "",
+      menuItems: Array.isArray(item?.menuItems) ? item.menuItems : [],
     };
   });
 }
@@ -152,6 +154,8 @@ export default function OrderAdjustmentPage() {
   const [reason, setReason] = useState("");
   const [isReasonDropdownOpen, setIsReasonDropdownOpen] = useState(false);
   const [modifiedItemIds, setModifiedItemIds] = useState([]);
+  const [modifiedItemQuantities, setModifiedItemQuantities] = useState({});
+  const [requestedMenuItemChanges, setRequestedMenuItemChanges] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestedList, setSuggestedList] = useState([]);
   const [availableSuggestions, setAvailableSuggestions] = useState([]);
@@ -266,8 +270,17 @@ export default function OrderAdjustmentPage() {
   const removableItems = useMemo(() => buildRemovableItems(orderDetail), [orderDetail]);
 
   const modifiedItems = useMemo(
-    () => removableItems.filter((item) => modifiedItemIds.includes(item.id)),
-    [modifiedItemIds, removableItems],
+    () =>
+      removableItems
+        .filter((item) => modifiedItemIds.includes(item.id))
+        .map((item) => ({
+          ...item,
+          adjustmentQuantity: Math.min(
+            item.quantity,
+            Math.max(1, Number(modifiedItemQuantities[item.id] || item.quantity)),
+          ),
+        })),
+    [modifiedItemIds, modifiedItemQuantities, removableItems],
   );
 
   const oldTotal = useMemo(() => {
@@ -279,12 +292,16 @@ export default function OrderAdjustmentPage() {
   }, [orderDetail]);
 
   const removedCost = useMemo(
-    () => modifiedItems.reduce((sum, item) => sum + item.totalPrice, 0),
+    () =>
+      modifiedItems.reduce(
+        (sum, item) => sum + item.totalPrice * (item.adjustmentQuantity / Math.max(1, item.quantity)),
+        0,
+      ),
     [modifiedItems],
   );
 
   const addedCost = useMemo(
-    () => suggestedList.reduce((sum, item) => sum + Number(item.price || 0), 0),
+    () => suggestedList.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0),
     [suggestedList],
   );
 
@@ -306,29 +323,72 @@ export default function OrderAdjustmentPage() {
     return (
       Boolean(reason) ||
       modifiedItemIds.length > 0 ||
+      Object.keys(requestedMenuItemChanges).length > 0 ||
       suggestedList.length > 0 ||
       Boolean(normalizeString(additionalDetails).trim())
     );
   }, [
     additionalDetails,
     modifiedItemIds.length,
+    requestedMenuItemChanges,
     reason,
     suggestedList.length,
   ]);
 
   function toggleItem(itemId) {
     setModifiedItemIds((currentIds) =>
-      currentIds.includes(itemId)
-        ? currentIds.filter((currentId) => currentId !== itemId)
-        : [...currentIds, itemId],
+      currentIds.includes(itemId) ? currentIds.filter((currentId) => currentId !== itemId) : [...currentIds, itemId],
     );
+    const item = removableItems.find((currentItem) => currentItem.id === itemId);
+    if (item) {
+      setModifiedItemQuantities((current) => ({ ...current, [itemId]: current[itemId] || item.quantity }));
+    }
+  }
+
+  function updateModifiedQuantity(itemId, change) {
+    const item = removableItems.find((currentItem) => currentItem.id === itemId);
+    if (!item) return;
+    setModifiedItemQuantities((current) => ({
+      ...current,
+      [itemId]: Math.min(item.quantity, Math.max(1, Number(current[itemId] || item.quantity) + change)),
+    }));
+  }
+
+  function toggleMenuItemChange(orderItem, menuItem) {
+    const key = `${orderItem.id}:${menuItem.id || menuItem.title || menuItem.name}`;
+
+    setRequestedMenuItemChanges((current) => {
+      if (current[key]) {
+        const remaining = { ...current };
+        delete remaining[key];
+        return remaining;
+      }
+
+      return {
+        ...current,
+        [key]: {
+          menuName: orderItem.name,
+          itemName: menuItem.title || menuItem.name || "Included item",
+        },
+      };
+    });
   }
 
   function addSuggestion(item) {
     setSuggestedList((currentItems) =>
       currentItems.some((currentItem) => currentItem.id === item.id)
         ? currentItems
-        : [...currentItems, item],
+        : [...currentItems, { ...item, quantity: 1 }],
+    );
+  }
+
+  function updateSuggestionQuantity(itemId, change) {
+    setSuggestedList((currentItems) =>
+      currentItems.map((item) =>
+        item.id === itemId
+          ? { ...item, quantity: Math.max(1, Number(item.quantity || 1) + change) }
+          : item,
+      ),
     );
   }
 
@@ -371,7 +431,7 @@ export default function OrderAdjustmentPage() {
       removedItemsJson = modifiedItems
         .map((item) => ({
           productId: item.productId || item.backendId || item.id || null,
-          quantity: Math.max(1, Number(item.quantity ?? 1) || 1),
+          quantity: item.adjustmentQuantity,
         }))
         .filter((item) => item.productId);
 
@@ -392,6 +452,9 @@ export default function OrderAdjustmentPage() {
           : "",
         modifiedItems.length
           ? `Requested removals: ${modifiedItems.map((item) => item.name).join(", ")}`
+          : "",
+        Object.values(requestedMenuItemChanges).length
+          ? `Requested included-dish changes: ${Object.values(requestedMenuItemChanges).map((item) => `${item.menuName} - ${item.itemName}`).join(", ")}`
           : "",
       ]
         .filter(Boolean)
@@ -566,38 +629,39 @@ export default function OrderAdjustmentPage() {
             <div className="flex flex-col gap-1.5">
               <span className="text-[16px] font-extrabold text-[#1c1510]">2. Items to Modify</span>
               <span className="text-[13px] font-bold text-[#8a7a6d]">
-                Select the items that need to be changed. Selected items will be treated as removed.
+                Select an order item, then choose how many should be removed or replaced.
               </span>
               <div className="flex flex-col gap-2 rounded-[10px] border border-[#efe6de] bg-[#faf9f6] p-1.5">
                 {removableItems.length > 0 ? removableItems.map((item) => {
                   const isChecked = modifiedItemIds.includes(item.id);
 
                   return (
-                    <label
+                    <article
                       key={item.id}
-                      className={`flex cursor-pointer items-center justify-between rounded-[8px] border p-2.5 transition ${
+                      className={`rounded-[12px] border p-3.5 transition ${
                         isChecked
                           ? "border-[#fecaca] bg-[#fff8f8]"
                           : "border-[#f2ece6] bg-white hover:bg-[#faf9f6]"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex min-w-0 items-start gap-3">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleItem(item.id)}
-                          className="h-4 w-4 accent-[#cf6e38]"
+                          className="mt-1 h-4 w-4 shrink-0 accent-[#cf6e38]"
                         />
                         {item.image ? (
                           <img
                             alt={item.name}
                             src={item.image}
-                            className="h-8 w-[48px] rounded-[4px] border border-[#efe6de] object-cover"
+                            className="h-12 w-16 shrink-0 rounded-[8px] border border-[#efe6de] object-cover"
                           />
                         ) : (
-                          <div className="h-8 w-[48px] rounded-[4px] border border-[#efe6de] bg-[#f7f2ec]" />
+                          <div className="h-12 w-16 shrink-0 rounded-[8px] border border-[#efe6de] bg-[#f7f2ec]" />
                         )}
-                        <div className="flex flex-col">
+                        <div className="flex min-w-0 flex-col">
                           <span
                             className={`text-[14px] font-extrabold ${
                               isChecked ? "text-red-700 line-through" : "text-[#2b231e]"
@@ -605,20 +669,58 @@ export default function OrderAdjustmentPage() {
                           >
                             {item.name}
                           </span>
-                          <span className="text-[11px] font-semibold text-[#8a7a6d]">
-                            Qty: {item.quantity}
+                          <span className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">
+                            Ordered quantity: {item.quantity}
                           </span>
                           {item.description ? (
-                            <span className="text-[11px] font-semibold text-[#a18f81]">
+                            <span className="mt-1 text-[11px] leading-5 text-[#88796e]">
                               {item.description}
                             </span>
                           ) : null}
                         </div>
+                        </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-[14px] font-extrabold text-[#2b231e]">{formatCurrency(item.totalPrice)}</span>
+                        {isChecked ? (
+                          <div className="flex items-center rounded-[7px] border border-[#f1c5c0] bg-white">
+                            <button className="flex h-7 w-7 items-center justify-center text-red-700 disabled:opacity-40" disabled={(modifiedItemQuantities[item.id] || item.quantity) <= 1} onClick={() => updateModifiedQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
+                            <span className="min-w-7 text-center text-[12px] font-extrabold text-red-700">{modifiedItemQuantities[item.id] || item.quantity}</span>
+                            <button className="flex h-7 w-7 items-center justify-center text-red-700 disabled:opacity-40" disabled={(modifiedItemQuantities[item.id] || item.quantity) >= item.quantity} onClick={() => updateModifiedQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
+                          </div>
+                        ) : null}
                       </div>
-                      <span className="text-[13px] font-bold text-[#8a7a6d]">
-                        {formatCurrency(item.totalPrice)}
-                      </span>
-                    </label>
+                      </div>
+                      {item.menuItems.length ? (
+                        <div className="mt-3 border-t border-[#eee5de] pt-3">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#8a7a6d]">Included dishes</span>
+                            <span className="text-[10px] font-semibold text-[#a18f81]">Select a dish to request a change</span>
+                          </div>
+                          <div className="grid gap-2 lg:grid-cols-2">
+                            {item.menuItems.map((menuItem, menuItemIndex) => {
+                              const menuItemKey = `${item.id}:${menuItem.id || menuItem.title || menuItem.name}`;
+                              const isRequested = Boolean(requestedMenuItemChanges[menuItemKey]);
+
+                              return (
+                                <div key={menuItemKey} className={`flex items-start justify-between gap-3 rounded-[8px] border px-3 py-2.5 ${isRequested ? "border-[#f1c0a8] bg-[#fff7f1]" : "border-[#eee5de] bg-[#fcfbfa]"}`}>
+                                  <div className="min-w-0">
+                                    <p className="m-0 text-[12px] font-extrabold text-[#3d3028]">{menuItemIndex + 1}. {menuItem.title || menuItem.name || "Included item"}</p>
+                                    {menuItem.description ? <p className="mt-1 text-[11px] leading-4 text-[#817268]">{menuItem.description}</p> : null}
+                                  </div>
+                                  <button
+                                    className={`shrink-0 rounded-[6px] border px-2.5 py-1.5 text-[10px] font-bold transition ${isRequested ? "border-[#d96e39] bg-[#d96e39] text-white" : "border-[#ddd2c8] bg-white text-[#6f6258] hover:border-[#d96e39] hover:text-[#c75c2b]"}`}
+                                    onClick={() => toggleMenuItemChange(item, menuItem)}
+                                    type="button"
+                                  >
+                                    {isRequested ? "Requested" : "Request change"}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+                    </article>
                   );
                 }) : (
                   <div className="rounded-[8px] border border-dashed border-[#d8cec4] bg-white px-4 py-4 text-[13px] font-semibold text-[#8a7a6d]">
@@ -726,7 +828,7 @@ export default function OrderAdjustmentPage() {
                           </span>
                         </div>
                         <span className="text-[13px] font-extrabold text-red-600">
-                          -{formatCurrency(item.totalPrice)}
+                          -{formatCurrency(item.totalPrice * (item.adjustmentQuantity / Math.max(1, item.quantity)))} ({item.adjustmentQuantity} item{item.adjustmentQuantity === 1 ? "" : "s"})
                         </span>
                       </div>
                       <button
@@ -761,8 +863,13 @@ export default function OrderAdjustmentPage() {
                           </span>
                         </div>
                         <span className="text-[13px] font-extrabold text-green-600">
-                          +{formatCurrency(item.price)}
+                          +{formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}
                         </span>
+                      </div>
+                      <div className="flex items-center rounded-[7px] border border-green-300 bg-white">
+                        <button className="flex h-7 w-7 items-center justify-center text-green-700 disabled:opacity-40" disabled={Number(item.quantity || 1) <= 1} onClick={() => updateSuggestionQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
+                        <span className="min-w-7 text-center text-[12px] font-extrabold text-green-700">{item.quantity || 1}</span>
+                        <button className="flex h-7 w-7 items-center justify-center text-green-700" onClick={() => updateSuggestionQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
                       </div>
                       <button
                         type="button"
