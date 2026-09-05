@@ -1,5 +1,6 @@
 import CreateMenuSectionCard from "../create-menu/CreateMenuSectionCard";
 import { Label, TextInput } from "../create-menu/CreateMenuFields";
+import { useTranslation } from "react-i18next";
 
 export default function CreateAddOnAvailabilitySection({
   availableImmediately,
@@ -9,14 +10,15 @@ export default function CreateAddOnAvailabilitySection({
   onAvailabilityToggle,
   selectedDietary,
 }) {
+  const { t } = useTranslation();
   return (
     <CreateMenuSectionCard
-      description="Define how this add-on should appear across your active menus."
-      title="Availability & Tags"
+      description={t("menu.availabilityDescription", { defaultValue: "Define how this add-on should appear across your active menus." })}
+      title={t("menu.availabilityTags", { defaultValue: "Availability & Tags" })}
     >
       <div className="space-y-4">
         <div>
-          <Label>Dietary Tags</Label>
+          <Label>{t("menu.dietaryTags", { defaultValue: "Dietary Tags" })}</Label>
           <div className="grid grid-cols-2 gap-2">
             {dietaryOptions.map((option) => {
               const optionValue = option.value || option;
@@ -46,10 +48,10 @@ export default function CreateAddOnAvailabilitySection({
           <div className="flex items-start justify-between gap-3">
             <div>
               <strong className="block text-[14px] font-bold text-[#1f1814]">
-                Available immediately
+                {t("menu.availableImmediately", { defaultValue: "Available immediately" })}
               </strong>
               <p className="mt-1 text-[13px] font-medium text-[#8b7f74]">
-                Will be visible on active menus.
+                {t("menu.visibleOnActive", { defaultValue: "Will be visible on active menus." })}
               </p>
             </div>
 
@@ -72,10 +74,10 @@ export default function CreateAddOnAvailabilitySection({
         </div>
 
         <div>
-          <Label>Selected Categories</Label>
+          <Label>{t("menu.selectedCategories", { defaultValue: "Selected Categories" })}</Label>
           <TextInput
             disabled
-            placeholder="No categories selected yet"
+            placeholder={t("menu.noCategories", { defaultValue: "No categories selected yet" })}
             value={customCategory}
           />
         </div>

@@ -1,5 +1,6 @@
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { Label, TextInput } from "./CreateMenuFields";
+import { useTranslation } from "react-i18next";
 
 function FieldError({ message }) {
   if (!message) {
@@ -20,6 +21,7 @@ export default function CreateMenuPricingSection({
   pricingModes,
   setPricingMode,
 }) {
+  const { t } = useTranslation();
   function getModeValue(mode) {
     return typeof mode === "string" ? mode : mode.value;
   }
@@ -32,8 +34,8 @@ export default function CreateMenuPricingSection({
 
   return (
     <CreateMenuSectionCard
-      description="Set how you want to charge for this menu."
-      title="Pricing & Capacity"
+      description={t("menu.pricingDescription", { defaultValue: "Set how you want to charge for this menu." })}
+      title={t("menu.pricingCapacity", { defaultValue: "Pricing & Capacity" })}
     >
       {hasPricingModes ? (
         <div className="rounded-[10px] bg-[#f1efed] p-1">
@@ -67,7 +69,7 @@ export default function CreateMenuPricingSection({
 
       <div className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
         <div>
-          <Label>Base Price</Label>
+          <Label>{t("menu.basePrice", { defaultValue: "Base Price" })}</Label>
           <TextInput
             disabled={disabled}
             onChange={onBasePriceChange}
@@ -77,7 +79,7 @@ export default function CreateMenuPricingSection({
           <FieldError message={fieldErrors?.basePrice} />
         </div>
         <div>
-          <Label>Minimum Guests</Label>
+          <Label>{t("menu.minimumGuests", { defaultValue: "Minimum Guests" })}</Label>
           <TextInput
             disabled={disabled}
             onChange={onMinimumGuestsChange}

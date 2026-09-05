@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import OrderFilters from "../components/OrderFilters";
 import OrderMetricCard from "../components/OrderMetricCard";
 import OrderPagination from "../components/OrderPagination";
@@ -183,6 +184,7 @@ function mergeUpcomingSummary(baseSummary, upcomingCount) {
 
 export default function OrdersPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
   const [activeFilter, setActiveFilter] = useState("");
@@ -254,7 +256,7 @@ export default function OrdersPage() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error instanceof Error ? error.message : "Unable to load vendor orders.",
+            error instanceof Error ? error.message : t("orders.unableLoad", { defaultValue: "Unable to load vendor orders." }),
           );
           setOrderRows([]);
           setSummaryCounts(mapVendorOrderSummary(null, []));
@@ -271,7 +273,7 @@ export default function OrdersPage() {
     return () => {
       isCancelled = true;
     };
-  }, [backendQueryVariables, isLiveUpcomingView]);
+  }, [backendQueryVariables, isLiveUpcomingView, t]);
 
   const dateFilteredRows = orderRows;
 
@@ -321,14 +323,14 @@ export default function OrdersPage() {
         ? {
             ...metric,
             helper: isLiveUpcomingView
-              ? `Live next ${upcomingHours} hours`
+              ? t("orders.liveNext", { hours: upcomingHours, defaultValue: `Live next ${upcomingHours} hours` })
               : selectedFilter === "All Time"
-                ? "All orders"
-                : "Orders in current range",
+                ? t("orders.allOrders", { defaultValue: "All orders" })
+                : t("orders.currentRange", { defaultValue: "Orders in current range" }),
           }
         : metric,
     );
-  }, [isLiveUpcomingView, rangeAwareSummary, selectedFilter, upcomingHours]);
+  }, [isLiveUpcomingView, rangeAwareSummary, selectedFilter, t, upcomingHours]);
 
   const orderTabs = useMemo(() => {
     return createOrderTabs(rangeAwareSummary);
@@ -439,19 +441,19 @@ export default function OrdersPage() {
         await commitStatusChange(
           row,
           nextStatus,
-          `Status updated to ${nextStatus} for ${row.displayId || row.id}.`,
+          t("orders.statusUpdated", { status: nextStatus, id: row.displayId || row.id, defaultValue: `Status updated to ${nextStatus} for ${row.displayId || row.id}.` }),
         );
         return;
       }
 
       if (action.navigateToDetail) {
         if (actionLabel === "Accept") {
-          const result = await confirmOrderStatusAction("Accept order", row.displayId || row.id);
+          const result = await confirmOrderStatusAction(t("orders.accept", { defaultValue: "Accept order" }), row.displayId || row.id);
           if (!result.isConfirmed) {
             return;
           }
 
-          await commitStatusChange(row, "Accepted", `Order ${row.displayId || row.id} accepted.`);
+          await commitStatusChange(row, "Accepted", t("orders.orderAccepted", { id: row.displayId || row.id, defaultValue: `Order ${row.displayId || row.id} accepted.` }));
           navigate(`/orders/${encodeURIComponent(row.rawId)}`);
           return;
         }
@@ -461,28 +463,28 @@ export default function OrdersPage() {
       }
 
       if (actionLabel === "Accept") {
-        const result = await confirmOrderStatusAction("Accept order", row.displayId || row.id);
+        const result = await confirmOrderStatusAction(t("orders.accept", { defaultValue: "Accept order" }), row.displayId || row.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await commitStatusChange(row, "Accepted", `Order ${row.displayId || row.id} accepted.`);
+        await commitStatusChange(row, "Accepted", t("orders.orderAccepted", { id: row.displayId || row.id, defaultValue: `Order ${row.displayId || row.id} accepted.` }));
         navigate(`/orders/${encodeURIComponent(row.rawId)}`);
         return;
       }
 
       if (actionLabel === "Reject") {
-        const result = await confirmOrderStatusAction("Reject order", row.displayId || row.id);
+        const result = await confirmOrderStatusAction(t("orders.reject", { defaultValue: "Reject order" }), row.displayId || row.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await commitStatusChange(row, "Canceled", `Order ${row.displayId || row.id} rejected.`);
+        await commitStatusChange(row, "Canceled", t("orders.orderRejected", { id: row.displayId || row.id, defaultValue: `Order ${row.displayId || row.id} rejected.` }));
         return;
       }
 
       if (actionLabel === "Mark delivered") {
-        const result = await confirmOrderStatusAction("Mark delivered", row.displayId || row.id);
+        const result = await confirmOrderStatusAction(t("orders.markDelivered", { defaultValue: "Mark delivered" }), row.displayId || row.id);
         if (!result.isConfirmed) {
           return;
         }
@@ -490,7 +492,7 @@ export default function OrdersPage() {
         await commitStatusChange(
           row,
           "Delivered",
-          `Order ${row.displayId || row.id} marked as delivered.`,
+          t("orders.orderDelivered", { id: row.displayId || row.id, defaultValue: `Order ${row.displayId || row.id} marked as delivered.` }),
         );
         return;
       }
@@ -509,7 +511,7 @@ export default function OrdersPage() {
       }
     } catch (error) {
       await showVendorErrorAlert(
-        error instanceof Error ? error.message : "Unable to update the order right now.",
+        error instanceof Error ? error.message : t("orders.unableUpdate", { defaultValue: "Unable to update the order right now." }),
       );
     }
   }
@@ -525,9 +527,9 @@ export default function OrdersPage() {
   return (
     <section className="flex flex-col gap-[14px]">
       <header className="flex flex-col gap-0.5">
-        <h1 className="type-h2 m-0 text-[#1a1410]">Orders</h1>
+        <h1 className="type-h2 m-0 text-[#1a1410]">{t("orders.title", { defaultValue: "Orders" })}</h1>
         <p className="type-para m-0 ">
-          Manage all your catering orders and track production status.
+          {t("orders.subtitle", { defaultValue: "Manage all your catering orders and track production status." })}
         </p>
       </header>
 
@@ -542,7 +544,7 @@ export default function OrdersPage() {
         onTabChange={handleTabChange}
         tabs={orderTabs}
         filterDisabled={isLiveUpcomingView}
-        filterDisabledLabel={`Live next ${upcomingHours} hours`}
+        filterDisabledLabel={t("orders.liveNext", { hours: upcomingHours, defaultValue: `Live next ${upcomingHours} hours` })}
         selectedFilter={selectedFilter}
         onFilterSelect={setSelectedFilter}
         fromDate={fromDate}

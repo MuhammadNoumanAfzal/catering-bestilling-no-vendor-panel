@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
+import { useTranslation } from "react-i18next";
 
 export default function CreateMenuAddOnsSection({
   addOnSearch,
@@ -10,8 +11,9 @@ export default function CreateMenuAddOnsSection({
   selectedAddOnIds,
   toggleAddOn,
 }) {
+  const { t } = useTranslation();
   return (
-    <CreateMenuSectionCard description="Add add-ons from the list" title="Optional add-on">
+    <CreateMenuSectionCard description={t("menu.addOnListDescription", { defaultValue: "Add add-ons from the list" })} title={t("menu.optionalAddOn", { defaultValue: "Optional add-on" })}>
       <div className="relative">
         <Search
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9a8e84]"
@@ -21,7 +23,7 @@ export default function CreateMenuAddOnsSection({
           className="h-[40px] w-full rounded-full bg-[#f1f4f6] pl-9 pr-3 text-[14px] text-[#1f1814] outline-none placeholder:text-[#a59b93] disabled:cursor-not-allowed disabled:opacity-70"
           disabled={disabled}
           onChange={onSearchChange}
-          placeholder="Search"
+          placeholder={t("menu.search", { defaultValue: "Search" })}
           type="text"
           value={addOnSearch}
         />

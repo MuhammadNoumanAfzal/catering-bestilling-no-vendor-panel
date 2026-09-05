@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function OrderPagination({
   currentPage,
@@ -7,6 +8,7 @@ export default function OrderPagination({
   totalItems,
   totalPages,
 }) {
+  const { t } = useTranslation();
   function getVisiblePages() {
     if (totalPages <= 5) {
       return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -45,7 +47,7 @@ export default function OrderPagination({
   return (
     <div className="flex items-center justify-between gap-4 max-[720px]:flex-col max-[720px]:items-start">
       <p className="type-para m-0 text-[12px] text-[#2f2822]">
-        Showing {startItem} - {endItem} of {totalItems} Orders
+        {t("orders.showing", { start: startItem, end: endItem, total: totalItems, defaultValue: `Showing ${startItem} - ${endItem} of ${totalItems} Orders` })}
       </p>
 
       <div className="flex items-center gap-1.5 rounded-[8px] bg-white px-2 py-1 text-[#2f2822]">

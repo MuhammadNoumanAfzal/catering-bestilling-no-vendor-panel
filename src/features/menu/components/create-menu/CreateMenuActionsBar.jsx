@@ -5,6 +5,7 @@ export default function CreateMenuActionsBar({
   onSaveDraft,
   saveLabel = "Save as Draft",
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-6 flex items-center justify-end gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
       <button
@@ -12,7 +13,7 @@ export default function CreateMenuActionsBar({
         onClick={onCancel}
         type="button"
       >
-        Cancel
+        {t("menu.cancel", { defaultValue: "Cancel" })}
       </button>
       <button
         className="h-[40px] min-w-[122px] cursor-pointer rounded-[8px] border border-[#d8cfc6] bg-white px-4 text-[14px] font-bold text-[#15110f]"
@@ -27,9 +28,10 @@ export default function CreateMenuActionsBar({
           onClick={onPublish}
           type="button"
         >
-          Publish Menu
+          {t("menu.publish", { defaultValue: "Publish Menu" })}
         </button>
       )}
     </div>
   );
 }
+import { useTranslation } from "react-i18next";

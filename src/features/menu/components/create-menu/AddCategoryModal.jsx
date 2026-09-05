@@ -1,5 +1,6 @@
 import { Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function AddCategoryModal({
   isOpen,
@@ -17,6 +18,7 @@ export default function AddCategoryModal({
   submitLabel = "Add",
   submittingLabel = "Adding...",
 }) {
+  const { t } = useTranslation();
   const [newCategoryName, setNewCategoryName] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +68,7 @@ export default function AddCategoryModal({
       setNewCategoryName("");
       setError("");
     } catch (submitError) {
-      setError(submitError?.message || "Unable to create the category.");
+      setError(submitError?.message || t("menu.unableCreate", { defaultValue: "Unable to create the category." }));
     } finally {
       setIsSubmitting(false);
     }
@@ -110,7 +112,7 @@ export default function AddCategoryModal({
       setEditName("");
       setError("");
     } catch (submitError) {
-      setError(submitError?.message || "Unable to update the category.");
+      setError(submitError?.message || t("menu.unableUpdate", { defaultValue: "Unable to update the category." }));
     } finally {
       setIsSubmittingInline(false);
     }
@@ -136,7 +138,7 @@ export default function AddCategoryModal({
       setDeleteConfirmId(null);
       setError("");
     } catch (submitError) {
-      setError(submitError?.message || "Unable to delete the item.");
+      setError(submitError?.message || t("menu.unableDelete", { defaultValue: "Unable to delete the item." }));
     } finally {
       setIsDeleting(false);
     }
@@ -158,7 +160,7 @@ export default function AddCategoryModal({
               handleCloseModal();
             }}
             type="button"
-            aria-label="Close modal"
+            aria-label={t("menu.close", { defaultValue: "Close" })}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-[#efe4db] bg-[linear-gradient(180deg,#fffdfa_0%,#fbf5ef_100%)] text-[#746a62] shadow-[0_6px_16px_rgba(58,40,25,0.08)] transition hover:border-[#cf6e38]/40 hover:bg-[#fff1e8] hover:text-[#cf6e38] focus:outline-none active:scale-95 cursor-pointer"
           >
             <X size={16} strokeWidth={2.2} />
@@ -203,7 +205,7 @@ export default function AddCategoryModal({
               disabled={isSubmitting || isSubmittingInline || isDeleting}
               className="h-[36px] px-3.5 rounded-lg border border-[#d6cdc4] bg-white text-[13px] font-extrabold text-[#3a2e25] hover:bg-[#faf8f6] active:scale-95 transition cursor-pointer"
             >
-              Cancel
+              {t("menu.cancel", { defaultValue: "Cancel" })}
             </button>
             <button
               type="submit"
@@ -219,7 +221,7 @@ export default function AddCategoryModal({
         {options && options.length > 0 && (
           <div className="mt-5 border-t border-[#f2ece6] pt-4">
             <label className="mb-2 block text-[12px] font-bold text-[#746a62] uppercase tracking-wider">
-              Existing {title.replace("Add New", "").replace("Category", "Categories").trim()}
+              {t("menu.existingCategories", { defaultValue: "Existing categories" })}
             </label>
             <div className="max-h-[160px] overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
               {options.map((option) => (
@@ -243,7 +245,7 @@ export default function AddCategoryModal({
                         className="rounded bg-[#cf6e38] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#b85b2b] transition cursor-pointer"
                         disabled={isSubmittingInline}
                       >
-                        {isSubmittingInline ? "Saving" : "Save"}
+                        {isSubmittingInline ? t("menu.saving", { defaultValue: "Saving..." }) : t("menu.save", { defaultValue: "Save" })}
                       </button>
                       <button
                         type="button"
@@ -251,12 +253,12 @@ export default function AddCategoryModal({
                         className="rounded border border-[#e8dfd5] bg-[#fffdfa] px-2 py-1 text-[11px] font-semibold text-[#746a62] hover:bg-[#faf8f6] transition cursor-pointer"
                         disabled={isSubmittingInline}
                       >
-                        Cancel
+                        {t("menu.cancel", { defaultValue: "Cancel" })}
                       </button>
                     </div>
                   ) : deleteConfirmId === option.value ? (
                     <div className="flex w-full items-center justify-between gap-1.5 bg-red-50/50 p-1.5 rounded-lg border border-red-100 animate-pulse">
-                      <span className="text-[11.5px] font-bold text-red-600">Delete?</span>
+                      <span className="text-[11.5px] font-bold text-red-600">{t("menu.deleteConfirm", { defaultValue: "Delete?" })}</span>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
@@ -264,7 +266,7 @@ export default function AddCategoryModal({
                           className="rounded bg-red-600 px-2 py-0.5 text-[10.5px] font-bold text-white hover:bg-red-700 transition cursor-pointer"
                           disabled={isDeleting}
                         >
-                          {isDeleting ? "..." : "Yes"}
+                          {isDeleting ? "..." : t("menu.yes", { defaultValue: "Yes" })}
                         </button>
                         <button
                           type="button"
@@ -272,7 +274,7 @@ export default function AddCategoryModal({
                           className="rounded border border-red-200 bg-white px-2 py-0.5 text-[10.5px] font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
                           disabled={isDeleting}
                         >
-                          No
+                          {t("menu.no", { defaultValue: "No" })}
                         </button>
                       </div>
                     </div>

@@ -136,14 +136,6 @@ export const GET_VENDOR_MENU_DETAIL_QUERY = `
         id
         title
         description
-        coverImage {
-          fileUrl
-          fileId
-        }
-        image {
-          fileUrl
-          fileId
-        }
         allergens {
           id
           name
@@ -207,15 +199,6 @@ export const GET_VENDOR_MENUS_QUERY = `
             name
           }
           menuType
-          menuItems {
-            id
-            title
-            description
-            coverImage {
-              fileUrl
-              fileId
-            }
-          }
         }
       }
       pageInfo {

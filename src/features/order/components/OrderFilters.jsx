@@ -4,10 +4,11 @@ export default function OrderFilters({
   selectedCount,
   onFilterChange,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-[#eee7df] px-2 pb-0.5 pt-[14px] max-[960px]:flex-col max-[960px]:items-start">
       <span className="text-[16px] font-extrabold text-[#17120e]">
-        {selectedCount} Selected
+        {t("orders.selected", { count: selectedCount, defaultValue: `${selectedCount} Selected` })}
       </span>
       <div className="flex flex-wrap justify-end gap-1.5 max-[960px]:justify-start">
         {filters.map((filter) => (
@@ -28,3 +29,4 @@ export default function OrderFilters({
     </div>
   );
 }
+import { useTranslation } from "react-i18next";

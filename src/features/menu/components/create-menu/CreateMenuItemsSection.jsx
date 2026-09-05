@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, Clock3, FileCheck2, Plus, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { Label, MultiSelectInput, TextInput, UploadBox } from "./CreateMenuFields";
@@ -18,18 +19,19 @@ export default function CreateMenuItemsSection({
   toggleMenuItemExpanded,
   updateMenuItem,
 }) {
+  const { t } = useTranslation();
   const hasUnsavedItem = menuItems.some((item) => !item.isSaved);
 
   return (
     <CreateMenuSectionCard
-      description="Add the dishes and drinks included in the base price."
-      title="Menu Items"
+      description={t("menu.itemsDescription", { defaultValue: "Add the dishes and drinks included in the base price." })}
+      title={t("menu.menuItems", { defaultValue: "Menu Items" })}
     >
       <div className="space-y-4">
         {menuItems.map((item, index) => {
           const itemErrors = menuItemErrors[item.id] || {};
-          const summaryTitle = item.title?.trim() || `Menu Item ${index + 1}`;
-          const summaryDescription = item.description?.trim() || "No description saved yet.";
+          const summaryTitle = item.title?.trim() || t("menu.menuItem", { count: index + 1, defaultValue: `Menu Item ${index + 1}` });
+          const summaryDescription = item.description?.trim() || t("menu.noDescription", { defaultValue: "No description saved yet." });
 
           return (
             <div
@@ -72,10 +74,10 @@ export default function CreateMenuItemsSection({
                         : "bg-[#fff1e8] text-[#cf6e38]"
                     }`}
                   >
-                    {item.isSaved ? "Saved" : "Draft"}
+                    {item.isSaved ? t("menu.saved", { defaultValue: "Saved" }) : t("menu.draft", { defaultValue: "Draft" })}
                   </span>
                   <button
-                    aria-label={item.isExpanded ? "Collapse menu item" : "Expand menu item"}
+                    aria-label={item.isExpanded ? t("menu.collapseItem", { defaultValue: "Collapse menu item" }) : t("menu.expandItem", { defaultValue: "Expand menu item" })}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={disabled}
                     onClick={() => toggleMenuItemExpanded(item.id)}
@@ -84,7 +86,7 @@ export default function CreateMenuItemsSection({
                     {item.isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                   </button>
                   <button
-                    aria-label="Remove menu item"
+                    aria-label={t("menu.removeItem", { defaultValue: "Remove menu item" })}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={disabled}
                     onClick={() => removeMenuItem(item.id)}
@@ -101,17 +103,17 @@ export default function CreateMenuItemsSection({
                     compact
                     disabled={disabled}
                     image={item.image}
-                    label="Click or drag to upload"
+                    label={t("menu.upload", { defaultValue: "Click or drag to upload" })}
                     onFileSelect={(file) => handleItemImageSelect(item.id, file)}
                   />
 
                   <div>
                     <div>
-                      <Label>Title</Label>
+                      <Label>{t("menu.title", { defaultValue: "Title" })}</Label>
                       <TextInput
                         disabled={disabled}
                         onChange={(event) => updateMenuItem(item.id, "title", event.target.value)}
-                        placeholder="Enter item title"
+                        placeholder={t("menu.enterItemTitle", { defaultValue: "Enter item title" })}
                         value={item.title}
                       />
                       {itemErrors.title ? (
@@ -122,13 +124,13 @@ export default function CreateMenuItemsSection({
                     </div>
 
                     <div className="mt-3">
-                      <Label>Description</Label>
+                      <Label>{t("menu.description", { defaultValue: "Description" })}</Label>
                       <textarea
                         disabled={disabled}
                         onChange={(event) =>
                           updateMenuItem(item.id, "description", event.target.value)
                         }
-                        placeholder="Add a short description for this item"
+                        placeholder={t("menu.itemDescriptionPlaceholder", { defaultValue: "Add a short description for this item" })}
                         rows={3}
                         value={item.description || ""}
                         className="min-h-[96px] w-full rounded-[8px] border border-[#ded4cb] bg-white px-3 py-2.5 text-[14px] text-[#211913] outline-none placeholder:text-[#a59689] disabled:cursor-not-allowed disabled:bg-[#f6f1ec] disabled:text-[#8c7f73]"
@@ -141,15 +143,15 @@ export default function CreateMenuItemsSection({
                     </div>
 
                     <div className="relative z-20 mt-3">
-                      <Label>Allergens</Label>
+                      <Label>{t("menu.allergens", { defaultValue: "Allergens" })}</Label>
                       <MultiSelectInput
                         disabled={disabled || allergenFeatureUnavailable}
                         onChange={(value) => updateMenuItem(item.id, "allergens", value)}
                         options={allergenOptions}
                         placeholder={
                           allergenFeatureUnavailable
-                            ? "Allergen API not available in production yet"
-                            : "Select one or more allergens"
+                            ? t("menu.allergenUnavailable", { defaultValue: "Allergen API not available in production yet" })
+                            : t("menu.selectAllergens", { defaultValue: "Select one or more allergens" })
                         }
                         value={item.allergens}
                       />
@@ -159,7 +161,7 @@ export default function CreateMenuItemsSection({
                         </p>
                       ) : !allergenFeatureUnavailable ? (
                         <p className="mt-1 text-[12px] font-medium text-[#8a7c70]">
-                          Allergens are managed by admin and loaded from the backend.
+                          {t("menu.allergensManaged", { defaultValue: "Allergens are managed by admin and loaded from the backend." })}
                         </p>
                       ) : null}
                     </div>
@@ -171,7 +173,7 @@ export default function CreateMenuItemsSection({
                         onClick={() => saveMenuItem(item.id)}
                         type="button"
                       >
-                        Save Item
+                        {t("menu.saveItem", { defaultValue: "Save Item" })}
                       </button>
                     </div>
                   </div>
@@ -190,7 +192,7 @@ export default function CreateMenuItemsSection({
           >
             <span className="inline-flex items-center gap-1.5">
               <Plus size={14} />
-              Add Another Item
+              {t("menu.addAnotherItem", { defaultValue: "Add Another Item" })}
             </span>
           </button>
           <button
@@ -199,12 +201,12 @@ export default function CreateMenuItemsSection({
             onClick={onAddFromOtherPackage}
             type="button"
           >
-            Add item from other package
+            {t("menu.addFromPackage", { defaultValue: "Add item from other package" })}
           </button>
         </div>
         {hasUnsavedItem ? (
           <p className="text-[12px] font-medium text-[#8a776a]">
-            Save the open item before adding another menu item.
+            {t("menu.saveItemFirst", { defaultValue: "Save the open item before adding another menu item." })}
           </p>
         ) : null}
       </div>

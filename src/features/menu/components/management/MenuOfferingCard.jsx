@@ -1,4 +1,5 @@
 import { Copy, Pencil, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const toneClasses = {
   active: "bg-[#2fca52] text-white",
@@ -15,6 +16,7 @@ export default function MenuOfferingCard({
   onDuplicate,
   onToggleStatus,
 }) {
+  const { t } = useTranslation();
   const isActive = item.status === "Active";
 
   return (
@@ -30,7 +32,7 @@ export default function MenuOfferingCard({
                 : "bg-white text-[#2a211b]"
           }`}
         >
-          {item.status === "Paused" ? "Pause" : item.status}
+          {item.status === "Paused" ? t("menu.paused", { defaultValue: "Paused" }) : item.status === "Active" ? t("menu.active", { defaultValue: "Active" }) : item.status === "Draft" ? t("menu.draft", { defaultValue: "Draft" }) : item.status}
         </span>
         <span className="absolute right-2 top-2 rounded-full bg-white px-2.5 py-1 text-[12px] font-bold text-[#2a211b]">
           {item.badge}
@@ -63,7 +65,7 @@ export default function MenuOfferingCard({
               type="button"
             >
               <Pencil size={18} />
-              <span className="text-[11px] font-bold">Edit</span>
+              <span className="text-[11px] font-bold">{t("menu.edit", { defaultValue: "Edit" })}</span>
             </button>
 
             <button
@@ -73,7 +75,7 @@ export default function MenuOfferingCard({
               type="button"
             >
               <Copy size={18} />
-              <span className="text-[11px] font-bold">Duplicate</span>
+              <span className="text-[11px] font-bold">{t("menu.duplicate", { defaultValue: "Duplicate" })}</span>
             </button>
 
             <button
@@ -83,7 +85,7 @@ export default function MenuOfferingCard({
               type="button"
             >
               <Trash2 size={18} />
-              <span className="text-[11px] font-bold">Delete</span>
+              <span className="text-[11px] font-bold">{t("menu.delete", { defaultValue: "Delete" })}</span>
             </button>
           </div>
 
@@ -105,7 +107,7 @@ export default function MenuOfferingCard({
                 isActive ? "text-left pl-3.5" : "text-right pr-3.5"
               }`}
             >
-              {isActive ? "Active" : "Pause"}
+              {isActive ? t("menu.active", { defaultValue: "Active" }) : t("menu.pause", { defaultValue: "Pause" })}
             </span>
           </button>
         </div>

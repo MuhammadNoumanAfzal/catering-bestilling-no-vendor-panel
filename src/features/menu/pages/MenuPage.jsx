@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import MenuCreateNewCard from "../components/management/MenuCreateNewCard";
 import MenuManagementHeader from "../components/management/MenuManagementHeader";
@@ -37,6 +38,7 @@ function parseMenuPrice(value) {
 
 export default function MenuPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
   const [sortBy, setSortBy] = useState("Latest");
@@ -70,8 +72,8 @@ export default function MenuPage() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load menu management right now.",
-            "Menu data unavailable",
+            error.message || t("menu.unableLoad", { defaultValue: "Unable to load menu management right now." }),
+            t("menu.dataUnavailable", { defaultValue: "Menu data unavailable" }),
           );
         }
       } finally {
@@ -86,7 +88,7 @@ export default function MenuPage() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const filteredItems = useMemo(() => {
     const baseItems =
@@ -172,10 +174,10 @@ export default function MenuPage() {
   async function handleDelete(item) {
     if (item.isAddOn) {
       const result = await confirmVendorAction({
-        title: "Delete add-on?",
-        text: `Remove "${item.title}" from add-on management?`,
-        confirmButtonText: "Delete",
-        cancelButtonText: "Keep it",
+        title: t("menu.deleteAddOnTitle", { defaultValue: "Delete add-on?" }),
+        text: t("menu.removeAddOn", { title: item.title, defaultValue: `Remove “${item.title}” from add-on management?` }),
+        confirmButtonText: t("menu.delete", { defaultValue: "Delete" }),
+        cancelButtonText: t("menu.keep", { defaultValue: "Keep it" }),
         icon: "warning",
         confirmButtonColor: "#ff2918",
       });
@@ -187,18 +189,18 @@ export default function MenuPage() {
       try {
         await deleteVendorAddOn(item.id);
         setAddOnCards((current) => current.filter((entry) => entry.id !== item.id));
-        await showVendorSuccessToast("Add-on removed successfully.");
+        await showVendorSuccessToast(t("menu.removedAddOn", { defaultValue: "Add-on removed successfully." }));
       } catch (error) {
-        await showVendorErrorAlert(error.message || "Unable to delete the add-on.");
+        await showVendorErrorAlert(error.message || t("menu.unableDeleteAddOn", { defaultValue: "Unable to delete the add-on." }));
       }
       return;
     }
 
     const result = await confirmVendorAction({
-      title: "Delete menu?",
-      text: `Remove "${item.title}" from menu management?`,
-      confirmButtonText: "Delete",
-      cancelButtonText: "Keep it",
+      title: t("menu.deleteMenuTitle", { defaultValue: "Delete menu?" }),
+      text: t("menu.removeMenu", { title: item.title, defaultValue: `Remove “${item.title}” from menu management?` }),
+      confirmButtonText: t("menu.delete", { defaultValue: "Delete" }),
+      cancelButtonText: t("menu.keep", { defaultValue: "Keep it" }),
       icon: "warning",
       confirmButtonColor: "#ff2918",
     });
@@ -210,9 +212,9 @@ export default function MenuPage() {
     try {
       await deleteVendorMenu(item.id);
       setMenuCards((current) => current.filter((entry) => entry.id !== item.id));
-      await showVendorSuccessToast("Menu removed successfully.");
+      await showVendorSuccessToast(t("menu.removedMenu", { defaultValue: "Menu removed successfully." }));
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to delete the menu.");
+      await showVendorErrorAlert(error.message || t("menu.unableDeleteMenu", { defaultValue: "Unable to delete the menu." }));
     }
   }
 
@@ -234,10 +236,10 @@ export default function MenuPage() {
           ),
         );
         await showVendorSuccessToast(
-          `Add-on status set to ${nextStatus === "active" ? "Active" : "Paused"}.`,
+          t("menu.statusUpdated", { type: t("menu.addOns", { defaultValue: "Add-on" }), status: t(nextStatus === "active" ? "menu.active" : "menu.paused", { defaultValue: nextStatus === "active" ? "Active" : "Paused" }) }),
         );
       } catch (error) {
-        await showVendorErrorAlert(error.message || "Unable to update the add-on status.");
+        await showVendorErrorAlert(error.message || t("menu.unableStatus", { defaultValue: "Unable to update the status." }));
       }
       return;
     }
@@ -258,10 +260,10 @@ export default function MenuPage() {
         ),
       );
       await showVendorSuccessToast(
-        `Menu status set to ${nextStatus === "active" ? "Active" : "Paused"}.`,
+        t("menu.statusUpdated", { type: t("menu.management", { defaultValue: "Menu" }), status: t(nextStatus === "active" ? "menu.active" : "menu.paused", { defaultValue: nextStatus === "active" ? "Active" : "Paused" }) }),
       );
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to update the menu status.");
+      await showVendorErrorAlert(error.message || t("menu.unableStatus", { defaultValue: "Unable to update the status." }));
     }
   }
 
@@ -276,8 +278,8 @@ export default function MenuPage() {
         activeTab={activeTab}
         onSortChange={setSortBy}
         onTabChange={setActiveTab}
-        sortOptions={menuSortOptions}
-        tabs={menuManagementTabs}
+        sortOptions={menuSortOptions.map((value) => ({ value, label: t(`menu.${{ Latest: "latest", Oldest: "oldest", "Highest Price": "highestPrice", "Lowest Price": "lowestPrice" }[value]}`, { defaultValue: value }) }))}
+        tabs={menuManagementTabs.map((value) => ({ value, label: t(`menu.${{ All: "all", Active: "active", Draft: "draft", Paused: "paused", "Add-ons": "addOns" }[value]}`, { defaultValue: value }) }))}
         valueSort={sortBy}
       />
 

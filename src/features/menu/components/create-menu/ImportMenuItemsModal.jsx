@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, ChevronUp, LoaderCircle, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function ImportMenuItemsModal({
   existingMenus = [],
@@ -8,6 +9,7 @@ export default function ImportMenuItemsModal({
   onAdd,
   onRequestMenuItems,
 }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
   const [expandedMenuIds, setExpandedMenuIds] = useState({});
@@ -134,11 +136,11 @@ export default function ImportMenuItemsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px] animate-fade-in">
       <div className="relative flex max-h-[85vh] w-full max-w-[540px] flex-col rounded-[20px] border border-[#e4dbd2] bg-white p-5 shadow-[0_20px_50px_rgba(58,40,25,0.18)]">
         <div className="flex items-center justify-between border-b border-[#f2ece6] pb-3">
-          <h2 className="m-0 text-[18px] font-extrabold text-[#211913]">Import from Previous Menu</h2>
+          <h2 className="m-0 text-[18px] font-extrabold text-[#211913]">{t("menu.importTitle", { defaultValue: "Import from Previous Menu" })}</h2>
           <button
             onClick={onClose}
             type="button"
-            aria-label="Close import modal"
+            aria-label={t("menu.closeImport", { defaultValue: "Close import modal" })}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-[#efe4db] bg-[linear-gradient(180deg,#fffdfa_0%,#fbf5ef_100%)] text-[#746a62] shadow-[0_6px_16px_rgba(58,40,25,0.08)] transition hover:border-[#cf6e38]/40 hover:bg-[#fff1e8] hover:text-[#cf6e38] focus:outline-none active:scale-95"
           >
             <X size={16} strokeWidth={2.2} />
@@ -152,7 +154,7 @@ export default function ImportMenuItemsModal({
           <input
             type="text"
             className="h-[42px] w-full rounded-full border border-[#d7cec4] bg-[#fdfcfb] pl-10 pr-4 text-[14px] text-[#1f1814] outline-none transition placeholder:text-[#a89d93] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
-            placeholder="Search menus or imported items..."
+            placeholder={t("menu.searchMenus", { defaultValue: "Search menus or imported items..." })}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
@@ -210,7 +212,7 @@ export default function ImportMenuItemsModal({
                             : "border-[#d6cdc4] bg-white text-[#746a62] hover:bg-[#fcfaf7]"
                         } ${!menuItems.length ? "cursor-not-allowed opacity-50" : ""}`}
                       >
-                        {allSelected ? "All Selected" : "Select All"}
+                        {allSelected ? t("menu.allSelected", { defaultValue: "All Selected" }) : t("menu.selectAll", { defaultValue: "Select All" })}
                       </button>
                       <span className="text-[#8c7f73]">
                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -223,7 +225,7 @@ export default function ImportMenuItemsModal({
                       {isLoadingItems ? (
                         <div className="flex items-center justify-center gap-2 py-5 text-[12px] font-semibold text-[#8a7d72]">
                           <LoaderCircle size={14} className="animate-spin" />
-                          Loading menu items...
+                          {t("menu.loadingItems", { defaultValue: "Loading menu items..." })}
                         </div>
                       ) : menuItems.length ? (
                         menuItems.map((item) => {
@@ -262,7 +264,7 @@ export default function ImportMenuItemsModal({
                         })
                       ) : (
                         <p className="py-4 text-center text-[12px] text-[#8a7d72]">
-                          No items available in this menu.
+                          {t("menu.noItems", { defaultValue: "No items available in this menu." })}
                         </p>
                       )}
                     </div>
@@ -272,9 +274,9 @@ export default function ImportMenuItemsModal({
             })
           ) : (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <p className="m-0 text-[13px] font-bold text-[#746a62]">No matching menus found</p>
+              <p className="m-0 text-[13px] font-bold text-[#746a62]">{t("menu.noMatchingMenus", { defaultValue: "No matching menus found" })}</p>
               <p className="m-0 mt-1 text-[11px] text-[#aea39a]">
-                Try a different search term.
+                {t("menu.trySearch", { defaultValue: "Try a different search term." })}
               </p>
             </div>
           )}
@@ -286,7 +288,7 @@ export default function ImportMenuItemsModal({
             type="button"
             className="h-[38px] cursor-pointer rounded-lg border border-[#d6cdc4] bg-white px-4 text-[13px] font-extrabold text-[#3a2e25] transition hover:bg-[#faf8f6] active:scale-95"
           >
-            Cancel
+            {t("menu.cancel", { defaultValue: "Cancel" })}
           </button>
           <button
             onClick={handleAddSelected}
@@ -294,7 +296,7 @@ export default function ImportMenuItemsModal({
             type="button"
             className="h-[38px] cursor-pointer rounded-lg bg-[#cf6e38] px-5 text-[13px] font-extrabold text-white transition hover:bg-[#bf622f] active:scale-95 disabled:pointer-events-none disabled:opacity-45"
           >
-            Add Selected ({selectedItems.length})
+            {t("menu.addSelected", { count: selectedItems.length, defaultValue: `Add Selected (${selectedItems.length})` })}
           </button>
         </div>
       </div>

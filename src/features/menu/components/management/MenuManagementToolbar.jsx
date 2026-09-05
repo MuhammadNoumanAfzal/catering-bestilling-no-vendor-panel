@@ -14,16 +14,16 @@ export default function MenuManagementToolbar({
         <div className="flex flex-wrap items-center gap-3">
           {tabs.map((tab) => (
             <button
-              key={tab}
+              key={tab.value}
               className={`cursor-pointer rounded-[8px] px-3 py-[7px] text-[14px] font-bold transition ${
-                activeTab === tab
+                activeTab === tab.value
                   ? "bg-[#d96e39] text-white"
                   : "text-[#2a211b]"
               }`}
-              onClick={() => onTabChange(tab)}
+              onClick={() => onTabChange(tab.value)}
               type="button"
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -35,8 +35,8 @@ export default function MenuManagementToolbar({
             value={valueSort}
           >
             {sortOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
