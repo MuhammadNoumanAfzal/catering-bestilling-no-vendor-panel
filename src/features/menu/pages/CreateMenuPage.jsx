@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import CreateMenuActionsBar from "../components/create-menu/CreateMenuActionsBar";
 import CreateMenuAddOnsSection from "../components/create-menu/CreateMenuAddOnsSection";
@@ -12,6 +13,7 @@ import { useMenuEditor } from "../hooks/useMenuEditor";
 
 export default function CreateMenuPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     allergenOptions,
     categoryOptions,
@@ -60,21 +62,21 @@ export default function CreateMenuPage() {
           type="button"
         >
           <ChevronLeft size={14} />
-          Menu management
+          {t("menu.backToManagement", { defaultValue: "Menu management" })}
         </button>
         <h1 className="type-h2 m-0 text-[#15110f]">
           {isViewMode
-            ? "View Menu"
+            ? t("menu.viewTitle", { defaultValue: "View Menu" })
             : isEditMode
-              ? "Edit Menu"
+              ? t("menu.editTitle", { defaultValue: "Edit Menu" })
               : isDuplicateMode
-                ? "Duplicate Menu"
-                : "Create New Menu"}
+                ? t("menu.duplicateTitle", { defaultValue: "Duplicate Menu" })
+                : t("menu.createTitle", { defaultValue: "Create New Menu" })}
         </h1>
         <p className="mt-1 text-[15px] font-medium text-[#746a62]">
           {isViewMode
-            ? "Review this catering package and its configuration."
-            : "Build and configure your bespoke catering package for potential clients."}
+            ? t("menu.viewDescription", { defaultValue: "Review this catering package and its configuration." })
+            : t("menu.createDescription", { defaultValue: "Build and configure your bespoke catering package for potential clients." })}
         </p>
       </header>
 
@@ -176,12 +178,12 @@ export default function CreateMenuPage() {
         onSaveDraft={isViewMode ? () => navigate("/menu") : actions.handleSaveDraft}
         saveLabel={
           isViewMode
-            ? "Back to Menus"
+            ? t("menu.backToMenus", { defaultValue: "Back to Menus" })
             : isEditMode
-              ? "Save Changes"
+              ? t("menu.saveChanges", { defaultValue: "Save Changes" })
               : isDuplicateMode
-                ? "Save Copy as Draft"
-                : "Save as Draft"
+                ? t("menu.saveCopyDraft", { defaultValue: "Save Copy as Draft" })
+                : t("menu.saveDraft", { defaultValue: "Save as Draft" })
         }
       />
 

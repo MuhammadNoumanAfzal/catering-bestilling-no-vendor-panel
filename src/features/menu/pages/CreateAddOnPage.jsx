@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import CreateAddOnActionsBar from "../components/create-addon/CreateAddOnActionsBar";
 import CreateAddOnAvailabilitySection from "../components/create-addon/CreateAddOnAvailabilitySection";
@@ -8,6 +9,7 @@ import { useAddOnEditor } from "../hooks/useAddOnEditor";
 
 export default function CreateAddOnPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     categoryOptions,
     fieldErrors,
@@ -44,15 +46,15 @@ export default function CreateAddOnPage() {
           type="button"
         >
           <ChevronLeft size={14} />
-          Menu management
+          {t("menu.backToManagement", { defaultValue: "Menu management" })}
         </button>
         <h1 className="type-h2 m-0 text-[#15110f]">
-          {isEditMode ? "Edit Add-on" : isDuplicateMode ? "Duplicate Add-on" : "Add New Add-on"}
+          {isEditMode ? t("menu.editAddOnTitle", { defaultValue: "Edit Add-on" }) : isDuplicateMode ? t("menu.duplicateAddOnTitle", { defaultValue: "Duplicate Add-on" }) : t("menu.addOnTitle", { defaultValue: "Add New Add-on" })}
         </h1>
         <p className="mt-1 text-[15px] font-medium text-[#746a62]">
           {isEditMode
-            ? "Update the details and configuration of your add-on item."
-            : "Create a new extra item for your customers to customize their meals."}
+            ? t("menu.editAddOnDescription", { defaultValue: "Update the details and configuration of your add-on item." })
+            : t("menu.addOnDescription", { defaultValue: "Create a new extra item for your customers to customize their meals." })}
         </p>
       </header>
 
@@ -102,8 +104,8 @@ export default function CreateAddOnPage() {
         onPrimaryAction={actions.handleAddAnother}
         onSave={actions.handleSave}
         isEditMode={isEditMode}
-        primaryLabel="+ Add Another Item"
-        saveLabel={isEditMode ? "Save Changes" : isDuplicateMode ? "Save Copy" : "Save Add-on"}
+        primaryLabel={t("menu.addAnother", { defaultValue: "+ Add Another Item" })}
+        saveLabel={isEditMode ? t("menu.saveChanges", { defaultValue: "Save Changes" }) : isDuplicateMode ? t("menu.saveCopy", { defaultValue: "Save Copy" }) : t("menu.saveAddOn", { defaultValue: "Save Add-on" })}
       />
     </section>
   );

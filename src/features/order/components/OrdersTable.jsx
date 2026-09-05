@@ -1,5 +1,6 @@
 import { ChevronDown, Users, Check, X, ArrowRight, Ban, Play } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const statusToneClasses = {
   "is-new": "border border-[#bde3f9] bg-[#e3f4ff] text-[#1d70a2]",
@@ -28,7 +29,7 @@ const actionMenuItems = [
   "Canceled",
 ];
 
-function renderStatusBadge(status, statusTone) {
+function renderStatusBadge(status, statusTone, t) {
   const toneClass = statusToneClasses[statusTone] ?? statusToneClasses["is-new"];
   
   let dotClass = "h-1.5 w-1.5 rounded-full ";
@@ -53,7 +54,7 @@ function renderStatusBadge(status, statusTone) {
   return (
     <span className={`inline-flex min-h-[24px] items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[12px] font-semibold leading-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${toneClass}`}>
       <span className={dotClass} aria-hidden="true" />
-      <span>{status}</span>
+      <span>{t(`orders.${{ New: "new", Accepted: "accepted", Preparing: "preparing", Ready: "ready", "Out for delivery": "outForDelivery", "Out for Delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled", Modified: "modified" }[status] || "status"}`, { defaultValue: status })}</span>
     </span>
   );
 }
@@ -79,6 +80,7 @@ function getActionIcon(label) {
 }
 
 export default function OrdersTable({ rows, onActionClick, onRowClick }) {
+  const { t } = useTranslation();
   const [openMenuKey, setOpenMenuKey] = useState(null);
 
   function handleMenuToggle(menuKey) {
@@ -105,12 +107,12 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 onClick={(e) => e.stopPropagation()}
               />
             </th>
-            {["OrderID", "Customer", "Event", "Guests", "Delivery date", "Status", "Actions"].map((heading) => (
+            {[["orderId", "Order ID"], ["customer", "Customer"], ["event", "Event"], ["guests", "Guests"], ["deliveryDate", "Delivery date"], ["status", "Status"], ["actions", "Actions"]].map(([key, heading]) => (
               <th
-                key={heading}
+                key={key}
                 className="border-b border-[#eee7df] px-4 py-4 text-left text-[15px] font-extrabold text-[#17120e]"
               >
-                {heading}
+                {t(`orders.${key}`, { defaultValue: heading })}
               </th>
             ))}
           </tr>
@@ -157,10 +159,10 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
               </td>
               <td className="px-4 py-4">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {renderStatusBadge(row.status, row.statusTone)}
+                  {renderStatusBadge(row.status, row.statusTone, t)}
                   {row.hasPendingVendorAdjustment ? (
                     <span className="inline-flex min-h-[24px] items-center rounded-full border border-[#fed0b3] bg-[#fff2e8] px-2.5 py-0.5 text-[11px] font-extrabold leading-none text-[#c95f2a]">
-                      Modification request pending
+                      {t("orders.modificationPending", { defaultValue: "Modification request pending" })}
                     </span>
                   ) : null}
                 </div>
@@ -199,7 +201,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                             type="button"
                           >
                             {getActionIcon(action.label)}
-                            <span>{action.label}</span>
+                            <span>{t(`orders.${{ Accept: "accept", Reject: "reject", "Start preparing": "startPreparing", Ready: "ready", "Out for delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled", "Mark delivered": "markDelivered" }[action.label] || "actions"}`, { defaultValue: action.label })}</span>
                           </button>
 
                           {hasDropdown ? (
@@ -210,7 +212,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                                 handleMenuToggle(menuKey);
                               }}
                               type="button"
-                              aria-label={`Open status options for ${action.label}`}
+                              aria-label={t("orders.openStatusOptions", { action: action.label, defaultValue: `Open status options for ${action.label}` })}
                             >
                               <ChevronDown size={12} strokeWidth={2.8} className="opacity-90" />
                             </button>

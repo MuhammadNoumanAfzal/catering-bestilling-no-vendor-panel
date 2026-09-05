@@ -1,5 +1,6 @@
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { Label } from "./CreateMenuFields";
+import { useTranslation } from "react-i18next";
 
 export default function CreateMenuAvailabilitySection({
   disabled = false,
@@ -7,13 +8,14 @@ export default function CreateMenuAvailabilitySection({
   selectedDietary,
   toggleDietary,
 }) {
+  const { t } = useTranslation();
   return (
     <CreateMenuSectionCard
-      description="Help customers identify menu options that suit their needs."
-      title="Dietary Tags"
+      description={t("menu.dietaryDescription", { defaultValue: "Help customers identify menu options that suit their needs." })}
+      title={t("menu.dietaryTags", { defaultValue: "Dietary Tags" })}
     >
       <div>
-        <Label>Dietary Tags</Label>
+        <Label>{t("menu.dietaryTags", { defaultValue: "Dietary Tags" })}</Label>
         <div className="flex flex-wrap gap-2">
           {dietaryOptions.map((tag) => {
             const tagValue = tag.value || tag;

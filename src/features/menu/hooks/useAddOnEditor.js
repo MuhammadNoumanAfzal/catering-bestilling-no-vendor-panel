@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -55,6 +56,7 @@ function mapAddOnMutationErrors(errors = []) {
 }
 
 export function useAddOnEditor() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") || "create";
@@ -123,8 +125,8 @@ export function useAddOnEditor() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load the add-on editor right now.",
-            "Add-on data unavailable",
+            error.message || t("menu.unableLoad", { defaultValue: "Unable to load the add-on editor right now." }),
+            t("menu.dataUnavailable", { defaultValue: "Add-on data unavailable" }),
           );
           navigate("/menu", { replace: true });
         }
@@ -140,7 +142,7 @@ export function useAddOnEditor() {
     return () => {
       isCancelled = true;
     };
-  }, [editId, isDuplicateMode, navigate]);
+  }, [editId, isDuplicateMode, navigate, t]);
 
   const resolvedCategories = useMemo(
     () => (Array.isArray(formState.categories) ? formState.categories.filter(Boolean) : []),
@@ -215,7 +217,7 @@ export function useAddOnEditor() {
       setField("image", uploadedAsset);
       await showVendorSuccessToast("Product image uploaded.");
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to process the selected image.");
+      await showVendorErrorAlert(error.message || t("menu.unableUpload", { defaultValue: "Unable to process the selected image." }));
     }
   }
 
@@ -241,9 +243,9 @@ export function useAddOnEditor() {
     if (!resolvedCategories.length) {
       setFieldErrors((current) => ({
         ...current,
-        categories: "Please choose at least one category.",
+        categories: t("menu.categoryRequired", { defaultValue: "Please choose at least one category." }),
       }));
-      await showVendorErrorAlert("Please choose at least one category.");
+      await showVendorErrorAlert(t("menu.categoryRequired", { defaultValue: "Please choose at least one category." }));
       return false;
     }
 
@@ -324,7 +326,7 @@ export function useAddOnEditor() {
       setFieldErrors(emptyFieldErrors);
 
       await showVendorSuccessToast(
-        result.message || (navigateAfterSave ? "Add-on saved successfully." : "Add-on added."),
+        result.message || (navigateAfterSave ? t("menu.addOnSaved", { defaultValue: "Add-on saved successfully." }) : t("menu.addOnAdded", { defaultValue: "Add-on added." })),
       );
 
       if (navigateAfterSave) {
@@ -338,7 +340,7 @@ export function useAddOnEditor() {
         ...current,
         ...mapAddOnMutationErrors(error?.errors),
       }));
-      await showVendorErrorAlert(error.message || "Unable to save the add-on right now.");
+      await showVendorErrorAlert(error.message || t("menu.unableSave", { defaultValue: "Unable to save the add-on right now." }));
     } finally {
       setIsSaving(false);
     }

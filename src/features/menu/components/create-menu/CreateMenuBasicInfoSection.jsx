@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import {
@@ -10,13 +11,13 @@ import {
   UploadBox,
 } from "./CreateMenuFields";
 
-function ImageSlider({ images }) {
+function ImageSlider({ images, t }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!images || images.length === 0) {
     return (
       <div className="flex h-[200px] w-full items-center justify-center rounded-[12px] bg-[#f5f2ef] text-[#7d7064] text-[14px] font-semibold border border-[#d7cec4]">
-        No images uploaded
+        {t("menu.noImages", { defaultValue: "No images uploaded" })}
       </div>
     );
   }
@@ -44,7 +45,7 @@ function ImageSlider({ images }) {
       {/* Slider Images */}
       <img
         src={images[currentIndex]}
-        alt={`Menu Media ${currentIndex + 1}`}
+        alt={t("menu.mediaGallery", { defaultValue: "Menu Media Gallery" })}
         className="h-full w-full object-cover transition-all duration-300"
       />
 
@@ -115,52 +116,53 @@ export default function CreateMenuBasicInfoSection({
   onMenuTypesChange,
   onOccasionsChange,
 }) {
+  const { t } = useTranslation();
   return (
     <CreateMenuSectionCard
-      description="General details about this catering package."
-      title="Basic Information"
+      description={t("menu.basicDescription", { defaultValue: "General details about this catering package." })}
+      title={t("menu.basicInformation", { defaultValue: "Basic Information" })}
     >
       <div className="space-y-3">
         <div>
-          <Label>Menu Title</Label>
+          <Label>{t("menu.menuTitle", { defaultValue: "Menu Title" })}</Label>
           <TextInput
             disabled={disabled}
             onChange={onMenuTitleChange}
-            placeholder="Enter menu title"
+            placeholder={t("menu.enterMenuTitle", { defaultValue: "Enter menu title" })}
             value={menuTitle}
           />
           <FieldError message={fieldErrors?.menuTitle} />
         </div>
 
         <div>
-          <Label>Description</Label>
+          <Label>{t("menu.description", { defaultValue: "Description" })}</Label>
           <TextArea
             disabled={disabled}
             onChange={onDescriptionChange}
-            placeholder="Describe the culinary experience, key highlights, and service style..."
+            placeholder={t("menu.menuDescriptionPlaceholder", { defaultValue: "Describe the culinary experience, key highlights, and service style..." })}
             value={description}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
           <div>
-            <Label>Category</Label>
+            <Label>{t("menu.category", { defaultValue: "Category" })}</Label>
             <SelectInput
               disabled={disabled}
               onChange={onCategoryChange}
               options={categoryOptions}
-              placeholder="Select category"
+              placeholder={t("menu.selectCategory", { defaultValue: "Select category" })}
               value={category}
             />
             <FieldError message={fieldErrors?.category} />
           </div>
           <div>
-            <Label>Food Type</Label>
+            <Label>{t("menu.foodType", { defaultValue: "Food Type" })}</Label>
             <MultiSelectInput
               disabled={disabled}
               onChange={onMenuTypesChange}
               options={menuTypeOptions}
-              placeholder="Select one or more food types"
+              placeholder={t("menu.selectFoodTypes", { defaultValue: "Select one or more food types" })}
               value={menuTypes}
             />
             <FieldError message={fieldErrors?.menuTypes} />
@@ -168,29 +170,29 @@ export default function CreateMenuBasicInfoSection({
         </div>
 
         <div>
-          <Label>Occasions</Label>
+          <Label>{t("menu.occasions", { defaultValue: "Occasions" })}</Label>
           <MultiSelectInput
             disabled={disabled}
             onChange={onOccasionsChange}
             options={occasionOptions}
-            placeholder="Select one or more occasions"
+            placeholder={t("menu.selectOccasions", { defaultValue: "Select one or more occasions" })}
             value={selectedOccasions}
           />
           <FieldError message={fieldErrors?.selectedOccasions} />
           <p className="mt-2 text-[12px] font-medium leading-[1.5] text-[#8a776a]">
-            Rule: Select at least one Food Type to show this menu under Browse by Food Type. Occasion is optional and only controls where the menu appears under Browse by Occasion.
+            {t("menu.occasionHint", { defaultValue: "Rule: Select at least one Food Type to show this menu under Browse by Food Type. Occasion is optional and only controls where the menu appears under Browse by Occasion." })}
           </p>
         </div>
 
         {disabled ? (
           <div>
-            <Label>Menu Media Gallery Slider</Label>
-            <ImageSlider images={[coverImage, ...galleryImages].filter(Boolean)} />
+            <Label>{t("menu.mediaGallery", { defaultValue: "Menu Media Gallery" })}</Label>
+            <ImageSlider t={t} images={[coverImage, ...galleryImages].filter(Boolean)} />
           </div>
         ) : (
           <>
             <div>
-              <Label>Cover Image</Label>
+              <Label>{t("menu.coverImage", { defaultValue: "Cover Image" })}</Label>
               <UploadBox
                 disabled={disabled}
                 image={coverImage}
@@ -199,15 +201,15 @@ export default function CreateMenuBasicInfoSection({
             </div>
 
             <div>
-              <Label>Gallery Images</Label>
+              <Label>{t("menu.galleryImages", { defaultValue: "Gallery Images" })}</Label>
               <div className="flex flex-wrap gap-3">
                 {galleryImages && galleryImages.map((img, idx) => (
                   <div key={idx} className="relative h-[94px] w-[110px] overflow-hidden rounded-[8px] border border-[#d7cec4] group">
-                    <img src={img} alt={`Gallery ${idx + 1}`} className="h-full w-full object-cover" />
+                    <img src={img} alt={t("menu.galleryImage", { count: idx + 1, defaultValue: `Gallery ${idx + 1}` })} className="h-full w-full object-cover" />
                     <button
                       onClick={() => onRemoveGalleryImage(idx)}
                       type="button"
-                      aria-label={`Remove gallery image ${idx + 1}`}
+                      aria-label={t("menu.removeGalleryImage", { count: idx + 1, defaultValue: `Remove gallery image ${idx + 1}` })}
                       className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/70 bg-[rgba(28,21,16,0.78)] text-white shadow-[0_8px_18px_rgba(0,0,0,0.22)] backdrop-blur-sm transition hover:bg-[#cf6e38] hover:shadow-[0_10px_22px_rgba(207,110,56,0.28)] active:scale-95"
                     >
                       <X size={14} strokeWidth={2.5} />
@@ -219,7 +221,7 @@ export default function CreateMenuBasicInfoSection({
                     compact
                     disabled={disabled}
                     image=""
-                    label="Add Photo"
+                    label={t("menu.addPhoto", { defaultValue: "Add Photo" })}
                     onFileSelect={onGalleryImageSelect}
                   />
                 </div>

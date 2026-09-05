@@ -6,6 +6,7 @@ export default function CreateAddOnActionsBar({
   isEditMode,
   saveLabel = "",
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
       {!isEditMode && primaryLabel ? (
@@ -24,16 +25,17 @@ export default function CreateAddOnActionsBar({
           onClick={onCancel}
           type="button"
         >
-          Cancel
+          {t("menu.cancel", { defaultValue: "Cancel" })}
         </button>
         <button
           className="h-[42px] min-w-[122px] cursor-pointer rounded-[10px] bg-[#cf6e38] px-4 text-[14px] font-bold text-white"
           onClick={onSave}
           type="button"
         >
-          {saveLabel || (isEditMode ? "Save Changes" : "Save Add-on")}
+          {saveLabel || (isEditMode ? t("menu.saveChanges", { defaultValue: "Save Changes" }) : t("menu.saveAddOn", { defaultValue: "Save Add-on" }))}
         </button>
       </div>
     </div>
   );
 }
+import { useTranslation } from "react-i18next";

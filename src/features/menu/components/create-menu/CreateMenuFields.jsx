@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Upload } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Label({ children }) {
   return <span className="mb-1 block text-[14px] font-bold text-[#211913]">{children}</span>;
@@ -83,6 +84,7 @@ export function MultiSelectInput({
   onChange,
   placeholder,
 }) {
+  const { t } = useTranslation();
   function getOptionValue(option) {
     return typeof option === "string" ? option : option.value;
   }
@@ -168,7 +170,7 @@ export function MultiSelectInput({
             })
           ) : (
             <div className="px-3 py-2 text-[12px] font-semibold text-[#8a7c70] text-center">
-              No options available
+              {t("menu.noOptions", { defaultValue: "No options available" })}
             </div>
           )}
         </div>
@@ -184,6 +186,7 @@ export function UploadBox({
   label = "Click to drag to upload",
   onFileSelect,
 }) {
+  const { t } = useTranslation();
   async function handleChange(event) {
     const file = event.target.files?.[0];
 
@@ -209,7 +212,7 @@ export function UploadBox({
         type="file"
       />
       {image ? (
-        <img alt="Uploaded preview" className="h-full w-full object-cover" src={image} />
+        <img alt={t("menu.uploadedPreview", { defaultValue: "Uploaded preview" })} className="h-full w-full object-cover" src={image} />
       ) : (
         <>
           <span className="mb-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#d06d3a] shadow-[0_2px_6px_rgba(0,0,0,0.08)]">
@@ -217,7 +220,7 @@ export function UploadBox({
           </span>
           <span className="text-[12px] font-semibold text-[#211913]">{label}</span>
           <span className="mt-1 text-[11px] font-medium text-[#8a7d72]">
-            PNG, JPG, or WEBP (max 2MB)
+            {t("menu.uploadFormatSmall", { defaultValue: "PNG, JPG, or WEBP (max 2MB)" })}
           </span>
         </>
       )}
