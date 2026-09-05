@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const dateOptions = [
   { id: "lastMonth", label: "Last Month" },
@@ -25,6 +26,8 @@ export default function ReviewsFiltersBar({
   onToggleDateMenu,
   selectedDateOption,
 }) {
+  const { t } = useTranslation();
+  const dateLabel = (id) => t(`reviews.${id}`, { defaultValue: dateOptions.find((option) => option.id === id)?.label || id });
   return (
     <div className="rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-2.5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="flex items-center justify-between gap-3 max-[760px]:flex-col max-[760px]:items-stretch">
@@ -87,7 +90,7 @@ export default function ReviewsFiltersBar({
                         onClick={() => onSelectDateOption(option.id)}
                         type="button"
                       >
-                        <span>{option.label}</span>
+                        <span>{dateLabel(option.id)}</span>
                         {isActive ? (
                           <span className="text-[10px] font-bold tracking-[0.08em]">
                             ACTIVE
@@ -101,16 +104,16 @@ export default function ReviewsFiltersBar({
                 {isCustomDateOpen ? (
                   <div className="mt-3 rounded-[18px] border border-[#f0dfd3] bg-[#fff8f4] p-4">
                     <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#d58a61]">
-                      Custom Range
+                      {t("reviews.customRange", { defaultValue: "Custom Range" })}
                     </p>
                     <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]">
-                      Choose a start and end date to filter the reviews list.
+                      {t("dashboard.date.description", { defaultValue: "Choose a start and end date to filter the reviews list." })}
                     </p>
 
                     <div className="mt-4 space-y-3">
                       <label className="flex flex-col gap-1">
                         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                          From
+                          {t("reviews.from", { defaultValue: "From" })}
                         </span>
                         <input
                           className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
@@ -122,7 +125,7 @@ export default function ReviewsFiltersBar({
 
                       <label className="flex flex-col gap-1">
                         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                          To
+                          {t("reviews.to", { defaultValue: "To" })}
                         </span>
                         <input
                           className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
@@ -140,7 +143,7 @@ export default function ReviewsFiltersBar({
                         onClick={onApplyCustomDate}
                         type="button"
                       >
-                        Apply
+                        {t("reviews.apply", { defaultValue: "Apply" })}
                       </button>
                     </div>
                   </div>
@@ -154,7 +157,7 @@ export default function ReviewsFiltersBar({
             onClick={onClearFilters}
             type="button"
           >
-            Clear Filters
+            {t("reviews.clear", { defaultValue: "Clear Filters" })}
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import SettingsAccountSecurityPanel from "../components/SettingsAccountSecurityP
 import SettingsActionsBar from "../components/SettingsActionsBar";
 import SettingsBusinessProfilePanel from "../components/SettingsBusinessProfilePanel";
 import SettingsTabs from "../components/SettingsTabs";
+import { useTranslation } from "react-i18next";
 import VendorApplicationStatusNotice from "../components/VendorApplicationStatusNotice";
 import useSettingsPageState from "../hooks/useSettingsPageState";
 
@@ -35,6 +36,7 @@ function resolveSettingsNoticeStatus(applicationReview, authUser) {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const {
     activeTab,
     authUser,
@@ -72,12 +74,12 @@ export default function SettingsPage() {
   const pageContent =
     activeTab === "security"
       ? {
-          title: "Account & Security",
-          description: "Manage your account details, password and security preferences.",
+          title: t("settings.securityTitle"),
+          description: t("settings.securityDescription"),
         }
       : {
-          title: "Settings",
-          description: "Manage your business, account and preferences.",
+          title: t("settings.title"),
+          description: t("settings.description"),
         };
   const noticeStatus = resolveSettingsNoticeStatus(applicationReview, authUser);
 
@@ -139,7 +141,6 @@ export default function SettingsPage() {
           handleSave={handleSave}
           hasUnsavedChanges={hasUnsavedChanges}
           isSaving={isSaving}
-          languageOptions={settingsOptions.languageOptions}
           settings={settings}
           handleSaveClosure={handleSaveClosure}
           handleDeleteClosure={handleDeleteClosure}

@@ -1,6 +1,8 @@
 import { AlertCircle, CornerUpLeft, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewListItem({ review }) {
+  const { t } = useTranslation();
   return (
     <article
       className={`rounded-[12px] border px-4 py-3 shadow-[0_3px_10px_rgba(43,30,20,0.04)] ${
@@ -45,7 +47,7 @@ export default function ReviewListItem({ review }) {
         <div className="flex items-center gap-4 max-[520px]:w-full max-[520px]:justify-between max-[520px]:border-t max-[520px]:border-[#efe6de] max-[520px]:pt-2.5">
           <div className="flex flex-col items-end max-[520px]:items-start leading-none">
               <span className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#9c8f83]">
-                Order Ref
+                {t("reviews.orderRef", { defaultValue: "Order Ref" })}
               </span>
             <span className="mt-1 text-[13px] font-extrabold text-[#201914]">
               {review.orderRef ? `#${review.orderRef}` : review.id}
@@ -57,7 +59,7 @@ export default function ReviewListItem({ review }) {
             type="button"
           >
             <CornerUpLeft size={11} />
-            {review.initialReply ? "Edit Reply" : "Reply"}
+            {review.initialReply ? t("reviews.editReply", { defaultValue: "Edit Reply" }) : t("reviews.reply", { defaultValue: "Reply" })}
           </button>
         </div>
       </div>
@@ -67,7 +69,7 @@ export default function ReviewListItem({ review }) {
       {review.initialReply ? (
         <div className="mt-3 rounded-[8px] border border-[#eadfd7] bg-[#faf7f4] px-3 py-2.5">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8c7f73]">
-            Your Reply
+            {t("reviews.yourReply", { defaultValue: "Your Reply" })}
           </p>
           <p className="mt-1 text-[13px] font-medium leading-[1.5] text-[#4c423b]">
             {review.initialReply}

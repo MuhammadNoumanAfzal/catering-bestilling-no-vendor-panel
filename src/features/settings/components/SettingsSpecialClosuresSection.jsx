@@ -4,20 +4,20 @@ import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
 import { isPastDateValue } from "../../../utils/dateValidation";
+import { useTranslation } from "react-i18next";
 
-function formatDate(dateStr) {
+function formatDate(dateStr, locale) {
   if (!dateStr) {
     return "";
   }
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const date = new Date(dateStr);
 
   if (Number.isNaN(date.getTime())) {
     return dateStr;
   }
 
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
 export default function SettingsSpecialClosuresSection({
@@ -28,6 +28,7 @@ export default function SettingsSpecialClosuresSection({
   disabled = false,
   minDate = "",
 }) {
+  const { t, i18n } = useTranslation();
   const [closureType, setClosureType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -43,7 +44,7 @@ export default function SettingsSpecialClosuresSection({
     }
 
     if (isPastDateValue(nextValue)) {
-      setDateError("Past dates are not allowed.");
+      setDateError(t("settings.pastDates"));
       return;
     }
 
@@ -63,12 +64,12 @@ export default function SettingsSpecialClosuresSection({
     }
 
     if (isPastDateValue(nextValue)) {
-      setDateError("Past dates are not allowed.");
+      setDateError(t("settings.pastDates"));
       return;
     }
 
     if (startDate && nextValue < startDate) {
-      setDateError("End date must be the same as or after the start date.");
+      setDateError(t("settings.invalidDateRange"));
       return;
     }
 
@@ -82,12 +83,12 @@ export default function SettingsSpecialClosuresSection({
     }
 
     if (isPastDateValue(startDate) || isPastDateValue(endDate)) {
-      setDateError("Past dates are not allowed.");
+      setDateError(t("settings.pastDates"));
       return;
     }
 
     if (endDate < startDate) {
-      setDateError("End date must be the same as or after the start date.");
+      setDateError(t("settings.invalidDateRange"));
       return;
     }
 
@@ -116,21 +117,21 @@ export default function SettingsSpecialClosuresSection({
 
   return (
     <SettingsSectionCard
-      description="Block delivery and pickup on specific dates or date ranges. Customers will not be able to schedule orders on closed dates."
-      title="Special Closures & Exceptions"
+      description={t("settings.closuresDescription")}
+      title={t("settings.closures")}
     >
       <div className="grid min-w-0 grid-cols-4 gap-3 max-[960px]:grid-cols-2 max-[480px]:grid-cols-1">
         <SettingsSelectField
           disabled={disabled}
-          label="Closure type"
+          label={t("settings.closureType")}
           onChange={(event) => setClosureType(event.target.value)}
           options={closureTypeOptions}
-          placeholder="Add closure type"
+          placeholder={t("settings.addClosureType")}
           value={closureType}
         />
 
         <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-[13px] font-bold text-[#2a211b]">Start date</span>
+          <span className="text-[13px] font-bold text-[#2a211b]">{t("settings.startDate")}</span>
           <div className="relative min-w-0 w-full">
             <input
               className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
@@ -148,7 +149,7 @@ export default function SettingsSpecialClosuresSection({
         </label>
 
         <label className="flex min-w-0 flex-col gap-1">
-          <span className="text-[13px] font-bold text-[#2a211b]">End date</span>
+          <span className="text-[13px] font-bold text-[#2a211b]">{t("settings.endDate")}</span>
           <div className="relative min-w-0 w-full">
             <input
               className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
@@ -167,7 +168,7 @@ export default function SettingsSpecialClosuresSection({
 
         <SettingsTextField
           disabled={disabled}
-          label="Reason (optional)"
+          label={`${t("settings.reason")} (${t("settings.optional")})`}
           onChange={(event) => setReason(event.target.value)}
           placeholder="e.g. Christmas holidays"
           value={reason}
@@ -187,22 +188,22 @@ export default function SettingsSpecialClosuresSection({
           onClick={handleAddOrUpdate}
           type="button"
         >
-          {editingId ? "Update Closure" : "Add Closure"}
+          {editingId ? t("settings.updateClosure") : t("settings.addClosure")}
         </button>
       </div>
 
       <div className="mt-6 border-t border-[#f2ece6] pt-4">
-        <h3 className="mb-3 text-[14px] font-bold text-[#201914]">Upcoming Closure Dates</h3>
+        <h3 className="mb-3 text-[14px] font-bold text-[#201914]">{t("settings.upcomingClosures")}</h3>
 
         {closures.length ? (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-[#eee7df]">
-                  <th className="pb-2 text-left text-[12px] font-bold text-[#8a7c70]">Reason</th>
-                  <th className="pb-2 text-left text-[12px] font-bold text-[#8a7c70]">Date range</th>
-                  <th className="pb-2 text-left text-[12px] font-bold text-[#8a7c70]">Status</th>
-                  <th className="pb-2 text-right text-[12px] font-bold text-[#8a7c70]">Actions</th>
+                  <th className="pb-2 text-left text-[12px] font-bold text-[#8a7c70]">{t("settings.reason")}</th>
+                  <th className="pb-2 text-left text-[12px] font-bold text-[#8a7c70]">{t("settings.dateRange")}</th>
+                  <th className="pb-2 text-left text-[12px] font-bold text-[#8a7c70]">{t("settings.status")}</th>
+                  <th className="pb-2 text-right text-[12px] font-bold text-[#8a7c70]">{t("settings.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -210,7 +211,7 @@ export default function SettingsSpecialClosuresSection({
                   <tr key={item.id} className="border-b border-[#f2ece6] last:border-0">
                     <td className="py-3 text-[13px] font-bold text-[#201914]">{item.reason}</td>
                     <td className="py-3 text-[13px] font-bold text-[#201914]">
-                      {formatDate(item.start)} - {formatDate(item.end)}
+                      {formatDate(item.start, i18n.language)} – {formatDate(item.end, i18n.language)}
                     </td>
                     <td className="py-3 text-[13px]">
                       <span
@@ -252,7 +253,7 @@ export default function SettingsSpecialClosuresSection({
           </div>
         ) : (
           <p className="py-4 text-center text-[12px] font-semibold text-[#8a7c70]">
-            No upcoming closures configured.
+            {t("settings.noClosures")}
           </p>
         )}
       </div>

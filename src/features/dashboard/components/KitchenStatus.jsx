@@ -1,4 +1,5 @@
 import { BadgeCheck, Bike, ChefHat, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const iconMap = {
   chef: ChefHat,
@@ -13,10 +14,11 @@ const toneClasses = {
 };
 
 export default function KitchenStatus({ items }) {
+  const { t } = useTranslation();
   return (
     <>
       <p className="type-para -mt-1 text-[#6f645b]">
-        Live overview of your current operations
+        {t("dashboard.kitchen.description")}
       </p>
       <div className="mt-2 grid grid-cols-3 gap-2.5 max-[960px]:grid-cols-1">
         {items.map((item) => {
@@ -46,7 +48,7 @@ export default function KitchenStatus({ items }) {
         onClick={items[0]?.goToOrders}
         type="button"
       >
-        Go to Orders
+        {t("dashboard.kitchen.goToOrders")}
         <ChevronRight size={14} strokeWidth={2.4} />
       </button>
     </>

@@ -1,24 +1,26 @@
 import { Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewsSummaryCard({ summary }) {
+  const { t } = useTranslation();
   const breakdown = summary?.ratingBreakdown || [];
   const maxCount = Math.max(...breakdown.map((item) => item.count));
   const totalCount = breakdown.reduce((sum, item) => sum + item.count, 0);
   const stats = [
     {
-      label: "TOTAL REVIEWS",
+      label: t("reviews.total", { defaultValue: "TOTAL REVIEWS" }),
       value: String(summary?.totalCount ?? 0),
-      helper: "All time reviews",
+      helper: t("reviews.allTime", { defaultValue: "All time reviews" }),
     },
     {
-      label: "NEW REVIEWS",
+      label: t("reviews.new", { defaultValue: "NEW REVIEWS" }),
       value: String(summary?.newReviewsCount ?? 0),
-      helper: "Within selected range",
+      helper: t("reviews.selectedRange", { defaultValue: "Within selected range" }),
     },
     {
-      label: "RESPONSE RATE",
+      label: t("reviews.responseRate", { defaultValue: "RESPONSE RATE" }),
       value: `${Number(summary?.responseRate ?? 0)}%`,
-      helper: `You replied to ${Number(summary?.repliedCount ?? 0)} of ${Number(summary?.totalCount ?? 0)}`,
+      helper: t("reviews.replied", { replied: Number(summary?.repliedCount ?? 0), total: Number(summary?.totalCount ?? 0), defaultValue: `You replied to ${Number(summary?.repliedCount ?? 0)} of ${Number(summary?.totalCount ?? 0)}` }),
     },
   ];
 
@@ -34,7 +36,7 @@ export default function ReviewsSummaryCard({ summary }) {
               <Star key={index} size={17} fill="currentColor" color="currentColor" />
             ))}
           </div>
-          <p className="type-para mt-2">Based on {totalCount} reviews</p>
+          <p className="type-para mt-2">{t("reviews.basedOn", { count: totalCount, defaultValue: `Based on ${totalCount} reviews` })}</p>
         </div>
 
         <div className="flex items-center border-r border-[#eadfd7] pr-4 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pb-4 max-[980px]:pr-0">

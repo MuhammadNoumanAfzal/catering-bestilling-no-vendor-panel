@@ -1,6 +1,7 @@
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
+import { useTranslation } from "react-i18next";
 
 function formatCurrencyValue(value) {
   const trimmedValue = value.trim();
@@ -26,6 +27,7 @@ export default function DeliveryPricingSection({
   disabled = false,
   errors = {},
 }) {
+  const { t } = useTranslation();
   const formattedBaseFee = formatCurrencyValue(baseFee);
   const formattedFreeDelivery = formatCurrencyValue(freeDelivery);
   const pricingNote =
@@ -39,32 +41,32 @@ export default function DeliveryPricingSection({
 
   return (
     <DeliverySectionCard
-      description="Set your delivery fee and minimum order value."
+      description={t("delivery.pricingDescription", { defaultValue: "Set your delivery fee and minimum order value." })}
       disabled={disabled}
-      title="Pricing & Minimum Order"
+      title={t("delivery.pricing", { defaultValue: "Pricing & Minimum Order" })}
     >
       <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
         <div>
           <DeliveryTextInput
             disabled={disabled}
             error={errors.baseDeliveryFee}
-            label="Base Delivery Fee"
+            label={t("delivery.baseFee", { defaultValue: "Base Delivery Fee" })}
             onChange={onBaseFeeChange}
             placeholder="150.00"
             value={baseFee}
           />
-          <p className="type-subpara mt-1">Applied to standard orders.</p>
+          <p className="type-subpara mt-1">{t("delivery.standardOrders", { defaultValue: "Applied to standard orders." })}</p>
         </div>
         <div>
           <DeliveryTextInput
             disabled={disabled}
             error={errors.freeDeliveryOver}
-            label="Free Delivery over (optional)"
+            label={`${t("delivery.freeDelivery", { defaultValue: "Free Delivery over" })} (${t("settings.optional", { defaultValue: "optional" })})`}
             onChange={onFreeDeliveryChange}
             placeholder="5000.00"
             value={freeDelivery}
           />
-          <p className="type-subpara mt-1">Large order only mode</p>
+          <p className="type-subpara mt-1">{t("delivery.largeOrderMode", { defaultValue: "Large order only mode" })}</p>
         </div>
       </div>
       <DeliveryInfoNote>{pricingNote}</DeliveryInfoNote>

@@ -1,9 +1,11 @@
 import { ChevronRight, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewsList({ onManageReviews, reviews }) {
+  const { t } = useTranslation();
   return (
     <>
-      <p className="type-para -mt-1 max-[720px]:text-[12px]">Customer feedback on latest events</p>
+      <p className="type-para -mt-1 max-[720px]:text-[12px]">{t("dashboard.review.description")}</p>
       <div className="mt-3 flex flex-col gap-3">
         {reviews.map((review, index) => (
           <article
@@ -23,7 +25,7 @@ export default function ReviewsList({ onManageReviews, reviews }) {
                   <div className="mt-0.5 flex items-center gap-1.5">
                     <div
                       className="inline-flex gap-0.5 text-[#ffb400]"
-                      aria-label={`${review.rating} stars`}
+                      aria-label={t("dashboard.review.stars", { count: review.rating })}
                     >
                       {[...Array(5)].map((_, starIndex) => (
                         <Star
@@ -57,7 +59,7 @@ export default function ReviewsList({ onManageReviews, reviews }) {
         onClick={onManageReviews}
         type="button"
       >
-        Manage reviews
+        {t("dashboard.review.manage")}
         <ChevronRight size={12} />
       </button>
     </>

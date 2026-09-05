@@ -1,5 +1,6 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FiArrowRight, FiEdit3 } from "react-icons/fi";
 
 import AuthCard from "../components/AuthCard";
@@ -112,6 +113,7 @@ function getPasswordStrength(password) {
 }
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [signupStep, setSignupStep] = useState(SIGNUP_STEP.FORM);
@@ -169,17 +171,17 @@ export default function RegisterPage() {
       !formState.password.trim() ||
       !formState.confirmPassword.trim()
     ) {
-      await showVendorErrorAlert("Please complete all required fields.", "Registration incomplete");
+      await showVendorErrorAlert(t("auth.validation.allRequired"), t("auth.validation.incomplete"));
       return;
     }
 
     if (!isValidEmail(formState.email)) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      await showVendorErrorAlert(t("auth.validation.invalidEmail"), t("auth.validation.invalidEmailTitle"));
       return;
     }
 
     if (!/^\d+$/.test(formState.postCode.trim())) {
-      await showVendorErrorAlert("Post code must contain digits only.", "Invalid post code");
+      await showVendorErrorAlert(t("auth.validation.invalidPostCode"), t("auth.validation.invalidPostCodeTitle"));
       return;
     }
 
@@ -210,7 +212,7 @@ export default function RegisterPage() {
     }
 
     if (formState.password !== formState.confirmPassword) {
-      await showVendorErrorAlert("Password and confirm password must match.", "Password mismatch");
+      await showVendorErrorAlert(t("auth.validation.passwordsMismatch"), t("auth.validation.mismatchTitle"));
       return;
     }
 
@@ -244,7 +246,7 @@ export default function RegisterPage() {
 
   async function handleVerifyOtp() {
     if (!new RegExp(`^\\d{${SIGNUP_OTP_LENGTH}}$`).test(otpCode)) {
-      setOtpError(`Verification code must be ${SIGNUP_OTP_LENGTH} digits.`);
+      setOtpError(t("auth.validation.codeLength", { count: SIGNUP_OTP_LENGTH }));
       return;
     }
 
@@ -298,21 +300,21 @@ export default function RegisterPage() {
           signupStep === SIGNUP_STEP.FORM
             ? [
                 {
-                  label: "First Name",
+            label: t("auth.register.firstName"),
                   name: "firstName",
                   onChange: handleFieldChange("firstName"),
                   placeholder: "Sarah",
                   value: formState.firstName,
                 },
                 {
-                  label: "Last Name",
+            label: t("auth.register.lastName"),
                   name: "lastName",
                   onChange: handleFieldChange("lastName"),
                   placeholder: "Jensen",
                   value: formState.lastName,
                 },
                 {
-                  label: "Email Address",
+                  label: t("auth.emailAddress"),
                   autoComplete: "email",
                   name: "email",
                   onChange: handleFieldChange("email"),
@@ -324,7 +326,7 @@ export default function RegisterPage() {
                 },
                 {
                   errorText: formErrors.phone,
-                  label: "Phone Number",
+                  label: t("auth.register.phone"),
                   maxLength: 15,
                   name: "phone",
                   onChange: handleFieldChange("phone"),
@@ -334,21 +336,21 @@ export default function RegisterPage() {
                   value: formState.phone,
                 },
                 {
-                  label: "Company Name",
+                  label: t("auth.register.company"),
                   name: "companyName",
                   onChange: handleFieldChange("companyName"),
                   placeholder: "Nordic Gourmet Catering",
                   value: formState.companyName,
                 },
                 {
-                  label: "Post Code",
+                  label: t("auth.register.postCode"),
                   name: "postCode",
                   onChange: handleFieldChange("postCode"),
                   placeholder: "9021",
                   value: formState.postCode,
                 },
                 {
-                  label: "Password",
+                  label: t("auth.password"),
                   autoComplete: "new-password",
                   name: "password",
                   onChange: handleFieldChange("password"),
@@ -358,7 +360,7 @@ export default function RegisterPage() {
                   value: formState.password,
                 },
                 {
-                  label: "Confirm Password",
+                  label: t("auth.confirmPassword"),
                   autoComplete: "new-password",
                   name: "confirmPassword",
                   onChange: handleFieldChange("confirmPassword"),
@@ -369,7 +371,7 @@ export default function RegisterPage() {
               ]
             : [
                 {
-                  label: "Email Verification Code",
+                  label: t("auth.register.codeLabel"),
                   inputMode: "numeric",
                   maxLength: SIGNUP_OTP_LENGTH,
                   name: "otp",
@@ -402,7 +404,7 @@ export default function RegisterPage() {
                 className="type-para inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg border border-[#d9cdc3] bg-white font-bold text-[#7b6f66] transition duration-150 hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-55"
               >
                 <FiEdit3 className="text-[14px]" />
-                Edit details
+                {t("auth.register.edit")}
               </button>
               <button
                 type="button"
@@ -410,26 +412,26 @@ export default function RegisterPage() {
                 disabled={isSendingOtp || isVerifyingOtp}
                 className="type-para inline-flex min-h-[42px] w-full items-center justify-center rounded-lg border border-[#cf6e38] bg-white font-bold text-[#cf6e38] transition duration-150 hover:bg-[#fff4ee] disabled:cursor-not-allowed disabled:opacity-55"
               >
-                {isSendingOtp ? "Sending code..." : "Resend verification code"}
+                {isSendingOtp ? t("auth.register.sending") : t("auth.register.resend")}
               </button>
             </div>
           ) : null
         }
-        footerLinkLabel="Sign in"
+        footerLinkLabel={t("auth.register.signIn")}
         footerLinkTo="/auth/login"
-        footerText="Already registered?"
+        footerText={t("auth.register.alreadyAccount")}
         formClassName="px-6 pb-6 pt-7"
         maxWidthClassName="sm:max-w-[760px]"
         onAction={signupStep === SIGNUP_STEP.VERIFY ? handleVerifyOtp : handleSendOtp}
         subtitle={
           signupStep === SIGNUP_STEP.VERIFY
-            ? `Enter the 6-digit code sent to ${formState.email} to complete your vendor account setup.`
-            : "Fill in your business details and click Register to receive an email verification code."
+            ? t("auth.register.verifySubtitle", { email: formState.email })
+            : t("auth.register.subtitle")
         }
         title={
           signupStep === SIGNUP_STEP.VERIFY
-            ? "Verify Your Email"
-            : "Vendor Registration"
+            ? t("auth.register.verifyTitle")
+            : t("auth.register.title")
         }
       />
     </AuthLayout>

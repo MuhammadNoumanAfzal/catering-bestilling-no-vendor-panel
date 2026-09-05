@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import AuthCard from "../components/AuthCard";
 import { useAuth } from "../hooks/useAuth";
@@ -12,6 +13,7 @@ function isValidEmail(email) {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { clearAuthError, isAuthenticated, isLoggingIn, login, user } = useAuth();
@@ -45,35 +47,34 @@ export default function LoginPage() {
 
   async function handleLogin() {
     if (!formState.identifier.trim()) {
-      await showVendorErrorAlert("Please enter your email address.", "Email required");
+      await showVendorErrorAlert(t("auth.validation.emailRequired"), t("auth.validation.emailRequiredTitle"));
       return;
     }
 
     if (!isValidEmail(formState.identifier.trim())) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      await showVendorErrorAlert(t("auth.validation.invalidEmail"), t("auth.validation.invalidEmailTitle"));
       return;
     }
 
     try {
       const session = await login(formState);
-      await showVendorSuccessToast("Logged in successfully.");
+      await showVendorSuccessToast(t("auth.login.success"));
       const nextPath = location.state?.from?.pathname || getVendorPostLoginPath(session?.user);
       navigate(nextPath, { replace: true });
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Login failed.", "Login failed");
+      await showVendorErrorAlert(error.message || t("auth.login.failed"), t("auth.login.failed"));
     }
   }
 
   return (
     <AuthLayout>
       <AuthCard
-        title="Welcome Back"
-        subtitle="Login to manage your catering business"
+        title={t("auth.login.title")}
+        subtitle={t("auth.login.subtitle")}
         fields={[
           {
             autoComplete: "email",
-            helperText: "Use the vendor email linked to your account.",
-            label: "Email Address",
+            helperText: t("auth.login.emailHelp"), label: t("auth.emailAddress"),
             name: "identifier",
             onChange: handleFieldChange("identifier"),
             placeholder: "vendor@example.com",
@@ -82,26 +83,26 @@ export default function LoginPage() {
           },
           {
             autoComplete: "current-password",
-            label: "Password",
+            label: t("auth.password"),
             name: "password",
             onChange: handleFieldChange("password"),
             type: "password",
-            placeholder: "Enter your password",
+            placeholder: t("auth.login.passwordPlaceholder"),
             value: formState.password,
           },
         ]}
-        rememberMeLabel="Remember me"
+        rememberMeLabel={t("auth.login.rememberMe")}
         rememberMeChecked={formState.rememberMe}
         onRememberMeChange={handleRememberMeChange}
-        auxiliaryLinkLabel="Forgot Password?"
+        auxiliaryLinkLabel={t("auth.login.forgotPassword")}
         auxiliaryLinkTo="/auth/forgot-password"
         actionDisabled={isLoggingIn || !formState.identifier.trim() || !formState.password.trim()}
-        actionLabel={isLoggingIn ? "Signing in..." : "Login"}
+        actionLabel={isLoggingIn ? t("auth.login.signingIn") : t("auth.login.submit")}
         onAction={handleLogin}
-        footerText="Need a vendor account?"
-        footerLinkLabel="Register now"
+        footerText={t("auth.login.noAccount")}
+        footerLinkLabel={t("auth.login.register")}
         footerLinkTo="/auth/register"
-        note="This vendor portal accepts vendor email login only."
+        note={t("auth.login.note")}
       />
     </AuthLayout>
   );

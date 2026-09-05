@@ -9,8 +9,10 @@ import DeliveryScheduleSection from "../components/DeliveryScheduleSection";
 import DeliveryValidationAside from "../components/DeliveryValidationAside";
 import { deliveryDays, deliveryModes } from "../data/deliveryData";
 import useDeliverySettings from "../hooks/useDeliverySettings";
+import { useTranslation } from "react-i18next";
 
 export default function DeliveryPage() {
+  const { t } = useTranslation();
   const {
     activeDays,
     baseFee,
@@ -66,9 +68,9 @@ export default function DeliveryPage() {
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col max-[720px]:px-4 max-[720px]:py-4">
       <header className="mb-5">
-        <h1 className="type-h2 m-0 text-[#15110f]">Delivery Settings</h1>
+        <h1 className="type-h2 m-0 text-[#15110f]">{t("delivery.title", { defaultValue: "Delivery Settings" })}</h1>
         <p className="type-para mt-1">
-          Configure how your orders are delivered to customers.
+          {t("delivery.subtitle", { defaultValue: "Configure how your orders are delivered to customers." })}
         </p>
       </header>
 
@@ -77,7 +79,7 @@ export default function DeliveryPage() {
           {loadError ? (
             <div className="rounded-[12px] border border-[#f0c8bf] bg-[#fff4ef] px-4 py-4 text-[#6f3d2d]">
               <h2 className="m-0 text-[15px] font-bold text-[#4a2418]">
-                Delivery settings unavailable
+                {t("delivery.unavailable", { defaultValue: "Delivery settings unavailable" })}
               </h2>
               <p className="mt-2 text-[13px] font-medium leading-[1.5]">
                 {loadError}
@@ -87,7 +89,7 @@ export default function DeliveryPage() {
                 onClick={retryLoad}
                 type="button"
               >
-                Retry loading
+                {t("delivery.retry", { defaultValue: "Retry loading" })}
               </button>
             </div>
           ) : null}

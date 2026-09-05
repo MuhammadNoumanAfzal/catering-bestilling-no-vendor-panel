@@ -1,4 +1,5 @@
 import { CalendarDays, CircleAlert, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const iconMap = {
   plus: Plus,
@@ -7,6 +8,7 @@ const iconMap = {
 };
 
 export default function QuickActions({ actions }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-2">
       {actions.map((action) => {
@@ -21,7 +23,7 @@ export default function QuickActions({ actions }) {
           >
             <span className="inline-flex items-center justify-center gap-1.5 font-bold">
               {Icon ? <Icon size={14} strokeWidth={2.2} /> : null}
-              <span>{action.label}</span>
+              <span>{t(action.labelKey)}</span>
             </span>
           </button>
         );

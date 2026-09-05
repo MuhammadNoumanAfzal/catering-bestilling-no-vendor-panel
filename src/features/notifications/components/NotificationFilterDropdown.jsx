@@ -1,4 +1,5 @@
 import { CalendarDays, ChevronDown, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function formatDateLabel(dateValue) {
   if (!dateValue) {
@@ -20,6 +21,7 @@ export default function NotificationFilterDropdown({
   selectedFilter,
   setIsOpen,
 }) {
+  const { t } = useTranslation();
   const isCustom = selectedFilter === "Custom Date";
 
   return (
@@ -75,7 +77,7 @@ export default function NotificationFilterDropdown({
             <div className="mt-3 rounded-[10px] bg-[#fff5ef] p-3">
               <div className="grid gap-2">
                 <label className="flex flex-col gap-1">
-                  <span className="type-subpara text-[#7f7064]">From</span>
+                  <span className="type-subpara text-[#7f7064]">{t("notifications.from", { defaultValue: "From" })}</span>
                   <input
                     className="type-subpara h-[36px] rounded-[8px] border border-[#efc3af] bg-white px-3 text-[#1f1813] outline-none focus:border-[#d86f39]"
                     onChange={(event) =>
@@ -86,7 +88,7 @@ export default function NotificationFilterDropdown({
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="type-subpara text-[#7f7064]">To</span>
+                  <span className="type-subpara text-[#7f7064]">{t("notifications.to", { defaultValue: "To" })}</span>
                   <input
                     className="type-subpara h-[36px] rounded-[8px] border border-[#efc3af] bg-white px-3 text-[#1f1813] outline-none focus:border-[#d86f39]"
                     onChange={(event) =>
@@ -104,7 +106,7 @@ export default function NotificationFilterDropdown({
                   onClick={() => setIsOpen(false)}
                   type="button"
                 >
-                  Apply
+                  {t("notifications.apply", { defaultValue: "Apply" })}
                 </button>
               </div>
             </div>
@@ -113,7 +115,7 @@ export default function NotificationFilterDropdown({
           <p className="type-subpara mt-3 break-words text-[#998b80]">
             {isCustom
               ? `From: ${formatDateLabel(customRange.from)}   To: ${formatDateLabel(customRange.to)}`
-              : "Choose a date range to filter notifications."}
+              : t("notifications.chooseRange", { defaultValue: "Choose a date range to filter notifications." })}
           </p>
         </div>
       ) : null}

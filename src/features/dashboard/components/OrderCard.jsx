@@ -11,6 +11,7 @@ const badgeToneClasses = {
 };
 
 export default function OrderCard({ onAccept, onReject, onViewDetails, order }) {
+  const { t } = useTranslation();
   return (
     <article
       className={`relative flex items-end justify-between gap-4 rounded-[14px] border px-3 pb-3 pt-[14px] ${
@@ -50,23 +51,24 @@ export default function OrderCard({ onAccept, onReject, onViewDetails, order }) 
           onClick={() => onAccept?.(order)}
           type="button"
         >
-          Accept order
+          {t("dashboard.orders.accept")}
         </button>
         <button
           className="type-para min-h-9 cursor-pointer min-w-[76px] rounded border border-[#f2c9c4] bg-white px-[12px] text-[10px] font-bold text-[#c53a2f] max-[720px]:w-full max-[720px]:min-w-0"
           onClick={() => onReject?.(order)}
           type="button"
         >
-          Reject
+          {t("dashboard.orders.reject")}
         </button>
         <button
           className="type-para min-h-9 cursor-pointer min-w-[96px] rounded border border-[#b8b4af] bg-white px-[12px] text-[10px] font-bold text-[#2f2822] max-[720px]:w-full max-[720px]:min-w-0"
           onClick={() => onViewDetails?.(order)}
           type="button"
         >
-          Details
+          {t("dashboard.orders.details")}
         </button>
       </div>
     </article>
   );
 }
+import { useTranslation } from "react-i18next";

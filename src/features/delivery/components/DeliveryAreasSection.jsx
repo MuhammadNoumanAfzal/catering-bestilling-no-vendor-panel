@@ -2,6 +2,7 @@ import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliveryTagList from "./DeliveryTagList";
 import DeliveryTextInput from "./DeliveryTextInput";
+import { useTranslation } from "react-i18next";
 
 export default function DeliveryAreasSection({
   searchValue,
@@ -14,19 +15,20 @@ export default function DeliveryAreasSection({
   error = "",
   isSearching = false,
 }) {
+  const { t } = useTranslation();
   const showDropdown = !disabled && searchValue.trim();
   const hasResults = searchResults.length > 0;
 
   return (
     <DeliverySectionCard
-      description="Add the service areas where customers can request delivery."
+      description={t("delivery.areasDescription", { defaultValue: "Add the service areas where customers can request delivery." })}
       disabled={disabled}
-      title="Delivery Areas"
+      title={t("delivery.areas", { defaultValue: "Delivery Areas" })}
     >
       <DeliveryTextInput
         disabled={disabled}
         error={error}
-        label="Search service area"
+        label={t("delivery.searchArea", { defaultValue: "Search service area" })}
         onChange={onSearchChange}
         placeholder="Search by area name or postcode"
         value={searchValue}
@@ -36,7 +38,7 @@ export default function DeliveryAreasSection({
         <div className="mt-3 rounded-[10px] border border-[#e3dad2] bg-[#fffdfb]">
           {isSearching ? (
             <p className="px-3 py-3 text-[13px] font-medium text-[#8d7f73]">
-              Searching available areas...
+              {t("delivery.searching", { defaultValue: "Searching available areas…" })}
             </p>
           ) : hasResults ? (
             <div className="divide-y divide-[#efe7df]">
@@ -55,7 +57,7 @@ export default function DeliveryAreasSection({
                       Postcode {area.postCode}
                     </span>
                   </span>
-                  <span className="text-[12px] font-bold text-[#cf6e38]">Add</span>
+                  <span className="text-[12px] font-bold text-[#cf6e38]">{t("delivery.add", { defaultValue: "Add" })}</span>
                 </button>
               ))}
             </div>

@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function NotificationItem({ notification, onOpen, sequenceNumber = null }) {
+  const { t } = useTranslation();
   const isHighlighted = notification.highlighted;
 
   return (
@@ -57,7 +60,7 @@ export default function NotificationItem({ notification, onOpen, sequenceNumber 
                   : "bg-[#f6f1eb] text-[#85776a]"
               }`}
             >
-              {notification.isRead ? "Read" : "Unread"}
+              {notification.isRead ? t("notifications.read", { defaultValue: "Read" }) : t("notifications.unreadLabel", { defaultValue: "Unread" })}
             </span>
 
             <span className="text-[12px] font-semibold text-[#302822] transition group-hover:text-[#cf6e38]">

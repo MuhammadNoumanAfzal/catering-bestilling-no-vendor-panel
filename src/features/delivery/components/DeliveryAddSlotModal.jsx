@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { deliveryDays } from "../data/deliveryData";
+import { useTranslation } from "react-i18next";
 
 const TIME_OPTIONS = Array.from({ length: 96 }, (_, index) => {
   const hours = String(Math.floor(index / 4)).padStart(2, "0");
@@ -15,6 +16,7 @@ export default function DeliveryAddSlotModal({
   onSave,
   error = "",
 }) {
+  const { t } = useTranslation();
   const selectableDays = deliveryDays.filter((day) => activeDays.includes(day.value));
   const isReadyToSave = draftSlot.day && draftSlot.start && draftSlot.end;
 
@@ -27,8 +29,8 @@ export default function DeliveryAddSlotModal({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="type-subpara m-0 text-[#d86f39]">Custom Time Slot</p>
-            <h2 className="type-h4 mt-1 text-[#1c1510]">Add delivery slot</h2>
+            <p className="type-subpara m-0 text-[#d86f39]">{t("delivery.customSlot", { defaultValue: "Custom Time Slot" })}</p>
+            <h2 className="type-h4 mt-1 text-[#1c1510]">{t("delivery.addDeliverySlot", { defaultValue: "Add delivery slot" })}</h2>
           </div>
           <button
             className="cursor-pointer text-[#473d36]"
@@ -44,7 +46,7 @@ export default function DeliveryAddSlotModal({
         </p>
 
         <label className="mt-4 flex flex-col gap-1">
-          <span className="type-para text-[#1a1410]">Delivery day</span>
+          <span className="type-para text-[#1a1410]">{t("delivery.deliveryDay", { defaultValue: "Delivery day" })}</span>
           <select
             autoFocus
             className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
@@ -65,10 +67,10 @@ export default function DeliveryAddSlotModal({
         </label>
 
         <label className="mt-4 flex flex-col gap-1">
-          <span className="type-para text-[#1a1410]">Delivery time slot</span>
+          <span className="type-para text-[#1a1410]">{t("delivery.deliveryTimeSlot", { defaultValue: "Delivery time slot" })}</span>
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="type-subpara text-[#6f6258]">Start time</span>
+              <span className="type-subpara text-[#6f6258]">{t("delivery.startTime", { defaultValue: "Start time" })}</span>
               <select
                 className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
                   error ? "border-[#d25545]" : "border-[#cec5bd]"
@@ -79,7 +81,7 @@ export default function DeliveryAddSlotModal({
                 })}
                 value={draftSlot.start}
               >
-                <option value="">Select time</option>
+                <option value="">{t("delivery.selectTime", { defaultValue: "Select time" })}</option>
                 {TIME_OPTIONS.map((timeOption) => (
                   <option key={timeOption} value={timeOption}>
                     {timeOption}
@@ -88,7 +90,7 @@ export default function DeliveryAddSlotModal({
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="type-subpara text-[#6f6258]">End time</span>
+              <span className="type-subpara text-[#6f6258]">{t("delivery.endTime", { defaultValue: "End time" })}</span>
               <select
                 className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
                   error ? "border-[#d25545]" : "border-[#cec5bd]"
@@ -99,7 +101,7 @@ export default function DeliveryAddSlotModal({
                 })}
                 value={draftSlot.end}
               >
-                <option value="">Select time</option>
+                <option value="">{t("delivery.selectTime", { defaultValue: "Select time" })}</option>
                 {TIME_OPTIONS.map((timeOption) => (
                   <option key={timeOption} value={timeOption}>
                     {timeOption}
@@ -119,7 +121,7 @@ export default function DeliveryAddSlotModal({
             onClick={onClose}
             type="button"
           >
-            Cancel
+            {t("delivery.cancel", { defaultValue: "Cancel" })}
           </button>
           <button
             className="type-subpara cursor-pointer rounded-[8px] bg-[#de6f39] px-4 py-[9px] text-white disabled:cursor-not-allowed disabled:opacity-50"
@@ -127,7 +129,7 @@ export default function DeliveryAddSlotModal({
             onClick={onSave}
             type="button"
           >
-            Add Slot
+            {t("delivery.addSlot", { defaultValue: "Add Slot" })}
           </button>
         </div>
       </div>
