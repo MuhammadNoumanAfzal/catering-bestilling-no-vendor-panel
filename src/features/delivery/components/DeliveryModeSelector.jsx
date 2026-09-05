@@ -1,4 +1,5 @@
 import { Building2, Truck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const iconMap = {
   delivery: Truck,
@@ -11,6 +12,7 @@ export default function DeliveryModeSelector({
   onToggleMode,
   disabled = false,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
       {modes.map((mode) => {
@@ -45,8 +47,8 @@ export default function DeliveryModeSelector({
             >
               <Icon size={40} strokeWidth={2.1} />
             </span>
-            <span className="type-h5 mt-2.5 text-[#1f1814]">{mode.title}</span>
-            <span className="type-subpara mt-1 ">{mode.description}</span>
+            <span className="type-h5 mt-2.5 text-[#1f1814]">{t(`delivery.${mode.id}`, { defaultValue: mode.title })}</span>
+            <span className="type-subpara mt-1 ">{t(`delivery.${mode.id}ModeDescription`, { defaultValue: mode.description })}</span>
           </button>
         );
       })}

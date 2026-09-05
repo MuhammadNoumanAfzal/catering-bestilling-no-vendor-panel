@@ -2,6 +2,7 @@ import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySchedulePicker from "./DeliverySchedulePicker";
 import DeliverySectionCard from "./DeliverySectionCard";
 import { AlertCircle, Clock3, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function isValidQuarterHourTime(value) {
   const match = String(value || "").match(/^(\d{2}):(\d{2})$/);
@@ -26,6 +27,7 @@ export default function DeliveryScheduleSection({
   disabled = false,
   errors = {},
 }) {
+  const { t } = useTranslation();
   const dayLabels = days.reduce((accumulator, day) => ({
     ...accumulator,
     [typeof day === "string" ? day : day.value]: typeof day === "string" ? day : day.label,
@@ -35,13 +37,13 @@ export default function DeliveryScheduleSection({
 
   return (
     <DeliverySectionCard
-      description="Choose the exact days and time slots customers can book for delivery."
+      description={t("delivery.scheduleDescription", { defaultValue: "Choose the exact days and time slots customers can book for delivery." })}
       disabled={disabled}
-      title="Delivery Schedule"
+      title={t("delivery.schedule", { defaultValue: "Delivery Schedule" })}
     >
       <div className="grid grid-cols-[minmax(0,180px)_minmax(0,1fr)] items-start gap-x-6 gap-y-4 max-[760px]:grid-cols-1">
         <div>
-          <p className="type-para mb-3 mt-0 text-[#2a221d]">Delivery on</p>
+          <p className="type-para mb-3 mt-0 text-[#2a221d]">{t("delivery.delivery", { defaultValue: "Delivery" })}</p>
           <DeliverySchedulePicker
             activeDays={activeDays}
             days={days}
@@ -117,7 +119,7 @@ export default function DeliveryScheduleSection({
             ) : (
               <div className="rounded-[12px] border border-dashed border-[#ddd4cc] bg-white px-4 py-5 text-center">
                 <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">
-                  No delivery slots added yet.
+                  {t("delivery.noSlots", { defaultValue: "No delivery slots added yet." })}
                 </p>
                 <p className="mt-1 text-[12px] text-[#9a8b7f]">
                   Add at least one slot so customers can choose delivery times.
@@ -136,7 +138,7 @@ export default function DeliveryScheduleSection({
             onClick={onAddCustomSlot}
             type="button"
           >
-            + Add custom slot
+            + {t("delivery.addSlot", { defaultValue: "Add custom slot" })}
           </button>
           {!hasActiveDays ? (
             <p className="type-subpara m-0 text-[#8c5a48]">

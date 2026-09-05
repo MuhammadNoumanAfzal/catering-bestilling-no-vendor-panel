@@ -3,6 +3,7 @@ import {
   financeDateOptions,
   financeStatusTabs,
 } from "../data/financeFilterOptions";
+import { useTranslation } from "react-i18next";
 
 export default function FinanceOrdersFilters({
   activeStatus,
@@ -22,6 +23,7 @@ export default function FinanceOrdersFilters({
   selectedDateOption,
   onClearDateFilter,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-2.5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="flex items-center justify-between gap-3 max-[760px]:flex-col max-[760px]:items-stretch">
@@ -77,7 +79,7 @@ export default function FinanceOrdersFilters({
               onClick={() => onExport("csv")}
               type="button"
             >
-              {isExporting ? "Exporting..." : "Export CSV"}
+              {isExporting ? t("finance.exporting", { defaultValue: "Exporting…" }) : t("finance.export", { defaultValue: "Export CSV" })}
             </button>
           </div>
 
@@ -114,7 +116,7 @@ export default function FinanceOrdersFilters({
                 {isCustomDateOpen ? (
                   <div className="mt-3 rounded-[18px] border border-[#f0dfd3] bg-[#fff8f4] p-4">
                     <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#d58a61]">
-                      Custom Range
+                      {t("finance.customRange", { defaultValue: "Custom Range" })}
                     </p>
                     <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]">
                       Choose a start and end date to filter the orders list.
@@ -123,7 +125,7 @@ export default function FinanceOrdersFilters({
                     <div className="mt-4 space-y-3">
                       <label className="flex flex-col gap-1">
                         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                          From
+                          {t("finance.from", { defaultValue: "From" })}
                         </span>
                         <input
                           className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
@@ -135,7 +137,7 @@ export default function FinanceOrdersFilters({
 
                       <label className="flex flex-col gap-1">
                         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                          To
+                          {t("finance.to", { defaultValue: "To" })}
                         </span>
                         <input
                           className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
@@ -153,7 +155,7 @@ export default function FinanceOrdersFilters({
                         onClick={onApplyCustomDate}
                         type="button"
                       >
-                        Apply
+                        {t("finance.apply", { defaultValue: "Apply" })}
                       </button>
                     </div>
                   </div>

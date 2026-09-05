@@ -1,5 +1,6 @@
 import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import SettingsSectionCard from "./SettingsSectionCard";
 import { strengthToneClasses } from "../data/settingsData";
@@ -97,14 +98,15 @@ export default function SettingsAccountSecurityPanel({
   fieldErrors,
   disabled = false,
 }) {
+  const { t } = useTranslation();
   const bannerImageInputRef = useRef(null);
   const profileImageInputRef = useRef(null);
 
   return (
     <div className="grid grid-cols-2 gap-4 max-[1120px]:grid-cols-1">
       <SettingsSectionCard
-        description="View and update your account details."
-        title="Account Information"
+        description={t("settings.accountDescription")}
+        title={t("settings.accountInformation")}
       >
         <div className="mb-4 flex items-center gap-3 rounded-[10px] bg-[#fffaf4] p-3">
           <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[10px] border border-[#f0d5b7] bg-[#fff1d8]">
@@ -228,40 +230,40 @@ export default function SettingsAccountSecurityPanel({
           <AccountField
             disabled={disabled}
             error={fieldErrors.fullName}
-            label="Full Name"
+            label={t("settings.fullName")}
             onChange={handleAccountFieldChange("fullName")}
             value={account.fullName}
           />
           <AccountField
             disabled={disabled}
             error={fieldErrors.emailAddress}
-            label="Email Address"
+            label={t("auth.emailAddress")}
             onChange={handleAccountFieldChange("emailAddress")}
             value={account.emailAddress}
           />
           <AccountField
             disabled={disabled}
             error={fieldErrors.phoneNumber}
-            label="Phone Number"
+            label={t("settings.phone")}
             onChange={handleAccountFieldChange("phoneNumber")}
             value={account.phoneNumber}
           />
           <AccountField
             disabled
-            label="Role"
+            label={t("settings.role")}
             onChange={handleAccountFieldChange("role")}
             value={account.role}
           />
           <AccountField
             disabled={disabled}
             error={fieldErrors.username}
-            label="Username"
+            label={t("settings.username")}
             onChange={handleAccountFieldChange("username")}
             value={account.username}
           />
           <AccountField
             disabled
-            label="Account ID"
+            label={t("settings.accountId")}
             onChange={handleAccountFieldChange("accountId")}
             value={account.accountId}
           />
@@ -269,15 +271,15 @@ export default function SettingsAccountSecurityPanel({
       </SettingsSectionCard>
 
       <SettingsSectionCard
-        description="Update your password regularly to keep your account secure."
-        title="Change Password"
+        description={t("settings.passwordDescription")}
+        title={t("settings.changePassword")}
       >
         <div className="space-y-3">
           <PasswordField
             autoComplete="current-password"
             disabled={disabled}
             error={fieldErrors.currentPassword}
-            label="Current Password"
+            label={t("settings.currentPassword")}
             name="currentPassword"
             onChange={handlePasswordChange("currentPassword")}
             onToggleVisibility={() => handleTogglePasswordVisibility("currentPassword")}
@@ -289,7 +291,7 @@ export default function SettingsAccountSecurityPanel({
             autoComplete="new-password"
             disabled={disabled}
             error={fieldErrors.newPassword}
-            label="New Password"
+            label={t("auth.newPassword")}
             name="newPassword"
             onChange={handlePasswordChange("newPassword")}
             onToggleVisibility={() => handleTogglePasswordVisibility("newPassword")}
@@ -301,7 +303,7 @@ export default function SettingsAccountSecurityPanel({
           <div>
             <div className="mb-1 flex items-center justify-between gap-3">
               <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#7f746b]">
-                Security Strength
+                {t("settings.securityStrength")}
               </span>
               <span
                 className={`text-[10px] font-bold uppercase tracking-[0.08em] ${strengthToneClasses[passwordStrength.tone]}`}
@@ -335,7 +337,7 @@ export default function SettingsAccountSecurityPanel({
             autoComplete="new-password"
             disabled={disabled}
             error={fieldErrors.confirmPassword}
-            label="Confirm Password"
+            label={t("auth.confirmPassword")}
             name="confirmPassword"
             onChange={handlePasswordChange("confirmPassword")}
             onToggleVisibility={() => handleTogglePasswordVisibility("confirmPassword")}

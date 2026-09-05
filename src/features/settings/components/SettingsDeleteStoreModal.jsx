@@ -1,7 +1,9 @@
 import { AlertCircle } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function SettingsDeleteStoreModal({ onCancel, onConfirm }) {
+  const { t } = useTranslation();
   const [confirmationText, setConfirmationText] = useState("");
   const isReadyToDelete = confirmationText.trim().toUpperCase() === "DELETE";
 
@@ -20,7 +22,7 @@ export default function SettingsDeleteStoreModal({ onCancel, onConfirm }) {
         className="w-full max-w-[470px] rounded-[12px] bg-white p-4 shadow-[0_28px_70px_rgba(0,0,0,0.32)]"
         role="dialog"
       >
-        <h2 className="type-h2 m-0 text-[#ff2918]">Delete Store Permanently?</h2>
+        <h2 className="type-h2 m-0 text-[#ff2918]">{t("settings.deletePermanently")}</h2>
         <p className="mt-3 text-[11px] leading-[1.45] text-[#5b514a]">
           This action is permanent and cannot be undone. All menus, orders,
           customer data, and store settings will be permanently deleted from our
@@ -56,7 +58,7 @@ export default function SettingsDeleteStoreModal({ onCancel, onConfirm }) {
             onClick={onCancel}
             type="button"
           >
-            Cancel
+            {t("settings.cancel")}
           </button>
           <button
             className="cursor-pointer rounded-[4px] bg-[#ff2918] px-3 py-2 text-[10px] font-bold text-white disabled:cursor-not-allowed disabled:bg-[#ffb8b0]"
@@ -64,7 +66,7 @@ export default function SettingsDeleteStoreModal({ onCancel, onConfirm }) {
             onClick={handleConfirm}
             type="button"
           >
-            Delete Permanently
+            {t("settings.deletePermanently")}
           </button>
         </div>
       </div>

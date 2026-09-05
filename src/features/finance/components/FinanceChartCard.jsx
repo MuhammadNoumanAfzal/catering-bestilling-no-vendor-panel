@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const fallbackLabels = ["Point 1", "Point 2", "Point 3", "Point 4"];
 
@@ -53,6 +54,7 @@ function buildAxisTicks(maxValue, isOrdersView) {
 }
 
 export default function FinanceChartCard({ points }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("earning");
   const isOrdersView = activeTab === "orders";
   const chartPoints = useMemo(
@@ -77,9 +79,9 @@ export default function FinanceChartCard({ points }) {
     <section className="flex h-full min-h-[428px] flex-col rounded-[12px] border border-[#ddd5ce] bg-white px-4 py-3 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="mb-3 flex items-start justify-between gap-3 max-[560px]:flex-col max-[560px]:items-stretch">
         <div>
-          <h2 className="type-h3 m-0 text-[#181310]">Earning Overview</h2>
+          <h2 className="type-h3 m-0 text-[#181310]">{t("finance.earningsOverview", { defaultValue: "Earnings Overview" })}</h2>
           <p className="type-para mt-1 text-[#6f6258]">
-            Revenue and order performance for the selected range
+            {t("finance.chartDescription", { defaultValue: "Revenue and order performance for the selected range" })}
           </p>
         </div>
 
@@ -93,7 +95,7 @@ export default function FinanceChartCard({ points }) {
             onClick={() => setActiveTab("earning")}
             type="button"
           >
-            Earning
+            {t("finance.earnings", { defaultValue: "Earnings" })}
           </button>
           <button
             className={`cursor-pointer rounded-[8px] px-3 py-1.5 text-[11px] font-bold transition ${
@@ -104,7 +106,7 @@ export default function FinanceChartCard({ points }) {
             onClick={() => setActiveTab("orders")}
             type="button"
           >
-            Orders
+            {t("finance.orders", { defaultValue: "Orders" })}
           </button>
         </div>
       </div>
@@ -164,7 +166,7 @@ export default function FinanceChartCard({ points }) {
 
             {!hasLiveData ? (
               <p className="mt-3 px-3 text-center text-[12px] font-medium leading-relaxed text-[#8b7d72] max-[560px]:mt-2 max-[560px]:px-1 max-[560px]:text-[11px]">
-                No chart data is available for the selected date range.
+                {t("finance.noChart", { defaultValue: "No chart data is available for the selected date range." })}
               </p>
             ) : null}
           </div>

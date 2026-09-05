@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import EarningChart from "../components/EarningChart";
 import KitchenStatus from "../components/KitchenStatus";
@@ -12,6 +13,7 @@ import useDashboardPageState from "../hooks/useDashboardPageState";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     businessProfilePrompt,
     chartSubtitle,
@@ -39,10 +41,9 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4 max-[720px]:gap-3">
       <header className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-2">
         <div>
-          <h1 className="type-h2 m-0 text-[#1c1510]">Dashboard</h1>
+          <h1 className="type-h2 m-0 text-[#1c1510]">{t("dashboard.title")}</h1>
           <p className="type-para mt-1.5 ">
-            Welcome back, {welcomeName || "Vendor"}. Here&apos;s how your business is
-            performing today.
+            {t("dashboard.welcome", { name: welcomeName || t("dashboard.vendor") })}
           </p>
         </div>
       </header>
@@ -55,13 +56,13 @@ export default function DashboardPage() {
           <div className="relative flex items-start justify-between gap-5 max-[920px]:flex-col max-[920px]:items-stretch">
             <div className="max-w-[760px]">
               <span className="inline-flex rounded-full border border-[#f5d9c9] bg-white/90 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#c86535] shadow-[0_10px_22px_rgba(206,106,56,0.08)] backdrop-blur-sm">
-                Business setup
+                {t("dashboard.setup")}
               </span>
               <h2 className="mt-4 text-[28px] font-bold leading-tight text-[#201711] max-[720px]:text-[22px]">
-                Complete your business profile
+                {t("dashboard.completeProfile")}
               </h2>
               <p className="type-para mt-2.5 max-w-[640px] text-[15px] leading-[1.7] text-[#6f645b]">
-                Finish your core business details to make your storefront look trustworthy, unlock a fully polished dashboard, and help customers book with confidence.
+                {t("dashboard.profileDescription")}
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2.5">
@@ -75,7 +76,7 @@ export default function DashboardPage() {
                 ))}
                 {businessProfilePrompt.missingCount > 5 ? (
                   <span className="inline-flex items-center rounded-full border border-[#f1ddd0] bg-[#fff7f1] px-3 py-1.5 text-[12px] font-semibold text-[#c86535]">
-                    +{businessProfilePrompt.missingCount - 5} more
+                    {t("dashboard.more", { count: businessProfilePrompt.missingCount - 5 })}
                   </span>
                 ) : null}
               </div>
@@ -88,10 +89,10 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#b07a5a]">
-                    Remaining items
+                    {t("dashboard.remaining")}
                   </p>
                   <p className="mt-1 text-[15px] font-semibold text-[#201711]">
-                    Finish your setup
+                    {t("dashboard.finishSetup")}
                   </p>
                 </div>
               </div>
@@ -109,7 +110,7 @@ export default function DashboardPage() {
               </div>
 
               <p className="text-[13px] leading-[1.6] text-[#6f645b]">
-                Add the missing details once, and your business page will feel complete and ready for customers.
+                {t("dashboard.setupNote")}
               </p>
 
               <button
@@ -117,7 +118,7 @@ export default function DashboardPage() {
                 onClick={() => navigate("/settings")}
                 type="button"
               >
-                Complete business details
+                {t("dashboard.completeDetails")}
               </button>
             </div>
           </div>
@@ -137,11 +138,11 @@ export default function DashboardPage() {
                 key={stat.label}
                 {...stat}
                 onClick={
-                  stat.label === "Total Orders"
+                  stat.id === "total"
                     ? () => navigate("/orders")
-                    : stat.label === "Upcoming (Next 4 hrs)"
+                    : stat.id === "upcoming"
                       ? () => navigate("/orders?tab=Upcoming&hours=4")
-                      : stat.label === "Urgent Orders"
+                      : stat.id === "urgent"
                         ? () => navigate("/orders?filter=New")
                         : () => navigate("/delivery")
                 }
@@ -150,9 +151,9 @@ export default function DashboardPage() {
       </section>
 
       <SectionCard
-        title="New Order Requests"
+        title={t("dashboard.newOrders")}
         badgeCount={urgentOrdersCount}
-        actionLabel="View all"
+        actionLabel={t("dashboard.viewAll")}
         onActionClick={() => navigate("/orders?filter=New")}
       >
         {isLoading ? (
@@ -177,23 +178,23 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <p className="type-para text-[#6f645b]">No new order requests need a decision right now.</p>
+          <p className="type-para text-[#6f645b]">{t("dashboard.noNewOrders")}</p>
         )}
       </SectionCard>
 
       <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-4 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
-        <SectionCard title="Quick Actions">
+        <SectionCard title={t("dashboard.quickActions")}>
           <QuickActions actions={dashboardQuickActions} />
         </SectionCard>
 
-        <SectionCard title="Kitchen Status">
+        <SectionCard title={t("dashboard.kitchenStatus")}>
           <KitchenStatus items={dashboardKitchenStatus} />
         </SectionCard>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] gap-4 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
         <SectionCard
-          title="Earning Overview"
+          title={t("dashboard.earnings")}
           action={
             <DateRangeDropdown
               onChange={handleDateFilterChange}
@@ -204,11 +205,11 @@ export default function DashboardPage() {
           }
         >
           <EarningChart
-            emptyTitle={dateFilter === "Custom Date" ? "No data available" : "No earnings available"}
+            emptyTitle={dateFilter === "Custom Date" ? t("dashboard.chart.noData") : t("dashboard.chart.noEarnings")}
             emptyMessage={
               dateFilter === "Custom Date"
-                ? "No earnings data is available for the selected custom range."
-                : "No earnings data is available for the selected range."
+                ? t("dashboard.chart.noCustomDataMessage")
+                : t("dashboard.chart.noDataMessage")
             }
             subtitle={
               chartSubtitle
@@ -219,8 +220,8 @@ export default function DashboardPage() {
         </SectionCard>
 
         <SectionCard
-          title="Reviews"
-          actionLabel="View more"
+          title={t("dashboard.reviews")}
+          actionLabel={t("dashboard.viewMore")}
           onActionClick={() => navigate("/reviews")}
         >
           {isLoading ? (
@@ -233,15 +234,15 @@ export default function DashboardPage() {
             <ReviewsList onManageReviews={() => navigate("/reviews")} reviews={reviews} />
           ) : (
             <div>
-              <p className="type-para -mt-1 max-[720px]:text-[12px]">Customer feedback on latest events</p>
-              <p className="type-para mt-3 text-[#6f645b]">No recent reviews found for the selected range.</p>
+              <p className="type-para -mt-1 max-[720px]:text-[12px]">{t("dashboard.review.description")}</p>
+              <p className="type-para mt-3 text-[#6f645b]">{t("dashboard.review.none")}</p>
             </div>
           )}
         </SectionCard>
       </div>
 
       {isRefreshing ? (
-        <p className="type-para text-right text-[12px] text-[#8d7e72]">Refreshing dashboard...</p>
+        <p className="type-para text-right text-[12px] text-[#8d7e72]">{t("dashboard.refreshing")}</p>
       ) : null}
     </div>
   );

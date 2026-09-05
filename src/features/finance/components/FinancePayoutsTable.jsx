@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function StatusBadge({ status }) {
   const normalized = `${status || ""}`.toUpperCase();
@@ -134,6 +135,7 @@ export default function FinancePayoutsTable({
   totalItems = 0,
   totalPages = 1,
 }) {
+  const { t } = useTranslation();
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -179,9 +181,9 @@ export default function FinancePayoutsTable({
   return (
     <section className="rounded-[12px] border border-[#ddd5ce] bg-white shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
       <div className="border-b border-[#eee7df] px-4 py-4">
-        <h3 className="text-[20px] font-extrabold text-[#1c1510]">Payout Activity</h3>
+        <h3 className="text-[20px] font-extrabold text-[#1c1510]">{t("finance.payoutActivity", { defaultValue: "Payout Activity" })}</h3>
         <p className="mt-1 text-[14px] leading-6 text-[#7a6d63]">
-          Track what is pending, released by admin, and fully paid into your bank account.
+          {t("finance.payoutActivityDescription", { defaultValue: "Track what is pending, released by admin, and fully paid into your bank account." })}
         </p>
       </div>
 
@@ -216,7 +218,7 @@ export default function FinancePayoutsTable({
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
                   colSpan={9}
                 >
-                  Loading payout activity...
+                  {t("finance.loading", { defaultValue: "Loading…" })}
                 </td>
               </tr>
             ) : rows.length ? (
@@ -265,7 +267,7 @@ export default function FinancePayoutsTable({
                           onClick={() => handleViewDetail(row)}
                           type="button"
                         >
-                          View Detail
+                          {t("finance.viewDetails", { defaultValue: "View Details" })}
                         </button>
                       </div>
                     ) : null}
@@ -278,7 +280,7 @@ export default function FinancePayoutsTable({
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
                   colSpan={9}
                 >
-                  No payout activity found in the selected range.
+                  {t("finance.noPayouts", { defaultValue: "No payout activity found in the selected range." })}
                 </td>
               </tr>
             )}
@@ -288,9 +290,7 @@ export default function FinancePayoutsTable({
 
       <div className="flex items-center justify-between gap-4 px-4 py-3.5 max-[860px]:flex-col max-[860px]:items-center max-[860px]:text-center">
         <span className="text-[14px] font-medium text-[#7a6d63]">
-          Showing <span className="font-bold text-[#1c1510]">{startItem}</span> to{" "}
-          <span className="font-bold text-[#1c1510]">{endItem}</span> of{" "}
-          <span className="font-bold text-[#1c1510]">{totalItems}</span> payout records
+          {t("finance.showing", { start: startItem, end: endItem, total: totalItems, defaultValue: `Showing ${startItem}–${endItem} of ${totalItems} payout records` })}
         </span>
 
         <div className="flex items-center gap-1">

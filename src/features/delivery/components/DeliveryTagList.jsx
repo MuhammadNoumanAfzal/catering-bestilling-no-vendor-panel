@@ -1,9 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 export default function DeliveryTagList({ items, onRemove, disabled = false }) {
+  const { t } = useTranslation();
   if (!items.length) {
     return (
       <div className="mt-4 rounded-[14px] border border-dashed border-[#dfd5cc] bg-[#fffaf6] px-4 py-4 text-center">
         <p className="type-subpara text-[#9b8f84]">
-          No delivery areas selected yet.
+          {t("delivery.noAreas", { defaultValue: "No delivery areas selected yet." })}
         </p>
       </div>
     );
@@ -48,13 +51,13 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
     <div className="mt-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[13px] font-bold text-[#241c17]">Selected service areas</p>
+          <p className="text-[13px] font-bold text-[#241c17]">{t("delivery.selectedAreas", { defaultValue: "Selected service areas" })}</p>
           <p className="text-[12px] text-[#8b7d71]">
             Manage the locations currently available for delivery.
           </p>
         </div>
         <span className="inline-flex min-h-[28px] items-center rounded-full bg-[#fff2ea] px-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#cf6e38]">
-          {items.length} selected
+          {t("delivery.selected", { count: items.length, defaultValue: `${items.length} selected` })}
         </span>
       </div>
 
@@ -91,7 +94,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
                         : "bg-[#eef8f0] text-[#2f8a4b]"
                     }`}
                   >
-                    {inactive ? "Inactive" : "Active"}
+                    {inactive ? t("delivery.inactive", { defaultValue: "Inactive" }) : t("delivery.active", { defaultValue: "Active" })}
                   </span>
                 </div>
               </div>
@@ -106,7 +109,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
                 onClick={() => onRemove(getItemId(item))}
                 type="button"
               >
-                Remove
+                {t("delivery.remove", { defaultValue: "Remove" })}
               </button>
             </div>
           </div>

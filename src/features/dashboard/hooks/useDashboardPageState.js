@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getVendorDashboard } from "../api/dashboardApi";
 import {
   buildCustomDateLabel,
@@ -18,18 +19,9 @@ import {
 } from "../../../utils/vendorAlerts";
 
 const quickActions = [
-  {
-    label: "Add new menu items",
-    icon: "plus",
-  },
-  {
-    label: "View Pending Orders",
-    icon: "calendar",
-  },
-  {
-    label: "Update Availability",
-    icon: "alert",
-  },
+  { labelKey: "dashboard.actions.addMenu", icon: "plus", path: "/menu/create" },
+  { labelKey: "dashboard.actions.pendingOrders", icon: "calendar", path: "/orders?tab=Pending" },
+  { labelKey: "dashboard.actions.availability", icon: "alert", path: "/delivery" },
 ];
 
 const BUSINESS_PROFILE_CHECKS = [
@@ -46,7 +38,7 @@ function normalizeString(value) {
   return value == null ? "" : String(value).trim();
 }
 
-function buildBusinessProfilePrompt(settings) {
+function buildBusinessProfilePrompt(settings, t) {
   if (!settings) {
     return {
       isVisible: false,
@@ -57,14 +49,14 @@ function buildBusinessProfilePrompt(settings) {
 
   const missingLabels = BUSINESS_PROFILE_CHECKS.filter(
     (item) => !normalizeString(settings[item.key]),
-  ).map((item) => item.label);
+  ).map((item) => t(`dashboard.profile.${item.key === "phoneNumber" ? "phone" : item.key === "businessAddress" ? "address" : item.key === "businessType" ? "type" : item.key === "cuisineType" ? "cuisine" : item.key === "businessDescription" ? "description" : item.key}`));
 
   if (!settings.profileImage?.fileUrl) {
-    missingLabels.push("logo");
+    missingLabels.push(t("dashboard.profile.logo"));
   }
 
   if (!settings.bannerImage?.fileUrl) {
-    missingLabels.push("cover photo");
+    missingLabels.push(t("dashboard.profile.cover"));
   }
 
   return {
@@ -74,25 +66,26 @@ function buildBusinessProfilePrompt(settings) {
   };
 }
 
-function buildNewOrderRequests(rows = []) {
+function buildNewOrderRequests(rows = [], t) {
   return rows
     .filter((row) => row?.status === "New")
     .map((row) => ({
       rawId: row.rawId,
       rawStatus: "NEW",
       id: row.displayId || `#${row.id}`,
-      title: row.event || "Order",
+      title: row.event || t("dashboard.orders.order"),
       amount: row.total || "NOK 0.00",
-      statusLabel: "New",
-      guests: `${Number(row.guests || 0)} guests`,
-      timing: `${row.date || "Delivery date pending"} ${row.time ? `at ${row.time}` : ""}`.trim(),
-      address: `Customer: ${row.customer || "Customer unavailable"}`,
+      statusLabel: t("dashboard.orders.new"),
+      guests: t("dashboard.orders.guests", { count: Number(row.guests || 0) }),
+      timing: `${row.date || t("dashboard.orders.deliveryPending")} ${row.time ? `kl. ${row.time}` : ""}`.trim(),
+      address: t("dashboard.orders.customer", { name: row.customer || t("dashboard.orders.unavailableCustomer") }),
       tone: "is-warning",
     }));
 }
 
 export default function useDashboardPageState() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [dateFilter, setDateFilter] = useState("Last 7 Days");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -111,8 +104,8 @@ export default function useDashboardPageState() {
   );
 
   const customDateLabel = useMemo(
-    () => buildCustomDateLabel(startDate, endDate),
-    [endDate, startDate],
+    () => buildCustomDateLabel(startDate, endDate, i18n.language),
+    [endDate, i18n.language, startDate],
   );
 
   useEffect(() => {
@@ -138,15 +131,22 @@ export default function useDashboardPageState() {
 
         const mappedOrders = mapVendorOrdersResult(ordersResult);
         const kitchenSummary = mapVendorOrderSummary(null, mappedOrders.rows);
-        const newOrderRequests = buildNewOrderRequests(mappedOrders.rows);
+        const newOrderRequests = buildNewOrderRequests(mappedOrders.rows, t);
 
         setDashboard(
           {
             ...mapDashboardResponse(result, {
-              dateFilterLabel: dateFilter,
+              dateFilterLabel:
+                dateFilter === "Last 2 Days"
+                  ? t("dashboard.date.last2")
+                  : dateFilter === "Custom Date"
+                    ? t("dashboard.date.custom")
+                    : t("dashboard.date.last7"),
               customDateLabel,
               kitchenSummary,
               totalOrdersOverride: mappedOrders.totalCount || kitchenSummary.total || 0,
+              t,
+              locale: i18n.language,
             }),
             urgentOrders: newOrderRequests,
             urgentOrdersCount: newOrderRequests.length,
@@ -154,12 +154,12 @@ export default function useDashboardPageState() {
         );
 
         const mappedSettingsPage = mapVendorSettingsPage(settingsResult);
-        setBusinessProfilePrompt(buildBusinessProfilePrompt(mappedSettingsPage.settings));
+        setBusinessProfilePrompt(buildBusinessProfilePrompt(mappedSettingsPage.settings, t));
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load dashboard data right now.",
-            "Dashboard unavailable",
+            error.message || t("dashboard.chart.noDataMessage"),
+            t("dashboard.title"),
           );
         }
       } finally {
@@ -175,18 +175,13 @@ export default function useDashboardPageState() {
     return () => {
       isCancelled = true;
     };
-  }, [customDateLabel, dateFilter, queryVariables]);
+  }, [customDateLabel, dateFilter, i18n.language, queryVariables, t]);
 
   const dashboardQuickActions = useMemo(
     () =>
       quickActions.map((action) => ({
         ...action,
-        onClick:
-          action.label === "Add new menu items"
-            ? () => navigate("/menu/create")
-            : action.label === "View Pending Orders"
-              ? () => navigate("/orders?tab=Pending")
-              : () => navigate("/delivery"),
+        onClick: () => navigate(action.path),
       })),
     [navigate],
   );
@@ -195,14 +190,14 @@ export default function useDashboardPageState() {
     () =>
       dashboard.kitchenStatus.map((item) => ({
         ...item,
-        onClick: () => navigate(`/orders?filter=${encodeURIComponent(item.label)}`),
+        onClick: () => navigate(`/orders?filter=${encodeURIComponent(item.filter)}`),
         goToOrders: () => navigate("/orders"),
       })),
     [dashboard.kitchenStatus, navigate],
   );
 
   async function handleNewOrderAccept(order) {
-    const result = await confirmOrderStatusAction("Accept order", order.id);
+    const result = await confirmOrderStatusAction(t("dashboard.orders.accept"), order.id);
 
     if (!result.isConfirmed || !order?.rawId) {
       return;
@@ -221,12 +216,12 @@ export default function useDashboardPageState() {
         urgentOrdersCount: Math.max(0, current.urgentOrdersCount - 1),
       }));
 
-      await showOrderStatusUpdated(`${order.id} accepted.`);
+      await showOrderStatusUpdated(`${order.id} ${t("dashboard.orders.accept").toLowerCase()}.`);
       navigate(`/orders/${order.rawId}`);
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to accept this order right now.",
-        "Order update failed",
+        error.message || t("dashboard.orders.requiresAttention"),
+        t("dashboard.orders.order"),
       );
     } finally {
       setIsRefreshing(false);
@@ -234,7 +229,7 @@ export default function useDashboardPageState() {
   }
 
   async function handleNewOrderReject(order) {
-    const result = await confirmOrderStatusAction("Reject order", order.id);
+    const result = await confirmOrderStatusAction(t("dashboard.orders.reject"), order.id);
 
     if (!result.isConfirmed || !order?.rawId) {
       return;
@@ -248,11 +243,11 @@ export default function useDashboardPageState() {
         urgentOrders: current.urgentOrders.filter((item) => item.rawId !== order.rawId),
         urgentOrdersCount: Math.max(0, current.urgentOrdersCount - 1),
       }));
-      await showOrderStatusUpdated(`${order.id} rejected.`);
+      await showOrderStatusUpdated(`${order.id} ${t("dashboard.orders.reject").toLowerCase()}.`);
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to reject this order right now.",
-        "Order update failed",
+        error.message || t("dashboard.orders.requiresAttention"),
+        t("dashboard.orders.order"),
       );
     } finally {
       setIsRefreshing(false);

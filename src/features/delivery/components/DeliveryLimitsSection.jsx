@@ -1,6 +1,7 @@
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
+import { useTranslation } from "react-i18next";
 
 export default function DeliveryLimitsSection({
   maxDeliveriesPerDay,
@@ -12,18 +13,19 @@ export default function DeliveryLimitsSection({
   disabled = false,
   errors = {},
 }) {
+  const { t } = useTranslation();
   return (
     <DeliverySectionCard
-      description="Set order notice requirements and capacity limits. These values do not define customer bookable slots."
+      description={t("delivery.limitsDescription", { defaultValue: "Set order notice requirements and capacity limits." })}
       disabled={disabled}
-      title="Limits"
+      title={t("delivery.limits", { defaultValue: "Limits" })}
     >
       <div className="grid grid-cols-2 gap-3 max-[560px]:grid-cols-1">
         <div>
           <DeliveryTextInput
             disabled={disabled}
             error={errors.minimumOrderNoticeHours}
-            label="Minimum Order Notice (hours)"
+            label={t("delivery.minimumNotice", { defaultValue: "Minimum Order Notice (hours)" })}
             onChange={onMinimumOrderNoticeHoursChange}
             placeholder="24"
             value={minimumOrderNoticeHours}
@@ -36,7 +38,7 @@ export default function DeliveryLimitsSection({
           <DeliveryTextInput
             disabled={disabled}
             error={errors.maxDeliveriesPerDay}
-            label="Max Deliveries Per Day"
+            label={t("delivery.maxDeliveries", { defaultValue: "Max Deliveries Per Day" })}
             onChange={onMaxDeliveriesPerDayChange}
             placeholder="100"
             value={maxDeliveriesPerDay}
@@ -49,7 +51,7 @@ export default function DeliveryLimitsSection({
           <DeliveryTextInput
             disabled={disabled}
             error={errors.maxOrdersPerTimeSlot}
-            label="Max Orders Per Time Slot"
+            label={t("delivery.maxOrders", { defaultValue: "Max Orders Per Time Slot" })}
             onChange={onMaxOrdersPerTimeSlotChange}
             placeholder="40"
             value={maxOrdersPerTimeSlot}

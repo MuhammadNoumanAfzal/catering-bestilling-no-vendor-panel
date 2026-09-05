@@ -1,5 +1,6 @@
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
+import { useTranslation } from "react-i18next";
 
 const timeOptions = Array.from({ length: 24 }, (_, index) => {
   const value = `${String(index).padStart(2, "0")}:00`;
@@ -26,10 +27,11 @@ export default function SettingsBusinessHoursSection({
   onChangeTime,
   disabled = false,
 }) {
+  const { t } = useTranslation();
   return (
     <SettingsSectionCard
-      description="Set your general store opening hours. These are shown on your profile and do not control customer delivery slot selection."
-      title="Business Hours"
+      description={t("settings.hoursDescription")}
+      title={t("settings.hours")}
     >
       <div className="divide-y divide-[#eee7df]">
         {hours.map((item) => (
@@ -68,7 +70,7 @@ export default function SettingsBusinessHoursSection({
                   label=""
                   onChange={(event) => onChangeTime(item.day, "open", event.target.value)}
                   options={timeOptions}
-                  placeholder="Open"
+                  placeholder={t("settings.open")}
                   value={item.open}
                 />
               </div>
@@ -79,7 +81,7 @@ export default function SettingsBusinessHoursSection({
                   label=""
                   onChange={(event) => onChangeTime(item.day, "close", event.target.value)}
                   options={closeOptions}
-                  placeholder="Close"
+                  placeholder={t("settings.close")}
                   value={item.close}
                 />
               </div>

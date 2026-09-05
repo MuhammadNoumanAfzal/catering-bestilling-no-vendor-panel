@@ -284,27 +284,6 @@ export const SAVE_VENDOR_MENU_MUTATION = `
           fileUrl
           fileId
         }
-          menuItems {
-            id
-            title
-            description
-            coverImage {
-              fileUrl
-              fileId
-            }
-            image {
-              fileUrl
-              fileId
-            }
-            allergens {
-            id
-            name
-            slug
-          }
-          imageUrl
-          fileId
-          order
-        }
       }
     }
   }

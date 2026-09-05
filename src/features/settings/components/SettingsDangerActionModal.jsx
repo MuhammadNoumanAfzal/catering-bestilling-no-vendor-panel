@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export default function SettingsDangerActionModal({
   actionLabel,
   description,
@@ -6,6 +8,7 @@ export default function SettingsDangerActionModal({
   onConfirm,
   title,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
       <div
@@ -30,7 +33,7 @@ export default function SettingsDangerActionModal({
             onClick={onCancel}
             type="button"
           >
-            Cancel
+            {t("settings.cancel")}
           </button>
           <button
             className={`h-[42px] cursor-pointer bg-white text-[11px] font-bold ${

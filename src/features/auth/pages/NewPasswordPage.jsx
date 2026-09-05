@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
@@ -73,6 +74,7 @@ function getPasswordStrength(password) {
 }
 
 export default function NewPasswordPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [formState, setFormState] = useState({
@@ -109,12 +111,12 @@ export default function NewPasswordPage() {
 
   async function handleSubmit() {
     if (!formState.email.trim()) {
-      await showVendorErrorAlert("Please enter your email address.", "Email required");
+      await showVendorErrorAlert(t("auth.validation.emailRequired"), t("auth.validation.emailRequiredTitle"));
       return;
     }
 
     if (!isValidEmail(formState.email)) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      await showVendorErrorAlert(t("auth.validation.invalidEmail"), t("auth.validation.invalidEmailTitle"));
       return;
     }
 
@@ -155,11 +157,11 @@ export default function NewPasswordPage() {
   return (
     <AuthLayout>
       <AuthCard
-        title="Set New Password"
-        subtitle="Finish recovery by choosing a strong new password for your vendor account."
+        title={t("auth.reset.title")}
+        subtitle={t("auth.reset.subtitle")}
         fields={[
           {
-            label: "Email Address",
+            label: t("auth.emailAddress"),
             autoComplete: "email",
             helperText: "This should match the email used in the reset flow.",
             name: "email",
@@ -169,7 +171,7 @@ export default function NewPasswordPage() {
             value: formState.email,
           },
           {
-            label: "Verification Code",
+            label: t("auth.verificationCode"),
             autoComplete: "one-time-code",
             helperText: "Use the verified code from your email.",
             name: "token",
@@ -178,7 +180,7 @@ export default function NewPasswordPage() {
             value: formState.token,
           },
           {
-            label: "New Password",
+            label: t("auth.newPassword"),
             autoComplete: "new-password",
             name: "newPassword",
             onChange: handleFieldChange("newPassword"),
@@ -188,7 +190,7 @@ export default function NewPasswordPage() {
             value: formState.newPassword,
           },
           {
-            label: "Confirm Password",
+            label: t("auth.confirmPassword"),
             autoComplete: "new-password",
             name: "confirmPassword",
             onChange: handleFieldChange("confirmPassword"),
@@ -215,7 +217,7 @@ export default function NewPasswordPage() {
         }
         actionLabel={isSubmitting ? "Updating password..." : "Reset Password"}
         onAction={handleSubmit}
-        backLinkLabel="Back to verification"
+        backLinkLabel={t("auth.reset.back")}
         backLinkTo={`/auth/verification?email=${encodeURIComponent(formState.email.trim())}`}
         formClassName="px-6 pb-6 pt-7"
         maxWidthClassName="sm:max-w-[560px]"

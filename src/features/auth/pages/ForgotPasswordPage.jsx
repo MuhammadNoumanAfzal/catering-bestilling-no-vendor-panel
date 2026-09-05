@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
@@ -14,6 +15,7 @@ function isValidEmail(email) {
 }
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState(searchParams.get("email") || "");
@@ -23,12 +25,12 @@ export default function ForgotPasswordPage() {
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      await showVendorErrorAlert("Please enter your email address.", "Email required");
+      await showVendorErrorAlert(t("auth.validation.emailRequired"), t("auth.validation.emailRequiredTitle"));
       return;
     }
 
     if (!isValidEmail(trimmedEmail)) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      await showVendorErrorAlert(t("auth.validation.invalidEmail"), t("auth.validation.invalidEmailTitle"));
       return;
     }
 
@@ -60,11 +62,11 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
         }
-        title="Forgot Password"
-        subtitle="Enter your account email to receive a verification code."
+        title={t("auth.forgot.title")}
+        subtitle={t("auth.forgot.subtitle")}
         fields={[
           {
-            label: "Email Address",
+            label: t("auth.emailAddress"),
             autoComplete: "email",
             helperText: "We’ll use this to send your reset code.",
             name: "email",
@@ -75,7 +77,7 @@ export default function ForgotPasswordPage() {
           },
         ]}
         onAction={handleSubmit}
-        backLinkLabel="Back to login"
+        backLinkLabel={t("auth.forgot.back")}
         backLinkTo="/auth/login"
         formClassName="px-6 pb-6 pt-7"
         maxWidthClassName="sm:max-w-[520px]"

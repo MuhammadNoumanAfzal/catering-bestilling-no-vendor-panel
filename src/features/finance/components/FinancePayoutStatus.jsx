@@ -1,4 +1,5 @@
 import { Banknote, CalendarDays, CircleDollarSign } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const iconMap = {
   orange: CircleDollarSign,
@@ -19,9 +20,10 @@ const amountStyles = {
 };
 
 export default function FinancePayoutStatus({ items }) {
+  const { t } = useTranslation();
   return (
     <section className="rounded-[12px] border border-[#ddd5ce] bg-white px-5 py-5 shadow-[0_3px_10px_rgba(43,30,20,0.04)]">
-      <h2 className="type-h3 m-0 text-[#181310]">Payout Status</h2>
+      <h2 className="type-h3 m-0 text-[#181310]">{t("finance.payoutStatus", { defaultValue: "Payout Status" })}</h2>
 
       <div className="mt-4 flex flex-col gap-3.5">
         {items.length ? (

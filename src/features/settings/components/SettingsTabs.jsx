@@ -1,9 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 const tabs = [
-  { id: "business", label: "Business Profile" },
-  { id: "security", label: "Account & Security" },
+  { id: "business", labelKey: "settings.businessProfile" },
+  { id: "security", labelKey: "settings.accountSecurity" },
 ];
 
 export default function SettingsTabs({ activeTab, onChange }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-4 flex items-center gap-2">
       {tabs.map((tab) => {
@@ -20,7 +23,7 @@ export default function SettingsTabs({ activeTab, onChange }) {
             onClick={() => onChange(tab.id)}
             type="button"
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         );
       })}

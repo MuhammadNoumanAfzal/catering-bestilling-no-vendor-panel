@@ -1,4 +1,5 @@
 import { Star, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ReplyReviewModal({
   draftReply,
@@ -8,6 +9,7 @@ export default function ReplyReviewModal({
   onSubmit,
   review,
 }) {
+  const { t } = useTranslation();
   if (!review) {
     return null;
   }
@@ -20,7 +22,7 @@ export default function ReplyReviewModal({
         
         {/* Header */}
         <div className="flex items-center justify-between gap-3 border-b border-[#efe6de] pb-3">
-          <h2 className="type-h3 m-0 text-[#181310]">Reply to Review</h2>
+          <h2 className="type-h3 m-0 text-[#181310]">{t("reviews.replyTitle", { defaultValue: "Reply to Review" })}</h2>
           <button className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-[#7a6d63] hover:bg-[#faf7f4] hover:text-[#181310] transition" onClick={onClose} type="button">
             <X size={16} />
           </button>
@@ -44,7 +46,7 @@ export default function ReplyReviewModal({
             <div className="min-w-0 flex-1">
               <p className="type-h4 m-0 text-[#181310]">{review.author}</p>
               <p className="mt-1 text-[13px] font-medium text-[#8c7f73]">
-                {review.reviewDate} | Order {review.orderRef || review.id}
+                {review.reviewDate} | {t("notifications.order", { defaultValue: "Order" })} {review.orderRef || review.id}
               </p>
             </div>
           </div>
@@ -73,21 +75,21 @@ export default function ReplyReviewModal({
           <div className="mt-4 rounded-[10px] border border-[#efe6de] bg-[#faf8f5] p-3.5">
             <div className="flex flex-col gap-2.5 text-[13px]">
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
-                <span className="font-semibold text-[#7a6d63]">Order Amount</span>
+                <span className="font-semibold text-[#7a6d63]">{t("reviews.orderAmount", { defaultValue: "Order Amount" })}</span>
                 <span className="font-extrabold text-[#1c1510]">{review.orderAmount}</span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
-                <span className="font-semibold text-[#7a6d63]">Order Type</span>
+                <span className="font-semibold text-[#7a6d63]">{t("reviews.orderType", { defaultValue: "Order Type" })}</span>
                 <span className="font-extrabold text-[#1c1510]">
                   {review.orderType || review.deliveryType}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
-                <span className="font-semibold text-[#7a6d63]">Delivery Time</span>
+                <span className="font-semibold text-[#7a6d63]">{t("reviews.deliveryTime", { defaultValue: "Delivery Time" })}</span>
                 <span className="font-extrabold text-[#1c1510]">{review.deliveryTime || "--"}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="font-semibold text-[#7a6d63]">Reviewed On</span>
+                <span className="font-semibold text-[#7a6d63]">{t("reviews.reviewedOn", { defaultValue: "Reviewed On" })}</span>
                 <span className="font-extrabold text-[#1c1510]">{review.reviewedOn || "--"}</span>
               </div>
             </div>
@@ -98,7 +100,7 @@ export default function ReplyReviewModal({
             className="mt-4 min-h-[112px] w-full resize-none rounded-[10px] border border-[#d4cbc3] px-3.5 py-3 text-[13px] font-semibold text-[#1f1814] outline-none transition placeholder:text-[#b1a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)] bg-[#fffdfa]"
             maxLength={500}
             onChange={(event) => onDraftChange(event.target.value)}
-            placeholder="Your Reply (This will be visible to the customer)..."
+            placeholder={t("reviews.replyPlaceholder", { defaultValue: "Your Reply (This will be visible to the customer)…" })}
             value={draftReply}
           />
           <div className="mt-1 text-right text-[11px] font-bold text-[#a79a90]">
@@ -113,7 +115,7 @@ export default function ReplyReviewModal({
             onClick={onClose}
             type="button"
           >
-            Cancel
+            {t("settings.cancel", { defaultValue: "Cancel" })}
           </button>
           <button
             className="h-8 cursor-pointer rounded-[6px] bg-[#d96e39] px-4 text-[12px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] active:scale-95 transition disabled:pointer-events-none disabled:opacity-50"
@@ -121,7 +123,7 @@ export default function ReplyReviewModal({
             onClick={onSubmit}
             type="button"
           >
-            {isSaving ? "Posting..." : "Post Reply"}
+            {isSaving ? t("reviews.posting", { defaultValue: "Posting…" }) : t("reviews.postReply", { defaultValue: "Post Reply" })}
           </button>
         </div>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 function Field({
   className,
@@ -11,6 +12,7 @@ function Field({
   strengthIndicator,
   ...inputProps
 }) {
+  const { t } = useTranslation();
   const isPasswordField = inputProps.type === "password";
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const resolvedInputType =
@@ -36,7 +38,7 @@ function Field({
             type="button"
             onClick={() => setIsPasswordVisible((current) => !current)}
             className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[#8e8176] transition hover:text-[#cf6e38]"
-            aria-label={isPasswordVisible ? "Hide password" : "Show password"}
+            aria-label={isPasswordVisible ? t("auth.hidePassword") : t("auth.showPassword")}
           >
             {isPasswordVisible ? (
               <FiEyeOff className="text-[16px]" />
@@ -50,7 +52,7 @@ function Field({
         <div className="rounded-[14px] border border-[#efe2d5] bg-[#fff8f2] px-3 py-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#8a7769]">
-              Password strength
+              {t("auth.passwordStrength")}
             </span>
             <span className={strengthIndicator.toneClassName}>
               {strengthIndicator.label}

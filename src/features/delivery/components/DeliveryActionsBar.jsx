@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export default function DeliveryActionsBar({
   hasUnsavedChanges,
   onCancel,
@@ -6,15 +8,16 @@ export default function DeliveryActionsBar({
   isSaving = false,
   isLoading = false,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-5 flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
       <p className="type-subpara min-h-[18px] text-[#7c7067]">
         {saveMessage ||
           (isLoading
-            ? "Loading delivery settings..."
+            ? t("delivery.loading", { defaultValue: "Loading delivery settings…" })
             : hasUnsavedChanges
-              ? "You have unsaved changes."
-              : "All changes saved.")}
+              ? t("delivery.unsaved", { defaultValue: "You have unsaved changes." })
+              : t("delivery.saved", { defaultValue: "All changes saved." }))}
       </p>
       <div className="flex items-center gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
         <button
@@ -23,7 +26,7 @@ export default function DeliveryActionsBar({
           onClick={onCancel}
           type="button"
         >
-          Cancel
+          {t("delivery.cancel", { defaultValue: "Cancel" })}
         </button>
         <button
           className="h-[38px] min-w-[124px] rounded-[8px] bg-[#d96e39] px-4 text-[12px] font-bold text-white shadow-[0_6px_16px_rgba(217,110,57,0.26)] disabled:cursor-not-allowed disabled:opacity-50"
@@ -31,7 +34,7 @@ export default function DeliveryActionsBar({
           onClick={onSave}
           type="button"
         >
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? t("delivery.saving", { defaultValue: "Saving…" }) : t("delivery.save", { defaultValue: "Save Changes" })}
         </button>
       </div>
     </div>

@@ -21,27 +21,27 @@ function formatAxisCurrency(value, currency = "NOK") {
   return `${prefix} ${Math.round(amount)}`;
 }
 
-function formatDateLabel(dateValue) {
+function formatDateLabel(dateValue, locale = "nb-NO") {
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
     return normalizeString(dateValue);
   }
 
-  return date.toLocaleDateString("en-GB", {
+  return date.toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
   });
 }
 
-function formatDateTimeValue(value) {
+function formatDateTimeValue(value, locale = "nb-NO") {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return normalizeString(value);
   }
 
-  return date.toLocaleDateString("en-GB", {
+  return date.toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -99,16 +99,16 @@ function buildTrendMeta(value, trendValue, timeLabel) {
   };
 }
 
-function buildCapacityHelper(capacityPercent) {
+function buildCapacityHelper(capacityPercent, t) {
   if (capacityPercent >= 75) {
-    return "High - plan your schedule";
+    return t("dashboard.orders.highDemand");
   }
 
   if (capacityPercent >= 40) {
-    return "Moderate demand";
+    return t("dashboard.orders.moderateDemand");
   }
 
-  return "Low demand";
+  return t("dashboard.orders.lowDemand");
 }
 
 function formatDeliveryWindow(windowValue, deliveryDate) {
@@ -170,26 +170,23 @@ export function createEmptyDashboardState() {
   };
 }
 
-export function buildKitchenStatusFromSummary(summary = {}) {
+export function buildKitchenStatusFromSummary(summary = {}, t) {
   return [
     {
       value: String(toNumber(summary?.preparing)),
-      label: "Preparing",
-      sublabel: "Orders",
+      filter: "Preparing", label: t("dashboard.kitchen.preparing"), sublabel: t("dashboard.kitchen.orders"),
       tone: "is-blue",
       icon: "chef",
     },
     {
       value: String(toNumber(summary?.ready)),
-      label: "Ready",
-      sublabel: "Orders",
+      filter: "Ready", label: t("dashboard.kitchen.ready"), sublabel: t("dashboard.kitchen.orders"),
       tone: "is-green",
       icon: "check",
     },
     {
       value: String(toNumber(summary?.outForDelivery ?? summary?.out_for_delivery)),
-      label: "Out for Delivery",
-      sublabel: "Orders",
+      filter: "Out for Delivery", label: t("dashboard.kitchen.outForDelivery"), sublabel: t("dashboard.kitchen.orders"),
       tone: "is-amber",
       icon: "delivery",
     },
@@ -198,7 +195,7 @@ export function buildKitchenStatusFromSummary(summary = {}) {
 
 export function mapDashboardResponse(
   data,
-  { dateFilterLabel, customDateLabel, kitchenSummary, totalOrdersOverride } = {},
+  { dateFilterLabel, customDateLabel, kitchenSummary, totalOrdersOverride, t, locale = "nb-NO" } = {},
 ) {
   const me = data?.me || null;
   const summary = data?.vendorDashboardSummary || {};
@@ -240,9 +237,9 @@ export function mapDashboardResponse(
 
   const overviewCards = [
     {
-      label: "Total Orders",
+      id: "total", label: t("dashboard.orders.total"),
       value: String(totalOrders),
-      helper: "Orders in selected range",
+      helper: t("dashboard.orders.selectedRange"),
       helperTone: totalOrdersTrendMeta.trend === "up" ? "is-positive" : "",
       icon: "calendar",
       trend: totalOrdersTrendMeta.trend,
@@ -250,27 +247,27 @@ export function mapDashboardResponse(
       timeLabel: totalOrdersTrendMeta.timeLabel,
     },
     {
-      label: "Upcoming (Next 4 hrs)",
+      id: "upcoming", label: t("dashboard.orders.upcoming"),
       value: String(upcomingOrders),
-      helper: "Scheduled soon",
+      helper: t("dashboard.orders.scheduledSoon"),
       icon: "clipboard",
       trend: upcomingOrdersTrendMeta.trend,
       trendValue: upcomingOrdersTrendMeta.trendValue,
       timeLabel: upcomingOrdersTrendMeta.timeLabel,
     },
     {
-      label: "Urgent Orders",
+      id: "urgent", label: t("dashboard.orders.urgent"),
       value: String(urgentOrdersCount),
-      helper: "Require attention",
+      helper: t("dashboard.orders.requiresAttention"),
       icon: "alert",
       trend: urgentOrdersTrendMeta.trend,
       trendValue: urgentOrdersTrendMeta.trendValue,
       timeLabel: urgentOrdersTrendMeta.timeLabel,
     },
     {
-      label: "Capacity Utilization",
+      id: "capacity", label: t("dashboard.orders.capacity"),
       value: `${capacityPercent}%`,
-      helper: buildCapacityHelper(capacityPercent),
+      helper: buildCapacityHelper(capacityPercent, t),
       icon: "gauge",
       variant: "capacity",
       progress: capacityPercent,
@@ -291,18 +288,18 @@ export function mapDashboardResponse(
       const displayCustomer =
         normalizeString(node?.customerInfo?.fullName).trim() ||
         normalizeString(node?.customerName).trim() ||
-        "Customer unavailable";
+        t("dashboard.orders.unavailableCustomer");
 
       return {
         rawId: normalizeString(node.id),
         rawStatus: normalizeString(node.status || node.statusLabel).toUpperCase(),
         id: `#${normalizeString(node.orderNumber || node.id)}`,
-        title: normalizeString(node.eventName) || "Order",
+        title: normalizeString(node.eventName) || t("dashboard.orders.order"),
         amount: formatCurrency(node.finalPrice, currency),
-        statusLabel: normalizeString(node.statusLabel || node.status) || "Urgent",
-        guests: `${toNumber(node.guestCount)} guests`,
+        statusLabel: normalizeString(node.statusLabel || node.status) || t("dashboard.orders.urgentLabel"),
+        guests: t("dashboard.orders.guests", { count: toNumber(node.guestCount) }),
         timing: formatDeliveryWindow(node.deliveryWindow, node.deliveryDate),
-        address: `Customer: ${displayCustomer}`,
+        address: t("dashboard.orders.customer", { name: displayCustomer }),
         tone: mapUrgentOrderTone(node.deliveryDate),
       };
     })
@@ -314,7 +311,7 @@ export function mapDashboardResponse(
       ? data.vendorOrderSummaryAllTime
       : null) ||
     {};
-  const kitchenStatus = buildKitchenStatusFromSummary(dashboardKitchenSummary);
+  const kitchenStatus = buildKitchenStatusFromSummary(dashboardKitchenSummary, t);
 
   const chartValues = chartPoints.map((point) => ({
     month: normalizeString(point?.label) || "--",
@@ -331,17 +328,17 @@ export function mapDashboardResponse(
     .map((edge) => edge?.node)
     .filter(Boolean)
     .map((node) => ({
-      name: normalizeString(node?.customer?.fullName) || "Anonymous Customer",
+      name: normalizeString(node?.customer?.fullName) || t("dashboard.review.anonymous"),
       rating: String(toNumber(node?.rating)),
-      time: normalizeString(node?.ageLabel) || formatDateTimeValue(node?.createdOn),
-      summary: normalizeString(node?.comment) || normalizeString(node?.title) || "No review text provided.",
+      time: normalizeString(node?.ageLabel) || formatDateTimeValue(node?.createdOn, locale),
+      summary: normalizeString(node?.comment) || normalizeString(node?.title) || t("dashboard.review.noText"),
       id: `#REV-${normalizeString(node?.id)}`,
     }));
 
   const subtitleLabel =
     dateFilterLabel === "Custom Date" && customDateLabel
-      ? `Revenue performance from ${customDateLabel}`
-      : `Revenue performance over the ${normalizeString(dateFilterLabel).toLowerCase()}`;
+      ? t("dashboard.chart.revenueFrom", { date: customDateLabel })
+      : t("dashboard.chart.revenueOver", { period: normalizeString(dateFilterLabel).toLowerCase() });
 
   return {
     welcomeName:
@@ -413,10 +410,10 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
   };
 }
 
-export function buildCustomDateLabel(startDate, endDate) {
+export function buildCustomDateLabel(startDate, endDate, locale) {
   if (!startDate || !endDate) {
     return "";
   }
 
-  return `${formatDateLabel(startDate)} to ${formatDateLabel(endDate)}`;
+  return `${formatDateLabel(startDate, locale)}–${formatDateLabel(endDate, locale)}`;
 }

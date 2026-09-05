@@ -1,7 +1,8 @@
 import { FileBadge2, RefreshCw, ShieldCheck, UploadCloud } from "lucide-react";
 import SettingsSectionCard from "./SettingsSectionCard";
+import { useTranslation } from "react-i18next";
 
-function formatUploadedAt(value) {
+function formatUploadedAt(value, locale) {
   if (!value) {
     return "";
   }
@@ -11,7 +12,7 @@ function formatUploadedAt(value) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -36,20 +37,20 @@ function getStatusTone(item) {
   return "border-[#e4d8cf] bg-[#f7f3ef] text-[#7b6b60]";
 }
 
-function getStatusLabel(item) {
+function getStatusLabel(item, t) {
   if (item.status === "VERIFIED") {
-    return "Verified";
+    return t("settings.verified");
   }
 
   if (item.status === "REJECTED") {
-    return "Rejected";
+    return t("settings.rejected");
   }
 
   if (item.fileUrl) {
-    return "Pending review";
+    return t("settings.pendingReview");
   }
 
-  return "Missing";
+  return t("settings.missing");
 }
 
 function getDocumentPriority(item) {
@@ -78,6 +79,7 @@ export default function SettingsComplianceDocumentsSection({
   onUpload,
   onRefreshStatus,
 }) {
+  const { t, i18n } = useTranslation();
   const sortedDocuments = [...documents].sort((left, right) => {
     const priorityDifference = getDocumentPriority(left) - getDocumentPriority(right);
 
@@ -90,11 +92,11 @@ export default function SettingsComplianceDocumentsSection({
 
   return (
     <SettingsSectionCard
-      description="Upload the legal and operational proofs needed before your vendor account can be approved."
-      title="Compliance Documents"
+      description={t("settings.documentsDescription")}
+      title={t("settings.documents")}
       headerRight={
         <span className="rounded-full bg-[#fff3ea] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#bf6739]">
-          Approval docs
+          {t("settings.approvalDocs")}
         </span>
       }
     >
@@ -134,14 +136,14 @@ export default function SettingsComplianceDocumentsSection({
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${getStatusTone(item)}`}>
-                    {getStatusLabel(item)}
+                    {getStatusLabel(item, t)}
                   </span>
                   <span className="rounded-full border border-[#ece0d6] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#76685f]">
                     {item.acceptedFormatsLabel}
                   </span>
                   {item.isRequired ? (
                     <span className="rounded-full border border-[#f0d2c0] bg-[#fff6ef] px-2.5 py-1 text-[11px] font-semibold text-[#b35e2a]">
-                      Required
+                      {t("settings.required")}
                     </span>
                   ) : null}
                 </div>
@@ -149,14 +151,14 @@ export default function SettingsComplianceDocumentsSection({
                 {item.fileUrl ? (
                   <div className="mt-3 rounded-[14px] border border-[#eadfd6] bg-white px-3 py-3 text-[12px] leading-6 text-[#62554d]">
                     <p className="font-bold text-[#251c17]">{item.fileName || item.title || "Uploaded file"}</p>
-                    {formatUploadedAt(item.uploadedAt) ? (
+                    {formatUploadedAt(item.uploadedAt, i18n.language) ? (
                       <p className="mt-0.5 text-[#8b7c72]">
-                        Uploaded on {formatUploadedAt(item.uploadedAt)}
+                        {t("settings.uploadedOn")} {formatUploadedAt(item.uploadedAt, i18n.language)}
                       </p>
                     ) : null}
-                    {formatUploadedAt(item.reviewedAt) ? (
+                    {formatUploadedAt(item.reviewedAt, i18n.language) ? (
                       <p className="mt-0.5 text-[#8b7c72]">
-                        Reviewed on {formatUploadedAt(item.reviewedAt)}
+                        {t("settings.reviewedOn")} {formatUploadedAt(item.reviewedAt, i18n.language)}
                       </p>
                     ) : null}
                     {item.reviewNote ? (
@@ -175,12 +177,12 @@ export default function SettingsComplianceDocumentsSection({
                       rel="noreferrer"
                       target="_blank"
                     >
-                      Open uploaded proof
+                      {t("settings.openProof")}
                     </a>
                   </div>
                 ) : (
                   <div className="mt-3 rounded-[14px] border border-dashed border-[#e8dad0] bg-[#fcfaf8] px-3 py-3 text-[12px] leading-6 text-[#7b6f66]">
-                    No document uploaded yet for this requirement.
+                    {t("settings.noDocument")}
                   </div>
                 )}
               </div>
@@ -188,7 +190,7 @@ export default function SettingsComplianceDocumentsSection({
               <div className="flex shrink-0 flex-wrap gap-2">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-[12px] bg-[#d96e39] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_14px_24px_rgba(217,110,57,0.22)] transition hover:bg-[#c9602c]">
                   <UploadCloud size={15} />
-                  {item.fileUrl ? "Replace" : "Upload"}
+                  {item.fileUrl ? t("settings.replace") : t("settings.upload")}
                   <input
                     accept="application/pdf,image/png,image/jpeg,image/jpg,image/webp"
                     className="hidden"
@@ -212,7 +214,7 @@ export default function SettingsComplianceDocumentsSection({
       <div className="mt-4 rounded-[16px] border border-[#eadccf] bg-white px-4 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-[720px]">
-            <p className="text-[14px] font-bold text-[#1f1712]">What happens next</p>
+            <p className="text-[14px] font-bold text-[#1f1712]">{t("settings.whatNext")}</p>
             <p className="mt-1 text-[12px] leading-6 text-[#7c6d63]">
               Each document is uploaded and stored right away. After that, our team reviews it and updates the status here,
               so you can quickly see whether everything is approved or if we need anything else from you.
@@ -225,7 +227,7 @@ export default function SettingsComplianceDocumentsSection({
             type="button"
           >
             <RefreshCw size={15} />
-            Check review status
+            {t("settings.checkStatus")}
           </button>
         </div>
       </div>

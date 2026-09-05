@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewsPagination({
   currentPage,
@@ -7,6 +8,7 @@ export default function ReviewsPagination({
   totalItems,
   totalPages,
 }) {
+  const { t } = useTranslation();
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -26,9 +28,7 @@ export default function ReviewsPagination({
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3.5 max-[760px]:flex-col max-[760px]:items-center max-[760px]:text-center">
       <span className="type-subpara text-[13px] font-medium text-[#7a6d63]">
-        Showing <span className="font-bold text-[#1c1510]">{startItem}</span> to{" "}
-        <span className="font-bold text-[#1c1510]">{endItem}</span> of{" "}
-        <span className="font-bold text-[#1c1510]">{totalItems}</span> Orders
+        {t("reviews.showing", { start: startItem, end: endItem, total: totalItems, defaultValue: `Showing ${startItem}–${endItem} of ${totalItems} reviews` })}
       </span>
 
       <div className="flex items-center gap-1">

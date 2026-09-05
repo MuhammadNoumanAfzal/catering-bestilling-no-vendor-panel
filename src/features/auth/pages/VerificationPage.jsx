@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
@@ -17,6 +18,7 @@ function isValidEmail(email) {
 }
 
 export default function VerificationPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState(searchParams.get("email") || "");
@@ -29,17 +31,17 @@ export default function VerificationPage() {
     const trimmedCode = verificationCode.trim();
 
     if (!trimmedEmail) {
-      await showVendorErrorAlert("Please enter your email address.", "Email required");
+      await showVendorErrorAlert(t("auth.validation.emailRequired"), t("auth.validation.emailRequiredTitle"));
       return;
     }
 
     if (!isValidEmail(trimmedEmail)) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      await showVendorErrorAlert(t("auth.validation.invalidEmail"), t("auth.validation.invalidEmailTitle"));
       return;
     }
 
     if (!trimmedCode) {
-      await showVendorErrorAlert("Please enter the verification code.", "Code required");
+      await showVendorErrorAlert(t("auth.validation.codeRequired"), t("auth.validation.codeRequiredTitle"));
       return;
     }
 
@@ -110,7 +112,7 @@ export default function VerificationPage() {
         }
         fields={[
           {
-            label: "Email Address",
+            label: t("auth.emailAddress"),
             autoComplete: "email",
             helperText: "Use the same email where you requested the reset code.",
             name: "email",
@@ -120,7 +122,7 @@ export default function VerificationPage() {
             value: email,
           },
           {
-            label: "Verification Code",
+            label: t("auth.verificationCode"),
             autoComplete: "one-time-code",
             helperText: "Enter the 4-digit code from your email.",
             name: "verificationCode",
@@ -130,10 +132,10 @@ export default function VerificationPage() {
             value: verificationCode,
           },
         ]}
-        title="Verify Code"
-        subtitle="Confirm the code we sent before creating your new password."
+        title={t("auth.verify.title")}
+        subtitle={t("auth.verify.subtitle")}
         onAction={handleVerify}
-        backLinkLabel="Change email"
+        backLinkLabel={t("auth.verify.changeEmail")}
         backLinkTo={`/auth/forgot-password?email=${encodeURIComponent(email.trim())}`}
         formClassName="px-6 pb-6 pt-7"
         maxWidthClassName="sm:max-w-[560px]"

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, Image as ImageIcon, Paperclip } from "lucide-react";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 import {
   getMySupportTicket,
   getMySupportTickets,
@@ -10,7 +11,10 @@ import {
 
 const PAGE_SIZE = 10;
 
-function formatStatusLabel(value) {
+function formatStatusLabel(value, t) {
+  const statusLabels = { OPEN: "support.open", IN_PROGRESS: "support.inProgress", RESOLVED: "support.resolved", CLOSED: "support.closed" };
+  const normalized = `${value ?? ""}`.trim().toUpperCase();
+  if (statusLabels[normalized]) return t(statusLabels[normalized], { defaultValue: normalized });
   return `${value ?? ""}`
     .trim()
     .toLowerCase()
@@ -119,6 +123,7 @@ function MessageBubble({ item }) {
 }
 
 export default function SupportResponsesPage() {
+  const { t } = useTranslation();
   const [tickets, setTickets] = useState([]);
   const [pageInfo, setPageInfo] = useState({
     page: 1,
@@ -227,8 +232,8 @@ export default function SupportResponsesPage() {
     } catch (error) {
       await Swal.fire({
         icon: "error",
-        title: "Unable to send reply",
-        text: error instanceof Error ? error.message : "Please try again.",
+        title: t("support.sendReply", { defaultValue: "Unable to send reply" }),
+        text: error instanceof Error ? error.message : t("support.responseTime", { defaultValue: "Please try again." }),
         confirmButtonColor: "#cf6e38",
       });
     } finally {
@@ -240,9 +245,9 @@ export default function SupportResponsesPage() {
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="type-h2 m-0 text-[#15110f]">Support Responses</h1>
+          <h1 className="type-h2 m-0 text-[#15110f]">{t("support.responsesTitle", { defaultValue: "Support Responses" })}</h1>
           <p className="type-para mt-1 text-[#746a62]">
-            Review ticket updates and send replies from a separate page.
+            {t("support.responsesSubtitle", { defaultValue: "Review ticket updates and send replies from a separate page." })}
           </p>
         </div>
 
@@ -250,7 +255,7 @@ export default function SupportResponsesPage() {
           className="inline-flex h-[42px] items-center justify-center rounded-[10px] border border-[#dfd3c8] bg-white px-4 text-[14px] font-bold text-[#2a211b] no-underline transition hover:bg-[#faf6f2] hover:text-[#cf6e38]"
           to="/support"
         >
-          Back To Support Form
+          {t("support.backToForm", { defaultValue: "Back To Support Form" })}
         </Link>
       </header>
 
@@ -258,7 +263,7 @@ export default function SupportResponsesPage() {
         <div className="border-b border-[#efe5dd] px-5 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="m-0 text-[20px] font-bold text-[#181310]">Your Support Tickets</h2>
+              <h2 className="m-0 text-[20px] font-bold text-[#181310]">{t("support.yourTickets", { defaultValue: "Your Support Tickets" })}</h2>
               <p className="mt-1 text-[13px] text-[#8d8074]">
                 Review updates and continue existing conversations.
               </p>
@@ -268,7 +273,7 @@ export default function SupportResponsesPage() {
               onClick={() => loadTickets(currentPage)}
               type="button"
             >
-              Refresh
+              {t("support.refresh", { defaultValue: "Refresh" })}
             </button>
           </div>
         </div>
@@ -278,7 +283,7 @@ export default function SupportResponsesPage() {
             <div className="max-h-[720px] overflow-y-auto">
               {isLoadingList ? (
                 <div className="px-5 py-10 text-center text-[14px] font-medium text-[#7d7068]">
-                  Loading tickets...
+                  {t("support.loadingTickets", { defaultValue: "Loading tickets…" })}
                 </div>
               ) : listError ? (
                 <div className="px-5 py-10 text-center text-[14px] font-medium text-[#c65736]">
@@ -306,7 +311,7 @@ export default function SupportResponsesPage() {
                             getStatusClasses(ticket.status),
                           ].join(" ")}
                         >
-                          {formatStatusLabel(ticket.status)}
+                          {formatStatusLabel(ticket.status, t)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3 text-[12px] text-[#8d8074]">
@@ -319,7 +324,7 @@ export default function SupportResponsesPage() {
                       </div>
                       {ticket.orderReference ? (
                         <span className="text-[12px] font-medium text-[#6f6258]">
-                          Order: {ticket.orderReference}
+                          {t("support.order", { defaultValue: "Order" })}: {ticket.orderReference}
                         </span>
                       ) : null}
                     </button>
@@ -327,7 +332,7 @@ export default function SupportResponsesPage() {
                 })
               ) : (
                 <div className="px-5 py-10 text-center text-[14px] font-medium text-[#7d7068]">
-                  No support tickets yet.
+                  {t("support.noTickets", { defaultValue: "No support tickets yet." })}
                 </div>
               )}
             </div>
@@ -340,10 +345,10 @@ export default function SupportResponsesPage() {
                   onClick={() => loadTickets(currentPage - 1)}
                   type="button"
                 >
-                  Previous
+                  {t("support.previous", { defaultValue: "Previous" })}
                 </button>
                 <span>
-                  Page {pageInfo.page} of {pageInfo.totalPages}
+                  {t("support.page", { current: pageInfo.page, total: pageInfo.totalPages, defaultValue: `Page ${pageInfo.page} of ${pageInfo.totalPages}` })}
                 </span>
                 <button
                   className="rounded-[8px] border border-[#e0d5cb] px-3 py-1.5 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
@@ -351,7 +356,7 @@ export default function SupportResponsesPage() {
                   onClick={() => loadTickets(currentPage + 1)}
                   type="button"
                 >
-                  Next
+                  {t("support.next", { defaultValue: "Next" })}
                 </button>
               </div>
             ) : null}
@@ -378,7 +383,7 @@ export default function SupportResponsesPage() {
                           getStatusClasses(selectedTicket.status),
                         ].join(" ")}
                       >
-                        {formatStatusLabel(selectedTicket.status)}
+                        {formatStatusLabel(selectedTicket.status, t)}
                       </span>
                     </div>
                     <p className="mt-2 text-[13px] text-[#8d8074]">
@@ -394,24 +399,24 @@ export default function SupportResponsesPage() {
                       ))
                     ) : (
                       <div className="rounded-[16px] border border-dashed border-[#e5d8ce] bg-white px-5 py-10 text-center text-[14px] text-[#7d7068]">
-                        No messages available for this ticket yet.
+                        {t("support.noMessages", { defaultValue: "No messages available for this ticket yet." })}
                       </div>
                     )}
                   </div>
 
                   <div className="border-t border-[#efe5dd] bg-white px-5 py-4">
                     <label className="mb-2 block text-[13px] font-bold text-[#2a211b]">
-                      Reply to support
+                      {t("support.reply", { defaultValue: "Reply to support" })}
                     </label>
                     <textarea
                       className="min-h-[120px] w-full resize-none rounded-[12px] border border-[#ddd3ca] bg-[#fbf8f5] px-4 py-3 text-[14px] text-[#241913] outline-none transition placeholder:text-[#ab9d91] focus:border-[#cf6e38] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
                       onChange={(event) => setDraftReply(event.target.value)}
-                      placeholder="Write your reply here..."
+                      placeholder={t("support.replyPlaceholder", { defaultValue: "Write your reply here…" })}
                       value={draftReply}
                     />
                     <div className="mt-3 flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
                       <p className="text-[12px] text-[#8d8074]">
-                        Replies are sent into the same ticket thread for the support team.
+                        {t("support.replyHint", { defaultValue: "Replies are sent into the same ticket thread for the support team." })}
                       </p>
                       <button
                         className="inline-flex h-[42px] min-w-[140px] items-center justify-center rounded-[10px] bg-[#d96e39] px-5 text-[14px] font-bold text-white transition hover:bg-[#c9602c] disabled:cursor-not-allowed disabled:opacity-50"
@@ -419,7 +424,7 @@ export default function SupportResponsesPage() {
                         onClick={handleReplySubmit}
                         type="button"
                       >
-                        {isSendingReply ? "Sending..." : "Send Reply"}
+                        {isSendingReply ? t("support.sending", { defaultValue: "Sending …" }) : t("support.sendReply", { defaultValue: "Send Reply" })}
                       </button>
                     </div>
                   </div>
@@ -427,7 +432,7 @@ export default function SupportResponsesPage() {
               ) : null
             ) : (
               <div className="flex flex-1 items-center justify-center px-6 text-center text-[14px] font-medium text-[#7d7068]">
-                Select a support ticket to review the conversation and send a reply.
+                {t("support.selectTicket", { defaultValue: "Select a support ticket to review the conversation and send a reply." })}
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function DateRangeDropdown({
   onChange,
@@ -7,6 +8,7 @@ export default function DateRangeDropdown({
   initialStart = "",
   initialEnd = "",
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [activeOption, setActiveOption] = useState(initialOption);
   const [startDate, setStartDate] = useState(initialStart);
@@ -26,6 +28,7 @@ export default function DateRangeDropdown({
   }, []);
 
   const options = ["Last 2 Days", "Last 7 Days"];
+  const optionLabel = (option) => ({ "Last 2 Days": t("dashboard.date.last2"), "Last 7 Days": t("dashboard.date.last7"), "Custom Date": t("dashboard.date.custom") }[option] || option);
 
   function handleOptionSelect(option) {
     if (option === "Custom Date") {
@@ -52,7 +55,7 @@ export default function DateRangeDropdown({
         className="flex h-[36px] cursor-pointer items-center gap-1.5 rounded-full border border-[#d9d0c8] bg-white px-4 text-[13px] font-bold text-[#2a211b] shadow-[0_1px_2px_rgba(38,23,14,0.06)] hover:bg-[#faf9f7] focus:outline-none"
         type="button"
       >
-        <span>{activeOption}</span>
+        <span>{optionLabel(activeOption)}</span>
         {activeOption !== "Last 7 Days" ? (
           <span
             className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#7d7064] hover:text-[#2a211b] transition-colors"
@@ -91,7 +94,7 @@ export default function DateRangeDropdown({
                   }`}
                   type="button"
                 >
-                  {option}
+                  {optionLabel(option)}
                 </button>
               );
             })}
@@ -101,8 +104,8 @@ export default function DateRangeDropdown({
               {activeOption === "Custom Date" ? (
                 /* Custom Date Active Item */
                 <div className="flex w-full items-center justify-between rounded-[10px] border border-[#d96e39] bg-[#fffcfb] px-4 py-2.5 text-[14px] font-semibold text-[#d96e39]">
-                  <span>Custom Date</span>
-                  <span className="text-[10px] font-extrabold tracking-wider text-[#d96e39]">ACTIVE</span>
+                  <span>{t("dashboard.date.custom")}</span>
+                  <span className="text-[10px] font-extrabold tracking-wider text-[#d96e39]">{t("dashboard.date.active")}</span>
                 </div>
               ) : (
                 /* Custom Date Inactive Item */
@@ -111,7 +114,7 @@ export default function DateRangeDropdown({
                   className="w-full cursor-pointer rounded-[10px] px-4 py-2.5 text-left text-[14px] font-semibold text-[#2f2822] hover:bg-[#fcfaf7] hover:text-[#d96e39] transition"
                   type="button"
                 >
-                  Custom Date
+                  {t("dashboard.date.custom")}
                 </button>
               )}
 
@@ -119,16 +122,16 @@ export default function DateRangeDropdown({
               {activeOption === "Custom Date" && (
                 <div className="mt-2.5 flex flex-col rounded-[14px] border border-[#fceee7] bg-[#fffcfb] p-4 text-left">
                   <span className="text-[11px] font-bold tracking-wider text-[#d96e39] uppercase">
-                    CUSTOM RANGE
+                    {t("dashboard.date.customRange")}
                   </span>
                   <p className="mt-1 text-[12px] font-medium text-[#7d7064] leading-relaxed">
-                    Choose a start and end date to filter the orders list.
+                    {t("dashboard.date.description")}
                   </p>
 
                   {/* From Picker */}
                   <div className="mt-4 flex flex-col">
                     <label className="text-[11px] font-bold text-[#7b6d62] uppercase tracking-wide">
-                      FROM
+                      {t("dashboard.date.from")}
                     </label>
                     <input
                       type="date"
@@ -141,7 +144,7 @@ export default function DateRangeDropdown({
                   {/* To Picker */}
                   <div className="mt-3 flex flex-col">
                     <label className="text-[11px] font-bold text-[#7b6d62] uppercase tracking-wide">
-                      TO
+                      {t("dashboard.date.to")}
                     </label>
                     <input
                       type="date"
@@ -158,7 +161,7 @@ export default function DateRangeDropdown({
                     className="mt-4 self-end rounded-full bg-[#d96e39] px-5 py-1.5 text-[12px] font-bold text-white shadow-[0_2px_4px_rgba(217,110,57,0.2)] hover:bg-[#c35c28] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition"
                     type="button"
                   >
-                    Apply
+                    {t("dashboard.date.apply")}
                   </button>
                 </div>
               )}

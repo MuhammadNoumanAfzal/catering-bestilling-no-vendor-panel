@@ -1,4 +1,5 @@
 import NotificationFilterDropdown from "./NotificationFilterDropdown";
+import { useTranslation } from "react-i18next";
 
 export default function NotificationsToolbar({
   activeTab,
@@ -17,6 +18,7 @@ export default function NotificationsToolbar({
   setIsFilterOpen,
   tabs,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between gap-3 rounded-[18px] border border-[#e8ddd4] bg-white px-3 py-3 shadow-[0_10px_24px_rgba(45,31,20,0.05)] max-[760px]:flex-col max-[760px]:items-stretch">
       <div className="flex min-w-0 flex-wrap items-center gap-2 max-[480px]:grid max-[480px]:grid-cols-3">
@@ -59,7 +61,7 @@ export default function NotificationsToolbar({
           onClick={onMarkAllRead}
           type="button"
         >
-          {isMarkingAllRead ? "Marking..." : "Mark All Read"}
+          {isMarkingAllRead ? t("notifications.marking", { defaultValue: "Marking…" }) : t("notifications.markAllRead", { defaultValue: "Mark All Read" })}
         </button>
       </div>
     </div>

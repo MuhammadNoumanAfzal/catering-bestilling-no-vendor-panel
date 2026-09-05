@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function DeliverySchedulePicker({
   days,
@@ -6,6 +7,7 @@ export default function DeliverySchedulePicker({
   onToggleDay,
   disabled = false,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 gap-2">
       {days.map((day) => {
@@ -35,14 +37,14 @@ export default function DeliverySchedulePicker({
               >
                 <Check size={13} strokeWidth={3} />
               </span>
-              <span className="text-[13px] font-bold">{dayLabel}</span>
+              <span className="text-[13px] font-bold">{t(`delivery.${dayValue}`, { defaultValue: dayLabel })}</span>
             </span>
             <span
               className={`text-[11px] font-extrabold uppercase tracking-[0.08em] ${
                 isActive ? "text-[#cf6e38]" : "text-[#a5968b]"
               }`}
             >
-              {isActive ? "On" : "Off"}
+              {isActive ? t("delivery.on", { defaultValue: "On" }) : t("delivery.off", { defaultValue: "Off" })}
             </span>
           </button>
         );
