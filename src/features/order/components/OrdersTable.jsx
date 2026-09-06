@@ -210,12 +210,11 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                   </div>
                 ) : isTerminalStatus(row.status) ? (
                   <button
-                    className="inline-flex min-h-[34px] cursor-pointer items-center gap-1.5 rounded-[9px] border border-[#e4d9cf] bg-white px-3 text-[12px] font-bold text-[#4f443d] transition hover:border-[#cf6e38] hover:bg-[#fff7f2] hover:text-[#cf6e38]"
+                    className="inline-flex h-8 min-w-[120px] cursor-pointer items-center justify-center whitespace-nowrap rounded-[8px] border border-[#e4d5cb] bg-white px-4 text-[12px] font-semibold text-[#6f5145] transition hover:border-[#cf6e38] hover:bg-[#fff8f4] hover:text-[#c75f2e]"
                     onClick={() => onActionClick(row, { label: "View Details", navigateToDetail: true })}
                     type="button"
                   >
-                    <Eye size={14} />
-                    View details
+                    View Details
                   </button>
                 ) : (
                 <div className="relative inline-flex" onClick={(e) => e.stopPropagation()}>
