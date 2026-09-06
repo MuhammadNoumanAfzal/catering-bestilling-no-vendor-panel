@@ -36,6 +36,13 @@ function parseMenuPrice(value) {
   return Number(String(value || "").replace(/[^0-9.]/g, "")) || 0;
 }
 
+function getStatusUpdateMessage(item, nextStatus) {
+  const offeringType = item.isAddOn ? "Add-on" : "Menu";
+  const statusLabel = nextStatus === "active" ? "active" : "paused";
+
+  return `${offeringType} "${item.title}" is now ${statusLabel}.`;
+}
+
 export default function MenuPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -236,7 +243,7 @@ export default function MenuPage() {
           ),
         );
         await showVendorSuccessToast(
-          t("menu.statusUpdated", { type: t("menu.addOns", { defaultValue: "Add-on" }), status: t(nextStatus === "active" ? "menu.active" : "menu.paused", { defaultValue: nextStatus === "active" ? "Active" : "Paused" }) }),
+          getStatusUpdateMessage(item, nextStatus),
         );
       } catch (error) {
         await showVendorErrorAlert(error.message || t("menu.unableStatus", { defaultValue: "Unable to update the status." }));
@@ -260,7 +267,7 @@ export default function MenuPage() {
         ),
       );
       await showVendorSuccessToast(
-        t("menu.statusUpdated", { type: t("menu.management", { defaultValue: "Menu" }), status: t(nextStatus === "active" ? "menu.active" : "menu.paused", { defaultValue: nextStatus === "active" ? "Active" : "Paused" }) }),
+        getStatusUpdateMessage(item, nextStatus),
       );
     } catch (error) {
       await showVendorErrorAlert(error.message || t("menu.unableStatus", { defaultValue: "Unable to update the status." }));

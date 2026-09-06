@@ -633,10 +633,6 @@ export default function OrderAdjustmentPage() {
         setFormErrors(mapErrorsByField(payload?.errors));
         const errMsg = payload?.message || "Unable to submit the order adjustment.";
         setSubmitError(errMsg);
-        console.error("Order adjustment submission failed:", {
-          mutationInput,
-          errors: payload?.errors,
-        });
         await showVendorErrorAlert(errMsg, "Adjustment Rejected");
         return;
       }
@@ -669,11 +665,6 @@ export default function OrderAdjustmentPage() {
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Unable to submit the order adjustment.";
       setSubmitError(errMsg);
-      console.error("Order adjustment submit error:", error, {
-        orderId: orderDetail?.rawId || decodedOrderId,
-        removedItemsJson,
-        addedItemsJson,
-      });
       await showVendorErrorAlert(errMsg, "Submission Error");
     } finally {
       setIsSubmitting(false);

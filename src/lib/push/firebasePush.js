@@ -65,7 +65,6 @@ export async function startFirebasePush(onForegroundMessage) {
   }
 
   if (!hasFirebaseConfiguration()) {
-    console.warn("Firebase push is disabled because Firebase environment values are missing.");
     return { token: null, unsubscribe: () => {} };
   }
 
@@ -74,7 +73,6 @@ export async function startFirebasePush(onForegroundMessage) {
 
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
-    console.warn(`Firebase push is waiting for notification permission: ${permission}.`);
     return { token: null, unsubscribe: () => {} };
   }
 
