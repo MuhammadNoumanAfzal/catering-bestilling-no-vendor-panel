@@ -77,18 +77,16 @@ function resolvePayoutLifecycleStatus(item) {
     return "PENDING";
   }
 
-  if (hasValidDate(item?.paidAt)) {
+  const normalized = normalizePayoutStatus(item?.status);
+
+  // The backend may mark a payout paid before it supplies a paidAt timestamp.
+  // Keep that final settlement state instead of falling back to its release date.
+  if (normalized === "PAID" || hasValidDate(item?.paidAt)) {
     return "PAID";
   }
 
-  if (hasValidDate(item?.releasedAt)) {
+  if (normalized === "RELEASED" || hasValidDate(item?.releasedAt)) {
     return "RELEASED";
-  }
-
-  const normalized = normalizePayoutStatus(item?.status);
-
-  if (normalized === "PAID" && !hasValidDate(item?.paidAt)) {
-    return hasValidDate(item?.releasedAt) ? "RELEASED" : "PENDING";
   }
 
   return normalized || "PENDING";
@@ -207,15 +205,9 @@ export function mapPayoutStatusItems(data) {
   const payouts = edges.map((edge) => edge?.node).filter(Boolean);
 
   const pending = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PENDING");
-  const released = payouts.filter((item) => {
-    const lifecycleStatus = resolvePayoutLifecycleStatus(item);
-
-    return (
-      lifecycleStatus === "RELEASED" ||
-      lifecycleStatus === "PAID" ||
-      hasValidDate(item?.releasedAt)
-    );
-  });
+  const released = payouts.filter(
+    (item) => resolvePayoutLifecycleStatus(item) === "RELEASED",
+  );
   const paid = payouts.filter((item) => resolvePayoutLifecycleStatus(item) === "PAID");
   const latestPaid = [...paid].sort((left, right) => {
     const leftTime = new Date(left?.paidAt || left?.createdAt || 0).getTime();
