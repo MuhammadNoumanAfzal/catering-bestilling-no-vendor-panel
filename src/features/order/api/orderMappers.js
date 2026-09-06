@@ -816,7 +816,6 @@ export function createOrderMetrics(summary) {
 export function createOrderTabs(summary) {
   return [
     { label: "All", count: summary.total },
-    { label: "Upcoming", count: summary.upcoming || 0 },
     { label: "New", count: summary.newOrders },
     { label: "Modified", count: summary.modified },
     { label: "Delivered", count: summary.delivered },
