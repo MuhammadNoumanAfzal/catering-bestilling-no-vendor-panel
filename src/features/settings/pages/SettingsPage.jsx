@@ -135,7 +135,6 @@ export default function SettingsPage() {
           businessTypeOptions={settingsOptions.businessTypeOptions}
           closureTypeOptions={settingsOptions.closureTypeOptions}
           cuisineOptions={settingsOptions.cuisineOptions}
-          currencyOptions={settingsOptions.currencyOptions}
           disabled={isLoading || isSaving}
           fieldErrors={fieldErrors}
           handleDeactivateStore={handleDeactivateStore}

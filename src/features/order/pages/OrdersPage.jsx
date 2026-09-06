@@ -9,8 +9,8 @@ import OrderTabs from "../components/OrderTabs";
 import OrderDetailModal from "../components/OrderDetailModal";
 import { getVendorDashboard } from "../../dashboard/api/dashboardApi";
 import {
-  getAllVendorOrders,
-  getAllVendorUpcomingOrders,
+  getVendorOrdersPage,
+  getVendorUpcomingOrdersPage,
   updateVendorOrderStatus,
 } from "../api/orderApi";
 import {
@@ -31,6 +31,7 @@ import {
 
 const PAGE_SIZE = 10;
 const DEFAULT_UPCOMING_HOURS = 4;
+const orderListCache = new Map();
 
 function normalizeLabel(value) {
   return String(value || "").toLowerCase().replace(/\s+/g, "");
@@ -223,37 +224,45 @@ export default function OrdersPage() {
       ...dateFilters,
     };
   }, [activeTab, fromDate, isLiveUpcomingView, searchParams, selectedFilter, toDate, upcomingHours]);
+  const orderCacheKey = useMemo(
+    () => JSON.stringify({ isLiveUpcomingView, variables: backendQueryVariables }),
+    [backendQueryVariables, isLiveUpcomingView],
+  );
 
   useEffect(() => {
     let isCancelled = false;
+    const cachedList = orderListCache.get(orderCacheKey);
+
+    if (cachedList) {
+      setOrderRows(cachedList.rows);
+      setSummaryCounts(cachedList.summary);
+      hasLoadedOrdersRef.current = true;
+      setIsInitialLoading(false);
+    } else if (!hasLoadedOrdersRef.current) {
+      setIsInitialLoading(true);
+    }
 
     async function loadOrders() {
-      if (!hasLoadedOrdersRef.current) {
-        setIsInitialLoading(true);
-      }
-
       try {
-        const [result, dashboardResult] = await Promise.all([
-          isLiveUpcomingView
-            ? getAllVendorUpcomingOrders(backendQueryVariables)
-            : getAllVendorOrders(backendQueryVariables),
-          getVendorDashboard({ hoursWindow: upcomingHours }),
-        ]);
+        const result = await (isLiveUpcomingView
+          ? getVendorUpcomingOrdersPage(backendQueryVariables)
+          : getVendorOrdersPage(backendQueryVariables));
         if (isCancelled) {
           return;
         }
 
         const mappedList = mapVendorOrdersResult(result);
-        const liveUpcomingCount = isLiveUpcomingView
-          ? mappedList.totalCount || mappedList.rows.length
-          : dashboardResult?.vendorDashboardSummary?.upcomingOrders;
         const mappedSummary = mergeUpcomingSummary(
           mapVendorOrderSummary(mappedList.summary, mappedList.rows),
-          liveUpcomingCount,
+          isLiveUpcomingView ? mappedList.totalCount || mappedList.rows.length : undefined,
         );
 
         setOrderRows(mappedList.rows);
         setSummaryCounts(mappedSummary);
+        orderListCache.set(orderCacheKey, {
+          rows: mappedList.rows,
+          summary: mappedSummary,
+        });
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -270,12 +279,40 @@ export default function OrdersPage() {
       }
     }
 
+    async function refreshUpcomingCount() {
+      if (isLiveUpcomingView) {
+        return;
+      }
+
+      try {
+        const dashboardResult = await getVendorDashboard({ hoursWindow: upcomingHours });
+        if (isCancelled) {
+          return;
+        }
+
+        const upcomingCount = dashboardResult?.vendorDashboardSummary?.upcomingOrders;
+        if (Number.isFinite(Number(upcomingCount))) {
+          setSummaryCounts((currentSummary) => {
+            const nextSummary = mergeUpcomingSummary(currentSummary, upcomingCount);
+            const cached = orderListCache.get(orderCacheKey);
+            if (cached) {
+              orderListCache.set(orderCacheKey, { ...cached, summary: nextSummary });
+            }
+            return nextSummary;
+          });
+        }
+      } catch {
+        // The list remains usable when the optional dashboard metric is unavailable.
+      }
+    }
+
     loadOrders();
+    refreshUpcomingCount();
 
     return () => {
       isCancelled = true;
     };
-  }, [backendQueryVariables, isLiveUpcomingView, t]);
+  }, [backendQueryVariables, isLiveUpcomingView, orderCacheKey, t, upcomingHours]);
 
   const dateFilteredRows = orderRows;
 
@@ -405,19 +442,13 @@ export default function OrdersPage() {
       ),
     );
 
-    const [refreshedResult, dashboardResult] = await Promise.all([
-      isLiveUpcomingView
-        ? getAllVendorUpcomingOrders(backendQueryVariables)
-        : getAllVendorOrders(backendQueryVariables),
-      getVendorDashboard({ hoursWindow: upcomingHours }),
-    ]);
+    const refreshedResult = await (isLiveUpcomingView
+      ? getVendorUpcomingOrdersPage(backendQueryVariables)
+      : getVendorOrdersPage(backendQueryVariables));
     const mappedList = mapVendorOrdersResult(refreshedResult);
-    const liveUpcomingCount = isLiveUpcomingView
-      ? mappedList.totalCount || mappedList.rows.length
-      : dashboardResult?.vendorDashboardSummary?.upcomingOrders;
     const mappedSummary = mergeUpcomingSummary(
       mapVendorOrderSummary(mappedList.summary, mappedList.rows),
-      liveUpcomingCount,
+      isLiveUpcomingView ? mappedList.totalCount || mappedList.rows.length : undefined,
     );
 
     // The orders query may be briefly stale after a mutation. Keep the
@@ -430,6 +461,10 @@ export default function OrdersPage() {
       ),
     );
     setSummaryCounts(mappedSummary);
+    orderListCache.set(orderCacheKey, {
+      rows: mappedList.rows,
+      summary: mappedSummary,
+    });
 
     await showOrderStatusUpdated(message);
   }

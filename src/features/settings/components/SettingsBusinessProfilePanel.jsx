@@ -6,13 +6,10 @@ import SettingsToggleRow from "./SettingsToggleRow";
 import { useTranslation } from "react-i18next";
 import { getCurrentYear, getTodayDateValue, sanitizeYearInput } from "../../../utils/dateValidation";
 
-const NORWAY_TIME_ZONE = "Europe/Oslo";
-
 export default function SettingsBusinessProfilePanel({
   businessTypeOptions,
   closureTypeOptions,
   cuisineOptions,
-  currencyOptions,
   disabled = false,
   fieldErrors = {},
   handleDeactivateStore,
@@ -65,27 +62,29 @@ export default function SettingsBusinessProfilePanel({
                 placeholder="Enter business address"
                 value={settings.businessAddress}
               />
-              <SettingsTextField
-                disabled={disabled}
-                label={t("settings.companyId", { defaultValue: "Company ID Number" })}
-                onChange={handleFieldChange("taxId")}
-                placeholder="Enter company ID number"
-                value={settings.taxId}
-              />
-              <SettingsTextField
-                disabled={disabled}
-                label={t("settings.city", { defaultValue: "City" })}
-                onChange={handleFieldChange("payoutProfile.city")}
-                placeholder="Enter city"
-                value={settings.payoutProfile.city}
-              />
-              <SettingsTextField
-                disabled
-                label={t("settings.postalCode", { defaultValue: "Postal Code" })}
-                onChange={handleFieldChange("postalCode")}
-                placeholder="Enter postal code"
-                value={settings.postalCode}
-              />
+              <div className="col-span-2 grid grid-cols-3 gap-3 max-[960px]:grid-cols-1">
+                <SettingsTextField
+                  disabled={disabled}
+                  label={t("settings.companyId", { defaultValue: "Company ID Number" })}
+                  onChange={handleFieldChange("taxId")}
+                  placeholder="Enter company ID number"
+                  value={settings.taxId}
+                />
+                <SettingsTextField
+                  disabled={disabled}
+                  label={t("settings.city", { defaultValue: "City" })}
+                  onChange={handleFieldChange("payoutProfile.city")}
+                  placeholder="Enter city"
+                  value={settings.payoutProfile.city}
+                />
+                <SettingsTextField
+                  disabled
+                  label={t("settings.postalCode", { defaultValue: "Postal Code" })}
+                  onChange={handleFieldChange("postalCode")}
+                  placeholder="Enter postal code"
+                  value={settings.postalCode}
+                />
+              </div>
             </div>
 
             <div className="mt-3">
@@ -223,13 +222,6 @@ export default function SettingsBusinessProfilePanel({
               onToggle={() => handleNotificationToggle("reviewsRatings")}
             />
             <SettingsToggleRow
-              checked={settings.notifications.promos_tips}
-              disabled={disabled}
-              helper="Receive business insights and platform tips."
-              label={t("settings.promotionsTips", { defaultValue: "Promotions & Tips" })}
-              onToggle={() => handleNotificationToggle("promos_tips")}
-            />
-            <SettingsToggleRow
               checked={settings.notifications.emailNotifications}
               disabled={disabled}
               helper="Receive important updates in your email inbox."
@@ -243,39 +235,6 @@ export default function SettingsBusinessProfilePanel({
               label={t("settings.pushNotifications")}
               onToggle={() => handleNotificationToggle("pushNotifications")}
             />
-            <SettingsToggleRow
-              checked={settings.notifications.smsNotifications}
-              disabled={disabled}
-              helper="Receive important alerts by SMS."
-              label={t("settings.smsNotifications")}
-              onToggle={() => handleNotificationToggle("smsNotifications")}
-            />
-          </SettingsSectionCard>
-
-          <SettingsSectionCard description="Account defaults are managed automatically for this portal." title="Account Defaults">
-            <div className="space-y-3">
-              <SettingsSelectField
-                disabled
-                label="Valuta"
-                onChange={handleFieldChange("currency")}
-                options={currencyOptions}
-                placeholder="Locked currency"
-                value={settings.currency}
-              />
-              <p className="text-[11px] text-[#8a7c70]">
-                Currency is locked to the vendor account configuration and cannot be changed here.
-              </p>
-              <div className="space-y-1">
-                <SettingsTextField
-                  disabled
-                  label={t("settings.timeZone", { defaultValue: "Time Zone" })}
-                  value={settings.timeZone || NORWAY_TIME_ZONE}
-                />
-                <p className="text-[11px] text-[#8a7c70]">
-                  Norway time is applied automatically, including summer and winter time changes.
-                </p>
-              </div>
-            </div>
           </SettingsSectionCard>
 
           <SettingsSectionCard

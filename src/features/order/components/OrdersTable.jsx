@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Eye, Users } from "lucide-react";
+import { ChevronDown, Eye, Users } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -36,16 +36,21 @@ const statusActionClasses = {
   Modified: "border-[#fed7aa] bg-[#fff7ed] text-[#ea580c] hover:bg-[#ffefd9]",
 };
 
-const manualStatusOptions = [
-  "Accepted",
-  "Preparing",
-  "Ready",
-  "Out for delivery",
-  "Delivered",
-  "Canceled",
-];
-
 const statusSequence = ["Accepted", "Preparing", "Ready", "Out for delivery", "Delivered"];
+
+function getNextStatusOptions(currentStatus) {
+  const currentIndex = statusSequence.indexOf(currentStatus);
+
+  if (currentIndex === -1 || currentIndex >= statusSequence.length - 1) {
+    return [];
+  }
+
+  return [statusSequence[currentIndex + 1], "Canceled"];
+}
+
+function isTerminalStatus(status) {
+  return status === "Delivered" || status === "Canceled";
+}
 
 function renderStatusBadge(status, statusTone, t) {
   const toneClass =
@@ -90,7 +95,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
         return null;
       }
 
-      const menuHeight = 330;
+      const menuHeight = 180;
       const menuWidth = 190;
       const canOpenBelow = window.innerHeight - triggerBounds.bottom >= menuHeight;
       const top = canOpenBelow
@@ -203,6 +208,15 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                       </button>
                     ))}
                   </div>
+                ) : isTerminalStatus(row.status) ? (
+                  <button
+                    className="inline-flex min-h-[34px] cursor-pointer items-center gap-1.5 rounded-[9px] border border-[#e4d9cf] bg-white px-3 text-[12px] font-bold text-[#4f443d] transition hover:border-[#cf6e38] hover:bg-[#fff7f2] hover:text-[#cf6e38]"
+                    onClick={() => onActionClick(row, { label: "View Details", navigateToDetail: true })}
+                    type="button"
+                  >
+                    <Eye size={14} />
+                    View details
+                  </button>
                 ) : (
                 <div className="relative inline-flex" onClick={(e) => e.stopPropagation()}>
                   <button
@@ -228,27 +242,16 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                       <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9a8b80]">
                         Change status
                       </p>
-                      {manualStatusOptions.map((status) => {
-                        const currentIndex = statusSequence.indexOf(row.status);
-                        const statusIndex = statusSequence.indexOf(status);
-                        const isCanceled = status === "Canceled";
-                        const isCurrent = status === row.status;
-                        const isCompleted = !isCanceled && currentIndex >= statusIndex && statusIndex >= 0;
-
+                      {getNextStatusOptions(row.status).map((status) => {
                         return (
                         <button
-                          className={`flex w-full cursor-pointer items-center gap-2 rounded-[8px] px-3 py-2.5 text-left text-[12px] font-bold transition hover:bg-[#f6f1eb] hover:text-[#cf6e38] ${isCurrent ? "bg-[#fff4ee] text-[#cf6e38]" : "text-[#4f443d]"}`}
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-[8px] px-3 py-2.5 text-left text-[12px] font-bold text-[#4f443d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
                           key={status}
-                          onClick={() => !isCurrent && handleMenuAction(row, { label: status, fromDropdown: true })}
+                          onClick={() => handleMenuAction(row, { label: status, fromDropdown: true })}
                           type="button"
                         >
-                          {isCompleted || (isCanceled && isCurrent) ? (
-                            <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-white ${status === "Accepted" ? "bg-[#245ce6]" : status === "Preparing" ? "bg-[#6322ad]" : status === "Ready" ? "bg-[#1c873b]" : status === "Out for delivery" ? "bg-[#c4551d]" : status === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"}`}><Check size={10} strokeWidth={3} /></span>
-                          ) : (
-                            <span className={`h-1.5 w-1.5 rounded-full ${status === "Accepted" ? "bg-[#245ce6]" : status === "Preparing" ? "bg-[#6322ad]" : status === "Ready" ? "bg-[#1c873b]" : status === "Out for delivery" ? "bg-[#c4551d]" : status === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"}`} />
-                          )}
+                          <span className={`h-1.5 w-1.5 rounded-full ${status === "Preparing" ? "bg-[#6322ad]" : status === "Ready" ? "bg-[#1c873b]" : status === "Out for delivery" ? "bg-[#c4551d]" : status === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"}`} />
                           {t(`orders.${{ Accepted: "accepted", Preparing: "startPreparing", Ready: "ready", "Out for delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled" }[status] || "status"}`, { defaultValue: status })}
-                          {isCurrent ? <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.08em]">Current</span> : null}
                         </button>
                         );
                       })}
