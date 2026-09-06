@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Printer } from "lucide-react";
 import Swal from "sweetalert2";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 import ConfirmedLifecyclePanel from "../components/order-details/ConfirmedLifecyclePanel";
 import CustomerInfoPanel from "../components/order-details/CustomerInfoPanel";
 import FinancialSummaryPanel from "../components/order-details/FinancialSummaryPanel";
@@ -280,11 +281,7 @@ export default function OrderDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <section className="flex min-h-[360px] items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
-      </section>
-    );
+    return <VendorPageLoadingState variant="detail" />;
   }
 
   if (!orderDetail) {

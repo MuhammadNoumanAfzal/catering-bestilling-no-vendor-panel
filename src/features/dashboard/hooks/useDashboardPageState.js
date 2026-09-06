@@ -8,7 +8,7 @@ import {
   createEmptyDashboardState,
   mapDashboardResponse,
 } from "../api/dashboardMappers";
-import { getAllVendorOrders, updateVendorOrderStatus } from "../../order/api/orderApi";
+import { getVendorOrdersPage, updateVendorOrderStatus } from "../../order/api/orderApi";
 import { mapVendorOrderSummary, mapVendorOrdersResult } from "../../order/api/orderMappers";
 import { getVendorSettingsPage } from "../../settings/api/settingsApi";
 import { mapVendorSettingsPage } from "../../settings/api/settingsMappers";
@@ -121,7 +121,9 @@ export default function useDashboardPageState() {
       try {
         const [result, ordersResult, settingsResult] = await Promise.all([
           getVendorDashboard(queryVariables),
-          getAllVendorOrders(),
+          // A single page keeps the dashboard responsive while providing a
+          // reliable fallback when the dashboard summary has stale zero values.
+          getVendorOrdersPage(),
           getVendorSettingsPage(),
         ]);
 
@@ -130,28 +132,33 @@ export default function useDashboardPageState() {
         }
 
         const mappedOrders = mapVendorOrdersResult(ordersResult);
-        const kitchenSummary = mapVendorOrderSummary(null, mappedOrders.rows);
+        const ordersSummary = mapVendorOrderSummary(
+          mappedOrders.summary,
+          mappedOrders.rows,
+        );
         const newOrderRequests = buildNewOrderRequests(mappedOrders.rows, t);
 
-        setDashboard(
-          {
-            ...mapDashboardResponse(result, {
-              dateFilterLabel:
-                dateFilter === "Last 2 Days"
-                  ? t("dashboard.date.last2")
-                  : dateFilter === "Custom Date"
-                    ? t("dashboard.date.custom")
-                    : t("dashboard.date.last7"),
-              customDateLabel,
-              kitchenSummary,
-              totalOrdersOverride: mappedOrders.totalCount || kitchenSummary.total || 0,
-              t,
-              locale: i18n.language,
-            }),
-            urgentOrders: newOrderRequests,
-            urgentOrdersCount: newOrderRequests.length,
-          },
-        );
+        setDashboard({
+          ...mapDashboardResponse(result, {
+            dateFilterLabel:
+              dateFilter === "Last 2 Days"
+                ? t("dashboard.date.last2")
+                : dateFilter === "Custom Date"
+                  ? t("dashboard.date.custom")
+                  : t("dashboard.date.last7"),
+            customDateLabel,
+            kitchenSummary:
+              ordersSummary ||
+              result?.vendorKitchenStatus ||
+              result?.vendorOrderSummaryAllTime ||
+              result?.vendorOrderSummary,
+            totalOrdersOverride: mappedOrders.totalCount || ordersSummary.total,
+            t,
+            locale: i18n.language,
+          }),
+          urgentOrders: newOrderRequests,
+          urgentOrdersCount: newOrderRequests.length,
+        });
 
         const mappedSettingsPage = mapVendorSettingsPage(settingsResult);
         setBusinessProfilePrompt(buildBusinessProfilePrompt(mappedSettingsPage.settings, t));

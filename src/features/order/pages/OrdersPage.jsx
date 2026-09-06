@@ -22,6 +22,7 @@ import {
   normalizeBackendStatus,
 } from "../api/orderMappers";
 import { clearPendingAdjustment } from "../utils/pendingAdjustments";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 import {
   confirmOrderStatusAction,
   showOrderStatusUpdated,
@@ -518,11 +519,7 @@ export default function OrdersPage() {
   }
 
   if (isInitialLoading) {
-    return (
-      <section className="flex min-h-[360px] items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
-      </section>
-    );
+    return <VendorPageLoadingState />;
   }
 
   return (

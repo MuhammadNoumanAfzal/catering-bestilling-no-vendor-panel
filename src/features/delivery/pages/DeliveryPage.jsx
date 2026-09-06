@@ -10,6 +10,7 @@ import DeliveryValidationAside from "../components/DeliveryValidationAside";
 import { deliveryDays, deliveryModes } from "../data/deliveryData";
 import useDeliverySettings from "../hooks/useDeliverySettings";
 import { useTranslation } from "react-i18next";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function DeliveryPage() {
   const { t } = useTranslation();
@@ -64,6 +65,10 @@ export default function DeliveryPage() {
   } = useDeliverySettings();
 
   const isPageDisabled = Boolean(loadError);
+
+  if (isLoading && !loadError) {
+    return <VendorPageLoadingState variant="form" />;
+  }
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col max-[720px]:px-4 max-[720px]:py-4">

@@ -5,6 +5,7 @@ import SettingsTabs from "../components/SettingsTabs";
 import { useTranslation } from "react-i18next";
 import VendorApplicationStatusNotice from "../components/VendorApplicationStatusNotice";
 import useSettingsPageState from "../hooks/useSettingsPageState";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 function resolveSettingsNoticeStatus(applicationReview, authUser) {
   const reviewStatus = `${applicationReview?.applicationStatus ?? ""}`.trim().toUpperCase();
@@ -82,6 +83,10 @@ export default function SettingsPage() {
           description: t("settings.description"),
         };
   const noticeStatus = resolveSettingsNoticeStatus(applicationReview, authUser);
+
+  if (isLoading) {
+    return <VendorPageLoadingState variant="form" />;
+  }
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">

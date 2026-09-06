@@ -4,6 +4,7 @@ import FinancePageHeader from "../components/FinancePageHeader";
 import FinancePayoutsTable from "../components/FinancePayoutsTable";
 import FinanceSummaryGrid from "../components/FinanceSummaryGrid";
 import useFinancePageState from "../hooks/useFinancePageState";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function FinancePage() {
   const {
@@ -43,6 +44,10 @@ export default function FinancePage() {
     selectedDateOption,
     handleClearDateFilter,
   } = useFinancePageState();
+
+  if (isLoading) {
+    return <VendorPageLoadingState />;
+  }
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
