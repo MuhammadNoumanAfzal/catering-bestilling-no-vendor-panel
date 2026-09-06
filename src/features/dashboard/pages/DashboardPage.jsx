@@ -39,9 +39,19 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 max-[720px]:gap-3">
-      <header className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-2">
+      <header>
         <div>
-          <h1 className="type-h2 m-0 text-[#1c1510]">{t("dashboard.title")}</h1>
+          <div className="flex flex-wrap items-center gap-3 max-[720px]:gap-2">
+            <h1 className="m-0 text-[34px] font-bold tracking-[-0.04em] text-[#18120f]">
+              {t("dashboard.title")}
+            </h1>
+            <DateRangeDropdown
+              onChange={handleDateFilterChange}
+              initialOption={dateFilter}
+              initialStart={startDate}
+              initialEnd={endDate}
+            />
+          </div>
           <p className="type-para mt-1.5 ">
             {t("dashboard.welcome", { name: welcomeName || t("dashboard.vendor") })}
           </p>
@@ -193,17 +203,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(280px,0.9fr)] gap-4 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1">
-        <SectionCard
-          title={t("dashboard.earnings")}
-          action={
-            <DateRangeDropdown
-              onChange={handleDateFilterChange}
-              initialOption={dateFilter}
-              initialStart={startDate}
-              initialEnd={endDate}
-            />
-          }
-        >
+        <SectionCard title={t("dashboard.earnings")}>
           <EarningChart
             emptyTitle={dateFilter === "Custom Date" ? t("dashboard.chart.noData") : t("dashboard.chart.noEarnings")}
             emptyMessage={

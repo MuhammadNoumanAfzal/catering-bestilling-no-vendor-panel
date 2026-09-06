@@ -862,7 +862,7 @@ export default function OrderAdjustmentPage() {
                   );
                 }) : (
                   <div className="rounded-[8px] border border-dashed border-[#d8cec4] bg-white px-4 py-4 text-[13px] font-semibold text-[#8a7a6d]">
-                    No removable order items were returned by the API for this order.
+                    There are no order items available to remove.
                   </div>
                 )}
               </div>

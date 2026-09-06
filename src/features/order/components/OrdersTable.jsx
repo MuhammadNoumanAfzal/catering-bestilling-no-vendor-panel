@@ -1,4 +1,4 @@
-import { ChevronDown, Users, Check, X, ArrowRight, Ban, Play } from "lucide-react";
+import { Check, ChevronDown, Eye, Users } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -14,23 +14,42 @@ const statusToneClasses = {
   "is-modified": "border border-[#fed7aa] bg-[#fff7ed] text-[#ea580c]",
 };
 
-const actionToneClasses = {
-  "is-primary": "border-[#cf6e38] bg-[#cf6e38] text-white hover:bg-[#cf6e38]/90",
-  "is-muted": "border-[#8f8881] bg-[#8f8881] text-white hover:bg-[#8f8881]/90",
-  "is-success": "border-[#2ca24f] bg-[#2ca24f] text-white hover:bg-[#2ca24f]/90",
-  "is-danger": "border-[#dc2626] bg-[#dc2626] text-white hover:bg-[#dc2626]/90",
+const statusToneByLabel = {
+  New: "is-new",
+  Accepted: "is-accepted",
+  Preparing: "is-preparing",
+  Ready: "is-ready",
+  "Out for delivery": "is-delivery",
+  "Out for Delivery": "is-delivery",
+  Delivered: "is-delivered",
+  Canceled: "is-canceled",
+  Modified: "is-modified",
 };
 
-const actionMenuItems = [
-  "Start preparing",
+const statusActionClasses = {
+  Accepted: "border-[#cbdcff] bg-[#ecf2ff] text-[#245ce6] hover:bg-[#dfeaff]",
+  Preparing: "border-[#e7d4ff] bg-[#f5ecff] text-[#6322ad] hover:bg-[#eee1ff]",
+  Ready: "border-[#b6f0c6] bg-[#e6fcf0] text-[#1c873b] hover:bg-[#d9f8e5]",
+  "Out for delivery": "border-[#fcd5c0] bg-[#fff2eb] text-[#c4551d] hover:bg-[#ffe8dc]",
+  Delivered: "border-[#c1f5b6] bg-[#edfcf2] text-[#156e10] hover:bg-[#e0f8e7]",
+  Canceled: "border-[#ffd0cc] bg-[#fff2f1] text-[#dc2626] hover:bg-[#ffe5e2]",
+  Modified: "border-[#fed7aa] bg-[#fff7ed] text-[#ea580c] hover:bg-[#ffefd9]",
+};
+
+const manualStatusOptions = [
+  "Accepted",
+  "Preparing",
   "Ready",
   "Out for delivery",
   "Delivered",
   "Canceled",
 ];
 
+const statusSequence = ["Accepted", "Preparing", "Ready", "Out for delivery", "Delivered"];
+
 function renderStatusBadge(status, statusTone, t) {
-  const toneClass = statusToneClasses[statusTone] ?? statusToneClasses["is-new"];
+  const toneClass =
+    statusToneClasses[statusToneByLabel[status] || statusTone] ?? statusToneClasses["is-new"];
   
   let dotClass = "h-1.5 w-1.5 rounded-full ";
   if (status === "New") {
@@ -59,37 +78,33 @@ function renderStatusBadge(status, statusTone, t) {
   );
 }
 
-function getActionIcon(label) {
-  const norm = label.toLowerCase();
-  if (norm === "accept" || norm === "accept order") {
-    return <Check size={12} strokeWidth={3} className="mr-0.5 shrink-0" />;
-  }
-  if (norm === "reject" || norm === "reject order" || norm === "cancel" || norm === "canceled") {
-    return <X size={12} strokeWidth={3} className="mr-0.5 shrink-0" />;
-  }
-  if (norm === "start preparing" || norm === "preparing") {
-    return <Play size={12} strokeWidth={2.5} className="mr-0.5 shrink-0" fill="currentColor" />;
-  }
-  if (norm === "ready") {
-    return <Check size={12} strokeWidth={3} className="mr-0.5 shrink-0" />;
-  }
-  if (norm === "out for delivery" || norm === "delivered" || norm === "mark delivered") {
-    return <ArrowRight size={12} strokeWidth={2.5} className="mr-0.5 shrink-0" />;
-  }
-  return null;
-}
-
 export default function OrdersTable({ rows, onActionClick, onRowClick }) {
   const { t } = useTranslation();
-  const [openMenuKey, setOpenMenuKey] = useState(null);
+  const [openMenu, setOpenMenu] = useState(null);
 
-  function handleMenuToggle(menuKey) {
-    setOpenMenuKey((currentKey) => (currentKey === menuKey ? null : menuKey));
+  function handleMenuToggle(menuKey, event) {
+    const triggerBounds = event.currentTarget.getBoundingClientRect();
+
+    setOpenMenu((currentMenu) => {
+      if (currentMenu?.key === menuKey) {
+        return null;
+      }
+
+      const menuHeight = 330;
+      const menuWidth = 190;
+      const canOpenBelow = window.innerHeight - triggerBounds.bottom >= menuHeight;
+      const top = canOpenBelow
+        ? triggerBounds.bottom + 8
+        : Math.max(8, triggerBounds.top - menuHeight - 8);
+      const left = Math.max(8, Math.min(triggerBounds.right - menuWidth, window.innerWidth - menuWidth - 8));
+
+      return { key: menuKey, left, top };
+    });
   }
 
-  function handleMenuAction(row, action, nextLabel) {
-    setOpenMenuKey(null);
-    onActionClick(row, { ...action, label: nextLabel, fromDropdown: true });
+  function handleMenuAction(row, action) {
+    setOpenMenu(null);
+    onActionClick(row, action);
   }
 
   return (
@@ -171,81 +186,76 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 className="px-4 py-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-                  {row.actions.map((action) => {
-                    const menuKey = `${row.rawId || row.id}-${action.label}`;
-                    const isMenuOpen = openMenuKey === menuKey;
-                    const hasDropdown = Boolean(action.hasDropdown);
- 
-                    // Add special custom styling for Accept vs Reject
-                    let buttonToneClass = actionToneClasses[action.tone] ?? actionToneClasses["is-muted"];
-                    if (action.label === "Accept") {
-                      buttonToneClass = "border-[#2ca24f] bg-[#2ca24f] text-white hover:bg-[#21873f] shadow-[0_2px_8px_rgba(44,162,79,0.2)]";
-                    } else if (action.label === "Reject") {
-                      buttonToneClass = "border-[#e4d9cf] bg-white text-[#dc2626] hover:bg-[#fff2f1] hover:border-[#ffd0cc]";
-                    }
- 
-                    return (
-                      <div key={action.label} className="relative" onClick={(e) => e.stopPropagation()}>
-                        <div className={`inline-flex items-stretch overflow-hidden rounded-full ${hasDropdown ? "border" : ""} ${hasDropdown ? buttonToneClass : ""}`}>
-                          <button
-                            className={`inline-flex min-h-[28px] cursor-pointer items-center gap-1 border px-3.5 text-[13px] font-extrabold leading-none transition duration-150 ${
-                              hasDropdown
-                                ? "border-0 bg-transparent text-inherit hover:bg-black/5"
-                                : buttonToneClass
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onActionClick(row, action);
-                            }}
-                            type="button"
-                          >
-                            {getActionIcon(action.label)}
-                            <span>{t(`orders.${{ Accept: "accept", Reject: "reject", "Start preparing": "startPreparing", Ready: "ready", "Out for delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled", "Mark delivered": "markDelivered" }[action.label] || "actions"}`, { defaultValue: action.label })}</span>
-                          </button>
+                {row.status === "New" ? (
+                  <div className="flex items-center gap-1.5">
+                    {row.actions.filter((action) => ["Accept", "Reject"].includes(action.label)).map((action) => (
+                      <button
+                        className={
+                          action.label === "Accept"
+                            ? "inline-flex min-h-[34px] cursor-pointer items-center rounded-[9px] bg-[#2ca24f] px-3 text-[12px] font-bold text-white transition hover:bg-[#21873f]"
+                            : "inline-flex min-h-[34px] cursor-pointer items-center rounded-[9px] border border-[#e4d9cf] bg-white px-3 text-[12px] font-bold text-[#dc2626] transition hover:border-[#ffd0cc] hover:bg-[#fff2f1]"
+                        }
+                        key={action.label}
+                        onClick={() => onActionClick(row, action)}
+                        type="button"
+                      >
+                        {t(`orders.${action.label === "Accept" ? "accept" : "reject"}`, { defaultValue: action.label })}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                <div className="relative inline-flex" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    aria-expanded={openMenu?.key === row.rawId}
+                    className={`inline-flex min-h-[34px] cursor-pointer items-center gap-1.5 rounded-[9px] border px-3 text-[12px] font-bold transition ${statusActionClasses[row.status] || "border-[#ded5cd] bg-white text-[#4f443d] hover:border-[#cf6e38] hover:bg-[#fff7f2] hover:text-[#cf6e38]"}`}
+                    onClick={(event) => handleMenuToggle(row.rawId, event)}
+                    type="button"
+                  >
+                    {row.status}
+                    <ChevronDown size={14} className={openMenu?.key === row.rawId ? "rotate-180 transition-transform" : "transition-transform"} />
+                  </button>
+                  {openMenu?.key === row.rawId ? (
+                    <div className="fixed z-[100] min-w-[190px] rounded-[12px] border border-[#e3d6ca] bg-white p-1.5 shadow-[0_12px_28px_rgba(38,23,14,0.12)]" style={{ left: openMenu.left, top: openMenu.top }}>
+                      <button
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-[8px] px-3 py-2.5 text-left text-[12px] font-bold text-[#4f443d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
+                        onClick={() => handleMenuAction(row, { label: "View Details", navigateToDetail: true })}
+                        type="button"
+                      >
+                        <Eye size={14} />
+                        View details
+                      </button>
+                      <div className="my-1 border-t border-[#eee6df]" />
+                      <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9a8b80]">
+                        Change status
+                      </p>
+                      {manualStatusOptions.map((status) => {
+                        const currentIndex = statusSequence.indexOf(row.status);
+                        const statusIndex = statusSequence.indexOf(status);
+                        const isCanceled = status === "Canceled";
+                        const isCurrent = status === row.status;
+                        const isCompleted = !isCanceled && currentIndex >= statusIndex && statusIndex >= 0;
 
-                          {hasDropdown ? (
-                            <button
-                              className="inline-flex min-h-[28px] cursor-pointer items-center border-0 border-l border-white/20 bg-transparent px-2 text-inherit transition hover:bg-black/5"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMenuToggle(menuKey);
-                              }}
-                              type="button"
-                              aria-label={t("orders.openStatusOptions", { action: action.label, defaultValue: `Open status options for ${action.label}` })}
-                            >
-                              <ChevronDown size={12} strokeWidth={2.8} className="opacity-90" />
-                            </button>
-                          ) : null}
-                        </div>
- 
-                        {hasDropdown && isMenuOpen ? (
-                          <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-[10px] border border-[#e3d6ca] bg-white/95 p-1 shadow-[0_12px_28px_rgba(38,23,14,0.12)] backdrop-blur-sm">
-                            {actionMenuItems.map((item) => (
-                              <button
-                                key={item}
-                                className="flex w-full items-center gap-1.5 cursor-pointer whitespace-nowrap rounded-[6px] px-3 py-2 text-left text-[12px] font-bold text-[#5e554d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMenuAction(row, action, item);
-                                }}
-                                type="button"
-                              >
-                                <span className={`h-1.5 w-1.5 rounded-full ${
-                                  item === "Start preparing" ? "bg-[#cf6e38]" :
-                                  item === "Ready" ? "bg-[#1c873b]" :
-                                  item === "Out for delivery" ? "bg-[#c4551d]" :
-                                  item === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"
-                                }`} />
-                                <span>{item}</span>
-                              </button>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
+                        return (
+                        <button
+                          className={`flex w-full cursor-pointer items-center gap-2 rounded-[8px] px-3 py-2.5 text-left text-[12px] font-bold transition hover:bg-[#f6f1eb] hover:text-[#cf6e38] ${isCurrent ? "bg-[#fff4ee] text-[#cf6e38]" : "text-[#4f443d]"}`}
+                          key={status}
+                          onClick={() => !isCurrent && handleMenuAction(row, { label: status, fromDropdown: true })}
+                          type="button"
+                        >
+                          {isCompleted || (isCanceled && isCurrent) ? (
+                            <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-white ${status === "Accepted" ? "bg-[#245ce6]" : status === "Preparing" ? "bg-[#6322ad]" : status === "Ready" ? "bg-[#1c873b]" : status === "Out for delivery" ? "bg-[#c4551d]" : status === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"}`}><Check size={10} strokeWidth={3} /></span>
+                          ) : (
+                            <span className={`h-1.5 w-1.5 rounded-full ${status === "Accepted" ? "bg-[#245ce6]" : status === "Preparing" ? "bg-[#6322ad]" : status === "Ready" ? "bg-[#1c873b]" : status === "Out for delivery" ? "bg-[#c4551d]" : status === "Delivered" ? "bg-[#156e10]" : "bg-[#dc2626]"}`} />
+                          )}
+                          {t(`orders.${{ Accepted: "accepted", Preparing: "startPreparing", Ready: "ready", "Out for delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled" }[status] || "status"}`, { defaultValue: status })}
+                          {isCurrent ? <span className="ml-auto text-[10px] font-bold uppercase tracking-[0.08em]">Current</span> : null}
+                        </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </div>
+                )}
               </td>
             </tr>
           ))}
