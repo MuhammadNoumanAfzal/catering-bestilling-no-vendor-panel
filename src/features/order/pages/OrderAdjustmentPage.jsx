@@ -10,6 +10,7 @@ import {
 import { mapVendorOrderDetail, normalizeBackendStatus } from "../api/orderMappers";
 import { savePendingAdjustment } from "../utils/pendingAdjustments";
 import { getVendorMenus } from "../../menu/api/menuApi";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 const REASON_OPTIONS = [
   "Item unavailable",
@@ -680,11 +681,7 @@ export default function OrderAdjustmentPage() {
   }
 
   if (isLoading) {
-    return (
-      <section className="flex min-h-[360px] items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
-      </section>
-    );
+    return <VendorPageLoadingState variant="form" />;
   }
 
   if (!orderDetail) {

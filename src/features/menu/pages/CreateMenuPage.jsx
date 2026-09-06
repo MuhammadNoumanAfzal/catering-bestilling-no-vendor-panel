@@ -10,6 +10,7 @@ import CreateMenuItemsSection from "../components/create-menu/CreateMenuItemsSec
 import CreateMenuPricingSection from "../components/create-menu/CreateMenuPricingSection";
 import ImportMenuItemsModal from "../components/create-menu/ImportMenuItemsModal";
 import { useMenuEditor } from "../hooks/useMenuEditor";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function CreateMenuPage() {
   const navigate = useNavigate();
@@ -37,20 +38,7 @@ export default function CreateMenuPage() {
   } = useMenuEditor();
 
   if (isLoading) {
-    return (
-      <section className="flex min-h-[calc(100vh-124px)] flex-col gap-4">
-        <div className="h-8 w-40 animate-pulse rounded bg-[#e8ded4]" />
-        <div className="h-16 animate-pulse rounded-[18px] bg-[#efe5dc]" />
-        <div className="grid grid-cols-[minmax(0,1.48fr)_minmax(280px,0.96fr)] gap-4 max-[1120px]:grid-cols-1">
-          <div className="space-y-4">
-            <div className="h-72 animate-pulse rounded-[18px] bg-[#f3ece5]" />
-            <div className="h-48 animate-pulse rounded-[18px] bg-[#f3ece5]" />
-            <div className="h-64 animate-pulse rounded-[18px] bg-[#f3ece5]" />
-          </div>
-          <div className="h-72 animate-pulse rounded-[18px] bg-[#f3ece5]" />
-        </div>
-      </section>
-    );
+    return <VendorPageLoadingState variant="form" />;
   }
 
   return (

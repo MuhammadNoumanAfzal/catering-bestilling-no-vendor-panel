@@ -6,6 +6,7 @@ import CreateAddOnActionsBar from "../components/create-addon/CreateAddOnActions
 import CreateAddOnAvailabilitySection from "../components/create-addon/CreateAddOnAvailabilitySection";
 import CreateAddOnBasicInfoSection from "../components/create-addon/CreateAddOnBasicInfoSection";
 import { useAddOnEditor } from "../hooks/useAddOnEditor";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function CreateAddOnPage() {
   const navigate = useNavigate();
@@ -27,14 +28,7 @@ export default function CreateAddOnPage() {
   } = useAddOnEditor();
 
   if (isLoading) {
-    return (
-      <section className="flex min-h-[calc(100vh-124px)] flex-col gap-4">
-        <div className="h-8 w-40 animate-pulse rounded bg-[#e8ded4]" />
-        <div className="h-16 animate-pulse rounded-[18px] bg-[#efe5dc]" />
-        <div className="h-72 animate-pulse rounded-[18px] bg-[#f3ece5]" />
-        <div className="h-56 animate-pulse rounded-[18px] bg-[#f3ece5]" />
-      </section>
-    );
+    return <VendorPageLoadingState variant="form" />;
   }
 
   return (

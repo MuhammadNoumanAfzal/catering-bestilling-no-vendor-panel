@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ExternalLink, Image as ImageIcon, Paperclip } from "lucide-react";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 import {
   getMySupportTicket,
   getMySupportTickets,
@@ -239,6 +240,10 @@ export default function SupportResponsesPage() {
     } finally {
       setIsSendingReply(false);
     }
+  }
+
+  if (isLoadingList && tickets.length === 0) {
+    return <VendorPageLoadingState variant="detail" />;
   }
 
   return (

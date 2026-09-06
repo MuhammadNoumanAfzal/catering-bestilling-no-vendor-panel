@@ -6,6 +6,7 @@ import ReviewsPagination from "../components/ReviewsPagination";
 import ReviewsSummaryCard from "../components/ReviewsSummaryCard";
 import { reviewFilters } from "../data/reviewFilters";
 import useReviewsPageState from "../hooks/useReviewsPageState";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function ReviewsPage() {
   const {
@@ -40,6 +41,10 @@ export default function ReviewsPage() {
     totalPages,
     selectedDateOption,
   } = useReviewsPageState();
+
+  if (isLoading) {
+    return <VendorPageLoadingState />;
+  }
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
