@@ -221,8 +221,27 @@ export async function updateVendorAddOnStatus(id, menuStatus) {
 }
 
 export async function deleteVendorMenu(id) {
-  const result = await executeProtectedGraphqlRequest(DELETE_VENDOR_MENU_MUTATION, { id });
-  return unwrapSuccessfulResult(result, "vendorMenuDelete", "Unable to delete the menu.");
+  try {
+    const result = await executeProtectedGraphqlRequest(DELETE_VENDOR_MENU_MUTATION, { id });
+    return unwrapSuccessfulResult(result, "vendorMenuDelete", "Unable to delete the menu.");
+  } catch (error) {
+    try {
+      // Some backend versions delete the menu but return an incomplete mutation payload.
+      // Verify the final state before showing a false failure to the vendor.
+      const detailResult = await getVendorMenuDetail(id);
+
+      if (!detailResult?.vendorMenu) {
+        return {
+          success: true,
+          message: "Menu removed successfully.",
+        };
+      }
+    } catch {
+      // Preserve the original mutation error when the verification request also fails.
+    }
+
+    throw error;
+  }
 }
 
 export async function deleteVendorAddOn(id) {
