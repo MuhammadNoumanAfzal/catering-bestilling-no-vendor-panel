@@ -83,6 +83,39 @@ function buildNewOrderRequests(rows = [], t) {
     }));
 }
 
+function buildOrderChartFallback(rows = [], locale = "nb-NO") {
+  const totalsByDate = new Map();
+
+  rows.forEach((row) => {
+    const raw = row?.raw || {};
+    const status = `${row?.status || ""}`.trim().toLowerCase();
+    const dateValue = raw.eventDate || raw.deliveryDate || raw.createdOn;
+    const date = new Date(dateValue);
+
+    if (status === "canceled" || Number.isNaN(date.getTime())) {
+      return;
+    }
+
+    const amount = Number(raw?.pricing?.grandTotal ?? raw?.finalPrice ?? 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return;
+    }
+
+    const key = date.toISOString().slice(0, 10);
+    totalsByDate.set(key, (totalsByDate.get(key) || 0) + amount);
+  });
+
+  return [...totalsByDate.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([date, earnings]) => ({
+      label: new Date(`${date}T00:00:00`).toLocaleDateString(locale, {
+        day: "2-digit",
+        month: "short",
+      }),
+      earnings,
+    }));
+}
+
 export default function useDashboardPageState() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -137,9 +170,17 @@ export default function useDashboardPageState() {
           mappedOrders.rows,
         );
         const newOrderRequests = buildNewOrderRequests(mappedOrders.rows, t);
+        const backendChartPoints = result?.vendorFinanceOverviewChart?.points;
+        const chartPoints = Array.isArray(backendChartPoints) && backendChartPoints.length
+          ? backendChartPoints
+          : buildOrderChartFallback(mappedOrders.rows, i18n.language);
+        const dashboardResult = {
+          ...result,
+          vendorFinanceOverviewChart: { points: chartPoints },
+        };
 
         setDashboard({
-          ...mapDashboardResponse(result, {
+          ...mapDashboardResponse(dashboardResult, {
             dateFilterLabel:
               dateFilter === "Last 2 Days"
                 ? t("dashboard.date.last2")

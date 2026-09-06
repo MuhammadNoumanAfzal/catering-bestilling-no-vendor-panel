@@ -21,15 +21,6 @@ export default function LogisticsPanel({ logistics }) {
         <Field label="Delivery Window" value={logistics.deliveryWindow} />
       </div>
 
-      <div className="mt-3 rounded-[10px] bg-[#f8fafc] p-3">
-        <p className="m-0 text-[12px] font-bold leading-[1.5] text-[#201914]">
-          {logistics.deliveryAddress}
-        </p>
-        <p className="mt-1 text-[12px] font-bold leading-[1.5] text-[#201914]">
-          {logistics.fullAddress}
-        </p>
-      </div>
-
       <div className="mt-3 grid grid-cols-1 gap-3 border-b border-[#efe6de] pb-3 md:grid-cols-2">
         <div className="flex flex-col gap-1">
           <a
