@@ -130,7 +130,7 @@ export default function FinanceChartCard({ points }) {
                 ))}
               </div>
 
-              <div className="relative z-[1] flex h-full items-end justify-between gap-4 px-3 max-[560px]:gap-2 max-[560px]:px-1">
+              <div className="relative z-[1] flex h-full min-w-0 items-end justify-between gap-1.5 px-2 max-[560px]:gap-1 max-[560px]:px-1">
                 {chartPoints.map((point, index) => {
                   const height = chartMaxValue > 0 ? (point.value / chartMaxValue) * 100 : 0;
 
@@ -141,7 +141,7 @@ export default function FinanceChartCard({ points }) {
                       title={`${point.label}: ${formatAxisValue(point.value, isOrdersView)}`}
                     >
                       <div
-                        className={`min-h-[8px] w-[44px] rounded-t-full max-[560px]:w-full max-[560px]:max-w-[44px] ${
+                        className={`min-h-[8px] w-full max-w-[44px] rounded-t-full ${
                           hasLiveData ? "bg-[#d96e39]" : "bg-[#f1c7b1]"
                         }`}
                         style={{ height: `${Math.max(height, 8)}%` }}
@@ -152,7 +152,7 @@ export default function FinanceChartCard({ points }) {
               </div>
             </div>
 
-            <div className="mt-3 flex justify-between gap-4 px-3 text-[11px] font-medium text-[#7f7369] max-[560px]:mt-2 max-[560px]:gap-2 max-[560px]:px-1 max-[560px]:text-[10px]">
+            <div className="mt-3 flex min-w-0 justify-between gap-1.5 px-2 text-[11px] font-medium text-[#7f7369] max-[560px]:mt-2 max-[560px]:gap-1 max-[560px]:px-1 max-[560px]:text-[10px]">
               {chartPoints.map((point, index) => (
                 <span
                   key={`${point.label || "label"}-${index}`}
