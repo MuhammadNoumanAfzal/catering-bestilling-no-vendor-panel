@@ -23,10 +23,7 @@ export async function executeProtectedGraphqlRequest(query, variables, options =
     throw error;
   }
 
-  const queryStr = String(query || "");
-
   try {
-    console.log("[GraphQL Request] Query:", queryStr.slice(0, 100).replace(/\s+/g, ' '), "Variables:", JSON.stringify(variables));
     const result = await executeGraphqlRequest(query, variables, {
       ...options,
       accessToken,

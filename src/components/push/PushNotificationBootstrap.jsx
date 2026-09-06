@@ -56,9 +56,7 @@ function showForegroundBrowserNotification(title, body, link, navigate) {
       openPushLink(link, navigate);
       notification.close();
     };
-  } catch (error) {
-    console.warn("Unable to show foreground browser notification:", error);
-  }
+  } catch {}
 }
 
 export default function PushNotificationBootstrap() {
@@ -106,9 +104,7 @@ export default function PushNotificationBootstrap() {
         }
 
         window.localStorage.setItem(storageKey, token);
-      } catch (error) {
-        console.warn("Firebase push setup was skipped:", error?.message || error);
-      }
+      } catch {}
     }
 
     void enablePush();
