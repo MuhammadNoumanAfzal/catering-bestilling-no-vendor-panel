@@ -48,6 +48,18 @@ function toPayoutStatusFilter(status) {
   return normalized === "RELEASED" ? "PAYOUT_RELEASED" : normalized;
 }
 
+function filterPayoutRowsByStatus(rows, status) {
+  if (!status || status === "All") {
+    return rows;
+  }
+
+  const expectedStatus = status.trim().toUpperCase();
+
+  return rows.filter(
+    (row) => `${row?.paymentStatus ?? ""}`.trim().toUpperCase() === expectedStatus,
+  );
+}
+
 function formatDateLabel(dateValue) {
   const date = new Date(dateValue);
 
@@ -190,7 +202,7 @@ export default function useFinancePageState() {
         }
 
         const mapped = mapPayoutTransactions(result);
-        setPayoutRows(mapped.rows);
+        setPayoutRows(filterPayoutRowsByStatus(mapped.rows, activeStatus));
       } catch (error) {
         if (!isCancelled) {
           setPayoutRows([]);
@@ -214,7 +226,7 @@ export default function useFinancePageState() {
     return () => {
       isCancelled = true;
     };
-  }, [payoutQueryVariables, refreshTick]);
+  }, [activeStatus, payoutQueryVariables, refreshTick]);
 
   const totalItems = payoutRows.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
