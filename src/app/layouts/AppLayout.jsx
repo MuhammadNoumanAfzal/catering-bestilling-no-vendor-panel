@@ -1,21 +1,20 @@
 import {
-  BadgeDollarSign,
   Bell,
   ChevronDown,
-  CircleUserRound,
   X,
-  House,
+  Grid2x2,
   LifeBuoy,
   LogOut,
   MessageSquareText,
+  Search,
   Settings,
-  ShoppingBasket,
+  ShoppingBag,
   Truck,
   Utensils,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
-import AppFooter from "../components/AppFooter";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { confirmVendorLogout, showNewNotificationToast } from "../../utils/vendorAlerts";
 import {
@@ -26,13 +25,15 @@ import {
   getVendorNotifications,
 } from "../../features/notifications/api/notificationsApi";
 import { getVendorSettingsPage } from "../../features/settings/api/settingsApi";
+import { getVendorOrdersPage } from "../../features/order/api/orderApi";
+import { getVendorMenus } from "../../features/menu/api/menuApi";
 
 const sidebarItems = [
-  { label: "Dashboard", to: "/dashboard", icon: House },
-  { label: "Orders", to: "/orders", icon: ShoppingBasket },
+  { label: "Dashboard", to: "/dashboard", icon: Grid2x2 },
+  { label: "Orders", to: "/orders", icon: ShoppingBag },
   { label: "Menu", to: "/menu", icon: Utensils },
   { label: "Delivery", to: "/delivery", icon: Truck },
-  { label: "Finance", to: "/finance", icon: BadgeDollarSign },
+  { label: "Finance", to: "/finance", icon: Wallet },
   { label: "Reviews", to: "/reviews", icon: MessageSquareText },
   { label: "Notifications", to: "/notifications", icon: Bell },
   { label: "Support", to: "/support", icon: LifeBuoy },
@@ -78,6 +79,9 @@ export default function AppLayout() {
   const { logout, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [headerSearch, setHeaderSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { pathname } = useLocation();
   const searchParamValue = searchParams.get("search") || "";
   const isSearchablePage = pathname === "/orders" || pathname === "/menu";
@@ -94,6 +98,7 @@ export default function AppLayout() {
   const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
   const desktopProfileMenuRef = useRef(null);
   const mobileProfileMenuRef = useRef(null);
+  const searchRef = useRef(null);
   const profileInitials = getInitials(displayName);
 
   useEffect(() => {
@@ -242,6 +247,10 @@ export default function AppLayout() {
       ) {
         setIsMobileProfileMenuOpen(false);
       }
+
+      if (!searchRef.current?.contains(event.target)) {
+        setIsSearchFocused(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -281,6 +290,60 @@ export default function AppLayout() {
     }
   }
 
+  useEffect(() => {
+    const query = localSearch.trim();
+
+    if (!query) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return undefined;
+    }
+
+    let isCancelled = false;
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearching(true);
+
+      try {
+        const [ordersResponse, menusResponse] = await Promise.all([
+          getVendorOrdersPage({ first: 6, search: query }),
+          getVendorMenus({ first: 50 }),
+        ]);
+        if (isCancelled) return;
+
+        const orderResults = (ordersResponse?.vendorOrders?.edges || [])
+          .map((edge) => edge?.node)
+          .filter((order) => order?.id)
+          .map((order) => ({
+            id: `order-${order.id}`,
+            label: order.invoiceNumber || order.orderNumber || `Order ${order.id}`,
+            description: ["Order", order.customerName, order.eventName].filter(Boolean).join(" • "),
+            to: `/orders/${encodeURIComponent(order.id)}`,
+          }));
+        const menuResults = (menusResponse?.vendorMenus?.edges || [])
+          .map((edge) => edge?.node)
+          .filter((menu) => [menu?.name, menu?.description].filter(Boolean).join(" ").toLowerCase().includes(query.toLowerCase()))
+          .slice(0, 4)
+          .map((menu) => ({
+            id: `menu-${menu.id}`,
+            label: menu.name || "Menu item",
+            description: "Menu",
+            to: `/menu/create?mode=view&id=${encodeURIComponent(menu.id)}`,
+          }));
+
+        setSearchResults([...orderResults, ...menuResults]);
+      } catch {
+        if (!isCancelled) setSearchResults([]);
+      } finally {
+        if (!isCancelled) setIsSearching(false);
+      }
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [localSearch]);
+
   async function handleLogout() {
     const result = await confirmVendorLogout();
 
@@ -289,12 +352,6 @@ export default function AppLayout() {
       setIsMobileProfileMenuOpen(false);
       logout();
     }
-  }
-
-  function handleOpenSettings() {
-    setIsDesktopProfileMenuOpen(false);
-    setIsMobileProfileMenuOpen(false);
-    navigate("/settings");
   }
 
   function handleOpenNotifications() {
@@ -325,19 +382,16 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f4f0ea] text-[#201914] max-[960px]:flex-col">
-      <aside className="relative flex w-[252px] shrink-0 flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#d86c3d_0%,#cb6134_52%,#b95028_100%)] p-4 text-[#fff8f3] shadow-[8px_0_24px_rgba(121,61,23,0.16)] max-[960px]:hidden">
-        <div className="absolute -right-14 top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" aria-hidden="true" />
-        <div className="absolute bottom-16 -left-10 h-24 w-24 rounded-full bg-[#ffd9c6]/10 blur-2xl" aria-hidden="true" />
-
-        <div className="relative flex flex-col gap-4">
-          <div className="rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+    <div className="grid min-h-screen grid-cols-[236px_minmax(0,1fr)] bg-[#f4f1ee] text-[#201914] max-[960px]:block">
+      <aside className="relative flex min-h-screen w-[236px] flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#cb6432_0%,#c55b2d_100%)] text-white max-[960px]:hidden">
+        <div className="relative flex flex-col">
+          <div className="mx-4 mt-4 rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
             <img className="block h-auto w-32 object-contain" src="/whiteLogo.png" alt="GoCatering" />
             <p className="type-subpara mt-3 text-white/75">Vendor dashboard</p>
           </div>
 
           <nav
-            className="mt-1 flex flex-col gap-2 max-[960px]:flex-row max-[960px]:flex-wrap"
+            className="mt-6 flex flex-col gap-2 px-3"
             aria-label="Primary navigation"
           >
             {sidebarItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
@@ -345,49 +399,51 @@ export default function AppLayout() {
                 key={label}
                 className={({ isActive }) =>
                   [
-                    "flex items-center gap-2.5 rounded-[16px] px-4 py-3 text-[13px] font-semibold transition-all duration-150",
+                    "flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-semibold transition",
                     isActive
-                      ? "bg-white text-[#c85e2f] shadow-[0_10px_22px_rgba(90,35,12,0.16)]"
-                      : "text-white/92 hover:bg-white/10 hover:text-white",
+                      ? "bg-[#fff3ec] text-[#c75f2e]"
+                      : "text-white hover:bg-white/8",
                   ].join(" ")
                 }
                 to={to}
               >
-                <div className="relative">
-                  <Icon size={16} />
-                  {label === "Notifications" && unreadNotificationsCount > 0 ? (
-                    <span className="absolute -right-3 -top-2 inline-flex min-w-[16px] items-center justify-center rounded-full bg-[#cf6e38] px-1 py-0.5 text-[8px] font-bold leading-none text-white">
-                      {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
-                    </span>
-                  ) : null}
+                <div className="inline-flex h-5 w-5 items-center justify-center rounded-[6px]">
+                  <Icon size={14} />
                 </div>
-                <span className="type-subpara flex-1">{label}</span>
+                <span className="flex-1">{label}</span>
+                {label === "Notifications" && unreadNotificationsCount > 0 ? (
+                  <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  </span>
+                ) : null}
               </NavLink>
             ))}
           </nav>
         </div>
 
         <button
-          className="relative z-[1] flex w-full cursor-pointer items-center gap-2.5 rounded-[16px] border border-white/10 bg-white/10 px-4 py-3 text-white backdrop-blur-sm transition-colors duration-150 hover:bg-white/15"
+          className="flex w-full cursor-pointer items-center gap-3 rounded-[10px] px-6 py-2.5 text-[13px] font-semibold text-white transition hover:bg-white/8"
           onClick={handleLogout}
           type="button"
         >
-          <LogOut size={16} />
-          <span className="type-subpara">Logout</span>
+          <LogOut size={14} />
+          <span>Logout</span>
         </button>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="relative z-40 flex items-center justify-between gap-4 border-b border-[#e4d9cf] bg-[#fffdf9]/95 px-5 py-3 backdrop-blur-sm max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
-          <div className="max-w-[480px] flex-1 max-[960px]:hidden">
-            <div className="relative">
+        <header className="sticky top-0 z-40 flex h-[69px] items-center justify-between gap-4 border-b border-[#ebe4de] bg-white/92 px-5 py-3 backdrop-blur-xl max-[960px]:h-auto max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
+          <div className="max-w-[520px] flex-1 max-[960px]:hidden">
+            <div className="relative" ref={searchRef}>
               <input
-                className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] pr-11 text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-                placeholder="Search order, menu item or customer"
+                className="h-11 w-full rounded-full border border-transparent bg-[#f1f4f8] px-4 pl-11 pr-11 text-[12px] text-[#231913] outline-none transition placeholder:text-[#a9afba] focus:border-[#ebddd1] focus:bg-white focus:shadow-[0_0_0_4px_rgba(206,105,56,0.11)]"
+                placeholder="Search orders, menu items, or customers..."
                 type="text"
                 value={localSearch}
                 onChange={handleSearchChange}
+                onFocus={() => setIsSearchFocused(true)}
               />
+              <Search size={15} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#adb3bd]" />
               {localSearch ? (
                 <button
                   aria-label="Clear search"
@@ -398,36 +454,56 @@ export default function AppLayout() {
                   <X size={16} />
                 </button>
               ) : null}
+              {isSearchFocused && localSearch.trim() ? (
+                <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-[18px] border border-[#e8dfd8] bg-white shadow-[0_24px_60px_rgba(45,28,16,0.14)]">
+                  {isSearching ? (
+                    <p className="px-4 py-5 text-[12px] text-[#8c7f75]">Searching your orders and menu...</p>
+                  ) : searchResults.length ? (
+                    <div className="max-h-[320px] overflow-y-auto p-2">
+                      {searchResults.map((result) => (
+                        <button
+                          className="flex w-full items-center gap-3 rounded-[12px] px-3 py-3 text-left transition hover:bg-[#faf4ee]"
+                          key={result.id}
+                          onClick={() => { setIsSearchFocused(false); navigate(result.to); }}
+                          type="button"
+                        >
+                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#fff1e8] text-[#cf6e38]"><Search size={16} /></span>
+                          <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-bold text-[#231913]">{result.label}</span><span className="block truncate text-[12px] text-[#7b6f66]">{result.description}</span></span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="px-4 py-5 text-[12px] text-[#8c7f75]">No matching orders or menu items found.</p>
+                  )}
+                </div>
+              ) : null}
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 max-[960px]:hidden">
+          <div className="ml-auto flex items-center gap-2 border-l border-[#ebe4de] pl-3 max-[960px]:hidden">
             <button
               onClick={handleOpenNotifications}
-              className="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e4d9cf] bg-white text-[#241913] hover:bg-[#fcfaf5] transition shadow-[0_4px_12px_rgba(38,23,14,0.04)]"
+              className="relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-[#2f241c] transition hover:bg-[#f5f1ed]"
               type="button"
             >
-              <Bell size={18} />
+              <Bell size={16} />
               {unreadNotificationsCount > 0 ? (
-                <>
-                  <span className="absolute right-[7px] top-[7px] h-2.5 w-2.5 rounded-full bg-[#cf6e38]" />
-                  <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[#cf6e38] px-1 text-[10px] font-bold leading-[18px] text-white">
-                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
-                  </span>
-                </>
+                <span className="absolute right-1.5 top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[#cf6e38] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                </span>
               ) : null}
             </button>
 
             <div className="relative" ref={desktopProfileMenuRef}>
               <button
                 onClick={() => setIsDesktopProfileMenuOpen((current) => !current)}
-                className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-[#e4d9cf] bg-white px-2 pb-[5px] pl-[6px] pr-2 pt-[5px] text-[#241913] shadow-[0_6px_18px_rgba(38,23,14,0.06)]"
+                className="inline-flex cursor-pointer items-center gap-3 rounded-[14px] bg-white py-1 pl-2 pr-2 text-[#241913] transition hover:bg-[#faf6f2]"
                 type="button"
               >
                 {renderProfileAvatar()}
                 <span className="flex flex-col items-start leading-[1.15]">
-                  <strong className="type-subpara">{displayName}</strong>
-                  <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
+                  <strong className="text-[12px] font-bold">{displayName}</strong>
+                  <span className="text-[11px] text-[#7f746d]">{displayRole}</span>
                 </span>
                 <ChevronDown
                   size={14}
@@ -447,25 +523,9 @@ export default function AppLayout() {
                     </div>
                   </div>
 
-                  <div className="mt-2 flex flex-col gap-1">
+                  <div className="mt-2">
                     <button
-                      className="flex cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#2b221d] transition hover:bg-[#faf6f2]"
-                      onClick={handleOpenSettings}
-                      type="button"
-                    >
-                      <CircleUserRound size={15} />
-                      <span>Account settings</span>
-                    </button>
-                    <button
-                      className="flex cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#2b221d] transition hover:bg-[#faf6f2]"
-                      onClick={handleOpenNotifications}
-                      type="button"
-                    >
-                      <Bell size={15} />
-                      <span>Notifications</span>
-                    </button>
-                    <button
-                      className="flex cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
                       onClick={handleLogout}
                       type="button"
                     >
@@ -490,7 +550,7 @@ export default function AppLayout() {
                   >
                     <Bell size={16} />
                     {unreadNotificationsCount > 0 ? (
-                      <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold leading-[18px] text-[#cf6e38]">
+                      <span className="absolute right-1.5 top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[#cf6e38] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
                         {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
                       </span>
                     ) : null}
@@ -514,8 +574,8 @@ export default function AppLayout() {
                   >
                     {renderProfileAvatar()}
                     <span className="flex flex-col items-start leading-[1.15]">
-                      <strong className="type-subpara">{displayName}</strong>
-                      <span className="type-subpara text-[#8f7f73]">{displayRole}</span>
+                    <strong className="text-[12px] font-bold">{displayName}</strong>
+                    <span className="text-[11px] text-[#7f746d]">{displayRole}</span>
                     </span>
                     <ChevronDown
                       size={14}
@@ -534,22 +594,6 @@ export default function AppLayout() {
                           <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{accountDisplayName}</p>
                         </div>
                       </div>
-                      <button
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#faf6f2]"
-                        onClick={handleOpenSettings}
-                        type="button"
-                      >
-                        <CircleUserRound size={15} />
-                        <span>Account settings</span>
-                      </button>
-                      <button
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#faf6f2]"
-                        onClick={handleOpenNotifications}
-                        type="button"
-                      >
-                        <Bell size={15} />
-                        <span>Notifications</span>
-                      </button>
                       <button
                         className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
                         onClick={handleLogout}
@@ -589,8 +633,6 @@ export default function AppLayout() {
         <main className="flex-1 p-5 max-[720px]:p-[14px] max-[960px]:pb-[92px]">
           <Outlet />
         </main>
-
-        <AppFooter />
       </div>
 
       <nav

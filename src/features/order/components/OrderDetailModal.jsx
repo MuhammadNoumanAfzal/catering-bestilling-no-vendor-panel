@@ -320,7 +320,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                     {isExpanded && (
                       <div className="border-t border-[#f2ece6] bg-white px-3 py-2.5 text-[14px] leading-[1.45] text-[#5c5046] animate-[fadeIn_150ms_ease]">
                         <p className="font-semibold m-0">
-                          {item.description || "No description available from API."}
+                          {item.description || "No description available."}
                         </p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
                           <span>Quantity: {item.quantity || 0}</span>
@@ -395,7 +395,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
 
               {orderData.items.length === 0 ? (
                 <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] p-3 text-[14px] font-semibold text-[#5c5046]">
-                  No item details were returned by the API for this order.
+                  Item details are not available for this order yet.
                 </div>
               ) : null}
             </div>

@@ -121,7 +121,8 @@ export const GET_VENDOR_PAYOUTS_QUERY = `
           releasedAt
           paidAt
           settledAt
-          payoutReference
+          transferReference
+          note
           grossAmount {
             amount
             currency

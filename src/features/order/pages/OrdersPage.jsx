@@ -1,14 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import OrderFilters from "../components/OrderFilters";
 import OrderMetricCard from "../components/OrderMetricCard";
 import OrderPagination from "../components/OrderPagination";
 import OrdersTable from "../components/OrdersTable";
 import OrderTabs from "../components/OrderTabs";
 import OrderDetailModal from "../components/OrderDetailModal";
-import { orderFilterChips } from "../data/orderData";
 import { getVendorDashboard } from "../../dashboard/api/dashboardApi";
 import {
   getAllVendorOrders,
@@ -163,7 +161,7 @@ function buildBackendDateFilters(selectedFilter, fromDate, toDate) {
   return {};
 }
 
-function getBackendStatusFilter(activeTab, activeFilter) {
+function getBackendStatusFilter(activeTab) {
   // Backend order status choices do not match the UI labels reliably.
   // We load the full vendor order set and apply tab/chip status filters client-side.
   return undefined;
@@ -187,7 +185,6 @@ export default function OrdersPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("All");
-  const [activeFilter, setActiveFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("All Time");
@@ -201,7 +198,8 @@ export default function OrdersPage() {
   const [summaryCounts, setSummaryCounts] = useState(() =>
     mapVendorOrderSummary(null, []),
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const hasLoadedOrdersRef = useRef(false);
   const upcomingHours = useMemo(() => {
     const parsedValue = Number.parseInt(searchParams.get("hours") || "", 10);
     return Number.isFinite(parsedValue) && parsedValue > 0
@@ -212,7 +210,7 @@ export default function OrdersPage() {
 
   const backendQueryVariables = useMemo(() => {
     const search = searchParams.get("search")?.trim() || "";
-    const status = getBackendStatusFilter(activeTab, activeFilter);
+    const status = getBackendStatusFilter(activeTab);
     const dateFilters = isLiveUpcomingView
       ? {}
       : buildBackendDateFilters(selectedFilter, fromDate, toDate);
@@ -223,13 +221,15 @@ export default function OrdersPage() {
       ...(isLiveUpcomingView ? { hours: upcomingHours } : {}),
       ...dateFilters,
     };
-  }, [activeFilter, activeTab, fromDate, isLiveUpcomingView, searchParams, selectedFilter, toDate, upcomingHours]);
+  }, [activeTab, fromDate, isLiveUpcomingView, searchParams, selectedFilter, toDate, upcomingHours]);
 
   useEffect(() => {
     let isCancelled = false;
 
     async function loadOrders() {
-      setIsLoading(true);
+      if (!hasLoadedOrdersRef.current) {
+        setIsInitialLoading(true);
+      }
 
       try {
         const [result, dashboardResult] = await Promise.all([
@@ -263,7 +263,8 @@ export default function OrdersPage() {
         }
       } finally {
         if (!isCancelled) {
-          setIsLoading(false);
+          hasLoadedOrdersRef.current = true;
+          setIsInitialLoading(false);
         }
       }
     }
@@ -298,24 +299,20 @@ export default function OrdersPage() {
             return normalizeLabel(row.status) === normalizeLabel(activeTab);
           });
 
-    const chipFilteredRows = activeFilter && !isLiveUpcomingView
-      ? baseRows.filter((row) => normalizeLabel(row.status) === normalizeLabel(activeFilter))
-      : baseRows;
-
     const searchQuery = searchParams.get("search")?.toLowerCase().trim() || "";
     const searchedRows = searchQuery
-      ? chipFilteredRows.filter(
+      ? baseRows.filter(
           (row) =>
             (row.displayId || row.id).toLowerCase().includes(searchQuery) ||
             row.customer.toLowerCase().includes(searchQuery) ||
             row.event.toLowerCase().includes(searchQuery),
         )
-      : chipFilteredRows;
+      : baseRows;
 
     return [...searchedRows].sort((firstRow, secondRow) =>
       parseOrderDateTime(secondRow).getTime() - parseOrderDateTime(firstRow).getTime(),
     );
-  }, [activeFilter, activeTab, dateFilteredRows, isLiveUpcomingView, searchParams]);
+  }, [activeTab, dateFilteredRows, isLiveUpcomingView, searchParams]);
 
   const dynamicMetrics = useMemo(() => {
     return createOrderMetrics(rangeAwareSummary).map((metric) =>
@@ -345,18 +342,17 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const nextTab = searchParams.get("tab");
-    const nextFilter = searchParams.get("filter");
 
     setActiveTab(nextTab || "All");
-    setActiveFilter(isUpcomingTab(nextTab || "") ? "" : nextFilter || "");
 
-    if (nextTab || nextFilter) {
+    if (nextTab) {
       setCurrentPage(1);
     }
   }, [searchParams]);
 
   function handleTabChange(tabLabel) {
     const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("filter");
 
     if (tabLabel === "All") {
       nextParams.delete("tab");
@@ -365,18 +361,12 @@ export default function OrdersPage() {
       nextParams.set("tab", tabLabel);
       if (isUpcomingTab(tabLabel)) {
         nextParams.set("hours", String(upcomingHours));
-        nextParams.delete("filter");
       } else {
         nextParams.delete("hours");
       }
     }
 
     setSearchParams(nextParams);
-  }
-
-  function handleFilterChange(filterLabel) {
-    setActiveFilter((currentFilter) => (currentFilter === filterLabel ? "" : filterLabel));
-    setCurrentPage(1);
   }
 
   function handlePageChange(nextPage) {
@@ -388,13 +378,16 @@ export default function OrdersPage() {
   }
 
   async function commitStatusChange(row, nextStatus, message) {
-    await updateVendorOrderStatus({
+    const payload = await updateVendorOrderStatus({
       id: row.rawId,
       status: getStatusMutationValue(nextStatus),
       note: "",
     });
+    const savedStatus = normalizeBackendStatus(
+      payload?.instance?.status || payload?.order?.status || nextStatus,
+    );
 
-    if (nextStatus !== "Modified") {
+    if (savedStatus !== "Modified") {
       clearPendingAdjustment(row.rawId);
     }
 
@@ -403,7 +396,7 @@ export default function OrdersPage() {
         currentRow.rawId === row.rawId
           ? {
               ...currentRow,
-              status: nextStatus,
+              status: savedStatus,
               statusTone: row.statusTone,
               actions: row.actions,
             }
@@ -426,7 +419,15 @@ export default function OrdersPage() {
       liveUpcomingCount,
     );
 
-    setOrderRows(mappedList.rows);
+    // The orders query may be briefly stale after a mutation. Keep the
+    // mutation-confirmed status for this row while the rest of the list refreshes.
+    setOrderRows(
+      mappedList.rows.map((refreshedRow) =>
+        refreshedRow.rawId === row.rawId
+          ? { ...refreshedRow, status: savedStatus }
+          : refreshedRow,
+      ),
+    );
     setSummaryCounts(mappedSummary);
 
     await showOrderStatusUpdated(message);
@@ -516,7 +517,7 @@ export default function OrdersPage() {
     }
   }
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <section className="flex min-h-[360px] items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#cf6e38] border-t-transparent" />
@@ -559,14 +560,6 @@ export default function OrdersPage() {
           rows={paginatedRows}
           onRowClick={(row) => navigate(`/orders/${encodeURIComponent(row.rawId)}`)}
         />
-        {!isLiveUpcomingView ? (
-          <OrderFilters
-            activeFilter={activeFilter}
-            filters={orderFilterChips}
-            onFilterChange={handleFilterChange}
-            selectedCount={activeFilter ? 1 : 0}
-          />
-        ) : null}
       </div>
 
       <OrderPagination

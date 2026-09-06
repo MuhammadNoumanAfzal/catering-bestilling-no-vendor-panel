@@ -890,10 +890,10 @@ export function mapVendorOrderDetail(data, orderId) {
     addOns,
     note,
     logistics: {
-      deliveryAddress: address.addressLine || "Address unavailable from API",
+      deliveryAddress: address.addressLine || "Address not available",
       eventDate: dateLabel,
       deliveryWindow: firstNonEmpty(node?.eventTime, deliveryWindow.label) || "Time unavailable",
-      fullAddress: address.fullAddress || address.addressLine || "Address unavailable from API",
+      fullAddress: address.fullAddress || address.addressLine || "Address not available",
       eventType: firstNonEmpty(node?.eventName, orderItem.name) || "Order",
       serviceType: firstNonEmpty(node?.deliveryType, node?.paymentType) || "Service unavailable",
       city: address.city || "-",

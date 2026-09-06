@@ -33,11 +33,6 @@ function isLegacyDeliveryAreaError(error) {
   return message.includes("deliveryarea") && message.includes("attribute 'name'");
 }
 
-function mapInvoiceStatusToPayoutStatus(status) {
-  const normalized = String(status || "").trim().toUpperCase();
-  return ["PAID", "COMPLETED", "SETTLED"].includes(normalized) ? "PAID" : "PENDING";
-}
-
 function createPayoutCompatibilityResponse(invoiceResult) {
   const invoices = invoiceResult?.vendorInvoices || {};
   const edges = Array.isArray(invoices.edges) ? invoices.edges : [];
@@ -52,15 +47,18 @@ function createPayoutCompatibilityResponse(invoiceResult) {
         return {
           node: {
             id: invoice.id,
-            payoutNumber: invoice.invoiceNumber ? `INV-${invoice.invoiceNumber}` : "",
+            // These are invoice-only placeholders while the legacy payout resolver is broken.
+            // They must never be presented as a released or paid payout.
+            payoutNumber: invoice.invoiceNumber ? `Pending payout for ${invoice.invoiceNumber}` : "Pending payout",
             invoiceId: invoice.id,
             invoiceNumber: invoice.invoiceNumber || "",
-            status: mapInvoiceStatusToPayoutStatus(invoice.paymentStatus),
+            status: "PENDING",
             createdAt: invoice.deliveryDate || "",
             payoutReference: "",
             grossAmount: { amount, currency },
             commissionAmount: { amount: 0, currency },
             netAmount: { amount, currency },
+            isCompatibilityPlaceholder: true,
           },
         };
       }),

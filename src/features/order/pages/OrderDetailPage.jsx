@@ -274,6 +274,8 @@ export default function OrderDetailPage() {
     });
 
     await refreshOrderDetail({ silent: true });
+    // The detail query can briefly return the pre-update value after a status mutation.
+    setOrderDetail((current) => current ? { ...current, status: normalizedUpdatedStatus } : current);
     await showOrderStatusUpdated(message);
   }
 
@@ -658,7 +660,7 @@ export default function OrderDetailPage() {
             </div>
           ) : (
             <div className="mt-4 rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
-              The customer request is pending, but no changed fields were returned by the API.
+              This customer request does not include any changes to review yet.
             </div>
           )}
 

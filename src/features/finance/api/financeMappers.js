@@ -375,7 +375,7 @@ export function mapPayoutTransactions(data) {
             formatCurrency(node.commissionAmount?.amount, node.commissionAmount?.currency || "NOK"),
         ),
         paymentStatus: formatPayoutStatusLabel(lifecycleStatus),
-        payoutReference: normalizeString(node.payoutReference),
+        payoutReference: normalizeString(node.transferReference || node.payoutReference),
       };
     })
     .sort((left, right) => {
