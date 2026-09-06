@@ -1,4 +1,4 @@
-import { ChevronDown, Eye, Users } from "lucide-react";
+import { ChevronDown, Eye, Users, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -230,7 +230,15 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                   {openMenu?.key === row.rawId ? (
                     <div className="fixed z-[100] min-w-[190px] rounded-[12px] border border-[#e3d6ca] bg-white p-1.5 shadow-[0_12px_28px_rgba(38,23,14,0.12)]" style={{ left: openMenu.left, top: openMenu.top }}>
                       <button
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-[8px] px-3 py-2.5 text-left text-[12px] font-bold text-[#4f443d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
+                        aria-label="Close status menu"
+                        className="absolute right-2 top-2 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-[#9a8b80] transition hover:bg-[#fff1e9] hover:text-[#cf6e38]"
+                        onClick={() => setOpenMenu(null)}
+                        type="button"
+                      >
+                        <X size={14} />
+                      </button>
+                      <button
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-[8px] px-3 py-2.5 pr-8 text-left text-[12px] font-bold text-[#4f443d] transition hover:bg-[#f6f1eb] hover:text-[#cf6e38]"
                         onClick={() => handleMenuAction(row, { label: "View Details", navigateToDetail: true })}
                         type="button"
                       >
