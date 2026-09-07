@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 import MenuCreateNewCard from "../components/management/MenuCreateNewCard";
 import MenuManagementHeader from "../components/management/MenuManagementHeader";
@@ -274,6 +275,10 @@ export default function MenuPage() {
     }
   }
 
+  if (isLoading) {
+    return <VendorPageLoadingState variant="detail" />;
+  }
+
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <MenuManagementHeader
@@ -290,16 +295,6 @@ export default function MenuPage() {
         valueSort={sortBy}
       />
 
-      {isLoading ? (
-        <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={`menu-skeleton-${index}`}
-              className="min-h-[312px] animate-pulse rounded-[14px] border border-[#ddd4cb] bg-[#f3ece5]"
-            />
-          ))}
-        </div>
-      ) : (
         <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
           {filteredItems.map((item) => (
             <MenuOfferingCard
@@ -317,7 +312,6 @@ export default function MenuPage() {
             onClick={activeTab === "Add-ons" ? handleCreateAddOn : openFreshCreateMenu}
           />
         </div>
-      )}
     </section>
   );
 }

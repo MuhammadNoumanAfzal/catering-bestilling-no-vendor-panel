@@ -1,4 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import VendorPageLoadingState from "../../components/shared/VendorPageLoadingState";
 import AppLayout from "../layouts/AppLayout";
 import ForgotPasswordPage from "../../features/auth/pages/ForgotPasswordPage";
 import LoginPage from "../../features/auth/pages/LoginPage";
@@ -15,11 +17,12 @@ import OrderAdjustmentPage from "../../features/order/pages/OrderAdjustmentPage"
 import OrdersPage from "../../features/order/pages/OrdersPage";
 import ReviewsPage from "../../features/reviews/pages/ReviewsPage";
 import SettingsPage from "../../features/settings/pages/SettingsPage";
-import SupportCenterPage from "../../features/support/pages/SupportCenterPage";
 import SupportResponsesPage from "../../features/support/pages/SupportResponsesPage";
 import MenuPage from "../../features/menu/pages/MenuPage";
 import CreateAddOnPage from "../../features/menu/pages/CreateAddOnPage";
 import CreateMenuPage from "../../features/menu/pages/CreateMenuPage";
+
+const SupportCenterPage = lazy(() => import("../../features/support/pages/SupportCenterPage"));
 
 export default function AppRouter() {
   return (
@@ -48,7 +51,11 @@ export default function AppRouter() {
           <Route path="finance" element={<FinancePage />} />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="support" element={<SupportCenterPage />} />
+          <Route path="support" element={
+            <Suspense fallback={<VendorPageLoadingState variant="form" />}>
+              <SupportCenterPage />
+            </Suspense>
+          } />
           <Route path="support/responses" element={<SupportResponsesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>

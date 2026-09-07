@@ -10,6 +10,7 @@ import ReviewsList from "../components/ReviewsList";
 import SectionCard from "../components/SectionCard";
 import DateRangeDropdown from "../components/DateRangeDropdown";
 import useDashboardPageState from "../hooks/useDashboardPageState";
+import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -36,6 +37,10 @@ export default function DashboardPage() {
     endDate,
     dateFilter,
   } = useDashboardPageState();
+
+  if (isLoading) {
+    return <VendorPageLoadingState variant="detail" />;
+  }
 
   return (
     <div className="flex flex-col gap-4 max-[720px]:gap-3">
@@ -136,14 +141,7 @@ export default function DashboardPage() {
       ) : null}
 
       <section className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1 max-[640px]:grid-cols-2">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="min-h-[120px] animate-pulse rounded-[10px] border border-[#e8e2da] bg-white"
-              />
-            ))
-          : overviewCards.map((stat) => (
+        {overviewCards.map((stat) => (
               <OverviewCard
                 key={stat.label}
                 {...stat}
@@ -166,16 +164,7 @@ export default function DashboardPage() {
         actionLabel={t("dashboard.viewAll")}
         onActionClick={() => navigate("/orders?filter=New")}
       >
-        {isLoading ? (
-          <div className="space-y-2.5">
-            {Array.from({ length: 2 }).map((_, index) => (
-              <div
-                key={index}
-                className="min-h-[138px] animate-pulse rounded-[14px] border border-[#efc1bc] bg-white"
-              />
-            ))}
-          </div>
-        ) : urgentOrders.length ? (
+        {urgentOrders.length ? (
           <div className="flex flex-col gap-2.5">
             {urgentOrders.map((order) => (
               <OrderCard
@@ -224,13 +213,7 @@ export default function DashboardPage() {
           actionLabel={t("dashboard.viewMore")}
           onActionClick={() => navigate("/reviews")}
         >
-          {isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="h-16 animate-pulse rounded-[10px] bg-[#f5eee8]" />
-              ))}
-            </div>
-          ) : reviews.length ? (
+          {reviews.length ? (
             <ReviewsList onManageReviews={() => navigate("/reviews")} reviews={reviews} />
           ) : (
             <div>
