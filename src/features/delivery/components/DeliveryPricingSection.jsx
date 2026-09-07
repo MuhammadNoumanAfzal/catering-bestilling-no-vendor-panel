@@ -4,19 +4,15 @@ import DeliveryTextInput from "./DeliveryTextInput";
 import { useTranslation } from "react-i18next";
 
 function formatCurrencyValue(value) {
-  const trimmedValue = value.trim();
+  const trimmedValue = String(value ?? "").trim();
 
   if (!trimmedValue) {
     return "";
   }
 
-  const digitsOnly = trimmedValue.replace(/[^0-9]/g, "");
-
-  if (!digitsOnly) {
-    return trimmedValue;
-  }
-
-  return `kr ${Number(digitsOnly).toLocaleString("en-US")}`;
+  const amount = Number(trimmedValue);
+  if (!Number.isFinite(amount) || amount < 0) return "";
+  return `NOK ${amount.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function DeliveryPricingSection({
