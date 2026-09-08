@@ -34,6 +34,31 @@ function formatDateLabel(dateValue, locale = "nb-NO") {
   });
 }
 
+function formatShortChartLabel(dateValue, locale = "en-GB") {
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return normalizeString(dateValue);
+  }
+
+  return date.toLocaleDateString(locale, {
+    weekday: "short",
+  });
+}
+
+function formatChartTooltipLabel(dateValue, locale = "en-GB") {
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return normalizeString(dateValue);
+  }
+
+  return date.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 function formatDateTimeValue(value, locale = "nb-NO") {
   const date = new Date(value);
 
@@ -314,7 +339,10 @@ export function mapDashboardResponse(
   const kitchenStatus = buildKitchenStatusFromSummary(dashboardKitchenSummary, t);
 
   const chartValues = chartPoints.map((point) => ({
-    month: normalizeString(point?.label) || "--",
+    month: formatShortChartLabel(point?.label) || "--",
+    tooltipLabel: formatChartTooltipLabel(point?.label) || normalizeString(point?.label) || "--",
+    rawValue: toNumber(point?.earnings),
+    amountLabel: formatCurrency(point?.earnings, currency),
     value: maxChartValue > 0 ? Math.max(6, Math.round((toNumber(point?.earnings) / maxChartValue) * 100)) : 0,
   }));
 

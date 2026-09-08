@@ -1,79 +1,34 @@
+import VendorBarChart from "../../../components/shared/VendorBarChart";
+
+function extractNumericAmount(label) {
+  const numericValue = Number(String(label || "").replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
 export default function EarningChart({
   values,
   subtitle,
-  yAxisLabels = [],
   emptyTitle = "No data available",
   emptyMessage = "No earnings data is available for the selected range.",
 }) {
-  if (!values || values.length === 0) {
-    return (
-      <div className="flex h-[230px] flex-col items-center justify-center rounded-[10px] border border-dashed border-[#ddd4cb] bg-[#faf8f6] p-4 text-center mt-6">
-        <p className="type-subpara text-[14px] font-bold text-[#8d7e72]">{emptyTitle}</p>
-        <p className="type-para mt-1 text-[12px] text-[#a49b92]">{emptyMessage}</p>
-      </div>
-    );
-  }
-
-  const displayYAxisLabels =
-    yAxisLabels.length === 5
-      ? yAxisLabels
-      : ["kr 10000", "kr 7500", "kr 5000", "kr 2500", "kr 0"];
+  const chartPoints = Array.isArray(values)
+    ? values.map((item) => ({
+        label: item.month,
+        tooltipLabel: item.tooltipLabel || item.month,
+        value: Number.isFinite(Number(item.rawValue))
+          ? Number(item.rawValue)
+          : extractNumericAmount(item.amountLabel),
+      }))
+    : [];
 
   return (
     <>
-      <p className="type-para -mt-1 ">{subtitle}</p>
-      <div className="mt-[40px] grid grid-cols-[48px_minmax(0,1fr)] gap-[10px] items-start max-[720px]:grid-cols-1 max-[720px]:mt-8">
-        {/* Y-axis Labels */}
-        <div className="flex h-[182px] flex-col justify-between text-[#4e433a] max-[720px]:hidden">
-          {displayYAxisLabels.map((label) => (
-            <span key={label} className="type-subpara leading-none">
-              {label}
-            </span>
-          ))}
-        </div>
-
-        {/* Chart Body */}
-        <div className="relative">
-          {/* Grid lines and Bars container (perfectly matched 182px height) */}
-          <div className="relative h-[182px] w-full">
-            {/* Grid lines */}
-            <div className="absolute inset-x-0 top-0 h-full flex flex-col justify-between" aria-hidden="true">
-              <span className="block w-full border-t border-[#e2dcd5]" />
-              <span className="block w-full border-t border-[#e2dcd5]" />
-              <span className="block w-full border-t border-[#e2dcd5]" />
-              <span className="block w-full border-t border-[#e2dcd5]" />
-              <span className="block w-full border-t border-[#e2dcd5]" />
-            </div>
-
-            {/* Bars */}
-            <div
-              className="relative z-[1] grid h-full items-end gap-[14px] max-[720px]:gap-2"
-              style={{ gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))` }}
-            >
-              {values.map((item) => (
-                <div key={item.month} className="flex h-full items-end justify-center">
-                  <div
-                    className="w-6 max-w-full rounded-t-[999px] bg-[#cc6334] max-[720px]:w-4"
-                    style={{ height: `${item.value}%` }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Day Labels Row (perfectly matched grid template for center alignment) */}
-          <div
-            className="grid gap-[14px] mt-[10px] max-[720px]:gap-2"
-            style={{ gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))` }}
-          >
-            {values.map((item) => (
-              <div key={item.month} className="text-center">
-                <span className="type-subpara text-[10px] text-[#2f2822]">{item.month}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {subtitle ? <p className="type-para -mt-1">{subtitle}</p> : null}
+      <VendorBarChart
+        emptyMessage={emptyMessage}
+        emptyTitle={emptyTitle}
+        points={chartPoints}
+      />
     </>
   );
 }

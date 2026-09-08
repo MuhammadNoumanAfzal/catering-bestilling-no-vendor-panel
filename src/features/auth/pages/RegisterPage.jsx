@@ -16,6 +16,7 @@ import {
 } from "../../../utils/vendorAlerts";
 
 const SIGNUP_OTP_LENGTH = 6;
+const NORWAY_COUNTRY_CODE = "+47";
 
 const SIGNUP_STEP = {
   FORM: "form",
@@ -59,8 +60,26 @@ function isStrongPassword(password) {
   );
 }
 
-function normalizePhoneNumber(phone) {
-  return phone.replace(/\s+/g, "").trim();
+function extractNorwegianLocalPhone(phone) {
+  const compactPhone = `${phone ?? ""}`.replace(/[\s()-]/g, "").trim();
+
+  if (compactPhone.startsWith("0047")) {
+    return compactPhone.slice(4).replace(/\D/g, "").slice(0, 8);
+  }
+
+  if (compactPhone.startsWith(NORWAY_COUNTRY_CODE)) {
+    return compactPhone.slice(NORWAY_COUNTRY_CODE.length).replace(/\D/g, "").slice(0, 8);
+  }
+
+  return compactPhone.replace(/\D/g, "").slice(0, 8);
+}
+
+function normalizeNorwegianPhoneNumber(phone) {
+  return `${NORWAY_COUNTRY_CODE}${extractNorwegianLocalPhone(phone)}`;
+}
+
+function isValidNorwegianPhone(phone) {
+  return /^[2-9]\d{7}$/.test(extractNorwegianLocalPhone(phone));
 }
 
 function getPasswordStrength(password) {
@@ -134,7 +153,7 @@ export default function RegisterPage() {
 
   function handleFieldChange(field) {
     return (event) => {
-      const nextValue = event.target.value;
+      const nextValue = field === "phone" ? extractNorwegianLocalPhone(event.target.value) : event.target.value;
       setFormState((current) => ({
         ...current,
         [field]: nextValue,
@@ -185,23 +204,15 @@ export default function RegisterPage() {
       return;
     }
 
-    const normalizedPhone = normalizePhoneNumber(formState.phone);
-
-    if (!/^\+?\d+$/.test(normalizedPhone)) {
+    if (!isValidNorwegianPhone(formState.phone)) {
       await showVendorErrorAlert(
-        "Phone number can only include digits and an optional leading +.",
+        "Enter a valid Norwegian phone number with 8 digits after +47.",
         "Invalid phone number",
       );
       return;
     }
 
-    if (normalizedPhone.length > 15) {
-      await showVendorErrorAlert(
-        "Phone number must be 15 characters or fewer.",
-        "Invalid phone number",
-      );
-      return;
-    }
+    const normalizedPhone = normalizeNorwegianPhoneNumber(formState.phone);
 
     if (!isStrongPassword(formState.password)) {
       await showVendorErrorAlert(
@@ -256,6 +267,7 @@ export default function RegisterPage() {
     try {
       const result = await verifySignupOtpRequest({
         ...formState,
+        phone: normalizeNorwegianPhoneNumber(formState.phone),
         email: formState.email,
         otp: otpCode,
       });
@@ -326,11 +338,15 @@ export default function RegisterPage() {
                 },
                 {
                   errorText: formErrors.phone,
+                  helperText: "Norway only. Enter the 8 digits after +47.",
+                  inputMode: "numeric",
                   label: t("auth.register.phone"),
-                  maxLength: 15,
+                  maxLength: 8,
                   name: "phone",
                   onChange: handleFieldChange("phone"),
-                  placeholder: "+4798765432",
+                  pattern: "[0-9]{8}",
+                  placeholder: "98765432",
+                  prefixText: NORWAY_COUNTRY_CODE,
                   type: "tel",
                   autoComplete: "tel",
                   value: formState.phone,
