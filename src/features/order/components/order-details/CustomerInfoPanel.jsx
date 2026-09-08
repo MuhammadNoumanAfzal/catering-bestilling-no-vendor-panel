@@ -78,7 +78,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
             /reject/i.test(statusLabelVal);
 
           const calculatedGrandTotal = parseFloat(
-            item.pricing?.grandTotal || item.finalPrice || 0,
+            item.pricing?.grandTotal ?? item.finalPrice ?? 0,
           );
 
           return {

@@ -664,7 +664,7 @@ export function mapVendorOrderNode(node) {
     guests: resolveGuestCount(node, 0),
     date: dateLabel,
     time: firstNonEmpty(node?.eventTime, deliveryWindow.start, timeLabel) || timeLabel,
-    total: formatCurrency(getPricingBlock(node).grandTotal || node?.finalPrice),
+    total: formatCurrency(getPricingBlock(node).grandTotal ?? node?.finalPrice),
     status,
     statusTone: hasPendingVendorAdjustment ? "is-modified" : mapBackendTone(node?.statusTone, status),
     hasPendingVendorAdjustment,
