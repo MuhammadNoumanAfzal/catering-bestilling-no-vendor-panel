@@ -16,6 +16,10 @@ export function printVendorOrder(order) {
   const raw = order?.raw || {};
   const items = Array.isArray(raw.items) ? raw.items : [];
   const financials = Array.isArray(order?.financialSummary) ? order.financialSummary : [];
+  const totalRow = financials.find((item) => `${item?.label ?? ""}`.trim().toLowerCase() === "total");
+  const detailRows = financials.filter(
+    (item) => `${item?.label ?? ""}`.trim().toLowerCase() !== "total",
+  );
   const customer = order?.customer || {};
   const logistics = order?.logistics || {};
   const itemRows = items.length
@@ -56,7 +60,13 @@ export function printVendorOrder(order) {
       return `<article class="prep-card"><div class="detail-label">Order item</div><h3>${escapeHtml(title)} <span>x${escapeHtml(item?.quantity || 1)}</span></h3>${description ? `<p class="description">${escapeHtml(description)}</p>` : ""}${includedItems}<div class="allergen-box"><div class="detail-label">Allergen information</div><strong>${allergenContent}</strong></div></article>`;
     })
     .join("");
-  const summaryRows = financials.map((item) => `<tr><td>${escapeHtml(item?.label)}</td><td>${escapeHtml(item?.value)}</td></tr>`).join("");
+  const summaryRows = detailRows
+    .map((item) => `<tr><td>${escapeHtml(item?.label)}</td><td>${escapeHtml(item?.value)}</td></tr>`)
+    .join("");
+  const totalAmount =
+    totalRow?.value ||
+    order?.total ||
+    money(raw?.pricing?.grandTotal ?? raw?.finalPrice ?? raw?.amount?.total ?? 0);
   const printWindow = window.open("", "_blank", "width=900,height=700");
 
   if (!printWindow) {
@@ -76,7 +86,6 @@ export function printVendorOrder(order) {
           .header { display: flex; justify-content: space-between; gap: 18px; padding: 18px 20px; background: #241d18; color: #fff; }
           .eyebrow { margin: 0 0 3px; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #f5c5a7; }
           h1 { margin: 0; font-size: 28px; line-height: 1; letter-spacing: -.03em; }
-          .status { align-self: flex-start; border: 1px solid #f0ae86; border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
           .meta { padding: 10px 20px; background: #f7efe9; border-bottom: 1px solid #d8cbc1; color: #5f5249; font-size: 11px; }
           .content { padding: 0 20px 20px; }
           h2 { margin: 20px 0 9px; color: #9e3f16; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
@@ -105,7 +114,7 @@ export function printVendorOrder(order) {
           .note { border-left: 5px solid #d65d22; border-radius: 4px; padding: 12px 14px; background: #fff0e7; white-space: pre-wrap; font-size: 15px; font-weight: 800; }
           .summary { margin-left: auto; max-width: 330px; }
           .summary td { padding: 7px; }
-          .summary tr:last-child td { border-top: 2px solid #241d18; border-bottom: 0; color: #9e3f16; font-size: 17px; font-weight: 900; }
+          .summary .total-row td { border-top: 2px solid #241d18; border-bottom: 0; color: #9e3f16; font-size: 17px; font-weight: 900; }
           .footer { margin-top: 22px; color: #806f64; font-size: 10px; text-align: center; }
           @media print { .ticket { border-width: 1.5px; } }
         </style>
@@ -114,7 +123,6 @@ export function printVendorOrder(order) {
         <main class="ticket">
           <header class="header">
             <div><p class="eyebrow">GoCatering Kitchen Ticket</p><h1>Order ${escapeHtml(order?.displayId || order?.id)}</h1></div>
-            <div class="status">${escapeHtml(order?.status || "New")}</div>
           </header>
           <div class="meta">Printed ${escapeHtml(new Date().toLocaleString())} | ${escapeHtml(logistics.serviceType || "Delivery")} | ${escapeHtml(logistics.eventDate || order?.date)} at ${escapeHtml(logistics.deliveryWindow || order?.time)}</div>
           <div class="content">
@@ -123,7 +131,7 @@ export function printVendorOrder(order) {
             <h2>Order Items</h2><table><thead><tr><th>Order item / selected options</th><th>Qty</th><th>Total</th></tr></thead><tbody>${itemRows}</tbody></table>
             ${preparationDetails ? `<h2>Preparation Details &amp; Allergens</h2><section class="prep-grid">${preparationDetails}</section>` : ""}
             ${order?.note ? `<h2>Special Instructions</h2><div class="note">${escapeHtml(order.note)}</div>` : ""}
-            <h2>Payment & Total</h2><table class="summary"><tbody>${summaryRows || `<tr><td>Payment status</td><td>${escapeHtml(raw.paymentStatus || raw.status || order?.status)}</td></tr>`}</tbody></table>
+            <h2>Payment & Total</h2><table class="summary"><tbody>${summaryRows}<tr class="total-row"><td>Total Amount</td><td>${escapeHtml(totalAmount)}</td></tr></tbody></table>
             <div class="footer">Keep this ticket with the order until it is completed.</div>
           </div>
         </main>

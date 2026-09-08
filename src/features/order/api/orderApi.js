@@ -3,7 +3,9 @@ import {
   APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION,
   CREATE_VENDOR_ORDER_ADJUSTMENT_MUTATION,
   GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY,
+  GET_VENDOR_ORDER_DETAIL_ENRICHED_QUERY,
   GET_VENDOR_ORDER_DETAIL_QUERY,
+  GET_VENDOR_ORDER_DETAIL_WITH_CUSTOMER_TYPE_QUERY,
   GET_VENDOR_ORDERS_QUERY,
   GET_VENDOR_UPCOMING_ORDERS_QUERY,
   SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
@@ -13,6 +15,10 @@ import {
 } from "./orderQueries";
 
 const PAGE_SIZE = 100;
+
+function isGraphqlFieldContractError(error) {
+  return /cannot query field/i.test(String(error?.message || ""));
+}
 
 function flattenOrderAddressSnapshot(addressValue) {
   if (typeof addressValue === "string") {
@@ -161,8 +167,29 @@ export async function getAllVendorUpcomingOrders(variables = {}) {
   };
 }
 
-export function getVendorOrderDetail(id) {
-  return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, { orderId: id });
+export async function getVendorOrderDetail(id) {
+  const variables = { orderId: id };
+
+  try {
+    return await executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_ENRICHED_QUERY, variables);
+  } catch (error) {
+    if (!isGraphqlFieldContractError(error)) {
+      throw error;
+    }
+  }
+
+  try {
+    return await executeProtectedGraphqlRequest(
+      GET_VENDOR_ORDER_DETAIL_WITH_CUSTOMER_TYPE_QUERY,
+      variables,
+    );
+  } catch (error) {
+    if (!isGraphqlFieldContractError(error)) {
+      throw error;
+    }
+  }
+
+  return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, variables);
 }
 
 export async function getVendorOrderModificationRequests(orderId) {

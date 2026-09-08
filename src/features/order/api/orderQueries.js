@@ -59,6 +59,7 @@ export const GET_VENDOR_ORDERS_QUERY = `
           createdOn
           eventTime
           customerName
+          customerType
           eventName
           personCount
           eventDate
@@ -118,6 +119,7 @@ export const GET_VENDOR_UPCOMING_ORDERS_QUERY = `
           createdOn
           eventTime
           customerName
+          customerType
           eventName
           guestCount
           personCount
@@ -372,6 +374,18 @@ export const GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY = `
     }
   }
 `;
+
+export const GET_VENDOR_ORDER_DETAIL_WITH_CUSTOMER_TYPE_QUERY =
+  GET_VENDOR_ORDER_DETAIL_QUERY.replace(
+    "      customerName\n",
+    "      customerName\n      customerType\n",
+  );
+
+export const GET_VENDOR_ORDER_DETAIL_ENRICHED_QUERY =
+  GET_VENDOR_ORDER_DETAIL_QUERY.replace(
+    "      customerName\n",
+    "      customerName\n      customerType\n      corporateName\n      organizationNumber\n      invoiceReference\n",
+  );
 
 export const APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION = `
   mutation ApproveOrderModificationRequest($requestId: ID!, $note: String) {

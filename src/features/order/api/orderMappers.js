@@ -185,7 +185,60 @@ function buildAddressFromNode(node) {
 
 function sanitizeOrganization(value) {
   const normalized = normalizeString(value).trim();
-  return normalized || "-";
+  return normalized;
+}
+
+function isMeaningfulOrganization(value) {
+  const normalized = normalizeString(value).trim();
+  return Boolean(normalized) && normalized !== "-" && !/^private\s+client$/i.test(normalized);
+}
+
+function resolveVendorListCustomerLabel(node) {
+  const organization = firstNonEmpty(node?.customerInfo?.organization);
+
+  if (isMeaningfulOrganization(organization)) {
+    return organization;
+  }
+
+  const customerType = normalizeString(node?.customerType).trim().toLowerCase();
+  const customerName = firstNonEmpty(node?.customerName, node?.customerInfo?.fullName);
+  const looksCorporate =
+    customerType.includes("corporate") ||
+    customerType.includes("company") ||
+    customerType.includes("business") ||
+    customerType.includes("organization");
+  const looksPrivate = /^private\s+client$/i.test(customerName);
+
+  if (looksCorporate) {
+    return "Corporate Client";
+  }
+
+  if (looksPrivate || !customerName) {
+    return "Private Client";
+  }
+
+  return customerName;
+}
+
+function formatCustomerTypeLabel(value) {
+  const normalized = normalizeString(value).trim().toLowerCase();
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized.includes("corporate") || normalized.includes("business") || normalized.includes("company")) {
+    return "Corporate";
+  }
+
+  if (normalized.includes("private") || normalized.includes("customer")) {
+    return "Private";
+  }
+
+  return normalized
+    .split(/\s+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function buildCustomerFromApi(node) {
@@ -193,12 +246,25 @@ function buildCustomerFromApi(node) {
   const address = buildAddressFromNode(node);
   const detailsVisible =
     Boolean(node?.customerDetailsVisible) || resolveOrderStatus(node) !== "New";
+  const customerType = formatCustomerTypeLabel(node?.customerType);
+  const organization = firstNonEmpty(
+    node?.corporateName,
+    customerInfo.organization,
+  );
 
   return {
     name:
-      firstNonEmpty(node?.customerName, customerInfo.fullName) ||
+      firstNonEmpty(node?.corporateName, node?.customerName, customerInfo.fullName) ||
       "Customer unavailable",
-    organization: sanitizeOrganization(customerInfo.organization),
+    contactName:
+      firstNonEmpty(node?.customerName, customerInfo.fullName) &&
+      firstNonEmpty(node?.customerName, customerInfo.fullName) !== firstNonEmpty(node?.corporateName)
+        ? firstNonEmpty(node?.customerName, customerInfo.fullName)
+        : "",
+    customerType,
+    organization: sanitizeOrganization(organization),
+    organizationNumber: firstNonEmpty(node?.organizationNumber),
+    invoiceReference: firstNonEmpty(node?.invoiceReference),
     postalCode: firstNonEmpty(customerInfo.postalCode, address.postalCode) || "-",
     city: firstNonEmpty(customerInfo.city, address.city) || "-",
     email: firstNonEmpty(node?.email, customerInfo.email) || "-",
@@ -271,6 +337,36 @@ function buildOrderItems(items = [], carts = []) {
       items: includedItems.map((item) => item.replace(/\s+\((x\d+)\)$/, " $1")),
       extras: [],
     },
+  };
+}
+
+function normalizeOrderAddon(addon, item, index) {
+  const name = firstNonEmpty(addon?.name, addon?.title) || "Add-on";
+  const quantity = Math.max(1, toNumber(addon?.quantity, 1));
+  const unitPrice = parseAmount(addon?.unitPrice ?? addon?.price);
+  const totalPrice = parseAmount(addon?.totalPrice) || unitPrice * quantity;
+  const image = firstNonEmpty(
+    addon?.image,
+    addon?.imageUrl,
+    addon?.coverImage?.fileUrl,
+    addon?.product?.coverImage?.fileUrl,
+  );
+
+  return {
+    id: `${item?.id || "addon"}-${name}-${index}`,
+    name,
+    description: firstNonEmpty(addon?.description, addon?.notes),
+    image,
+    quantity,
+    unitPrice,
+    totalPrice,
+    parentItemName: firstNonEmpty(item?.productName, item?.name),
+    detail:
+      unitPrice > 0
+        ? `${quantity} x ${formatCurrency(unitPrice)}`
+        : quantity > 1
+          ? `Qty ${quantity}`
+          : "",
   };
 }
 
@@ -657,9 +753,7 @@ export function mapVendorOrderNode(node) {
     displayId,
     version: toNumber(node?.version, 0),
     id: normalizeString(node?.id),
-    customer:
-      firstNonEmpty(node?.customerName, node?.customerInfo?.fullName) ||
-      "Customer unavailable",
+    customer: resolveVendorListCustomerLabel(node),
     event: firstNonEmpty(node?.eventName, primaryTitle) || "Order",
     guests: resolveGuestCount(node, 0),
     date: dateLabel,
@@ -863,10 +957,25 @@ export function mapVendorOrderDetail(data, orderId) {
   const address = buildAddressFromNode(node);
   const deliveryWindow = normalizeDeliveryWindow(node?.deliveryWindow, node?.eventTime, timeLabel);
 
-  let addOns = orderItems
-    .flatMap((item) => item.selectedAddons || [])
-    .map((addon) => (typeof addon === "string" ? addon : addon?.name || addon?.title || ""))
-    .filter(Boolean);
+  let addOns = orderItems.flatMap((item) =>
+    (item.selectedAddons || [])
+      .map((addon, index) =>
+        typeof addon === "string"
+          ? {
+              id: `${item?.id || "addon"}-${addon}-${index}`,
+              name: addon,
+              description: "",
+              image: "",
+              quantity: 1,
+              unitPrice: 0,
+              totalPrice: 0,
+              parentItemName: firstNonEmpty(item?.productName, item?.name),
+              detail: "",
+            }
+          : normalizeOrderAddon(addon, item, index),
+      )
+      .filter((addon) => addon.name),
+  );
 
   const note =
     node?.orderNotes ||
