@@ -11,7 +11,17 @@ import { executeGraphqlRequest } from "./authClient";
 import { AUTH_ROLE, isAllowedAuthRole } from "../authConfig";
 
 function normalizePhoneNumber(phone) {
-  return `${phone ?? ""}`.replace(/\s+/g, "").trim();
+  const compactPhone = `${phone ?? ""}`.replace(/[\s()-]/g, "").trim();
+
+  if (compactPhone.startsWith("+47")) {
+    return `+47${compactPhone.slice(3).replace(/\D/g, "").slice(0, 8)}`;
+  }
+
+  if (compactPhone.startsWith("0047")) {
+    return `+47${compactPhone.slice(4).replace(/\D/g, "").slice(0, 8)}`;
+  }
+
+  return `+47${compactPhone.replace(/\D/g, "").slice(0, 8)}`;
 }
 
 function createFieldError(message, fieldErrors = null) {

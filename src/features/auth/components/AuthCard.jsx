@@ -9,6 +9,7 @@ function Field({
   errorText,
   helperText,
   label,
+  prefixText,
   strengthIndicator,
   ...inputProps
 }) {
@@ -22,13 +23,18 @@ function Field({
     <label className={`flex flex-col gap-1.5 ${containerClassName || ""}`.trim()}>
       <span className="type-para text-[#4c4037]">{label}</span>
       <div className="relative">
+        {prefixText ? (
+          <span className="pointer-events-none absolute left-3 top-1/2 inline-flex -translate-y-1/2 items-center text-[13px] font-bold text-[#6f6258]">
+            {prefixText}
+          </span>
+        ) : null}
         <input
           className={`type-subpara min-h-[42px] w-full rounded-lg border bg-white text-[#1d1713] outline-none transition duration-150 placeholder:font-normal placeholder:text-[#baaea0] ${
             errorText
               ? "border-[#d76a4a] focus:border-[#d76a4a] focus:shadow-[0_0_0_3px_rgba(215,106,74,0.12)]"
               : "border-[#ddd4cb] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
           } ${
-            isPasswordField ? "px-3 pr-11" : "px-3"
+            isPasswordField ? "px-3 pr-11" : prefixText ? "py-2 pl-12 pr-3" : "px-3"
           } ${className || ""}`}
           {...inputProps}
           type={resolvedInputType}
