@@ -10,6 +10,7 @@ import LifecyclePanel from "../components/order-details/LifecyclePanel";
 import LogisticsPanel from "../components/order-details/LogisticsPanel";
 import OrderItemsPanel from "../components/order-details/OrderItemsPanel";
 import { printVendorOrder } from "../utils/printOrder";
+import { getVendorAddOns } from "../../menu/api/menuApi";
 import {
   approveOrderModificationRequest,
   getVendorOrderDetail,
@@ -154,6 +155,43 @@ function splitVendorAdjustmentNote(value) {
   return { requestedDishChanges, includedDishReplacements, vendorNote: remainingLines.join("\n") };
 }
 
+function getAddonCatalogNodes(result) {
+  const edges = result?.vendorAddOns?.edges;
+  return Array.isArray(edges) ? edges.map((edge) => edge?.node).filter(Boolean) : [];
+}
+
+function enrichOrderAddOns(orderDetail, addOnCatalogResult) {
+  if (!orderDetail?.addOns?.length) {
+    return orderDetail;
+  }
+
+  const catalogByName = new Map(
+    getAddonCatalogNodes(addOnCatalogResult).map((item) => [
+      `${item?.name ?? ""}`.trim().toLowerCase(),
+      item,
+    ]),
+  );
+
+  return {
+    ...orderDetail,
+    addOns: orderDetail.addOns.map((addOn) => {
+      const catalogItem = catalogByName.get(`${addOn.name ?? ""}`.trim().toLowerCase());
+      const quantity = Number(addOn.quantity) || 1;
+      const catalogUnitPrice = Number(catalogItem?.priceWithTax) || 0;
+
+      return {
+        ...addOn,
+        description: addOn.description || catalogItem?.description || "",
+        image: addOn.image || catalogItem?.coverImage?.fileUrl || "",
+        totalPrice: Number(addOn.totalPrice) > 0
+          ? addOn.totalPrice
+          : catalogUnitPrice * quantity,
+        unitPrice: Number(addOn.unitPrice) > 0 ? addOn.unitPrice : catalogUnitPrice,
+      };
+    }),
+  };
+}
+
 export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { orderId } = useParams();
@@ -171,12 +209,13 @@ export default function OrderDetailPage() {
     }
 
     try {
-      const [detailResult, requestResults] = await Promise.all([
+      const [detailResult, requestResults, addOnCatalogResult] = await Promise.all([
         getVendorOrderDetail(decodedOrderId),
         getVendorOrderModificationRequests(decodedOrderId),
+        getVendorAddOns().catch(() => null),
       ]);
 
-      setOrderDetail(mapVendorOrderDetail(detailResult, decodedOrderId));
+      setOrderDetail(enrichOrderAddOns(mapVendorOrderDetail(detailResult, decodedOrderId), addOnCatalogResult));
       setModificationRequests(Array.isArray(requestResults) ? requestResults : []);
     } finally {
       if (!silent) {
@@ -192,15 +231,16 @@ export default function OrderDetailPage() {
       setIsLoading(true);
 
       try {
-        const [detailResult, requestResults] = await Promise.all([
+        const [detailResult, requestResults, addOnCatalogResult] = await Promise.all([
           getVendorOrderDetail(decodedOrderId),
           getVendorOrderModificationRequests(decodedOrderId),
+          getVendorAddOns().catch(() => null),
         ]);
         if (isCancelled) {
           return;
         }
 
-        setOrderDetail(mapVendorOrderDetail(detailResult, decodedOrderId));
+        setOrderDetail(enrichOrderAddOns(mapVendorOrderDetail(detailResult, decodedOrderId), addOnCatalogResult));
         setModificationRequests(Array.isArray(requestResults) ? requestResults : []);
       } catch (error) {
         if (!isCancelled) {
@@ -704,6 +744,7 @@ export default function OrderDetailPage() {
       <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(260px,0.95fr)] gap-3 max-[1180px]:grid-cols-1">
         <div className="flex flex-col gap-3">
           <CustomerInfoPanel customer={orderDetail.customer} orderId={orderDetail.rawId} />
+          <LogisticsPanel logistics={orderDetail.logistics} />
           <OrderItemsPanel
             addOns={orderDetail.addOns}
             note={orderDetail.note}
@@ -711,7 +752,6 @@ export default function OrderDetailPage() {
             orderId={decodedOrderId}
             orderItem={orderDetail.orderItem}
           />
-          <LogisticsPanel logistics={orderDetail.logistics} />
         </div>
 
         <aside className="flex flex-col gap-3">

@@ -6,10 +6,23 @@ import DetailPanel from "./DetailPanel";
 import { getVendorCustomerOrderHistory } from "../../api/orderApi";
 
 function Field({ label, value, fullWidth = false }) {
+  const displayValue = `${value ?? ""}`.trim();
+
+  if (!displayValue || displayValue === "-") {
+    return null;
+  }
+
   return (
-    <div className={`flex flex-col gap-1 ${fullWidth ? "md:col-span-2" : ""}`}>
-      <span className="text-[16px]  text-[#8a7a6d]">{label}</span>
-      <strong className="text-[13px] font-extrabold text-[#17120e]">{value}</strong>
+    <div className={`flex min-w-0 flex-col gap-0.5 ${fullWidth ? "sm:col-span-2 lg:col-span-3" : ""}`}>
+      <span className="text-[14px] text-[#8a7a6d]">{label}</span>
+      <strong
+        className={`text-[13px] font-extrabold text-[#17120e] ${
+          fullWidth ? "break-all leading-[1.35]" : "truncate"
+        }`}
+        title={displayValue}
+      >
+        {displayValue}
+      </strong>
     </div>
   );
 }
@@ -197,19 +210,29 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
 
 export default function CustomerInfoPanel({ customer, orderId }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const organization = `${customer.organization ?? ""}`.trim();
+  const hasOrganization =
+    Boolean(organization) &&
+    organization !== "-" &&
+    !/^private\s+client$/i.test(organization);
+  const isCorporate = /^corporate/i.test(`${customer.customerType ?? ""}`.trim());
 
   return (
     <>
-      <DetailPanel title="Customer Information" titleIcon={UserRound}>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <Field label="Name" value={customer.name} />
-          <Field label="Organization" value={customer.organization} />
+      <DetailPanel title="Customer & Contact" titleIcon={UserRound}>
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-5">
+          <Field label={isCorporate ? "Company" : "Name"} value={customer.name} />
+          {hasOrganization ? <Field label="Organization" value={organization} /> : null}
+          {isCorporate ? <Field label="Contact" value={customer.contactName} /> : null}
+          <Field label="Type" value={customer.customerType} />
+          <Field label="Org No." value={customer.organizationNumber} />
+          <Field label="Invoice Ref." value={customer.invoiceReference} />
           <Field label="Postal Code" value={customer.postalCode} />
           <Field label="City" value={customer.city} />
           <Field fullWidth label="Email Address" value={customer.email} />
         </div>
 
-        <div className="mt-[14px] flex items-center justify-between gap-2.5 rounded-[10px] bg-[#edf5ff] px-3 py-3">
+        <div className="mt-3 flex items-center justify-between gap-2.5 rounded-[10px] bg-[#edf5ff] px-3 py-2.5">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#4f5f73]">
             <CircleAlert size={15} strokeWidth={2.1} className="text-[#1e1e1e]" />
             {customer.historyText}
