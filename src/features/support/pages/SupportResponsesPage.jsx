@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Image as ImageIcon, Paperclip } from "lucide-react";
+import { ChevronLeft, ExternalLink, Image as ImageIcon, Paperclip } from "lucide-react";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
@@ -327,10 +327,11 @@ export default function SupportResponsesPage() {
         </div>
 
         <Link
-          className="inline-flex h-[42px] items-center justify-center rounded-[10px] border border-[#dfd3c8] bg-white px-4 text-[14px] font-bold text-[#2a211b] no-underline transition hover:bg-[#faf6f2] hover:text-[#cf6e38]"
+          className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline"
           to="/support"
         >
-          {t("support.backToForm", { defaultValue: "Back To Support Form" })}
+          <ChevronLeft size={16} />
+          {t("support.backToForm", { defaultValue: "Back to Support Form" })}
         </Link>
       </header>
 
@@ -451,7 +452,7 @@ export default function SupportResponsesPage() {
                 <>
                   <div className="border-b border-[#efe5dd] px-5 py-4">
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="m-0 text-[22px] font-bold text-[#181310]">{selectedTicket.subject}</h3>
+                      <h3 className="m-0 text-[20px] font-bold tracking-[-0.02em] text-[#181310]">{selectedTicket.subject}</h3>
                       <span
                         className={[
                           "inline-flex rounded-full px-3 py-1 text-[11px] font-bold",
@@ -516,3 +517,5 @@ export default function SupportResponsesPage() {
     </section>
   );
 }
+
+

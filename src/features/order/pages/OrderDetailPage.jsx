@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Printer } from "lucide-react";
+import { ChevronLeft, Printer } from "lucide-react";
 import Swal from "sweetalert2";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 import ConfirmedLifecyclePanel from "../components/order-details/ConfirmedLifecyclePanel";
@@ -327,8 +327,9 @@ export default function OrderDetailPage() {
   if (!orderDetail) {
     return (
       <section className="flex flex-col gap-3">
-        <Link className="text-[12px] font-bold text-[#5d7fc9] no-underline" to="/orders">
-          &lt; Back to Orders
+        <Link className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline" to="/orders">
+          <ChevronLeft size={16} />
+          Back to Orders
         </Link>
         <div className="rounded-xl border border-[#dfd8cf] bg-white px-2 pb-2.5 pt-2 shadow-[0_2px_8px_rgba(42,27,18,0.06)]">
           <h1 className="type-h3">Order not found</h1>
@@ -541,11 +542,12 @@ export default function OrderDetailPage() {
   return (
     <section className="flex flex-col gap-3">
       <header className="flex flex-col gap-1">
-        <Link className="text-[12px] font-bold text-[#5d7fc9] no-underline" to="/orders">
-          &lt; Back to Orders
+        <Link className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline" to="/orders">
+          <ChevronLeft size={16} />
+          Back to Orders
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="m-0 text-[34px] font-extrabold leading-none text-[#19130f]">
+          <h1 className="m-0 text-[34px] font-bold leading-tight tracking-[-0.04em] text-[#19130f]">
             Order<span className="ml-0.5">{orderDetail.displayId || orderDetail.id}</span>
           </h1>
           <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
@@ -784,3 +786,7 @@ export default function OrderDetailPage() {
     </section>
   );
 }
+
+
+
+

@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
+﻿import { AlertTriangle, ChevronLeft, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showOrderStatusUpdated, showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
@@ -678,8 +678,9 @@ export default function OrderAdjustmentPage() {
   if (!orderDetail) {
     return (
       <section className="flex flex-col gap-3">
-        <Link className="text-[13px] font-bold text-[#5d7fc9] no-underline" to="/orders">
-          &lt; Back to Orders
+        <Link className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline" to="/orders">
+          <ChevronLeft size={16} />
+          Back to Orders
         </Link>
         <div className="rounded-xl border border-[#dfd8cf] bg-white px-2 pb-2.5 pt-2 shadow-[0_2px_8px_rgba(42,27,18,0.06)]">
           <h1 className="type-h3">Order not found</h1>
@@ -692,13 +693,14 @@ export default function OrderAdjustmentPage() {
     <section className="flex flex-col gap-3">
       <header className="flex flex-col gap-1">
         <Link
-          className="text-[13px] font-bold text-[#5d7fc9] no-underline"
+          className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline"
           to={`/orders/${encodeURIComponent(decodedOrderId)}`}
         >
-          &lt; Back to Order Details
+          <ChevronLeft size={16} />
+          Back to Order Details
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="m-0 text-[32px] font-extrabold leading-none text-[#19130f]">
+          <h1 className="m-0 text-[34px] font-bold leading-tight tracking-[-0.04em] text-[#19130f]">
             Order Adjustment
           </h1>
           <p className="m-0 text-[13px] font-semibold text-[#8a7a6d]">
@@ -1189,3 +1191,5 @@ export default function OrderAdjustmentPage() {
     </section>
   );
 }
+
+

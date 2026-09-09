@@ -1,4 +1,4 @@
-import { BadgeCheck, Bike, ChefHat, ChevronRight } from "lucide-react";
+﻿import { BadgeCheck, Bike, ChefHat, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const iconMap = {
@@ -32,7 +32,7 @@ export default function KitchenStatus({ items }) {
               type="button"
             >
               <span className="type-para">{item.label}</span>
-              <strong className="type-h1 mt-1 block text-[48px] leading-[0.95] text-[#201914] max-[720px]:text-[34px]">
+              <strong className="mt-1 block text-[32px] font-extrabold leading-none tracking-[-0.035em] text-[#201914] max-[720px]:text-[28px]">
                 {item.value}
               </strong>
               <div className="mt-2 flex items-center justify-between gap-2">
@@ -54,3 +54,5 @@ export default function KitchenStatus({ items }) {
     </>
   );
 }
+
+

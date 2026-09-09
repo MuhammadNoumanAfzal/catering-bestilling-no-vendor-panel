@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 
 function formatReviewDate(value) {
   if (!value) {
@@ -212,7 +212,7 @@ export default function VendorApplicationStatusNotice({
           <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${config.badge}`}>
             {status || "Application Update"}
           </span>
-          <h2 className={`mt-3 text-[26px] font-extrabold tracking-[-0.03em] ${config.titleColor}`}>
+          <h2 className={`mt-3 text-[24px] font-bold tracking-[-0.03em] ${config.titleColor}`}>
             {config.title}
           </h2>
           <p className={`mt-2 text-[14px] leading-7 ${config.bodyColor}`}>
@@ -365,3 +365,5 @@ export default function VendorApplicationStatusNotice({
     </section>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   ArrowUp,
   CalendarDays,
   ChartNoAxesColumnIncreasing,
@@ -43,7 +43,7 @@ export default function OverviewCard({
       <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] ">{label}</p>
 
       <div className="mt-2 flex items-baseline justify-between gap-2">
-        <strong className="type-h2 block text-[34px] leading-none text-[#16110d] max-[720px]:text-[28px]">
+        <strong className="block text-[28px] font-extrabold leading-none tracking-[-0.035em] text-[#16110d] max-[720px]:text-[24px]">
           {value}
         </strong>
         {hasTrendBadge ? (
@@ -91,3 +91,5 @@ export default function OverviewCard({
     </button>
   );
 }
+
+

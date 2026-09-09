@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+﻿import { ChevronDown } from "lucide-react";
 
 export default function SectionCard({
   title,
@@ -61,7 +61,7 @@ export default function SectionCard({
             </div>
           ) : (
             <button
-              className="type-para cursor-pointer border-0 bg-transparent p-0 text-[#3f78d4]"
+              className="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-bold text-[#cf6e38] transition hover:underline"
               onClick={onActionClick}
               type="button"
             >
@@ -74,3 +74,5 @@ export default function SectionCard({
     </section>
   );
 }
+
+
