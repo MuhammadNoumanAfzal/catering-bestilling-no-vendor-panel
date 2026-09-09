@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import EarningChart from "../components/EarningChart";
@@ -73,7 +73,7 @@ export default function DashboardPage() {
               <span className="inline-flex rounded-full border border-[#f5d9c9] bg-white/90 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#c86535] shadow-[0_10px_22px_rgba(206,106,56,0.08)] backdrop-blur-sm">
                 {t("dashboard.setup")}
               </span>
-              <h2 className="mt-4 text-[28px] font-bold leading-tight text-[#201711] max-[720px]:text-[22px]">
+              <h2 className="mt-4 text-[24px] font-bold leading-tight tracking-[-0.03em] text-[#201711] max-[720px]:text-[21px]">
                 {t("dashboard.completeProfile")}
               </h2>
               <p className="type-para mt-2.5 max-w-[640px] text-[15px] leading-[1.7] text-[#6f645b]">
@@ -230,3 +230,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Bell,
   ChevronDown,
   X,
@@ -316,7 +316,7 @@ export default function AppLayout() {
           .map((order) => ({
             id: `order-${order.id}`,
             label: order.invoiceNumber || order.orderNumber || `Order ${order.id}`,
-            description: ["Order", order.customerName, order.eventName].filter(Boolean).join(" • "),
+            description: ["Order", order.customerName, order.eventName].filter(Boolean).join(" â€¢ "),
             to: `/orders/${encodeURIComponent(order.id)}`,
           }));
         const menuResults = (menusResponse?.vendorMenus?.edges || [])
@@ -703,5 +703,6 @@ export default function AppLayout() {
     </div>
   );
 }
+
 
 

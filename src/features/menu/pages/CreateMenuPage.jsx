@@ -1,4 +1,4 @@
-import { ChevronLeft } from "lucide-react";
+﻿import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -45,11 +45,11 @@ export default function CreateMenuPage() {
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <header className="mb-5">
         <button
-          className="mb-2 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-[13px] font-semibold text-[#6d84d6]"
+          className="mb-2 inline-flex cursor-pointer items-center gap-1 text-[13px] font-bold text-[#cf6e38] transition hover:underline"
           onClick={() => navigate("/menu")}
           type="button"
         >
-          <ChevronLeft size={14} />
+          <ChevronLeft size={16} />
           {t("menu.backToManagement", { defaultValue: "Menu management" })}
         </button>
         <h1 className="type-h2 m-0 text-[#15110f]">
@@ -185,3 +185,5 @@ export default function CreateMenuPage() {
     </section>
   );
 }
+
+
