@@ -382,55 +382,65 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-[236px_minmax(0,1fr)] bg-[#f4f1ee] text-[#201914] max-[960px]:block">
-      <aside className="relative flex min-h-screen w-[236px] flex-col justify-between overflow-hidden bg-[linear-gradient(180deg,#cb6432_0%,#c55b2d_100%)] text-white max-[960px]:hidden">
-        <div className="relative flex flex-col">
+    <div className="min-h-screen overflow-x-hidden bg-[#211f1f] text-[#201914]">
+      <div className="min-h-screen w-full overflow-x-clip bg-[#f4f1ee] lg:grid lg:grid-cols-[236px_minmax(0,1fr)] max-[960px]:block">
+      <aside className="relative flex min-h-screen w-[236px] flex-col bg-[linear-gradient(180deg,#cb6432_0%,#c55b2d_100%)] text-white max-[960px]:hidden lg:w-auto">
+        <div className="relative flex min-h-0 flex-1 flex-col">
           <div className="mx-4 mt-4 rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
             <img className="block h-auto w-32 object-contain" src="/whiteLogo.png" alt="GoCatering" />
             <p className="type-subpara mt-3 text-white/75">Vendor dashboard</p>
           </div>
 
-          <nav
-            className="mt-6 flex flex-col gap-2 px-3"
-            aria-label="Primary navigation"
-          >
-            {sidebarItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
-              <NavLink
-                key={label}
-                className={({ isActive }) =>
-                  [
-                    "flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-semibold transition",
-                    isActive
-                      ? "bg-[#fff3ec] text-[#c75f2e]"
-                      : "text-white hover:bg-white/8",
-                  ].join(" ")
-                }
-                to={to}
-              >
-                <div className="inline-flex h-5 w-5 items-center justify-center rounded-[6px]">
-                  <Icon size={14} />
-                </div>
-                <span className="flex-1">{label}</span>
-                {label === "Notifications" && unreadNotificationsCount > 0 ? (
-                  <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                    {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
-                  </span>
-                ) : null}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="flex-1 overflow-auto px-3 py-6 hide-scrollbar">
+            <nav className="space-y-2" aria-label="Primary navigation">
+              {sidebarItems.map(({ icon: Icon, label, to }) => {
+                const active = pathname === to || (to !== "/dashboard" && pathname.startsWith(`${to}/`));
+
+                return (
+                  <NavLink
+                    key={label}
+                    className={() =>
+                      [
+                        "group flex cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-semibold transition",
+                        active
+                          ? "bg-[#fff3ec] text-[#c75f2e]"
+                          : "text-white hover:bg-white/8",
+                      ].join(" ")
+                    }
+                    to={to}
+                  >
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] transition">
+                      <Icon size={14} />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{label}</span>
+                    {label === "Notifications" && unreadNotificationsCount > 0 ? (
+                      <span
+                        className={[
+                          "inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none",
+                          active ? "bg-[#c75f2e] text-white" : "bg-white/18 text-white",
+                        ].join(" ")}
+                      >
+                        {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                      </span>
+                    ) : null}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
         </div>
 
-        <button
-          className="flex w-full cursor-pointer items-center gap-3 rounded-[10px] px-6 py-2.5 text-[13px] font-semibold text-white transition hover:bg-white/8"
-          onClick={handleLogout}
-          type="button"
-        >
-          <LogOut size={14} />
-          <span>Logout</span>
-        </button>
+        <div className="px-3 pb-4">
+          <button
+            className="flex w-full cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-semibold text-white transition hover:bg-white/8"
+            onClick={handleLogout}
+            type="button"
+          >
+            <LogOut size={14} />
+            <span>Logout</span>
+          </button>
+        </div>
       </aside>
-
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-[69px] items-center justify-between gap-4 border-b border-[#ebe4de] bg-white/92 px-5 py-3 backdrop-blur-xl max-[960px]:h-auto max-[960px]:flex-col max-[960px]:items-stretch max-[960px]:border-b-0 max-[960px]:bg-transparent max-[960px]:px-3 max-[960px]:pt-3">
           <div className="max-w-[520px] flex-1 max-[960px]:hidden">
@@ -523,7 +533,18 @@ export default function AppLayout() {
                     </div>
                   </div>
 
-                  <div className="mt-2">
+                  <div className="mt-2 flex flex-col gap-1">
+                    <button
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#4f433c] transition hover:bg-[#faf6f2]"
+                      onClick={() => {
+                        setIsDesktopProfileMenuOpen(false);
+                        navigate("/settings");
+                      }}
+                      type="button"
+                    >
+                      <Settings size={15} />
+                      <span>Settings</span>
+                    </button>
                     <button
                       className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
                       onClick={handleLogout}
@@ -594,14 +615,27 @@ export default function AppLayout() {
                           <p className="mt-1 text-[12px] font-medium text-[#8f7f73]">{accountDisplayName}</p>
                         </div>
                       </div>
-                      <button
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
-                        onClick={handleLogout}
-                        type="button"
-                      >
-                        <LogOut size={15} />
-                        <span>Logout</span>
-                      </button>
+                      <div className="flex flex-col gap-1">
+                        <button
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#4f433c] transition hover:bg-[#faf6f2]"
+                          onClick={() => {
+                            setIsMobileProfileMenuOpen(false);
+                            navigate("/settings");
+                          }}
+                          type="button"
+                        >
+                          <Settings size={15} />
+                          <span>Settings</span>
+                        </button>
+                        <button
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
+                          onClick={handleLogout}
+                          type="button"
+                        >
+                          <LogOut size={15} />
+                          <span>Logout</span>
+                        </button>
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -665,6 +699,9 @@ export default function AppLayout() {
           </NavLink>
         ))}
       </nav>
+          </div>
     </div>
   );
 }
+
+
