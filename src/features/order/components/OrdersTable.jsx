@@ -214,7 +214,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                     onClick={() => onActionClick(row, { label: "View Details", navigateToDetail: true })}
                     type="button"
                   >
-                    View Details
+                    {t("orders.viewDetails", { defaultValue: "View Details" })}
                   </button>
                 ) : (
                 <div className="relative inline-flex" onClick={(e) => e.stopPropagation()}>
@@ -230,7 +230,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                   {openMenu?.key === row.rawId ? (
                     <div className="fixed z-[100] min-w-[190px] rounded-[12px] border border-[#e3d6ca] bg-white p-1.5 shadow-[0_12px_28px_rgba(38,23,14,0.12)]" style={{ left: openMenu.left, top: openMenu.top }}>
                       <button
-                        aria-label="Close status menu"
+                        aria-label={t("orders.closeStatusMenu", { defaultValue: "Close status menu" })}
                         className="absolute right-2 top-2 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-[#9a8b80] transition hover:bg-[#fff1e9] hover:text-[#cf6e38]"
                         onClick={() => setOpenMenu(null)}
                         type="button"
@@ -243,11 +243,11 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                         type="button"
                       >
                         <Eye size={14} />
-                        View details
+                        {t("orders.viewDetails", { defaultValue: "View Details" })}
                       </button>
                       <div className="my-1 border-t border-[#eee6df]" />
                       <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9a8b80]">
-                        Change status
+                        {t("orders.changeStatus", { defaultValue: "Change status" })}
                       </p>
                       {getNextStatusOptions(row.status).map((status) => {
                         return (

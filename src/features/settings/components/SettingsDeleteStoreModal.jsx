@@ -24,29 +24,26 @@ export default function SettingsDeleteStoreModal({ onCancel, onConfirm }) {
       >
         <h2 className="type-h2 m-0 text-[#ff2918]">{t("settings.deletePermanently")}</h2>
         <p className="mt-3 text-[11px] leading-[1.45] text-[#5b514a]">
-          This action is permanent and cannot be undone. All menus, orders,
-          customer data, and store settings will be permanently deleted from our
-          servers.
+          {t("settings.deleteStorePermanentWarning", { defaultValue: "This action is permanent and cannot be undone. All menus, orders, customer data, and store settings will be permanently deleted from our servers." })}
         </p>
 
         <div className="mt-4 rounded-[6px] bg-[#f5f5f5] px-2.5 py-2">
           <div className="flex items-start gap-2 text-[#4c423d]">
             <AlertCircle className="mt-[1px] shrink-0" size={12} />
             <p className="text-[9px] leading-[1.35]">
-              You can contact <span className="font-bold underline">customer support</span>{" "}
-              if you need help recovering specific account data before proceeding.
+              {t("settings.deleteStoreSupportHint", { defaultValue: "You can contact customer support if you need help recovering specific account data before proceeding." })}
             </p>
           </div>
         </div>
 
         <label className="mt-4 flex flex-col gap-1.5">
           <span className="text-[10px] font-medium text-[#443934]">
-            Type <span className="font-bold text-[#ff2918]">DELETE</span> to confirm
+            {t("settings.typeDeleteToConfirm", { defaultValue: "Type DELETE to confirm" })}
           </span>
           <input
             className="h-[30px] rounded-[4px] bg-[#efefef] px-2 text-[10px] text-[#201712] outline-none transition placeholder:text-[#948980] focus:ring-2 focus:ring-[#ff2918]/15"
             onChange={(event) => setConfirmationText(event.target.value)}
-            placeholder="Delete"
+            placeholder={t("settings.delete", { defaultValue: "Delete" })}
             type="text"
             value={confirmationText}
           />

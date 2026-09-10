@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 import { Banknote, CalendarDays, CircleDollarSign } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -32,7 +33,7 @@ export default function FinancePayoutStatus({ items }) {
 
             return (
               <div
-                key={item.title}
+                key={translateFinanceText(item.title)}
                 className="flex items-start justify-between gap-4 rounded-[12px] border border-[#efe6de] px-4 py-4 max-[420px]:flex-col max-[420px]:gap-3"
               >
                 <div className="flex items-start gap-3">
@@ -43,10 +44,10 @@ export default function FinancePayoutStatus({ items }) {
                   </span>
                   <span className="flex flex-col">
                     <strong className="type-h5 block text-[#1a1410]">
-                      {item.title}
+                      {translateFinanceText(item.title)}
                     </strong>
                     <span className="type-subpara text-[#86786d]">
-                      {item.description}
+                      {item.descriptionKey ? `${t(`finance.${item.descriptionKey}`, { count: item.count })}${item.latestReference ? ` - ${t("finance.latestReference", { reference: item.latestReference })}` : ""}` : item.description}
                     </span>
                   </span>
                 </div>
@@ -57,9 +58,7 @@ export default function FinancePayoutStatus({ items }) {
             );
           })
         ) : (
-          <div className="rounded-[12px] border border-dashed border-[#e6ddd6] bg-[#fcfaf8] px-4 py-4 text-[13px] font-medium leading-[1.5] text-[#86786d]">
-            Payout information is not available right now. Your earnings summary and transactions are still up to date.
-          </div>
+          <div className="rounded-[12px] border border-dashed border-[#e6ddd6] bg-[#fcfaf8] px-4 py-4 text-[13px] font-medium leading-[1.5] text-[#86786d]"> {translateFinanceText("Payout information is not available right now. Your earnings summary and transactions are still up to date.")} </div>
         )}
       </div>
     </section>

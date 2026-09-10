@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
@@ -30,9 +31,7 @@ export default function DeliveryLimitsSection({
             placeholder="24"
             value={minimumOrderNoticeHours}
           />
-          <p className="type-subpara mt-1 text-[#a09084]">
-            Customers must book at least this many hours in advance.
-          </p>
+          <p className="type-subpara mt-1 text-[#a09084]"> {i18n.t("delivery.advanceNoticeHelp")} </p>
         </div>
         <div>
           <DeliveryTextInput
@@ -43,9 +42,7 @@ export default function DeliveryLimitsSection({
             placeholder="100"
             value={maxDeliveriesPerDay}
           />
-          <p className="type-subpara mt-1 text-[#a09084]">
-            Based on store size and driver count.
-          </p>
+          <p className="type-subpara mt-1 text-[#a09084]"> {i18n.t("delivery.capacityHelp")} </p>
         </div>
         <div>
           <DeliveryTextInput
@@ -56,14 +53,10 @@ export default function DeliveryLimitsSection({
             placeholder="40"
             value={maxOrdersPerTimeSlot}
           />
-          <p className="type-subpara mt-1 text-[#a09084]">
-            Maximum customers in a single time slot.
-          </p>
+          <p className="type-subpara mt-1 text-[#a09084]"> {i18n.t("delivery.slotCapacityHelp")} </p>
         </div>
       </div>
-      <DeliveryInfoNote>
-        Use Delivery Schedule above to control selectable delivery days and time slots. Use these limits for estimates and capacity only.
-      </DeliveryInfoNote>
+      <DeliveryInfoNote> {i18n.t("delivery.limitsHelp")} </DeliveryInfoNote>
     </DeliverySectionCard>
   );
 }

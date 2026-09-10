@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +16,7 @@ function StatusBadge({ status }) {
     <span
       className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-[11px] text-[12px] font-bold ${tone}`}
     >
-      {status}
+      {translateFinanceText(status)}
     </span>
   );
 }
@@ -37,6 +38,7 @@ function PayoutDetailModal({ payout, onClose }) {
           </h2>
           <button
             className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/25 focus:outline-none active:scale-90"
+            aria-label={translateFinanceText("Close Details")}
             onClick={onClose}
             type="button"
           >
@@ -47,17 +49,13 @@ function PayoutDetailModal({ payout, onClose }) {
         <div className="mt-4 space-y-4">
           <div className="flex items-start justify-between gap-4 border-b border-[#f2ece6] pb-3">
             <div>
-              <p className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">
-                Linked invoice
-              </p>
+              <p className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]"> {translateFinanceText("Linked invoice")} </p>
               <strong className="mt-1 block text-[16px] font-extrabold text-[#1c1510]">
                 {payout.invoiceNumber || "--"}
               </strong>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">
-                Payout status
-              </span>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]"> {translateFinanceText("Payout status")} </span>
               <div className="mt-1">
                 <StatusBadge status={payout.paymentStatus} />
               </div>
@@ -66,17 +64,13 @@ function PayoutDetailModal({ payout, onClose }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-[#d6e4f0] bg-[#f0f4f8] p-3 text-center">
-              <span className="block text-[12px] font-extrabold uppercase tracking-wide text-[#3b70a6]">
-                Updated
-              </span>
+              <span className="block text-[12px] font-extrabold uppercase tracking-wide text-[#3b70a6]"> {translateFinanceText("Updated")} </span>
               <span className="mt-1 block text-[14px] font-extrabold text-[#3b70a6]">
                 {payout.eventDate || "--"}
               </span>
             </div>
             <div className="rounded-xl border border-[#d8ecd5] bg-[#f3fbf1] p-3 text-center">
-              <span className="block text-[12px] font-extrabold uppercase tracking-wide text-[#2f8a4f]">
-                Vendor receives
-              </span>
+              <span className="block text-[12px] font-extrabold uppercase tracking-wide text-[#2f8a4f]"> {translateFinanceText("Vendor receives")} </span>
               <span className="mt-1 block text-[14px] font-extrabold text-[#237a39]">
                 {payout.netAmount || "--"}
               </span>
@@ -84,25 +78,23 @@ function PayoutDetailModal({ payout, onClose }) {
           </div>
 
           <div className="rounded-[16px] border border-[#f0e5dd] bg-[#fffaf6] p-4">
-            <h3 className="text-[12px] font-extrabold uppercase tracking-wider text-[#9a8f85]">
-              Payout summary
-            </h3>
+            <h3 className="text-[12px] font-extrabold uppercase tracking-wider text-[#9a8f85]"> {translateFinanceText("Payout summary")} </h3>
 
             <div className="mt-3 space-y-2.5">
               <div className="flex items-center justify-between text-[14px]">
-                <span className="font-semibold text-[#6f6358]">Platform commission</span>
+                <span className="font-semibold text-[#6f6358]"> {translateFinanceText("Platform commission")} </span>
                 <span className="font-extrabold text-[#cf6e38]">
                   {payout.commissionAmount || "--"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-[14px]">
-                <span className="font-semibold text-[#6f6358]">Transfer reference</span>
+                <span className="font-semibold text-[#6f6358]"> {translateFinanceText("Transfer reference")} </span>
                 <span className="font-bold text-[#1c1510]">
-                  {payout.payoutReference || "Not added yet"}
+                  {payout.payoutReference || translateFinanceText("Not added yet")}
                 </span>
               </div>
               <div className="flex items-center justify-between text-[14px]">
-                <span className="font-semibold text-[#6f6358]">Payout ID</span>
+                <span className="font-semibold text-[#6f6358]"> {translateFinanceText("Payout ID")} </span>
                 <span className="font-bold text-[#1c1510]">
                   {payout.payoutId || "--"}
                 </span>
@@ -116,9 +108,7 @@ function PayoutDetailModal({ payout, onClose }) {
             className="h-[38px] rounded-lg bg-[#cf6e38] px-4 text-[14px] font-bold text-white transition hover:bg-[#bf622f] active:scale-95"
             onClick={onClose}
             type="button"
-          >
-            Close Details
-          </button>
+          > {translateFinanceText("Close Details")} </button>
         </div>
       </div>
     </div>
@@ -203,10 +193,10 @@ export default function FinancePayoutsTable({
                 "",
               ].map((heading) => (
                 <th
-                  key={heading}
+                  key={translateFinanceText(heading)}
                   className="border-b border-[#eee7df] px-[10px] py-3 text-left text-[15px] font-extrabold text-[#17120e]"
                 >
-                  {heading}
+                  {translateFinanceText(heading)}
                 </th>
               ))}
             </tr>
@@ -243,7 +233,7 @@ export default function FinancePayoutsTable({
                     {row.commissionAmount || "--"}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3">
-                    <StatusBadge status={row.paymentStatus} />
+                    <StatusBadge status={translateFinanceText(row.paymentStatus)} />
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[14px] font-semibold text-[#75695f]">
                     {row.payoutReference || "--"}
@@ -296,6 +286,7 @@ export default function FinancePayoutsTable({
         <div className="flex items-center gap-1">
           <button
             className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#d8d0c8] bg-white text-[#8c7f73] transition hover:bg-[#faf7f4] hover:text-[#1c1510] active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+            aria-label={t("finance.previous")}
             disabled={currentPage === 1}
             onClick={() => onPageChange(currentPage - 1)}
             type="button"
@@ -326,6 +317,7 @@ export default function FinancePayoutsTable({
 
           <button
             className="flex h-8 w-8 items-center justify-center rounded-[6px] border border-[#d8d0c8] bg-white text-[#8c7f73] transition hover:bg-[#faf7f4] hover:text-[#1c1510] active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+            aria-label={t("finance.next")}
             disabled={currentPage === totalPages}
             onClick={() => onPageChange(currentPage + 1)}
             type="button"
@@ -343,9 +335,7 @@ export default function FinancePayoutsTable({
       ) : null}
 
       {isDetailLoading ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 text-[14px] font-semibold text-white">
-          Loading payout details...
-        </div>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 text-[14px] font-semibold text-white"> {translateFinanceText("Loading payout details...")} </div>
       ) : null}
     </section>
   );

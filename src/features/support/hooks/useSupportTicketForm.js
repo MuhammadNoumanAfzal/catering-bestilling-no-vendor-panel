@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   isMenuImageUploadConfigured,
   uploadMenuImage,
@@ -31,6 +32,7 @@ function buildInitialForm(prefill = null) {
 }
 
 export default function useSupportTicketForm(onSubmitted, initialForm = null) {
+  const { t } = useTranslation();
   const isAttachmentUploadAvailable = isMenuImageUploadConfigured();
   const [form, setForm] = useState(() => buildInitialForm(initialForm));
   const [attachment, setAttachment] = useState(null);
@@ -79,7 +81,7 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
     if (!isAttachmentUploadAvailable) {
       setAttachment(null);
       setAttachmentError(
-        "Attachments are temporarily unavailable right now. You can still submit your ticket without a screenshot.",
+        t("support.attachmentsUnavailableMessage", { defaultValue: "Attachments are temporarily unavailable right now. You can still submit your ticket without a screenshot." }),
       );
       return;
     }
@@ -91,13 +93,13 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
 
     if (!ALLOWED_ATTACHMENT_TYPES.includes(nextFile.type)) {
       setAttachment(null);
-      setAttachmentError("Please upload a PNG, JPG, JPEG, or WEBP screenshot.");
+      setAttachmentError(t("support.invalidAttachmentType", { defaultValue: "Please upload a PNG, JPG, JPEG, or WEBP screenshot." }));
       return;
     }
 
     if (nextFile.size > MAX_ATTACHMENT_SIZE_BYTES) {
       setAttachment(null);
-      setAttachmentError("Please upload a screenshot under 2MB.");
+      setAttachmentError(t("support.attachmentTooLarge", { defaultValue: "Please upload a screenshot under 2MB." }));
       return;
     }
 
@@ -124,8 +126,10 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
         ? await uploadMenuImage(attachment)
         : null;
       const selectedIssueLabel =
-        supportIssueTypeOptions.find((option) => option.value === form.issueType)?.label
-        || form.issueType;
+        (() => {
+          const option = supportIssueTypeOptions.find((item) => item.value === form.issueType);
+          return option?.labelKey ? t(option.labelKey, { defaultValue: option.label }) : option?.label || form.issueType;
+        })();
 
       const result = await createSupportTicket({
         subject: selectedIssueLabel,
@@ -143,11 +147,15 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
       if (typeof onSubmitted === "function") {
         await onSubmitted(result);
       }
-      await showSupportTicketSubmitted();
+      await showSupportTicketSubmitted({
+        title: t("support.ticketSubmittedTitle", { defaultValue: "Ticket submitted" }),
+        text: t("support.ticketSubmittedPopupText", { defaultValue: "Your support ticket was sent successfully. Our team will review it soon." }),
+        confirmButtonText: t("support.continue", { defaultValue: "Continue" }),
+      });
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to submit your support ticket right now.",
-        "Support ticket failed",
+        error.message || t("support.unableSubmitTicket", { defaultValue: "Unable to submit your support ticket right now." }),
+        t("support.ticketFailed", { defaultValue: "Support ticket failed" }),
       );
     } finally {
       setIsSubmitting(false);

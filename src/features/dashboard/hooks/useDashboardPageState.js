@@ -77,7 +77,7 @@ function buildNewOrderRequests(rows = [], t) {
       amount: row.total || "NOK 0.00",
       statusLabel: t("dashboard.orders.new"),
       guests: t("dashboard.orders.guests", { count: Number(row.guests || 0) }),
-      timing: `${row.date || t("dashboard.orders.deliveryPending")} ${row.time ? `kl. ${row.time}` : ""}`.trim(),
+      timing: `${row.date || t("dashboard.orders.deliveryPending")} ${row.time ? `${t("dashboard.orders.timePrefix", { defaultValue: "at" })} ${row.time}` : ""}`.trim(),
       address: t("dashboard.orders.customer", { name: row.customer || t("dashboard.orders.unavailableCustomer") }),
       tone: "is-warning",
     }));
@@ -245,7 +245,10 @@ export default function useDashboardPageState() {
   );
 
   async function handleNewOrderAccept(order) {
-    const result = await confirmOrderStatusAction(t("dashboard.orders.accept"), order.id);
+    const result = await confirmOrderStatusAction(t("dashboard.orders.accept"), order.id, {
+      text: t("dashboard.orders.confirmApplyToOrder", { action: t("dashboard.orders.accept"), orderId: order.id }),
+      cancelButtonText: t("dashboard.orders.notNow"),
+    });
 
     if (!result.isConfirmed || !order?.rawId) {
       return;
@@ -264,7 +267,7 @@ export default function useDashboardPageState() {
         urgentOrdersCount: Math.max(0, current.urgentOrdersCount - 1),
       }));
 
-      await showOrderStatusUpdated(`${order.id} ${t("dashboard.orders.accept").toLowerCase()}.`);
+      await showOrderStatusUpdated(t("dashboard.orders.acceptedToast", { id: order.id, defaultValue: `${order.id} accepted.` }));
       navigate(`/orders/${order.rawId}`);
     } catch (error) {
       await showVendorErrorAlert(
@@ -277,7 +280,10 @@ export default function useDashboardPageState() {
   }
 
   async function handleNewOrderReject(order) {
-    const result = await confirmOrderStatusAction(t("dashboard.orders.reject"), order.id);
+    const result = await confirmOrderStatusAction(t("dashboard.orders.reject"), order.id, {
+      text: t("dashboard.orders.confirmApplyToOrder", { action: t("dashboard.orders.reject"), orderId: order.id }),
+      cancelButtonText: t("dashboard.orders.notNow"),
+    });
 
     if (!result.isConfirmed || !order?.rawId) {
       return;
@@ -291,7 +297,7 @@ export default function useDashboardPageState() {
         urgentOrders: current.urgentOrders.filter((item) => item.rawId !== order.rawId),
         urgentOrdersCount: Math.max(0, current.urgentOrdersCount - 1),
       }));
-      await showOrderStatusUpdated(`${order.id} ${t("dashboard.orders.reject").toLowerCase()}.`);
+      await showOrderStatusUpdated(t("dashboard.orders.rejectedToast", { id: order.id, defaultValue: `${order.id} rejected.` }));
     } catch (error) {
       await showVendorErrorAlert(
         error.message || t("dashboard.orders.requiresAttention"),

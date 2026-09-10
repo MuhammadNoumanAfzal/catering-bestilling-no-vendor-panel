@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 
 function Field({ label, value }) {
@@ -10,14 +11,15 @@ function Field({ label, value }) {
 }
 
 export default function LogisticsPanel({ logistics }) {
+  const { t } = useTranslation();
   const mapQuery = encodeURIComponent(logistics.fullAddress || logistics.deliveryAddress);
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 
   return (
-    <DetailPanel title="Delivery Location">
+    <DetailPanel title={t("orders.detail.deliveryLocation", { defaultValue: "Delivery Location" })}>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(180px,0.7fr)]">
-        <Field label="Delivery Address" value={logistics.deliveryAddress} />
-        <Field label="Event Type" value={logistics.eventType} />
+        <Field label={t("orders.deliveryAddress", { defaultValue: "Delivery Address" })} value={logistics.deliveryAddress} />
+        <Field label={t("orders.detail.eventType", { defaultValue: "Event Type" })} value={logistics.eventType} />
       </div>
 
       <div className="mt-2.5">
@@ -27,7 +29,7 @@ export default function LogisticsPanel({ logistics }) {
           rel="noreferrer"
           target="_blank"
         >
-          View on Google Maps
+          {t("orders.detail.viewOnMaps", { defaultValue: "View on Google Maps" })}
         </a>
       </div>
     </DetailPanel>

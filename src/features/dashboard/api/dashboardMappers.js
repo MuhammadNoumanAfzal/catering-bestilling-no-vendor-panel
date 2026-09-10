@@ -108,7 +108,35 @@ function shouldShowTrend(value, trendValue, timeLabel) {
   return numericTrend !== 0;
 }
 
-function buildTrendMeta(value, trendValue, timeLabel) {
+function translateTrendTimeLabel(timeLabel, t) {
+  const label = normalizeString(timeLabel).trim();
+  const normalized = label.toLowerCase().replace(/\s+/g, " ");
+
+  if (!label) {
+    return "";
+  }
+
+  const nextHoursMatch = normalized.match(/^next (\d+) hours?$/);
+  if (nextHoursMatch) {
+    return t("dashboard.trends.nextHours", { count: Number(nextHoursMatch[1]) });
+  }
+
+  if (["vs last month", "versus last month", "last month"].includes(normalized)) {
+    return t("dashboard.trends.vsLastMonth");
+  }
+
+  if (["vs yesterday", "versus yesterday", "yesterday"].includes(normalized)) {
+    return t("dashboard.trends.vsYesterday");
+  }
+
+  if (["vs average", "versus average", "average"].includes(normalized)) {
+    return t("dashboard.trends.vsAverage");
+  }
+
+  return label;
+}
+
+function buildTrendMeta(value, trendValue, timeLabel, t) {
   if (!shouldShowTrend(value, trendValue, timeLabel)) {
     return {
       trend: null,
@@ -120,7 +148,7 @@ function buildTrendMeta(value, trendValue, timeLabel) {
   return {
     trend: mapTrendDirection(trendValue),
     trendValue: formatTrendValue(trendValue),
-    timeLabel: normalizeString(timeLabel),
+    timeLabel: translateTrendTimeLabel(timeLabel, t),
   };
 }
 
@@ -136,7 +164,7 @@ function buildCapacityHelper(capacityPercent, t) {
   return t("dashboard.orders.lowDemand");
 }
 
-function formatDeliveryWindow(windowValue, deliveryDate) {
+function formatDeliveryWindow(windowValue, deliveryDate, locale = "nb-NO") {
   if (windowValue && typeof windowValue === "object") {
     const label = normalizeString(windowValue.label).trim();
     const start = normalizeString(windowValue.start).trim();
@@ -152,11 +180,11 @@ function formatDeliveryWindow(windowValue, deliveryDate) {
     }
 
     if (date) {
-      return formatDateLabel(date);
+      return formatDateLabel(date, locale);
     }
   }
 
-  return normalizeString(deliveryDate).trim() ? formatDateLabel(deliveryDate) : "--";
+  return normalizeString(deliveryDate).trim() ? formatDateLabel(deliveryDate, locale) : "--";
 }
 
 function mapUrgentOrderTone(deliveryDate) {
@@ -243,21 +271,25 @@ export function mapDashboardResponse(
     totalOrders,
     summary.totalOrdersTrend,
     summary.totalOrdersTimeLabel,
+    t,
   );
   const upcomingOrdersTrendMeta = buildTrendMeta(
     upcomingOrders,
     summary.upcomingOrdersTrend,
     summary.upcomingOrdersTimeLabel,
+    t,
   );
   const urgentOrdersTrendMeta = buildTrendMeta(
     urgentOrdersCount,
     summary.urgentOrdersTrend,
     summary.urgentOrdersTimeLabel,
+    t,
   );
   const capacityTrendMeta = buildTrendMeta(
     capacityPercent,
     summary.capacityTrend,
     summary.capacityTimeLabel,
+    t,
   );
 
   const overviewCards = [
@@ -323,7 +355,7 @@ export function mapDashboardResponse(
         amount: formatCurrency(node.finalPrice, currency),
         statusLabel: normalizeString(node.statusLabel || node.status) || t("dashboard.orders.urgentLabel"),
         guests: t("dashboard.orders.guests", { count: toNumber(node.guestCount) }),
-        timing: formatDeliveryWindow(node.deliveryWindow, node.deliveryDate),
+        timing: formatDeliveryWindow(node.deliveryWindow, node.deliveryDate, locale),
         address: t("dashboard.orders.customer", { name: displayCustomer }),
         tone: mapUrgentOrderTone(node.deliveryDate),
       };
@@ -339,8 +371,8 @@ export function mapDashboardResponse(
   const kitchenStatus = buildKitchenStatusFromSummary(dashboardKitchenSummary, t);
 
   const chartValues = chartPoints.map((point) => ({
-    month: formatShortChartLabel(point?.label) || "--",
-    tooltipLabel: formatChartTooltipLabel(point?.label) || normalizeString(point?.label) || "--",
+    month: formatShortChartLabel(point?.label, locale) || "--",
+    tooltipLabel: formatChartTooltipLabel(point?.label, locale) || normalizeString(point?.label) || "--",
     rawValue: toNumber(point?.earnings),
     amountLabel: formatCurrency(point?.earnings, currency),
     value: maxChartValue > 0 ? Math.max(6, Math.round((toNumber(point?.earnings) / maxChartValue) * 100)) : 0,
@@ -364,7 +396,7 @@ export function mapDashboardResponse(
     }));
 
   const subtitleLabel =
-    dateFilterLabel === "Custom Date" && customDateLabel
+    dateFilterLabel === t("dashboard.date.custom") && customDateLabel
       ? t("dashboard.chart.revenueFrom", { date: customDateLabel })
       : t("dashboard.chart.revenueOver", { period: normalizeString(dateFilterLabel).toLowerCase() });
 

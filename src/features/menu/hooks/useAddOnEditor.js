@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -203,19 +204,19 @@ export function useAddOnEditor() {
 
   async function handleImageUpload(file) {
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      await showVendorErrorAlert("Please upload a PNG, JPG, or WEBP image.");
+      await showVendorErrorAlert(i18n.t("vendorMessages.imageType"));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      await showVendorErrorAlert("Please upload an image under 5MB.");
+      await showVendorErrorAlert(i18n.t("vendorMessages.image5MB"));
       return;
     }
 
     try {
       const uploadedAsset = await uploadMenuImage(file);
       setField("image", uploadedAsset);
-      await showVendorSuccessToast("Product image uploaded.");
+      await showVendorSuccessToast(i18n.t("vendorMessages.productImageUploaded"));
     } catch (error) {
       await showVendorErrorAlert(error.message || t("menu.unableUpload", { defaultValue: "Unable to process the selected image." }));
     }
@@ -225,18 +226,18 @@ export function useAddOnEditor() {
     if (!formState.addOnName.trim()) {
       setFieldErrors((current) => ({
         ...current,
-        addOnName: "Please enter an add-on name.",
+        addOnName: i18n.t("vendorMessages.addonNameRequired"),
       }));
-      await showVendorErrorAlert("Please enter an add-on name.");
+      await showVendorErrorAlert(i18n.t("vendorMessages.addonNameRequired"));
       return false;
     }
 
     if (!String(formState.price).trim()) {
       setFieldErrors((current) => ({
         ...current,
-        price: "Please enter a price for this add-on.",
+        price: i18n.t("vendorMessages.addonPriceRequired"),
       }));
-      await showVendorErrorAlert("Please enter a price for this add-on.");
+      await showVendorErrorAlert(i18n.t("vendorMessages.addonPriceRequired"));
       return false;
     }
 
@@ -271,7 +272,7 @@ export function useAddOnEditor() {
         : [...current.mealTypes, nextOption.value],
       isAddMealTypeModalOpen: false,
     }));
-    await showVendorSuccessToast(result.message || "Meal type created.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.mealCreated"));
   }
 
   async function handleEditMealType(id, newName) {
@@ -288,7 +289,7 @@ export function useAddOnEditor() {
       ...current,
       mealTypes: current.mealTypes.map((val) => (val === id ? updatedOption.value : val)),
     }));
-    await showVendorSuccessToast(result.message || "Meal type updated successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.mealUpdated"));
   }
 
   async function handleDeleteMealType(id) {
@@ -300,7 +301,7 @@ export function useAddOnEditor() {
       ...current,
       mealTypes: current.mealTypes.filter((val) => val !== id),
     }));
-    await showVendorSuccessToast(result.message || "Meal type deleted successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.mealDeleted"));
   }
 
   async function saveCurrentAddOn({ navigateAfterSave }) {
@@ -326,7 +327,7 @@ export function useAddOnEditor() {
       setFieldErrors(emptyFieldErrors);
 
       await showVendorSuccessToast(
-        result.message || (navigateAfterSave ? t("menu.addOnSaved", { defaultValue: "Add-on saved successfully." }) : t("menu.addOnAdded", { defaultValue: "Add-on added." })),
+        (navigateAfterSave ? t("menu.addOnSaved", { defaultValue: "Add-on saved successfully." }) : t("menu.addOnAdded", { defaultValue: "Add-on added." })),
       );
 
       if (navigateAfterSave) {

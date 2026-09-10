@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import {
   financeDateOptions,
@@ -18,8 +19,6 @@ export default function FinanceOrdersFilters({
   onSelectDateOption,
   onStatusChange,
   onToggleDateMenu,
-  onExport,
-  isExporting = false,
   selectedDateOption,
   onClearDateFilter,
 }) {
@@ -33,7 +32,7 @@ export default function FinanceOrdersFilters({
 
             return (
               <button
-                key={status}
+                key={translateFinanceText(status)}
                 className={`cursor-pointer rounded-[6px] px-3 py-1.5 text-[12px] font-bold leading-none transition ${
                   isActive
                     ? "bg-[#d96e39] text-white"
@@ -42,7 +41,7 @@ export default function FinanceOrdersFilters({
                 onClick={() => onStatusChange(status)}
                 type="button"
               >
-                {status}
+                {translateFinanceText(status)}
               </button>
             );
           })}
@@ -55,7 +54,7 @@ export default function FinanceOrdersFilters({
               onClick={onToggleDateMenu}
               type="button"
             >
-              <span className="truncate">{dateButtonLabel}</span>
+              <span className="truncate">{translateFinanceText(dateButtonLabel)}</span>
               {selectedDateOption !== "30days" ? (
                 <span
                   className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
@@ -73,14 +72,7 @@ export default function FinanceOrdersFilters({
               )}
             </button>
 
-            <button
-              className="cursor-pointer rounded-[8px] border border-[#dcd4cc] bg-white px-3 py-[7px] text-[10px] font-bold text-[#2b231d] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isExporting}
-              onClick={() => onExport("csv")}
-              type="button"
-            >
-              {isExporting ? t("finance.exporting", { defaultValue: "Exporting…" }) : t("finance.export", { defaultValue: "Export CSV" })}
-            </button>
+
           </div>
 
           {isDateMenuOpen ? (
@@ -102,11 +94,9 @@ export default function FinanceOrdersFilters({
                         onClick={() => onSelectDateOption(option.id)}
                         type="button"
                       >
-                        <span>{option.label}</span>
+                        <span>{translateFinanceText(option.label)}</span>
                         {isActive ? (
-                          <span className="text-[10px] font-bold tracking-[0.08em]">
-                            ACTIVE
-                          </span>
+                          <span className="text-[10px] font-bold tracking-[0.08em]"> {translateFinanceText("ACTIVE")} </span>
                         ) : null}
                       </button>
                     );
@@ -118,9 +108,7 @@ export default function FinanceOrdersFilters({
                     <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#d58a61]">
                       {t("finance.customRange", { defaultValue: "Custom Range" })}
                     </p>
-                    <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]">
-                      Choose a start and end date to filter the orders list.
-                    </p>
+                    <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]"> {translateFinanceText("Choose a start and end date to filter the orders list.")} </p>
 
                     <div className="mt-4 space-y-3">
                       <label className="flex flex-col gap-1">

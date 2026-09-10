@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import DeliveryActionsBar from "../components/DeliveryActionsBar";
 import DeliveryAddSlotModal from "../components/DeliveryAddSlotModal";
 import DeliveryAreasSection from "../components/DeliveryAreasSection";
@@ -176,7 +177,7 @@ export default function DeliveryPage() {
         isSaving={isSaving}
         onCancel={handleCancelChanges}
         onSave={handleSaveChanges}
-        saveMessage={loadError ? "Fix the loading issue before editing or saving." : saveMessage}
+        saveMessage={loadError ? i18n.t("delivery.fixLoad") : saveMessage}
       />
 
       {isAddSlotModalOpen ? (

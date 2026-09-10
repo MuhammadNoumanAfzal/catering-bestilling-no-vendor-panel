@@ -1,3 +1,4 @@
+import { translateNotificationText } from "../notificationTranslations";
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import { getVendorOrdersPage } from "../../order/api/orderApi";
 import {
@@ -138,6 +139,7 @@ function buildSyntheticOrderNotificationNode(order, notificationState) {
     notificationType: "NEW_ORDER",
     audience: "VENDOR",
     title: "New order received",
+    generatedOrder: { customer: customerName, order: orderNumber, event: eventName },
     message: `${message}.`,
     isRead,
     createdAt: order?.createdOn || new Date().toISOString(),
@@ -291,7 +293,7 @@ export async function markVendorNotificationAsRead(id) {
   const payload = result?.markFinanceNotificationRead;
 
   if (!payload?.success || !payload?.notification?.id) {
-    throw new Error(payload?.message || "Unable to mark the notification as read.");
+    throw new Error(payload?.message || translateNotificationText("Unable to mark the notification as read."));
   }
 
   return {
@@ -326,7 +328,7 @@ export async function markAllVendorNotificationsAsRead() {
   const payload = result?.markAllFinanceNotificationsRead;
 
   if (!payload?.success) {
-    throw new Error(payload?.message || "Unable to mark all notifications as read.");
+    throw new Error(payload?.message || translateNotificationText("Unable to mark all notifications as read."));
   }
 
   const currentState = readVendorOrderNotificationState();
@@ -348,7 +350,7 @@ export async function archiveVendorNotification(id) {
   const payload = result?.markAllFinanceNotificationsRead;
 
   if (!payload?.success) {
-    throw new Error(payload?.message || "Unable to update the notification.");
+    throw new Error(payload?.message || translateNotificationText("Unable to update the notification."));
   }
 
   return {
@@ -370,6 +372,6 @@ export async function updateVendorNotificationSettings(input) {
   return unwrapMutationResult(
     result,
     "updateVendorNotificationSettings",
-    "Unable to update notification settings.",
+    translateNotificationText("Unable to update notification settings."),
   );
 }

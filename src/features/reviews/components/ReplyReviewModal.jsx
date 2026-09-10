@@ -1,3 +1,4 @@
+import { formatReviewDate } from "../reviewFormatting";
 import { Star, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +24,7 @@ export default function ReplyReviewModal({
         {/* Header */}
         <div className="flex items-center justify-between gap-3 border-b border-[#efe6de] pb-3">
           <h2 className="type-h3 m-0 text-[#181310]">{t("reviews.replyTitle", { defaultValue: "Reply to Review" })}</h2>
-          <button className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-[#7a6d63] hover:bg-[#faf7f4] hover:text-[#181310] transition" onClick={onClose} type="button">
+          <button className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-[#7a6d63] hover:bg-[#faf7f4] hover:text-[#181310] transition" aria-label={t("reviews.closeReply")} onClick={onClose} type="button">
             <X size={16} />
           </button>
         </div>
@@ -34,7 +35,7 @@ export default function ReplyReviewModal({
         <div className="flex items-start gap-3">
             {review.avatar ? (
               <img
-                alt={review.author}
+                alt={review.author === "Anonymous Customer" ? t("reviews.anonymous") : review.author}
                 className="h-10 w-10 rounded-full object-cover border border-[#efe6de]"
                 src={review.avatar}
               />
@@ -46,7 +47,7 @@ export default function ReplyReviewModal({
             <div className="min-w-0 flex-1">
               <p className="type-h4 m-0 text-[#181310]">{review.author}</p>
               <p className="mt-1 text-[13px] font-medium text-[#8c7f73]">
-                {review.reviewDate} | {t("notifications.order", { defaultValue: "Order" })} {review.orderRef || review.id}
+                {formatReviewDate(review.reviewDate)} | {t("notifications.order", { defaultValue: "Order" })} {review.orderRef || review.id}
               </p>
             </div>
           </div>
@@ -81,7 +82,7 @@ export default function ReplyReviewModal({
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
                 <span className="font-semibold text-[#7a6d63]">{t("reviews.orderType", { defaultValue: "Order Type" })}</span>
                 <span className="font-extrabold text-[#1c1510]">
-                  {review.orderType || review.deliveryType}
+                  {review.orderType === "Review" ? t("reviews.reviewLabel") : review.orderType || t(`reviews.${String(review.deliveryType).toLowerCase()}`, { defaultValue: review.deliveryType })}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-[#f2ece6] pb-2">
@@ -90,7 +91,7 @@ export default function ReplyReviewModal({
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="font-semibold text-[#7a6d63]">{t("reviews.reviewedOn", { defaultValue: "Reviewed On" })}</span>
-                <span className="font-extrabold text-[#1c1510]">{review.reviewedOn || "--"}</span>
+                <span className="font-extrabold text-[#1c1510]">{formatReviewDate(review.reviewedOn)}</span>
               </div>
             </div>
           </div>

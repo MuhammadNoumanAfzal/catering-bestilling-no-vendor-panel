@@ -1,3 +1,4 @@
+import { notificationMessage, translateNotificationText, formatNotificationTime } from "../notificationTranslations";
 import { useTranslation } from "react-i18next";
 
 export default function NotificationItem({ notification, onOpen, sequenceNumber = null }) {
@@ -24,7 +25,7 @@ export default function NotificationItem({ notification, onOpen, sequenceNumber 
         </div>
 
         <button
-          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-left"
+          className="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
           onClick={() => onOpen(notification)}
           type="button"
         >
@@ -32,7 +33,7 @@ export default function NotificationItem({ notification, onOpen, sequenceNumber 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="m-0 truncate text-[16px] font-semibold text-[#1e1712]">
-                  {sequenceNumber ? `${sequenceNumber}. ` : ""}{notification.title}
+                  {sequenceNumber ? `${sequenceNumber}. ` : ""}{translateNotificationText(notification.title)}
                 </h3>
                 {!notification.isRead ? (
                   <span
@@ -43,12 +44,12 @@ export default function NotificationItem({ notification, onOpen, sequenceNumber 
               </div>
 
               <p className="mt-1 text-[14px] leading-6 text-[#65594f]">
-                {notification.message}
+                {notificationMessage(notification)}
               </p>
             </div>
 
             <span className="shrink-0 whitespace-nowrap rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-[#8c7e71] shadow-[inset_0_0_0_1px_rgba(228,215,204,0.8)]">
-              {notification.time}
+              {formatNotificationTime(notification.time)}
             </span>
           </div>
 
@@ -64,7 +65,7 @@ export default function NotificationItem({ notification, onOpen, sequenceNumber 
             </span>
 
             <span className="text-[12px] font-semibold text-[#302822] transition group-hover:text-[#cf6e38]">
-              {notification.actionLabel}
+              {translateNotificationText(notification.actionLabel)}
             </span>
           </div>
         </button>

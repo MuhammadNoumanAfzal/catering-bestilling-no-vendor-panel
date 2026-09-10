@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import Swal from "sweetalert2";
 
 const BRAND_ORANGE = "#cf6e38";
@@ -70,13 +71,13 @@ export function showNewNotificationToast(title, message) {
   });
 }
 
-export function showVendorErrorAlert(message, title = "Something went wrong") {
+export function showVendorErrorAlert(message, title = i18n.t("vendorMessages.wrong")) {
   return Swal.fire(
     withBaseOptions({
       icon: "error",
       title,
       text: message,
-      confirmButtonText: "Try again",
+      confirmButtonText: i18n.t("vendorMessages.retry"),
     }),
   );
 }
@@ -85,7 +86,7 @@ export function confirmVendorAction({
   title,
   text,
   confirmButtonText,
-  cancelButtonText = "Cancel",
+  cancelButtonText = i18n.t("vendorMessages.cancel"),
   icon = "question",
   confirmButtonColor = BRAND_ORANGE,
 }) {
@@ -117,7 +118,7 @@ export function confirmVendorResetSettings() {
     title: "Reset all settings?",
     text: "This will restore all settings to their default values.",
     confirmButtonText: "Reset Settings",
-    cancelButtonText: "Cancel",
+    cancelButtonText: i18n.t("vendorMessages.cancel"),
     icon: "warning",
   });
 }
@@ -127,7 +128,7 @@ export function confirmVendorDeactivateStore() {
     title: "Deactivate store?",
     text: "Your store will be hidden from customers until reactivated.",
     confirmButtonText: "Deactivate Store",
-    cancelButtonText: "Cancel",
+    cancelButtonText: i18n.t("vendorMessages.cancel"),
     icon: "warning",
   });
 }
@@ -158,7 +159,7 @@ export function confirmVendorDeleteStore() {
       inputPlaceholder: "Delete",
       showCancelButton: true,
       confirmButtonText: "Delete Permanently",
-      cancelButtonText: "Cancel",
+      cancelButtonText: i18n.t("vendorMessages.cancel"),
       confirmButtonColor: "#ff2918",
       cancelButtonColor: MUTED_BUTTON,
       customClass: {
@@ -191,7 +192,7 @@ export function promptVendorPasswordConfirmation(actionLabel) {
       inputPlaceholder: "Enter password",
       showCancelButton: true,
       confirmButtonText: actionLabel,
-      cancelButtonText: "Cancel",
+      cancelButtonText: i18n.t("vendorMessages.cancel"),
       confirmButtonColor: BRAND_ORANGE,
       cancelButtonColor: MUTED_BUTTON,
       inputValidator: (value) => {
@@ -205,13 +206,17 @@ export function promptVendorPasswordConfirmation(actionLabel) {
   );
 }
 
-export function showSupportTicketSubmitted() {
+export function showSupportTicketSubmitted({
+  title = "Ticket submitted",
+  text = "Your support ticket was sent successfully. Our team will review it soon.",
+  confirmButtonText = i18n.t("vendorMessages.continue"),
+} = {}) {
   return Swal.fire(
     withBaseOptions({
       icon: "success",
-      title: "Ticket submitted",
-      text: "Your support ticket was sent successfully. Our team will review it soon.",
-      confirmButtonText: "Continue",
+      title,
+      text,
+      confirmButtonText,
     }),
   );
 }
@@ -226,7 +231,7 @@ export function showResetLinkSentSuccess() {
       icon: "success",
       title: "Reset link sent",
       text: "We sent a password reset link to your email address.",
-      confirmButtonText: "Continue",
+      confirmButtonText: i18n.t("vendorMessages.continue"),
     }),
   );
 }
@@ -248,19 +253,19 @@ export function showVerificationSuccess() {
       icon: "success",
       title: "Code verified",
       text: "Your verification code was confirmed successfully.",
-      confirmButtonText: "Continue",
+      confirmButtonText: i18n.t("vendorMessages.continue"),
     }),
   );
 }
 
-export function confirmOrderStatusAction(actionLabel, orderId) {
+export function confirmOrderStatusAction(actionLabel, orderId, options = {}) {
   return confirmVendorAction({
-    title: `${actionLabel}?`,
-    text: orderId
-      ? `Apply "${actionLabel}" to order ${orderId}?`
-      : `Apply "${actionLabel}" to this order?`,
-    confirmButtonText: actionLabel,
-    cancelButtonText: "Not now",
+    title: options.title || `${actionLabel}?`,
+    text: options.text || (orderId
+      ? i18n.t("menu.applyOrder", { action: actionLabel, id: orderId })
+      : i18n.t("menu.applyThisOrder", { action: actionLabel })),
+    confirmButtonText: options.confirmButtonText || actionLabel,
+    cancelButtonText: options.cancelButtonText || i18n.t("vendorMessages.notNow"),
     icon: "question",
   });
 }
@@ -273,9 +278,9 @@ export function showMenuSavedSuccess() {
   return Swal.fire(
     withBaseOptions({
       icon: "success",
-      title: "Add-on saved",
-      text: "Your menu add-on was saved successfully.",
-      confirmButtonText: "Continue",
+      title: i18n.t("vendorMessages.addonSaved"),
+      text: i18n.t("vendorMessages.addonSavedText"),
+      confirmButtonText: i18n.t("vendorMessages.continue"),
     }),
   );
 }
@@ -290,7 +295,7 @@ export function promptVendorAuthRequired() {
       showDenyButton: true,
       confirmButtonText: "Sign in",
       denyButtonText: "Help",
-      cancelButtonText: "Not now",
+      cancelButtonText: i18n.t("vendorMessages.notNow"),
       cancelButtonColor: MUTED_BUTTON,
       denyButtonColor: SOFT_ORANGE,
     }),

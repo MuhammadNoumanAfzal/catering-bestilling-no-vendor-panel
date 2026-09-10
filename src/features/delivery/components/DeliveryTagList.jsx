@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useTranslation } from "react-i18next";
 
 export default function DeliveryTagList({ items, onRemove, disabled = false }) {
@@ -52,9 +53,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] font-bold text-[#241c17]">{t("delivery.selectedAreas", { defaultValue: "Selected service areas" })}</p>
-          <p className="text-[12px] text-[#8b7d71]">
-            Manage the locations currently available for delivery.
-          </p>
+          <p className="text-[12px] text-[#8b7d71]"> {i18n.t("delivery.manageAreasHelp")} </p>
         </div>
         <span className="inline-flex min-h-[28px] items-center rounded-full bg-[#fff2ea] px-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#cf6e38]">
           {t("delivery.selected", { count: items.length, defaultValue: `${items.length} selected` })}
@@ -74,7 +73,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
                   ? "border-[#e7d3c7] bg-[#fff7f2] text-[#9b8678]"
                   : "border-[#e3dad2] bg-white text-[#2b221d] shadow-[0_6px_16px_rgba(35,22,12,0.04)]"
             }`}
-            title={inactive ? "This area is inactive and not visible to customers" : undefined}
+            title={inactive ? i18n.t("delivery.inactiveAreaHelp") : undefined}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -83,8 +82,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {getAreaPostCode(item) ? (
-                    <span className="inline-flex min-h-[24px] items-center rounded-full bg-[#f7f1eb] px-2.5 text-[11px] font-semibold text-[#6f6258]">
-                      Postcode {getAreaPostCode(item)}
+                    <span className="inline-flex min-h-[24px] items-center rounded-full bg-[#f7f1eb] px-2.5 text-[11px] font-semibold text-[#6f6258]"> {i18n.t("delivery.postcode")} {getAreaPostCode(item)}
                     </span>
                   ) : null}
                   <span

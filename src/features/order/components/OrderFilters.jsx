@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export default function OrderFilters({
   filters,
   activeFilter,
@@ -29,4 +31,3 @@ export default function OrderFilters({
     </div>
   );
 }
-import { useTranslation } from "react-i18next";

@@ -1,3 +1,4 @@
+import { translateNotificationText } from "../notificationTranslations";
 import NotificationFilterDropdown from "./NotificationFilterDropdown";
 import { useTranslation } from "react-i18next";
 
@@ -27,8 +28,8 @@ export default function NotificationsToolbar({
 
           return (
             <button
-              key={tab}
-              className={`rounded-full px-3.5 py-2 text-[13px] font-semibold transition ${
+              key={translateNotificationText(tab)}
+              className={`cursor-pointer rounded-full px-3.5 py-2 text-[13px] font-semibold transition ${
                 isActive
                   ? "bg-[#cf6e38] text-white shadow-[0_8px_18px_rgba(207,110,56,0.22)]"
                   : "border border-[#e4d8cf] bg-[#fffdfa] text-[#5d5147] hover:border-[#d7c8bc] hover:bg-[#faf5f0]"
@@ -45,7 +46,7 @@ export default function NotificationsToolbar({
       <div className="flex min-w-0 items-center gap-2 max-[760px]:w-full max-[760px]:flex-col max-[760px]:items-stretch">
         <NotificationFilterDropdown
           customRange={customRange}
-          filterLabel={filterLabel}
+          filterLabel={translateNotificationText(filterLabel)}
           isOpen={isFilterOpen}
           onCustomRangeChange={onCustomRangeChange}
           onSelectFilter={onSelectFilter}

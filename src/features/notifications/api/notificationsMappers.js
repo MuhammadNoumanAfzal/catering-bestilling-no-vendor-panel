@@ -226,9 +226,11 @@ export function mapNotificationNode(node) {
 
   return {
     id: node.id,
+    rawType,
     type,
     title: node.title || "Notification",
     message: messageParts.filter(Boolean).join(" "),
+    generatedOrder: node.generatedOrder || null,
     actionLabel: type === "PAYOUT" ? "View Receipt" : "View Detail",
     isRead: Boolean(node.isRead),
     highlighted: !node.isRead,

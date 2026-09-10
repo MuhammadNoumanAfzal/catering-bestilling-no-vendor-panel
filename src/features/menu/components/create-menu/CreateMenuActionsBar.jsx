@@ -1,9 +1,10 @@
+import i18n from "../../../../i18n";
 export default function CreateMenuActionsBar({
   hidePublish = false,
   onCancel,
   onPublish,
   onSaveDraft,
-  saveLabel = "Save as Draft",
+  saveLabel = i18n.t("vendorMessages.saveDraft"),
 }) {
   const { t } = useTranslation();
   return (

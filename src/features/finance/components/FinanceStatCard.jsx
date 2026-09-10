@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 import { Banknote, CircleX, Clock3, WalletCards } from "lucide-react";
 
 const iconMap = {
@@ -18,7 +19,7 @@ export default function FinanceStatCard({ label, value, accent, icon }) {
       >
         <Icon size={38} className="text-[#d7713d]" />
       </span>
-      <p className="m-0 type-h6 font-bold leading-[1.2] text-[#18120e]">{label}</p>
+      <p className="m-0 type-h6 font-bold leading-[1.2] text-[#18120e]">{translateFinanceText(label)}</p>
       <p className="type-h4 mt-1.5 leading-none text-[#16110d]">{value}</p>
     </div>
   );

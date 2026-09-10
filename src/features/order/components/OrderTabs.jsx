@@ -1,13 +1,37 @@
 import { ChevronDown, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const filterOptions = [
-  "All Time",
-  "Last 7 Days",
-  "Last 14 Days",
-  "Last Month",
-  "Custom Date",
+  { value: "All Time", labelKey: "orders.allTime", defaultLabel: "All Time" },
+  { value: "Last 7 Days", labelKey: "orders.last7Days", defaultLabel: "Last 7 Days" },
+  { value: "Last 14 Days", labelKey: "orders.last14Days", defaultLabel: "Last 14 Days" },
+  { value: "Last Month", labelKey: "orders.lastMonth", defaultLabel: "Last Month" },
+  { value: "Custom Date", labelKey: "orders.customDate", defaultLabel: "Custom Date" },
 ];
+
+const tabKeyByLabel = {
+  All: "all",
+  Upcoming: "upcoming",
+  Pending: "pending",
+  New: "new",
+  Accepted: "accepted",
+  Preparing: "preparing",
+  Ready: "ready",
+  "Out for delivery": "outForDelivery",
+  Delivered: "delivered",
+  Canceled: "canceled",
+  Modified: "modified",
+};
+
+function translateTabLabel(label, t) {
+  return t(`orders.${tabKeyByLabel[label] || "status"}`, { defaultValue: label });
+}
+
+function translateFilterLabel(value, t) {
+  const option = filterOptions.find((item) => item.value === value);
+  return option ? t(option.labelKey, { defaultValue: option.defaultLabel }) : value;
+}
 
 function formatCustomDate(value) {
   if (!value) {
@@ -31,6 +55,7 @@ export default function OrderTabs({
   toDate,
   onToDateChange,
 }) {
+  const { t } = useTranslation();
   const orderedTabs = [
     ...tabs.filter((tab) => tab.label === "All"),
     ...tabs.filter((tab) => tab.label !== "All"),
@@ -42,8 +67,8 @@ export default function OrderTabs({
       return "";
     }
 
-    return `From: ${formatCustomDate(fromDate)}   To: ${formatCustomDate(toDate)}`;
-  }, [fromDate, selectedFilter, toDate]);
+    return `${t("orders.from", { defaultValue: "From" })}: ${formatCustomDate(fromDate)}   ${t("orders.to", { defaultValue: "To" })}: ${formatCustomDate(toDate)}`;
+  }, [fromDate, selectedFilter, t, toDate]);
 
   function handleFilterSelect(option) {
     onFilterSelect(option);
@@ -71,7 +96,7 @@ export default function OrderTabs({
               onClick={() => onTabChange(tab.label)}
               type="button"
             >
-              {tab.label}
+              {translateTabLabel(tab.label, t)}
             </button>
           ))}
         </div>
@@ -92,7 +117,7 @@ export default function OrderTabs({
 
           {filterDisabled ? (
             <div className="type-para inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#f1dccf] bg-[#fff5ef] px-4 font-medium text-[#b7653f]">
-              {filterDisabledLabel || "Live filter active"}
+              {filterDisabledLabel || t("orders.liveFilterActive", { defaultValue: "Live filter active" })}
             </div>
           ) : (
             <div className="relative">
@@ -101,7 +126,7 @@ export default function OrderTabs({
                 onClick={() => setIsFilterOpen((currentState) => !currentState)}
                 type="button"
               >
-                {selectedFilter || "Filter Date"}
+                {selectedFilter ? translateFilterLabel(selectedFilter, t) : t("orders.filterDate", { defaultValue: "Filter Date" })}
                 {selectedFilter ? (
                   <span
                     className="ml-1.5 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
@@ -121,23 +146,21 @@ export default function OrderTabs({
                 <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-[6px] border border-[#ddd4cb] bg-white p-1 shadow-[0_10px_24px_rgba(25,18,12,0.16)]">
                   {filterOptions.map((option) => (
                     <button
-                      key={option}
+                      key={option.value}
                       className={`block w-full cursor-pointer rounded-[4px] px-2 py-1.5 text-left text-[10px] font-medium transition ${
-                        selectedFilter === option
+                        selectedFilter === option.value
                           ? "bg-[#f7efe8] text-[#cf6e38]"
                           : "text-[#5e554d] hover:bg-[#f6f1eb]"
                       }`}
-                      onClick={() => handleFilterSelect(option)}
+                      onClick={() => handleFilterSelect(option.value)}
                       type="button"
-                    >
-                      {option}
-                    </button>
+                    >{t(option.labelKey, { defaultValue: option.defaultLabel })}</button>
                   ))}
 
                   {selectedFilter === "Custom Date" ? (
                     <div className="mt-1 border-t border-[#ece3d9] px-1 pt-2">
                       <label className="mb-1 block text-[10px] font-medium text-[#6f645b]">
-                        From
+                        {t("orders.from", { defaultValue: "From" })}
                       </label>
                       <input
                         className="mb-2 h-8 w-full cursor-pointer rounded-[6px] border border-[#d8cfc6] bg-white px-2 text-[11px] text-[#2d261f] outline-none"
@@ -146,7 +169,7 @@ export default function OrderTabs({
                         value={fromDate}
                       />
                       <label className="mb-1 block text-[10px] font-medium text-[#6f645b]">
-                        To
+                        {t("orders.to", { defaultValue: "To" })}
                       </label>
                       <input
                         className="h-8 w-full cursor-pointer rounded-[6px] border border-[#d8cfc6] bg-white px-2 text-[11px] text-[#2d261f] outline-none"
@@ -159,7 +182,7 @@ export default function OrderTabs({
                         onClick={() => setIsFilterOpen(false)}
                         type="button"
                       >
-                        Apply
+                        {t("orders.apply", { defaultValue: "Apply" })}
                       </button>
                     </div>
                   ) : null}

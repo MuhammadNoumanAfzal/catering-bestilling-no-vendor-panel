@@ -1,3 +1,7 @@
+import i18n from "../../../i18n";
+
+const tr = (key) => escapeHtml(i18n.t(`orders.print.${key}`));
+
 function escapeHtml(value) {
   return String(value ?? "-")
     .replace(/&/g, "&amp;")
@@ -13,7 +17,14 @@ function money(value) {
 }
 
 function formatServiceType(value) {
-  return /unavailable/i.test(String(value || "")) ? "Delivery" : value || "Delivery";
+  if (!value || /unavailable|^delivery$/i.test(String(value))) return i18n.t("orders.print.delivery");
+  return /^(pickup|pick up|collection)$/i.test(value) ? i18n.t("orders.print.pickup") : value;
+}
+
+function translateSummaryLabel(label) {
+  const key = { "delivery fee": "deliveryFee", "sales tax": "salesTax", "add-ons": "addOns", tip: "tip", "service fee": "serviceFee", discount: "discount", "customer responsibility": "customerResponsibility", "company responsibility": "companyResponsibility", total: "total" }[String(label || "").toLowerCase()];
+  if (key) return i18n.t("orders.detail." + key);
+  return String(label || "").replace(/^Subtotal/i, i18n.t("orders.detail.subtotal")).replace(/guests/i, i18n.t("orders.guests"));
 }
 
 function buildSummaryRows(financials, order, raw) {
@@ -29,9 +40,9 @@ function buildSummaryRows(financials, order, raw) {
 
   return [
     ...detailRows.map(
-      (item) => `<tr><td>${escapeHtml(item?.label)}</td><td>${escapeHtml(item?.value)}</td></tr>`,
+      (item) => `<tr><td>${escapeHtml(translateSummaryLabel(item?.label))}</td><td>${escapeHtml(item?.value)}</td></tr>`,
     ),
-    `<tr class="total-row"><td>Total Amount</td><td>${escapeHtml(totalAmount)}</td></tr>`,
+    `<tr class="total-row"><td>${tr("totalAmount")}</td><td>${escapeHtml(totalAmount)}</td></tr>`,
   ].join("");
 }
 
@@ -49,17 +60,17 @@ export function printVendorOrder(order) {
             .map(([label, value]) => `${escapeHtml(label)}: ${escapeHtml(value)}`)
             .join("<br />");
           const note = item?.specialInstructions
-            ? `<br /><small class="kitchen-note"><strong>Kitchen note:</strong> ${escapeHtml(item.specialInstructions)}</small>`
+            ? `<br /><small class="kitchen-note"><strong>${tr("kitchenNote")}</strong> ${escapeHtml(item.specialInstructions)}</small>`
             : "";
 
-          return `<tr><td><strong>${escapeHtml(item?.productName || item?.name || "Item")}</strong>${options ? `<br /><small>${options}</small>` : ""}${note}</td><td>${escapeHtml(item?.quantity || 1)}</td><td>${money(item?.lineTotal ?? item?.price ?? 0)}</td></tr>`;
+          return `<tr><td><strong>${escapeHtml(item?.productName || item?.name || i18n.t("orders.print.item"))}</strong>${options ? `<br /><small>${options}</small>` : ""}${note}</td><td>${escapeHtml(item?.quantity || 1)}</td><td>${money(item?.lineTotal ?? item?.price ?? 0)}</td></tr>`;
         })
         .join("")
-    : `<tr><td colspan="3">No item details returned.</td></tr>`;
+    : `<tr><td colspan="3">${tr("noItems")}</td></tr>`;
 
   const preparationDetails = items
     .map((item) => {
-      const title = item?.productName || item?.name || "Item";
+      const title = item?.productName || item?.name || i18n.t("orders.print.item");
       const description = item?.description || item?.product?.description || "";
       const menuItems = Array.isArray(item?.product?.menuItems) ? item.product.menuItems : [];
       const itemAllergens = Array.isArray(item?.allergens)
@@ -72,15 +83,15 @@ export function printVendorOrder(order) {
       );
       const allergens = [...new Set([...itemAllergens, ...menuItemAllergens])];
       const includedItems = menuItems.length
-        ? `<div class="included-items"><div class="detail-label">Included dishes</div><ul>${menuItems
-            .map((menuItem) => `<li><strong>${escapeHtml(menuItem?.title || menuItem?.name || "Item")}</strong>${menuItem?.description ? ` - ${escapeHtml(menuItem.description)}` : ""}</li>`)
+        ? `<div class="included-items"><div class="detail-label">${tr("includedDishes")}</div><ul>${menuItems
+            .map((menuItem) => `<li><strong>${escapeHtml(menuItem?.title || menuItem?.name || i18n.t("orders.print.item"))}</strong>${menuItem?.description ? ` - ${escapeHtml(menuItem.description)}` : ""}</li>`)
             .join("")}</ul></div>`
         : "";
       const allergenContent = allergens.length
-        ? `Contains: ${escapeHtml(allergens.join(", "))}`
-        : "No allergen information supplied.";
+        ? `${tr("contains")} ${escapeHtml(allergens.join(", "))}`
+        : tr("noAllergens");
 
-      return `<article class="prep-card"><div class="detail-label">Order item</div><h3>${escapeHtml(title)} <span>x${escapeHtml(item?.quantity || 1)}</span></h3>${description ? `<p class="description">${escapeHtml(description)}</p>` : ""}${includedItems}<div class="allergen-box"><div class="detail-label">Allergen information</div><strong>${allergenContent}</strong></div></article>`;
+      return `<article class="prep-card"><div class="detail-label">${tr("orderItem")}</div><h3>${escapeHtml(title)} <span>x${escapeHtml(item?.quantity || 1)}</span></h3>${description ? `<p class="description">${escapeHtml(description)}</p>` : ""}${includedItems}<div class="allergen-box"><div class="detail-label">${tr("allergens")}</div><strong>${allergenContent}</strong></div></article>`;
     })
     .join("");
 
@@ -92,9 +103,9 @@ export function printVendorOrder(order) {
 
   printWindow.document.write(`
     <!doctype html>
-    <html>
+    <html lang="${escapeHtml(i18n.resolvedLanguage || i18n.language)}">
       <head>
-        <title>Kitchen Order ${escapeHtml(order?.displayId || order?.id)}</title>
+        <title>${tr("kitchenOrder")} ${escapeHtml(order?.displayId || order?.id)}</title>
         <style>
           @page { size: A4 portrait; margin: 13mm; }
           * { box-sizing: border-box; }
@@ -144,29 +155,29 @@ export function printVendorOrder(order) {
       </head>
       <body>
         <div class="print-actions">
-          <button type="button" id="print-button">Print</button>
-          <button type="button" id="close-button">Close</button>
+          <button type="button" id="print-button">${tr("print")}</button>
+          <button type="button" id="close-button">${tr("close")}</button>
         </div>
-        <p class="print-hint">Print preview will open automatically.</p>
+        <p class="print-hint">${tr("preview")}</p>
         <main class="ticket">
           <header class="header">
-            <p class="eyebrow">GoCatering Kitchen Ticket</p>
-            <h1>Order ${escapeHtml(order?.displayId || order?.id)}</h1>
+            <p class="eyebrow">${tr("ticket")}</p>
+            <h1>${tr("order")} ${escapeHtml(order?.displayId || order?.id)}</h1>
           </header>
-          <div class="meta">Printed ${escapeHtml(new Date().toLocaleString())} | ${escapeHtml(serviceType)} | ${escapeHtml(logistics.eventDate || order?.date)} at ${escapeHtml(logistics.deliveryWindow || order?.time)}</div>
+          <div class="meta">${tr("printed")} ${escapeHtml(new Date().toLocaleString(i18n.language === "nb" ? "nb-NO" : "en-GB"))} | ${escapeHtml(serviceType)} | ${escapeHtml(logistics.eventDate || order?.date)} ${tr("at")} ${escapeHtml(logistics.deliveryWindow || order?.time)}</div>
           <div class="content">
-            <h2>Customer & Fulfilment</h2>
+            <h2>${tr("fulfilment")}</h2>
             <div class="grid">
-              <section class="box"><div class="label">Customer contact</div><div class="primary">${escapeHtml(customer.name)}</div>${escapeHtml(customer.phone)}<br>${escapeHtml(customer.email)}</section>
+              <section class="box"><div class="label">${tr("contact")}</div><div class="primary">${escapeHtml(customer.name)}</div>${escapeHtml(customer.phone)}<br>${escapeHtml(customer.email)}</section>
               <section class="box"><div class="label">${escapeHtml(serviceType)}</div><div class="primary">${escapeHtml(logistics.eventDate || order?.date)} | ${escapeHtml(logistics.deliveryWindow || order?.time)}</div>${escapeHtml(logistics.fullAddress || logistics.deliveryAddress)}</section>
             </div>
-            <h2>Order Items</h2>
-            <table><thead><tr><th>Order item / selected options</th><th>Qty</th><th>Total</th></tr></thead><tbody>${itemRows}</tbody></table>
-            <h2>Bill Summary</h2>
+            <h2>${tr("items")}</h2>
+            <table><thead><tr><th>${tr("options")}</th><th>${tr("qty")}</th><th>${tr("total")}</th></tr></thead><tbody>${itemRows}</tbody></table>
+            <h2>${tr("summary")}</h2>
             <table class="summary"><tbody>${buildSummaryRows(order?.financialSummary, order, raw)}</tbody></table>
-            ${preparationDetails ? `<h2>Preparation Details &amp; Allergens</h2><section class="prep-grid">${preparationDetails}</section>` : ""}
-            ${order?.note ? `<h2>Special Instructions</h2><div class="note">${escapeHtml(order.note)}</div>` : ""}
-            <div class="footer">Keep this ticket with the order until it is completed.</div>
+            ${preparationDetails ? `<h2>${tr("preparation")}</h2><section class="prep-grid">${preparationDetails}</section>` : ""}
+            ${order?.note ? `<h2>${tr("instructions")}</h2><div class="note">${escapeHtml(order.note)}</div>` : ""}
+            <div class="footer">${tr("footer")}</div>
           </div>
         </main>
         <script>

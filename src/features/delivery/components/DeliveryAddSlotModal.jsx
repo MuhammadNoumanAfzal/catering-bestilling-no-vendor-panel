@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { X } from "lucide-react";
 import { deliveryDays } from "../data/deliveryData";
 import { useTranslation } from "react-i18next";
@@ -41,9 +42,7 @@ export default function DeliveryAddSlotModal({
           </button>
         </div>
 
-        <p className="type-para mt-3 text-[#6f6258]">
-          Enter the delivery time range you want customers to choose from.
-        </p>
+        <p className="type-para mt-3 text-[#6f6258]"> {i18n.t("delivery.slotRangeHelp")} </p>
 
         <label className="mt-4 flex flex-col gap-1">
           <span className="type-para text-[#1a1410]">{t("delivery.deliveryDay", { defaultValue: "Delivery day" })}</span>
@@ -60,7 +59,7 @@ export default function DeliveryAddSlotModal({
           >
             {selectableDays.map((day) => (
               <option key={day.value} value={day.value}>
-                {day.label}
+                {t(`delivery.${day.value}`, { defaultValue: day.label })}
               </option>
             ))}
           </select>

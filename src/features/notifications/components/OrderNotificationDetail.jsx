@@ -1,3 +1,4 @@
+import { translateNotificationText } from "../notificationTranslations";
 import { ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { deriveOrderSummary } from "../api/notificationsMappers";
@@ -26,7 +27,7 @@ export default function OrderNotificationDetail({
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-[2px]">
       <div className="relative my-auto flex max-h-[calc(100vh-32px)] w-full max-w-[480px] flex-col rounded-[16px] bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,0.22)]">
         <button
-          aria-label="Close"
+          aria-label={translateNotificationText("Close")}
           className="absolute right-4 top-4 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#efe6de] bg-white text-[#7a6d63] transition hover:bg-[#faf7f4] hover:text-[#181310]"
           onClick={onClose}
           type="button"
@@ -35,7 +36,7 @@ export default function OrderNotificationDetail({
         </button>
 
         <div className="mb-3 border-b border-[#efe6de] pb-3 text-center">
-          <h3 className="type-h3 m-0 font-extrabold text-[#17120e]">Order details</h3>
+          <h3 className="type-h3 m-0 font-extrabold text-[#17120e]"> {translateNotificationText("Order details")} </h3>
         </div>
 
         <div className="hide-scrollbar flex-1 overflow-y-auto pr-0.5">
@@ -45,26 +46,21 @@ export default function OrderNotificationDetail({
               style={{ backgroundImage: `url("${orderSummary.coverImageUrl}")` }}
             />
           ) : (
-            <div className="flex h-[160px] w-full items-center justify-center rounded-[12px] border border-[#efe6de] bg-[#faf7f4] text-[13px] font-semibold text-[#7a6d63] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-              Order preview not available
-            </div>
+            <div className="flex h-[160px] w-full items-center justify-center rounded-[12px] border border-[#efe6de] bg-[#faf7f4] text-[13px] font-semibold text-[#7a6d63] shadow-[0_2px_8px_rgba(0,0,0,0.06)]"> {translateNotificationText("Order preview not available")} </div>
           )}
 
           <div className="hide-scrollbar mt-3.5 flex items-center justify-between gap-4 overflow-x-auto whitespace-nowrap border-b border-[#f2ece6] pb-2.5 text-[12px] font-semibold sm:text-[13px]">
-            <span className="text-[#7a6d63]">
-              Status:{" "}
+            <span className="text-[#7a6d63]"> {translateNotificationText("Status:")} {" "}
               <strong className="font-bold text-[#2ca24f]">
-                {displayStatus}
+                {translateNotificationText(displayStatus)}
               </strong>
             </span>
-            <span className="text-[#7a6d63]">
-              Customer:{" "}
+            <span className="text-[#7a6d63]"> {translateNotificationText("Customer:")} {" "}
               <strong className="font-extrabold text-[#1c1510]">
                 {displayCustomer}
               </strong>
             </span>
-            <span className="text-[#7a6d63]">
-              Order ID:{" "}
+            <span className="text-[#7a6d63]"> {translateNotificationText("Order ID:")} {" "}
               <strong className="font-extrabold text-[#1c1510]">
                 {displayOrderId}
               </strong>
@@ -72,7 +68,7 @@ export default function OrderNotificationDetail({
           </div>
 
           <div className="mt-4 pt-1">
-            <h4 className="type-h4 m-0 font-extrabold text-[#17120e]">Items</h4>
+            <h4 className="type-h4 m-0 font-extrabold text-[#17120e]"> {translateNotificationText("Items")} </h4>
           </div>
 
           {isLoading ? (
@@ -120,9 +116,7 @@ export default function OrderNotificationDetail({
                             src={item.imageUrl}
                           />
                         ) : (
-                          <div className="flex h-9 w-[56px] shrink-0 items-center justify-center rounded-[6px] border border-[#efe6de] bg-[#f4ede7] text-[10px] font-bold uppercase tracking-[0.06em] text-[#8c7f73]">
-                            Item
-                          </div>
+                          <div className="flex h-9 w-[56px] shrink-0 items-center justify-center rounded-[6px] border border-[#efe6de] bg-[#f4ede7] text-[10px] font-bold uppercase tracking-[0.06em] text-[#8c7f73]"> {translateNotificationText("Item")} </div>
                         )}
                         <span className="text-[13px] font-bold text-[#3a312a]">
                           {item.name}
@@ -142,12 +136,10 @@ export default function OrderNotificationDetail({
                         {item.description ? (
                           <p className="m-0 font-semibold">{item.description}</p>
                         ) : (
-                          <p className="m-0 font-semibold">No extra description provided.</p>
+                          <p className="m-0 font-semibold"> {translateNotificationText("No extra description provided.")} </p>
                         )}
                         <div className="mt-2 flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
-                            Allergens:
-                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]"> {translateNotificationText("Allergens:")} </span>
                           <span className="rounded-[4px] bg-[#fff2ec] px-1.5 py-0.5 text-[10px] font-extrabold text-[#d96e39]">
                             {Array.isArray(item.allergens) && item.allergens.length
                               ? item.allergens.join(", ")
@@ -160,9 +152,7 @@ export default function OrderNotificationDetail({
                 );
               })
                 ) : (
-                  <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] px-4 py-3 text-[13px] font-semibold text-[#5c5046]">
-                    Order item details are not available for this notification yet.
-                  </div>
+                  <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] px-4 py-3 text-[13px] font-semibold text-[#5c5046]"> {translateNotificationText("Order item details are not available for this notification yet.")} </div>
                 )}
               </div>
             </>
@@ -174,9 +164,7 @@ export default function OrderNotificationDetail({
             className="h-8 cursor-pointer rounded-[6px] bg-[#d96e39] px-5 text-[12px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] transition active:scale-95"
             onClick={onClose}
             type="button"
-          >
-            Close
-          </button>
+          > {translateNotificationText("Close")} </button>
         </div>
       </div>
     </div>

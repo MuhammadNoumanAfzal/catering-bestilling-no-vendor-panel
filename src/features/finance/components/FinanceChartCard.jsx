@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -11,7 +12,7 @@ function formatPointLabel(label) {
   const parsedDate = new Date(label);
 
   if (!Number.isNaN(parsedDate.getTime())) {
-    return parsedDate.toLocaleDateString("en-GB", {
+    return parsedDate.toLocaleDateString(i18n.language === "nb" ? "nb-NO" : "en-GB", {
       weekday: "short",
     });
   }
@@ -32,7 +33,7 @@ function formatAxisLabel(value, { isCurrency }) {
 
 function formatTooltipValue(value, { isCurrency }) {
   if (!isCurrency) {
-    return `${new Intl.NumberFormat("nb-NO").format(value)} orders`;
+    return i18n.t("finance.orderCount", { count: value });
   }
 
   return `NOK ${new Intl.NumberFormat("nb-NO", {
@@ -42,7 +43,7 @@ function formatTooltipValue(value, { isCurrency }) {
 }
 
 export default function FinanceChartCard({ points }) {
-  const { t } = useTranslation();
+  const { t, i18n: translation } = useTranslation();
   const [activeTab, setActiveTab] = useState("earning");
   const isOrdersView = activeTab === "orders";
   const chartPoints = useMemo(
@@ -55,7 +56,7 @@ export default function FinanceChartCard({ points }) {
           isOrdersView ? Number(point?.orders) || 0 : Number(point?.earnings) || 0,
         ),
       })),
-    [isOrdersView, points],
+    [isOrdersView, points, translation.language],
   );
 
   return (

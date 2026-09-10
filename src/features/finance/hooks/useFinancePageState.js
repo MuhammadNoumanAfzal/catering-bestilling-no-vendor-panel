@@ -1,3 +1,5 @@
+import i18n from "../../../i18n";
+import { translateFinanceText } from "../financeTranslations";
 import { useEffect, useMemo, useState } from "react";
 import {
   exportVendorFinanceTransactions,
@@ -26,7 +28,7 @@ function getSafeFinanceErrorMessage(error, fallbackMessage) {
   const message = String(error?.message || "").trim();
 
   if (!message) {
-    return fallbackMessage;
+    return translateFinanceText(fallbackMessage);
   }
 
   const looksLikeServerTrace =
@@ -36,7 +38,7 @@ function getSafeFinanceErrorMessage(error, fallbackMessage) {
     message.includes("graphql_relay") ||
     message.includes("\n");
 
-  return looksLikeServerTrace ? fallbackMessage : message;
+  return translateFinanceText(looksLikeServerTrace ? fallbackMessage : message);
 }
 
 function toPayoutStatusFilter(status) {
@@ -67,7 +69,7 @@ function formatDateLabel(dateValue) {
     return "";
   }
 
-  return date.toLocaleDateString("en-GB").replace(/\//g, "-");
+  return date.toLocaleDateString(i18n.language === "nb" ? "nb-NO" : "en-GB").replace(/\//g, "-");
 }
 
 export default function useFinancePageState() {
@@ -141,7 +143,7 @@ export default function useFinancePageState() {
         if (!isCancelled) {
           await showVendorErrorAlert(
             getSafeFinanceErrorMessage(error, FINANCE_SUMMARY_ERROR_MESSAGE),
-            "Finance unavailable",
+            translateFinanceText("Finance unavailable"),
           );
         }
       }
@@ -211,7 +213,7 @@ export default function useFinancePageState() {
               error,
               FINANCE_TRANSACTIONS_ERROR_MESSAGE,
             ),
-            "Payout activity unavailable",
+            translateFinanceText("Payout activity unavailable"),
           );
         }
       } finally {
@@ -239,7 +241,7 @@ export default function useFinancePageState() {
     selectedDateOption === "custom" &&
     appliedCustomRange?.from &&
     appliedCustomRange?.to
-      ? `From: ${formatDateLabel(appliedCustomRange.from)} To: ${formatDateLabel(appliedCustomRange.to)}`
+      ? i18n.t("finance.dateRange", { from: formatDateLabel(appliedCustomRange.from), to: formatDateLabel(appliedCustomRange.to) })
       : selectedDateOption === "30days"
         ? "Last 30 Days"
         : selectedDateOption === "lastMonth"
@@ -368,14 +370,14 @@ export default function useFinancePageState() {
         window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
       }
 
-      await showVendorSuccessToast(result.message || "Export generated successfully.");
+      await showVendorSuccessToast(translateFinanceText("Export generated successfully."));
     } catch (error) {
       await showVendorErrorAlert(
         getSafeFinanceErrorMessage(
           error,
           "Unable to export payout activity right now. Please try again shortly.",
         ),
-        "Export failed",
+        translateFinanceText("Export failed"),
       );
     } finally {
       setIsExporting(false);

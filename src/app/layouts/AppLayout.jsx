@@ -1,4 +1,4 @@
-﻿import {
+import {
   Bell,
   ChevronDown,
   X,
@@ -14,6 +14,7 @@
   Wallet,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { confirmVendorLogout, showNewNotificationToast } from "../../utils/vendorAlerts";
@@ -29,15 +30,15 @@ import { getVendorOrdersPage } from "../../features/order/api/orderApi";
 import { getVendorMenus } from "../../features/menu/api/menuApi";
 
 const sidebarItems = [
-  { label: "Dashboard", to: "/dashboard", icon: Grid2x2 },
-  { label: "Orders", to: "/orders", icon: ShoppingBag },
-  { label: "Menu", to: "/menu", icon: Utensils },
-  { label: "Delivery", to: "/delivery", icon: Truck },
-  { label: "Finance", to: "/finance", icon: Wallet },
-  { label: "Reviews", to: "/reviews", icon: MessageSquareText },
-  { label: "Notifications", to: "/notifications", icon: Bell },
-  { label: "Support", to: "/support", icon: LifeBuoy },
-  { label: "Settings", to: "/settings", icon: Settings },
+  { labelKey: "layout.nav.dashboard", defaultLabel: "Dashboard", to: "/dashboard", icon: Grid2x2 },
+  { labelKey: "layout.nav.orders", defaultLabel: "Orders", to: "/orders", icon: ShoppingBag },
+  { labelKey: "layout.nav.menu", defaultLabel: "Menu", to: "/menu", icon: Utensils },
+  { labelKey: "layout.nav.delivery", defaultLabel: "Delivery", to: "/delivery", icon: Truck },
+  { labelKey: "layout.nav.finance", defaultLabel: "Finance", to: "/finance", icon: Wallet },
+  { labelKey: "layout.nav.reviews", defaultLabel: "Reviews", to: "/reviews", icon: MessageSquareText },
+  { labelKey: "layout.nav.notifications", defaultLabel: "Notifications", to: "/notifications", icon: Bell },
+  { labelKey: "layout.nav.support", defaultLabel: "Support", to: "/support", icon: LifeBuoy },
+  { labelKey: "layout.nav.settings", defaultLabel: "Settings", to: "/settings", icon: Settings },
 ];
 
 const NOTIFICATION_POLL_INTERVAL_MS = 10000;
@@ -76,6 +77,7 @@ function getInitials(name) {
 
 export default function AppLayout() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { logout, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [headerSearch, setHeaderSearch] = useState("");
@@ -87,10 +89,10 @@ export default function AppLayout() {
   const isSearchablePage = pathname === "/orders" || pathname === "/menu";
   const localSearch = isSearchablePage ? searchParamValue : headerSearch;
   const accountDisplayName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Vendor User";
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || t("layout.vendorUser", { defaultValue: "Vendor User" });
   const [businessDisplayName, setBusinessDisplayName] = useState("");
   const displayName = businessDisplayName || accountDisplayName;
-  const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : "Vendor";
+  const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : t("layout.vendor", { defaultValue: "Vendor" });
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const prevLatestNotificationIdRef = useRef(null);
@@ -179,9 +181,9 @@ export default function AppLayout() {
             latestNotificationId !== lastSeenNotificationId &&
             latestNotification?.isRead === false
           ) {
-            const title = latestNotification?.title || "New Notification";
+            const title = latestNotification?.title || t("layout.notifications.new", { defaultValue: "New Notification" });
             const message =
-              latestNotification?.message || "You have received a new update.";
+              latestNotification?.message || t("layout.notifications.received", { defaultValue: "You have received a new update." });
             showNewNotificationToast(title, message).then((result) => {
               if (result.isConfirmed) {
                 navigate("/notifications");
@@ -230,7 +232,7 @@ export default function AppLayout() {
       window.removeEventListener("focus", handleRefreshCounts);
       document.removeEventListener("visibilitychange", handleRefreshCounts);
     };
-  }, []);
+  }, [navigate, t]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -315,8 +317,8 @@ export default function AppLayout() {
           .filter((order) => order?.id)
           .map((order) => ({
             id: `order-${order.id}`,
-            label: order.invoiceNumber || order.orderNumber || `Order ${order.id}`,
-            description: ["Order", order.customerName, order.eventName].filter(Boolean).join(" â€¢ "),
+            label: order.invoiceNumber || order.orderNumber || `${t("layout.search.order", { defaultValue: "Order" })} ${order.id}`,
+            description: [t("layout.search.order", { defaultValue: "Order" }), order.customerName, order.eventName].filter(Boolean).join(" - "),
             to: `/orders/${encodeURIComponent(order.id)}`,
           }));
         const menuResults = (menusResponse?.vendorMenus?.edges || [])
@@ -325,8 +327,8 @@ export default function AppLayout() {
           .slice(0, 4)
           .map((menu) => ({
             id: `menu-${menu.id}`,
-            label: menu.name || "Menu item",
-            description: "Menu",
+            label: menu.name || t("layout.search.menuItem", { defaultValue: "Menu item" }),
+            description: t("layout.search.menu", { defaultValue: "Menu" }),
             to: `/menu/create?mode=view&id=${encodeURIComponent(menu.id)}`,
           }));
 
@@ -342,7 +344,7 @@ export default function AppLayout() {
       isCancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [localSearch]);
+  }, [localSearch, t]);
 
   async function handleLogout() {
     const result = await confirmVendorLogout();
@@ -388,17 +390,18 @@ export default function AppLayout() {
         <div className="relative flex min-h-0 flex-1 flex-col">
           <div className="mx-4 mt-4 rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
             <img className="block h-auto w-32 object-contain" src="/whiteLogo.png" alt="GoCatering" />
-            <p className="type-subpara mt-3 text-white/75">Vendor dashboard</p>
+            <p className="type-subpara mt-3 text-white/75">{t("layout.vendorDashboard", { defaultValue: "Vendor dashboard" })}</p>
           </div>
 
           <div className="flex-1 overflow-auto px-3 py-6 hide-scrollbar">
-            <nav className="space-y-2" aria-label="Primary navigation">
-              {sidebarItems.map(({ icon: Icon, label, to }) => {
+            <nav className="space-y-2" aria-label={t("layout.primaryNavigation", { defaultValue: "Primary navigation" })}>
+              {sidebarItems.map(({ icon: Icon, labelKey, defaultLabel, to }) => {
                 const active = pathname === to || (to !== "/dashboard" && pathname.startsWith(`${to}/`));
+                const displayLabel = t(labelKey, { defaultValue: defaultLabel });
 
                 return (
                   <NavLink
-                    key={label}
+                    key={to}
                     className={() =>
                       [
                         "group flex cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-semibold transition",
@@ -412,8 +415,8 @@ export default function AppLayout() {
                     <span className="inline-flex h-5 w-5 items-center justify-center rounded-[6px] transition">
                       <Icon size={14} />
                     </span>
-                    <span className="min-w-0 flex-1 truncate">{label}</span>
-                    {label === "Notifications" && unreadNotificationsCount > 0 ? (
+                    <span className="min-w-0 flex-1 truncate">{displayLabel}</span>
+                    {labelKey === "layout.nav.notifications" && unreadNotificationsCount > 0 ? (
                       <span
                         className={[
                           "inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none",
@@ -437,7 +440,7 @@ export default function AppLayout() {
             type="button"
           >
             <LogOut size={14} />
-            <span>Logout</span>
+            <span>{t("layout.logout", { defaultValue: "Logout" })}</span>
           </button>
         </div>
       </aside>
@@ -447,7 +450,7 @@ export default function AppLayout() {
             <div className="relative" ref={searchRef}>
               <input
                 className="h-11 w-full rounded-full border border-transparent bg-[#f1f4f8] px-4 pl-11 pr-11 text-[12px] text-[#231913] outline-none transition placeholder:text-[#a9afba] focus:border-[#ebddd1] focus:bg-white focus:shadow-[0_0_0_4px_rgba(206,105,56,0.11)]"
-                placeholder="Search orders, menu items, or customers..."
+                placeholder={t("layout.search.desktopPlaceholder", { defaultValue: "Search orders, menu items, or customers..." })}
                 type="text"
                 value={localSearch}
                 onChange={handleSearchChange}
@@ -456,7 +459,7 @@ export default function AppLayout() {
               <Search size={15} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#adb3bd]" />
               {localSearch ? (
                 <button
-                  aria-label="Clear search"
+                  aria-label={t("layout.search.clear", { defaultValue: "Clear search" })}
                   className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#8f7f73] transition hover:bg-[#f6efe8] hover:text-[#241913]"
                   onClick={handleClearSearch}
                   type="button"
@@ -467,7 +470,7 @@ export default function AppLayout() {
               {isSearchFocused && localSearch.trim() ? (
                 <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-[18px] border border-[#e8dfd8] bg-white shadow-[0_24px_60px_rgba(45,28,16,0.14)]">
                   {isSearching ? (
-                    <p className="px-4 py-5 text-[12px] text-[#8c7f75]">Searching your orders and menu...</p>
+                    <p className="px-4 py-5 text-[12px] text-[#8c7f75]">{t("layout.search.loading", { defaultValue: "Searching your orders and menu..." })}</p>
                   ) : searchResults.length ? (
                     <div className="max-h-[320px] overflow-y-auto p-2">
                       {searchResults.map((result) => (
@@ -483,7 +486,7 @@ export default function AppLayout() {
                       ))}
                     </div>
                   ) : (
-                    <p className="px-4 py-5 text-[12px] text-[#8c7f75]">No matching orders or menu items found.</p>
+                    <p className="px-4 py-5 text-[12px] text-[#8c7f75]">{t("layout.search.empty", { defaultValue: "No matching orders or menu items found." })}</p>
                   )}
                 </div>
               ) : null}
@@ -543,7 +546,7 @@ export default function AppLayout() {
                       type="button"
                     >
                       <Settings size={15} />
-                      <span>Settings</span>
+                      <span>{t("layout.settings", { defaultValue: "Settings" })}</span>
                     </button>
                     <button
                       className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
@@ -551,7 +554,7 @@ export default function AppLayout() {
                       type="button"
                     >
                       <LogOut size={15} />
-                      <span>Logout</span>
+                      <span>{t("layout.logout", { defaultValue: "Logout" })}</span>
                     </button>
                   </div>
                 </div>
@@ -625,7 +628,7 @@ export default function AppLayout() {
                           type="button"
                         >
                           <Settings size={15} />
-                          <span>Settings</span>
+                          <span>{t("layout.settings", { defaultValue: "Settings" })}</span>
                         </button>
                         <button
                           className="flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-2.5 text-left text-[13px] font-semibold text-[#c85e2f] transition hover:bg-[#fff4ee]"
@@ -633,7 +636,7 @@ export default function AppLayout() {
                           type="button"
                         >
                           <LogOut size={15} />
-                          <span>Logout</span>
+                          <span>{t("layout.logout", { defaultValue: "Logout" })}</span>
                         </button>
                       </div>
                     </div>
@@ -645,14 +648,14 @@ export default function AppLayout() {
             <div className="relative">
               <input
                 className="type-subpara min-h-[42px] w-full rounded-full border border-[#e4d9cf] bg-white px-[16px] pr-11 text-[#241913] outline-none shadow-[0_6px_18px_rgba(38,23,14,0.04)] transition duration-150 placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-                placeholder="Search order, menu item or customer"
+                placeholder={t("layout.search.mobilePlaceholder", { defaultValue: "Search order, menu item or customer" })}
                 type="text"
                 value={localSearch}
                 onChange={handleSearchChange}
               />
               {localSearch ? (
                 <button
-                  aria-label="Clear search"
+                  aria-label={t("layout.search.clear", { defaultValue: "Clear search" })}
                   className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#8f7f73] transition hover:bg-[#f6efe8] hover:text-[#241913]"
                   onClick={handleClearSearch}
                   type="button"
@@ -672,11 +675,14 @@ export default function AppLayout() {
       <nav
         className="hidden max-[960px]:fixed max-[960px]:inset-x-0 max-[960px]:bottom-0 max-[960px]:z-20 max-[960px]:flex flex-row flex-nowrap overflow-x-auto hide-scrollbar gap-1.5 border-t border-[#e3d6ca] bg-white/95 px-3 py-2 shadow-[0_-10px_24px_rgba(38,23,14,0.08)]"
         style={{ WebkitOverflowScrolling: "touch" }}
-        aria-label="Mobile navigation"
+        aria-label={t("layout.mobileNavigation", { defaultValue: "Mobile navigation" })}
       >
-        {sidebarItems.map(({ icon: Icon, label, to }) => ( // eslint-disable-line no-unused-vars
+        {sidebarItems.map(({ icon: Icon, labelKey, defaultLabel, to }) => {
+          const displayLabel = t(labelKey, { defaultValue: defaultLabel });
+
+          return (
           <NavLink
-            key={label}
+            key={to}
             className={({ isActive }) =>
               [
                 "flex flex-col items-center justify-center gap-1 rounded-[14px] px-3.5 py-2 text-[10px] font-semibold transition shrink-0 min-w-[70px] whitespace-nowrap",
@@ -689,15 +695,16 @@ export default function AppLayout() {
           >
             <div className="relative flex flex-col items-center">
               <Icon size={16} />
-              {label === "Notifications" && unreadNotificationsCount > 0 && (
+              {labelKey === "layout.nav.notifications" && unreadNotificationsCount > 0 && (
                 <span className="absolute -right-2.5 -top-1.5 inline-flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-[#d86c3d] text-[8px] font-bold text-white px-0.5 leading-[14px] border border-white">
                   {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
                 </span>
               )}
             </div>
-            <span>{label}</span>
+            <span>{displayLabel}</span>
           </NavLink>
-        ))}
+          );
+        })}
       </nav>
           </div>
     </div>

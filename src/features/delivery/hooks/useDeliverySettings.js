@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getVendorDeliverySettings,
@@ -107,7 +108,7 @@ export default function useDeliverySettings() {
       setAvailableServiceAreas(nextAvailableAreas);
       hasLoadedSettingsRef.current = true;
     } catch (error) {
-      const nextError = error.message || "Unable to load delivery settings right now.";
+      const nextError = error.message || i18n.t("delivery.loadFailed");
       setLoadError(nextError);
       setFieldErrors({});
       setValidationState(defaultValidationState);
@@ -126,7 +127,7 @@ export default function useDeliverySettings() {
       return;
     }
 
-    showVendorErrorAlert(loadError, "Delivery settings unavailable");
+    showVendorErrorAlert(loadError, i18n.t("delivery.unavailable"));
   }, [loadError]);
 
   useEffect(() => {
@@ -396,17 +397,17 @@ export default function useDeliverySettings() {
 
   function handleSaveCustomSlot() {
     if (!customSlotDraft.day) {
-      setSlotDraftError("Choose a delivery day first.");
+      setSlotDraftError(i18n.t("delivery.dayRequired"));
       return;
     }
 
     if (!customSlotDraft.start || !customSlotDraft.end) {
-      setSlotDraftError("Enter both a start time and an end time.");
+      setSlotDraftError(i18n.t("delivery.timesRequired"));
       return;
     }
 
     if (customSlotDraft.start >= customSlotDraft.end) {
-      setSlotDraftError("Start time must be earlier than end time.");
+      setSlotDraftError(i18n.t("delivery.timeOrder"));
       return;
     }
 
@@ -436,15 +437,15 @@ export default function useDeliverySettings() {
     setIsAddSlotModalOpen(false);
     resetSlotDraftState(savedSettings.activeDays);
     resetServiceAreaSearchState();
-    setSaveMessage("Changes discarded.");
-    await showVendorSuccessToast("Delivery changes discarded.");
+    setSaveMessage(i18n.t("delivery.discarded"));
+    await showVendorSuccessToast(i18n.t("delivery.deliveryDiscarded"));
   }
 
   async function handleSaveChanges() {
     if (loadError || !hasLoadedSettingsRef.current) {
       await showVendorErrorAlert(
-        "Reload delivery settings before saving changes.",
-        "Delivery settings unavailable",
+        i18n.t("delivery.reloadBeforeSave"),
+        i18n.t("delivery.unavailable"),
       );
       return;
     }
@@ -460,7 +461,7 @@ export default function useDeliverySettings() {
         const nextErrors = mapFieldErrors(result?.errors || []);
         setFieldErrors(nextErrors);
         setValidationState(buildValidationState(result));
-        setSaveMessage(result?.message || "Fix validation errors before saving.");
+        setSaveMessage(result?.message || i18n.t("delivery.fixBeforeSave"));
         return;
       }
 
@@ -472,11 +473,11 @@ export default function useDeliverySettings() {
       );
       applyLoadedSettings(nextSavedSettings);
       resetServiceAreaSearchState();
-      setSaveMessage("Changes saved.");
-      await showVendorSuccessToast(result.message || "Delivery settings saved.");
+      setSaveMessage(i18n.t("delivery.changesSaved"));
+      await showVendorSuccessToast(i18n.t("delivery.settingsSaved"));
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to save delivery settings right now.",
+        error.message || i18n.t("delivery.saveFailed"),
       );
     } finally {
       setIsSaving(false);

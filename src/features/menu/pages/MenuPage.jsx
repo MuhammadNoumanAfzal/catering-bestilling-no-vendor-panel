@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -38,10 +39,7 @@ function parseMenuPrice(value) {
 }
 
 function getStatusUpdateMessage(item, nextStatus) {
-  const offeringType = item.isAddOn ? "Add-on" : "Menu";
-  const statusLabel = nextStatus === "active" ? "active" : "paused";
-
-  return `${offeringType} "${item.title}" is now ${statusLabel}.`;
+  return i18n.t("menu.statusUpdated", { type: i18n.t(item.isAddOn ? "menu.addonLabel" : "menu.menuLabel"), status: i18n.t(`menu.${nextStatus}`) });
 }
 
 export default function MenuPage() {

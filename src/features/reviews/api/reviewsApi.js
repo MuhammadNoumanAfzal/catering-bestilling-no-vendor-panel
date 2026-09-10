@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
   GET_VENDOR_REVIEW_DETAIL_QUERY,
@@ -36,6 +37,6 @@ export async function saveVendorReviewReply(variables) {
   return unwrapMutationResult(
     result,
     "vendorReviewReply",
-    "Unable to save the review reply.",
+    i18n.t("reviews.saveError"),
   );
 }

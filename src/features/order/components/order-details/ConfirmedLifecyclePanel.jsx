@@ -9,15 +9,16 @@ import {
   Sliders, 
   AlertTriangle 
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 
 const STAGES = [
-  { id: "New", label: "New Order", desc: "Incoming request" },
-  { id: "Accepted", label: "Confirmed", desc: "Scheduled for production" },
-  { id: "Preparing", label: "Preparing", desc: "Kitchen staff working" },
-  { id: "Ready", label: "Food Ready", desc: "Packed & awaiting dispatch" },
-  { id: "Out for delivery", label: "In Transit", desc: "Driver on the way" },
-  { id: "Delivered", label: "Delivered", desc: "Arrived at customer" },
+  { id: "New", labelKey: "orders.detail.stageNew", defaultLabel: "New Order", descKey: "orders.detail.stageIncoming", defaultDesc: "Incoming request" },
+  { id: "Accepted", labelKey: "orders.detail.stageConfirmed", defaultLabel: "Confirmed", descKey: "orders.detail.stageScheduled", defaultDesc: "Scheduled for production" },
+  { id: "Preparing", labelKey: "orders.preparing", defaultLabel: "Preparing", descKey: "orders.detail.stageKitchen", defaultDesc: "Kitchen staff working" },
+  { id: "Ready", labelKey: "orders.detail.stageFoodReady", defaultLabel: "Food Ready", descKey: "orders.detail.stagePacked", defaultDesc: "Packed & awaiting dispatch" },
+  { id: "Out for delivery", labelKey: "orders.detail.stageTransit", defaultLabel: "In Transit", descKey: "orders.detail.stageDriver", defaultDesc: "Driver on the way" },
+  { id: "Delivered", labelKey: "orders.delivered", defaultLabel: "Delivered", descKey: "orders.detail.stageArrived", defaultDesc: "Arrived at customer" },
 ];
 
 function getStageIndex(status) {
@@ -67,19 +68,20 @@ export default function ConfirmedLifecyclePanel({
   currentStatus,
   onStatusSelect,
 }) {
+  const { t } = useTranslation();
   const activeIndex = getStageIndex(currentStatus);
   const isCanceled = currentStatus === "Canceled" || currentStatus === "Reject";
   const canAdjustOrder = !isCanceled && getStageIndex(currentStatus) < getStageIndex("Delivered");
 
   return (
-    <DetailPanel title="Order Lifecycle">
+    <DetailPanel title={t("orders.detail.orderLifecycle", { defaultValue: "Order Lifecycle" })}>
       {/* Canceled/Aborted Status View */}
       {isCanceled ? (
         <div className="mb-4 flex flex-col items-center gap-2 rounded-xl border border-[#ffd0cc] bg-[#fff2f1] p-4 text-center">
           <AlertTriangle className="text-[#dc2626]" size={32} />
-          <strong className="text-[15px] font-extrabold text-[#dc2626]">Order Canceled</strong>
+          <strong className="text-[15px] font-extrabold text-[#dc2626]">{t("orders.detail.orderCanceled", { defaultValue: "Order Canceled" })}</strong>
           <p className="m-0 text-[11px] font-semibold text-[#8a7a6d]">
-            This order has been rejected or canceled.
+            {t("orders.detail.orderCanceledHelp", { defaultValue: "This order has been rejected or canceled." })}
           </p>
         </div>
       ) : (
@@ -132,11 +134,11 @@ export default function ConfirmedLifecyclePanel({
                   <span className={`text-[12px] font-extrabold ${
                     isActive ? "text-[#cf6e38]" : isCompleted ? "text-[#4c423d]" : "text-[#8f7f73]"
                   }`}>
-                    {stage.label}
+                    {t(stage.labelKey, { defaultValue: stage.defaultLabel })}
                   </span>
                   {isActive && (
                     <span className="text-[10px] text-[#8f7f73] font-semibold mt-0.5">
-                      {stage.desc}
+                      {t(stage.descKey, { defaultValue: stage.defaultDesc })}
                     </span>
                   )}
                 </div>
@@ -164,7 +166,7 @@ export default function ConfirmedLifecyclePanel({
               type="button"
             >
               <Icon size={13} className={isPrimary ? "text-white" : "text-[#8f7f73]"} />
-              <span>{action.label}</span>
+              <span>{t(`orders.actionLabels.${action.label}`, { defaultValue: action.label })}</span>
             </button>
           );
         })}
@@ -175,7 +177,7 @@ export default function ConfirmedLifecyclePanel({
             onClick={onOrderAdjustmentClick}
             type="button"
           >
-            <span>Order Adjustment</span>
+            <span>{t("orders.detail.orderAdjustment", { defaultValue: "Order Adjustment" })}</span>
           </button>
         ) : null}
 
@@ -185,7 +187,7 @@ export default function ConfirmedLifecyclePanel({
             <div className="flex items-center gap-1 text-[#8f7f73]">
               <Sliders size={11} />
               <label className="text-[10px] font-bold uppercase tracking-wider">
-                Manual Status Override
+                {t("orders.detail.manualStatusOverride", { defaultValue: "Manual Status Override" })}
               </label>
             </div>
             <div className="relative">
@@ -194,12 +196,12 @@ export default function ConfirmedLifecyclePanel({
                 value={currentStatus || ""}
                 onChange={(e) => onStatusSelect(e.target.value)}
               >
-                <option value="Accepted">Accepted</option>
-                <option value="Preparing">Preparing</option>
-                <option value="Ready">Ready</option>
-                <option value="Out for delivery">Out for Delivery</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Canceled">Canceled (Reject)</option>
+                <option value="Accepted">{t("orders.accepted", { defaultValue: "Accepted" })}</option>
+                <option value="Preparing">{t("orders.preparing", { defaultValue: "Preparing" })}</option>
+                <option value="Ready">{t("orders.ready", { defaultValue: "Ready" })}</option>
+                <option value="Out for delivery">{t("orders.outForDelivery", { defaultValue: "Out for Delivery" })}</option>
+                <option value="Delivered">{t("orders.delivered", { defaultValue: "Delivered" })}</option>
+                <option value="Canceled">{t("orders.detail.canceledReject", { defaultValue: "Canceled (Reject)" })}</option>
               </select>
             </div>
           </div>

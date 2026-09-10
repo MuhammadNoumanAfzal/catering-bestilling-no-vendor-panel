@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -268,8 +269,8 @@ export function useMenuEditor() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load the menu editor right now.",
-            "Menu data unavailable",
+            error.message || i18n.t("vendorMessages.editorUnavailable"),
+            i18n.t("vendorMessages.menuUnavailable"),
           );
           navigate("/menu", { replace: true });
         }
@@ -391,8 +392,8 @@ export function useMenuEditor() {
     }
 
     const nextErrors = {
-      title: targetItem.title?.trim() ? "" : "Please enter an item title.",
-      description: targetItem.description?.trim() ? "" : "Please enter an item description.",
+      title: targetItem.title?.trim() ? "" : i18n.t("vendorMessages.itemTitleRequired"),
+      description: targetItem.description?.trim() ? "" : i18n.t("vendorMessages.itemDescriptionRequired"),
     };
 
     if (nextErrors.title || nextErrors.description) {
@@ -519,21 +520,21 @@ export function useMenuEditor() {
 
   async function handleImageUpload(file, onSuccess) {
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      await showVendorErrorAlert("Please upload a PNG, JPG, or WEBP image.");
+      await showVendorErrorAlert(i18n.t("vendorMessages.imageType"));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      await showVendorErrorAlert("Please upload an image under 2MB.");
+      await showVendorErrorAlert(i18n.t("vendorMessages.image2MB"));
       return;
     }
 
     try {
       const uploadedAsset = await uploadMenuImage(file);
       onSuccess(uploadedAsset);
-      await showVendorSuccessToast("Image uploaded.");
+      await showVendorSuccessToast(i18n.t("vendorMessages.imageUploaded"));
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to upload the selected image.");
+      await showVendorErrorAlert(error.message || i18n.t("vendorMessages.uploadFailed"));
     }
   }
 
@@ -554,49 +555,49 @@ export function useMenuEditor() {
     if (!formState.menuTitle.trim()) {
       setFieldErrors((current) => ({
         ...current,
-        menuTitle: "Please enter a menu title before saving.",
+        menuTitle: i18n.t("vendorMessages.menuTitleRequired"),
       }));
-      return "Please enter a menu title before saving.";
+      return i18n.t("vendorMessages.menuTitleRequired");
     }
 
     if (!formState.category) {
       setFieldErrors((current) => ({
         ...current,
-        category: "Please select a category for this menu.",
+        category: i18n.t("vendorMessages.categoryRequired"),
       }));
-      return "Please select a category for this menu.";
+      return i18n.t("vendorMessages.categoryRequired");
     }
 
     if (!formState.menuTypes.length) {
       setFieldErrors((current) => ({
         ...current,
-        menuTypes: "Please choose at least one food type.",
+        menuTypes: i18n.t("vendorMessages.foodTypeRequired"),
       }));
-      return "Please choose at least one food type.";
+      return i18n.t("vendorMessages.foodTypeRequired");
     }
 
     if (pricingModes.length > 0 && !formState.pricingMode) {
-      return "Please choose a pricing type.";
+      return i18n.t("vendorMessages.pricingRequired");
     }
 
     if (!String(formState.basePrice).trim()) {
       setFieldErrors((current) => ({
         ...current,
-        basePrice: "Please enter a base price.",
+        basePrice: i18n.t("vendorMessages.basePriceRequired"),
       }));
-      return "Please enter a base price.";
+      return i18n.t("vendorMessages.basePriceRequired");
     }
 
     if (!String(formState.minimumGuests).trim()) {
       setFieldErrors((current) => ({
         ...current,
-        minimumGuests: "Please enter the minimum guest count.",
+        minimumGuests: i18n.t("vendorMessages.guestsRequired"),
       }));
-      return "Please enter the minimum guest count.";
+      return i18n.t("vendorMessages.guestsRequired");
     }
 
     if (!formState.menuItems.some((item) => item.title.trim())) {
-      return "Please add at least one menu item.";
+      return i18n.t("vendorMessages.menuItemRequired");
     }
 
     return "";
@@ -617,14 +618,14 @@ export function useMenuEditor() {
       const result = await saveVendorMenu(variables);
       setFieldErrors(emptyFieldErrors);
       clearStoredMenuDraft(mode, menuId);
-      await showVendorSuccessToast(result.message || "Menu saved successfully.");
+      await showVendorSuccessToast(i18n.t("vendorMessages.menuSaved"));
       navigate("/menu", { replace: true });
     } catch (error) {
       setFieldErrors((current) => ({
         ...current,
         ...mapMenuMutationErrors(error?.errors),
       }));
-      await showVendorErrorAlert(error.message || "Unable to save the menu right now.");
+      await showVendorErrorAlert(error.message || i18n.t("vendorMessages.saveFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -663,7 +664,7 @@ export function useMenuEditor() {
       category: nextOption.value,
       isAddCategoryModalOpen: false,
     }));
-    await showVendorSuccessToast(result.message || "Category created.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.categoryCreated"));
   }
 
   async function handleEditCategory(id, newName) {
@@ -680,7 +681,7 @@ export function useMenuEditor() {
       ...current,
       category: current.category === id ? updatedOption.value : current.category,
     }));
-    await showVendorSuccessToast(result.message || "Category updated successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.categoryUpdated"));
   }
 
   function handleAddMealTypeClick() {
@@ -702,7 +703,7 @@ export function useMenuEditor() {
         : [...current.menuTypes, nextOption.value],
       isAddMealTypeModalOpen: false,
     }));
-    await showVendorSuccessToast(result.message || "Food type created.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.foodCreated"));
   }
 
   async function handleEditMealType(id, newName) {
@@ -719,7 +720,7 @@ export function useMenuEditor() {
       ...current,
       menuTypes: current.menuTypes.map((val) => (val === id ? updatedOption.value : val)),
     }));
-    await showVendorSuccessToast(result.message || "Food type updated successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.foodUpdated"));
   }
 
   function handleAddOccasionClick() {
@@ -741,7 +742,7 @@ export function useMenuEditor() {
         : [...current.selectedOccasions, nextOption.value],
       isAddOccasionModalOpen: false,
     }));
-    await showVendorSuccessToast(result.message || "Occasion created.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.occasionCreated"));
   }
 
   async function handleEditOccasion(id, newName) {
@@ -760,7 +761,7 @@ export function useMenuEditor() {
         val === id ? updatedOption.value : val,
       ),
     }));
-    await showVendorSuccessToast(result.message || "Occasion updated successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.occasionUpdated"));
   }
 
   async function handleDeleteCategory(id) {
@@ -772,7 +773,7 @@ export function useMenuEditor() {
       ...current,
       category: current.category === id ? "" : current.category,
     }));
-    await showVendorSuccessToast(result.message || "Category deleted successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.categoryDeleted"));
   }
 
   async function handleDeleteMealType(id) {
@@ -784,7 +785,7 @@ export function useMenuEditor() {
       ...current,
       menuTypes: current.menuTypes.filter((val) => val !== id),
     }));
-    await showVendorSuccessToast(result.message || "Food type deleted successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.foodDeleted"));
   }
 
   async function handleDeleteOccasion(id) {
@@ -796,7 +797,7 @@ export function useMenuEditor() {
       ...current,
       selectedOccasions: current.selectedOccasions.filter((val) => val !== id),
     }));
-    await showVendorSuccessToast(result.message || "Occasion deleted successfully.");
+    await showVendorSuccessToast(i18n.t("vendorMessages.occasionDeleted"));
   }
 
   const menuItemsForDisplay = formState.menuItems.map((item) => ({

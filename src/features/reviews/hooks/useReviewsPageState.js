@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useEffect, useMemo, useState } from "react";
 import {
   getVendorReviewDetail,
@@ -13,7 +14,7 @@ import {
   mapVendorReviewSummary,
 } from "../api/reviewsMappers";
 import {
-  showReplyPostedSuccess,
+  showVendorSuccessToast,
   showVendorErrorAlert,
 } from "../../../utils/vendorAlerts";
 
@@ -26,7 +27,7 @@ function formatDateLabel(dateValue) {
     return "";
   }
 
-  return date.toLocaleDateString("en-GB").replace(/\//g, "-");
+  return date.toLocaleDateString(i18n.language === "nb" ? "nb-NO" : "en-GB").replace(/\//g, "-");
 }
 
 export default function useReviewsPageState() {
@@ -84,8 +85,8 @@ export default function useReviewsPageState() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || "Unable to load reviews right now.",
-            "Reviews unavailable",
+            error.message || i18n.t("reviews.loadError"),
+            i18n.t("reviews.unavailable"),
           );
         }
       } finally {
@@ -124,7 +125,7 @@ export default function useReviewsPageState() {
     selectedDateOption === "custom" &&
     appliedCustomRange?.from &&
     appliedCustomRange?.to
-      ? `From: ${formatDateLabel(appliedCustomRange.from)} To: ${formatDateLabel(appliedCustomRange.to)}`
+      ? i18n.t("reviews.dateRange", { from: formatDateLabel(appliedCustomRange.from), to: formatDateLabel(appliedCustomRange.to) })
       : selectedDateOption === "last3Months"
         ? "Last 3 Months"
         : selectedDateOption === "last6Months"
@@ -222,7 +223,7 @@ export default function useReviewsPageState() {
       setCurrentPage(Math.min(nextPage, lastKnownPage));
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to load more reviews right now.",
+        error.message || i18n.t("reviews.moreError"),
         "Pagination failed",
       );
     } finally {
@@ -249,7 +250,7 @@ export default function useReviewsPageState() {
         [review.id]: currentDrafts[review.id] ?? review.initialReply ?? "",
       }));
       await showVendorErrorAlert(
-        error.message || "Unable to load the full review details.",
+        error.message || i18n.t("reviews.detailError"),
         "Review detail unavailable",
       );
     }
@@ -332,11 +333,11 @@ export default function useReviewsPageState() {
       );
       setSelectedReviewId(null);
       setSelectedReview(null);
-      await showReplyPostedSuccess();
+      await showVendorSuccessToast(i18n.t("reviews.replySaved"));
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to post the review reply right now.",
-        "Reply failed",
+        error.message || i18n.t("reviews.replyError"),
+        i18n.t("reviews.replyFailed"),
       );
     } finally {
       setIsReplySaving(false);
