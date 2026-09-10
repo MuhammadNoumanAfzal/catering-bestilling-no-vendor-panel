@@ -1,5 +1,6 @@
 import { ChevronDown, X, Calendar, Clock, MapPin, Users, AlertTriangle, Printer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getVendorOrderDetail } from "../api/orderApi";
 import { mapVendorOrderDetail } from "../api/orderMappers";
 import { showVendorErrorAlert } from "../../../utils/vendorAlerts";
@@ -17,7 +18,9 @@ const statusToneClasses = {
   "is-modified": "border border-[#fed7aa] bg-[#fff7ed] text-[#ea580c]",
 };
 
-function renderStatusBadge(status, statusTone) {
+const statusKeyByLabel = { New: "new", Accepted: "accepted", Preparing: "preparing", Ready: "ready", "Out for delivery": "outForDelivery", "Out for Delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled", Modified: "modified" };
+
+function renderStatusBadge(status, statusTone, t) {
   const toneClass = statusToneClasses[statusTone] ?? statusToneClasses["is-new"];
   
   let dotClass = "h-1.5 w-1.5 rounded-full ";
@@ -42,12 +45,13 @@ function renderStatusBadge(status, statusTone) {
   return (
     <span className={`inline-flex min-h-[22px] items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[12px] font-semibold leading-none shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${toneClass}`}>
       <span className={dotClass} aria-hidden="true" />
-      <span>{status}</span>
+      <span>{t(`orders.${statusKeyByLabel[status] || "status"}`, { defaultValue: status })}</span>
     </span>
   );
 }
 
 export default function OrderDetailModal({ orderId, onClose, order, orderDetail }) {
+  const { t } = useTranslation();
   const [expandedItem, setExpandedItem] = useState(null);
   const [fetchedOrderDetail, setFetchedOrderDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +77,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
         if (!isCancelled) {
           setFetchedOrderDetail(null);
           await showVendorErrorAlert(
-            error instanceof Error ? error.message : "Unable to load the order details.",
+            error instanceof Error ? error.message : t("orders.detail.unableLoadDetails", { defaultValue: "Unable to load the order details." }),
           );
         }
       } finally {
@@ -102,7 +106,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
       rawItems.length > 0
         ? rawItems.map((item, index) => ({
             key: item?.id || `${detailSource.id}-item-${index}`,
-            name: item?.productName || item?.name || "Item",
+            name: item?.productName || item?.name || t("orders.detail.item", { defaultValue: "Item" }),
             description: item?.description || item?.product?.description || "",
             image:
               item?.product?.coverImage?.fileUrl ||
@@ -122,7 +126,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
             const item = cart?.item || {};
             return {
               key: cart?.id || item?.id || `${detailSource.id}-item-${index}`,
-              name: item?.name || "Item",
+              name: item?.name || t("orders.detail.item", { defaultValue: "Item" }),
               description: item?.description || "",
               image: item?.coverImage?.fileUrl || "",
               quantity: Number(cart?.quantity ?? 0) || 0,
@@ -137,19 +141,19 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
           });
 
     return {
-      status: detailSource.status || order?.status || "New",
+      status: detailSource.status || order?.status || t("orders.new", { defaultValue: "New" }),
       statusTone: detailSource.statusTone || order?.statusTone || "is-new",
-      customer: detailSource.customer?.name || "Customer unavailable",
+      customer: detailSource.customer?.name || t("orders.customerUnavailable", { defaultValue: "Customer unavailable" }),
       id: detailSource.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`),
       price:
         detailSource.orderItem?.modalDetails?.price ||
         detailSource.financialSummary?.find?.((item) => item.label === "Order Total" || item.label === "Total")?.value ||
         "kr 0.00",
       qty: detailSource.guests || 0,
-      name: detailSource.orderItem?.modalDetails?.title || detailSource.orderItem?.name || "Order",
-      date: detailSource.date || "Not specified",
-      time: detailSource.time || "Not specified",
-      address: detailSource.logistics?.deliveryAddress || "Not specified",
+      name: detailSource.orderItem?.modalDetails?.title || detailSource.orderItem?.name || t("orders.detail.order", { defaultValue: "Order" }),
+      date: detailSource.date || t("orders.detail.notSpecified", { defaultValue: "Not specified" }),
+      time: detailSource.time || t("orders.detail.notSpecified", { defaultValue: "Not specified" }),
+      address: detailSource.logistics?.deliveryAddress || t("orders.detail.notSpecified", { defaultValue: "Not specified" }),
       note: detailSource.note || "",
       items,
       bannerImage: items[0]?.image || "",
@@ -175,7 +179,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
     if (clean.toLowerCase() === "none") {
       return (
         <span key={clean} className="rounded-[4px] bg-[#f2ece6] px-2 py-0.5 text-[12px] font-extrabold text-[#7a6d63]">
-          None
+          {t("orders.detail.none", { defaultValue: "None" })}
         </span>
       );
     }
@@ -196,14 +200,14 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
           className="absolute right-4 top-4 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#efe6de] bg-white text-[#7a6d63] hover:bg-[#faf7f4] hover:text-[#181310] transition"
           onClick={onClose}
           type="button"
-          aria-label="Close"
+          aria-label={t("orders.close", { defaultValue: "Close" })}
         >
           <X size={15} />
         </button>
 
         {/* Modal Header */}
         <div className="border-b border-[#efe6de] pb-3 mb-4 text-center">
-          <h3 className="text-[18px] m-0 font-extrabold text-[#17120e]">Order Details</h3>
+          <h3 className="text-[18px] m-0 font-extrabold text-[#17120e]">{t("orders.detail.orderDetails", { defaultValue: "Order Details" })}</h3>
         </div>
 
         {/* Scroll Container */}
@@ -218,7 +222,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
             
             {/* Overlay Status Badge */}
             <div className="absolute top-3 right-3 z-10 shadow-md rounded-full bg-white/95 p-0.5">
-              {renderStatusBadge(orderData.status, orderData.statusTone)}
+              {renderStatusBadge(orderData.status, orderData.statusTone, t)}
             </div>
 
             {/* Overlay Details */}
@@ -236,19 +240,19 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
           <div className="p-3.5 rounded-[12px] border border-[#f2ece6] bg-[#faf9f6] flex flex-col gap-2.5">
             <div className="flex items-center gap-2.5 text-[14px] text-[#5c5046]">
               <Calendar size={15} className="text-[#cf6e38] shrink-0" />
-              <span>Event Date: <strong className="font-bold text-[#2b231e]">{orderData.date}</strong></span>
+              <span>{t("orders.detail.eventDate", { defaultValue: "Event Date" })}: <strong className="font-bold text-[#2b231e]">{orderData.date}</strong></span>
             </div>
             <div className="flex items-center gap-2.5 text-[14px] text-[#5c5046]">
               <Clock size={15} className="text-[#cf6e38] shrink-0" />
-              <span>Delivery Window: <strong className="font-bold text-[#2b231e]">{orderData.time}</strong></span>
+              <span>{t("orders.detail.deliveryWindow", { defaultValue: "Delivery Window" })}: <strong className="font-bold text-[#2b231e]">{orderData.time}</strong></span>
             </div>
             <div className="flex items-center gap-2.5 text-[14px] text-[#5c5046]">
               <Users size={15} className="text-[#cf6e38] shrink-0" />
-              <span>Guest Count: <strong className="font-bold text-[#2b231e]">{orderData.qty} persons</strong></span>
+              <span>{t("orders.detail.guestCountLabel", { defaultValue: "Guest Count" })}: <strong className="font-bold text-[#2b231e]">{t("orders.detail.persons", { count: orderData.qty, defaultValue: `${orderData.qty} persons` })}</strong></span>
             </div>
             <div className="flex items-start gap-2.5 text-[14px] text-[#5c5046] leading-[1.35]">
               <MapPin size={15} className="text-[#cf6e38] shrink-0 mt-[1px]" />
-              <span>Delivery Address: <strong className="font-bold text-[#2b231e]">{orderData.address}</strong></span>
+              <span>{t("orders.deliveryAddress", { defaultValue: "Delivery Address" })}: <strong className="font-bold text-[#2b231e]">{orderData.address}</strong></span>
             </div>
           </div>
 
@@ -257,7 +261,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
             <div className="flex items-start gap-3 rounded-[10px] bg-[#fffbf0] border border-[#fef08a] p-3 text-[14px] font-semibold text-[#854d0e] leading-[1.4]">
               <AlertTriangle size={16} strokeWidth={2.4} className="shrink-0 mt-[2px] text-[#a16207]" />
               <div className="flex flex-col gap-0.5">
-                <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#a16207]/75">Customer Note & Allergy Alert</span>
+                <span className="text-[12px] font-extrabold uppercase tracking-wider text-[#a16207]/75">{t("orders.detail.customerNoteAllergy", { defaultValue: "Customer Note & Allergy Alert" })}</span>
                 <span className="font-bold">{orderData.note}</span>
               </div>
             </div>
@@ -266,7 +270,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
           {/* Items Section */}
           <div className="flex flex-col gap-2">
             <h4 className="text-[16px] m-0 font-extrabold text-[#17120e] border-b border-[#f2ece6] pb-1.5">
-              Catering Package Items
+              {t("orders.detail.cateringPackageItems", { defaultValue: "Catering Package Items" })}
             </h4>
             
             {/* Main Package Summary Card */}
@@ -320,11 +324,11 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                     {isExpanded && (
                       <div className="border-t border-[#f2ece6] bg-white px-3 py-2.5 text-[14px] leading-[1.45] text-[#5c5046] animate-[fadeIn_150ms_ease]">
                         <p className="font-semibold m-0">
-                          {item.description || "No description available."}
+                          {item.description || t("orders.detail.noDescription", { defaultValue: "No description available." })}
                         </p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
-                          <span>Quantity: {item.quantity || 0}</span>
-                          <span>Line total: kr {Number(item.price || 0).toLocaleString(undefined, {
+                          <span>{t("orders.detail.quantity", { defaultValue: "Quantity" })}: {item.quantity || 0}</span>
+                          <span>{t("orders.detail.lineTotal", { defaultValue: "Line total" })}: kr {Number(item.price || 0).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}</span>
@@ -332,7 +336,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                         {Object.keys(item.selectedOptions || {}).length > 0 ? (
                           <div className="mt-3 border-t border-[#efe6de] pt-2">
                             <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#8a7a6d] mb-1">
-                              Selected Options
+                              {t("orders.detail.selectedOptions", { defaultValue: "Selected Options" })}
                             </span>
                             <div className="grid grid-cols-1 gap-1 pl-1">
                               {Object.entries(item.selectedOptions).map(([key, value]) => (
@@ -347,7 +351,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                         {item.selectedAddons && item.selectedAddons.length > 0 ? (
                           <div className="mt-3 border-t border-[#efe6de] pt-2">
                             <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#8a7a6d] mb-1">
-                              Add-ons
+                              {t("orders.detail.addOns", { defaultValue: "Add-ons" })}
                             </span>
                             <div className="grid grid-cols-1 gap-1 pl-1">
                               {item.selectedAddons.map((addon, addonIndex) => (
@@ -376,7 +380,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                         ) : null}
                         {item.menuItems && item.menuItems.length > 0 && (
                           <div className="mt-3 border-t border-[#efe6de] pt-2">
-                            <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#8a7a6d] mb-1">Included Items:</span>
+                            <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#8a7a6d] mb-1">{t("orders.detail.includedItems", { defaultValue: "Included Items" })}:</span>
                             <div className="grid grid-cols-1 gap-1 pl-1">
                               {item.menuItems.map((mi) => (
                                 <span key={mi.id || mi.title} className="flex items-center gap-1.5 text-[13px] text-[#4a3f35] font-semibold">
@@ -395,7 +399,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
 
               {orderData.items.length === 0 ? (
                 <div className="rounded-[10px] border border-[#f2ece6] bg-[#faf9f6] p-3 text-[14px] font-semibold text-[#5c5046]">
-                  Item details are not available for this order yet.
+                  {t("orders.detail.itemDetailsUnavailable", { defaultValue: "Item details are not available for this order yet." })}
                 </div>
               ) : null}
             </div>
@@ -411,14 +415,14 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
             onClick={() => printVendorOrder(fetchedOrderDetail || orderDetail)}
             type="button"
           >
-            <Printer size={14} /> Print Order
+            <Printer size={14} /> {t("orders.detail.printOrder", { defaultValue: "Print Order" })}
           </button>
           <button
             className="h-9 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[14px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition"
             onClick={onClose}
             type="button"
           >
-            Close
+            {t("orders.close", { defaultValue: "Close" })}
           </button>
         </div>
       </div>

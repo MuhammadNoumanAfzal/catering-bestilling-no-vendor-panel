@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { useTranslation } from "react-i18next";
 
 export default function DeliveryValidationAside({
@@ -9,6 +10,12 @@ export default function DeliveryValidationAside({
   const { t } = useTranslation();
   const issues = validation?.issues || [];
   const fieldErrorMessages = Object.values(fieldErrors).filter(Boolean);
+  const messages = [...new Set([...issues, ...fieldErrorMessages].map((message) => {
+    const normalized = String(message).trim();
+    return /^pickup address is required (?:when|whenever) pickup is enabled\.?$/i.test(normalized)
+      ? t("delivery.pickupRequired")
+      : normalized;
+  }).filter(Boolean))];
   const isValid = validation?.isValid ?? true;
   const hasProblems = issues.length > 0 || fieldErrorMessages.length > 0 || !isValid;
 
@@ -19,17 +26,14 @@ export default function DeliveryValidationAside({
         {isValidating
           ? t("delivery.checking", { defaultValue: "Checking your delivery settings…" })
           : pickupOnly
-            ? "Pickup only is turned on, so delivery fees, timing, and order limits are not being used right now."
+            ? i18n.t("delivery.pickupOnlyHelp")
             : !hasProblems
               ? t("delivery.ready", { defaultValue: "Your delivery settings look good and are ready to save." })
               : t("delivery.fix", { defaultValue: "Please fix the items below before saving your delivery settings." })}
       </p>
-      {issues.length || fieldErrorMessages.length ? (
+      {messages.length ? (
         <ul className="mt-3 flex list-disc flex-col gap-2 pl-5 text-[13px] font-medium leading-[1.45] text-[#593326]">
-          {issues.map((issue) => (
-            <li key={issue}>{issue}</li>
-          ))}
-          {fieldErrorMessages.map((message) => (
+          {messages.map((message) => (
             <li key={message}>{message}</li>
           ))}
         </ul>

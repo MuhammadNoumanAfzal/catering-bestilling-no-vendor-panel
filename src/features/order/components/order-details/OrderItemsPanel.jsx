@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import DetailPanel from "./DetailPanel";
 import OrderDetailModal from "../OrderDetailModal";
@@ -10,12 +11,13 @@ const currencyFormatter = new Intl.NumberFormat("nb-NO", {
   style: "currency",
 });
 
-function formatAddonPrice(value) {
+function formatAddonPrice(value, t) {
   const amount = Number(value);
-  return Number.isFinite(amount) && amount > 0 ? currencyFormatter.format(amount) : "Included";
+  return Number.isFinite(amount) && amount > 0 ? currencyFormatter.format(amount) : t("orders.detail.included", { defaultValue: "Included" });
 }
 
 export default function OrderItemsPanel({ orderItem, note, addOns, orderId, order }) {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const heroImage = orderItem?.image || order?.raw?.orderCarts?.[0]?.item?.coverImage?.fileUrl || "";
   const hasSpecialInstructions = Boolean(`${note ?? ""}`.trim());
@@ -23,7 +25,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
 
   return (
     <>
-      <DetailPanel title="Menu Items">
+      <DetailPanel title={t("orders.detail.menuItems", { defaultValue: "Menu Items" })}>
         <div className="rounded-[10px] bg-[#f4f7fb] p-3">
           <div className="flex items-start gap-3">
             <div
@@ -36,7 +38,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
                 {orderItem.name}
               </strong>
               <p className="mt-1 text-[14px] font-medium leading-[1.45] text-[#6f6358]">
-                {orderItem.quantity}
+                {t("orders.itemCount", { count: orderItem.includedItems.length })}
               </p>
             </div>
           </div>
@@ -61,7 +63,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
               onClick={() => setIsModalOpen(true)}
               type="button"
             >
-              View details
+              {t("orders.viewDetails", { defaultValue: "View Details" })}
             </button>
           </div>
         </div>
@@ -69,7 +71,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
         {visibleAddOns.length > 0 ? (
           <div className="mt-3">
             <span className="block text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8a7a6d]">
-              Add-ons
+              {t("orders.detail.addOns", { defaultValue: "Add-ons" })}
             </span>
             <div className="mt-1.5 overflow-hidden rounded-[10px] border border-[#eadfd5] bg-white">
               {visibleAddOns.map((addon) => (
@@ -91,16 +93,16 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
                   <div className="min-w-0">
                     <p className="m-0 truncate text-[13px] font-extrabold text-[#211813]">{addon.name}</p>
                     <p className="mt-0.5 line-clamp-2 text-[11px] font-semibold leading-[1.35] text-[#7d7066]">
-                      {[addon.description, addon.detail, addon.parentItemName ? `For ${addon.parentItemName}` : ""]
+                      {[addon.description, addon.detail, addon.parentItemName ? `${t("orders.detail.for", { defaultValue: "For" })} ${addon.parentItemName}` : ""]
                         .filter(Boolean)
                         .join(" - ")}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="m-0 text-[13px] font-extrabold text-[#cf6e38]">
-                      {formatAddonPrice(addon.totalPrice)}
+                      {formatAddonPrice(addon.totalPrice, t)}
                     </p>
-                    <p className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">Qty {addon.quantity || 1}</p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">{t("orders.detail.qty", { defaultValue: "Qty" })} {addon.quantity || 1}</p>
                   </div>
                 </div>
               ))}
@@ -111,7 +113,7 @@ export default function OrderItemsPanel({ orderItem, note, addOns, orderId, orde
         {hasSpecialInstructions ? (
           <>
             <div className="mt-4 text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#8a7a6d]">
-              Special instructions
+              {t("orders.detail.specialInstructions", { defaultValue: "Special instructions" })}
             </div>
             <div className="mt-2 rounded-md border border-[#f2d8c7] bg-[#fff7f1] px-3 py-3 text-[14px] font-semibold leading-[1.5] text-[#7a4f3b]">
               {note}

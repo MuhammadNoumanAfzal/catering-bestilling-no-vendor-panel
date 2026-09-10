@@ -1,3 +1,4 @@
+import { translateNotificationText } from "../notificationTranslations";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -33,7 +34,7 @@ export default function NotificationFilterDropdown({
       >
         <span className="flex min-w-0 items-center gap-2">
           <CalendarDays size={14} />
-          <span className="truncate">{filterLabel}</span>
+          <span className="truncate">{translateNotificationText(filterLabel)}</span>
         </span>
         {selectedFilter !== "Last Month" ? (
           <span
@@ -58,7 +59,7 @@ export default function NotificationFilterDropdown({
 
               return (
                 <button
-                  key={option}
+                  key={translateNotificationText(option)}
                   className={`type-subpara rounded-[8px] px-3 py-[7px] text-left transition ${
                     isSelected
                       ? "bg-[#ffe0d1] text-[#d86f39]"
@@ -67,7 +68,7 @@ export default function NotificationFilterDropdown({
                   onClick={() => onSelectFilter(option)}
                   type="button"
                 >
-                  {option}
+                  {translateNotificationText(option)}
                 </button>
               );
             })}

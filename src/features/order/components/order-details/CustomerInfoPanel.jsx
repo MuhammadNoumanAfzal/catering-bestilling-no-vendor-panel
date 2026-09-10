@@ -1,7 +1,9 @@
+import i18n from "../../../../i18n";
 import { CircleAlert, UserRound, X } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 import { getVendorCustomerOrderHistory } from "../../api/orderApi";
 
@@ -27,7 +29,9 @@ function Field({ label, value, fullWidth = false }) {
   );
 }
 
-function HistoryStatus({ status, tone }) {
+const statusKeyByLabel = { New: "new", Accepted: "accepted", Preparing: "preparing", Ready: "ready", "Out for delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled", Modified: "modified" };
+
+function HistoryStatus({ status, tone, t }) {
   const norm = `${status ?? ""}`.toLowerCase();
   
   let bg = "bg-[#faf7f4] text-[#80766d] border-[#ebdcd0]";
@@ -46,12 +50,13 @@ function HistoryStatus({ status, tone }) {
     <span
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase ${bg}`}
     >
-      {status}
+      {t(`orders.${statusKeyByLabel[status] || "status"}`, { defaultValue: status })}
     </span>
   );
 }
 
 function OrderHistoryDrawer({ customer, orderId, onClose }) {
+  const { t } = useTranslation();
   const [historyOrders, setHistoryOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -80,7 +85,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
                 month: "short",
                 year: "numeric",
               })
-            : "Date unavailable";
+            : t("orders.detail.dateUnavailable", { defaultValue: "Date unavailable" });
 
           const statusVal = item.status || "";
           const statusLabelVal = item.statusLabel || "";
@@ -96,11 +101,11 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
 
           return {
             id: item.orderNumber || `#${item.id}`,
-            status: item.statusLabel || item.status || "Unknown",
+            status: item.statusLabel || item.status || t("orders.detail.unknown", { defaultValue: "Unknown" }),
             statusTone: isCanceled ? "canceled" : "delivered",
-            title: item.eventName || "Order",
+            title: item.eventName || t("orders.detail.order", { defaultValue: "Order" }),
             date: dateLabel,
-            guests: `${item.guestCount || 0} guest${item.guestCount !== 1 ? "s" : ""}`,
+            guests: t("orders.detail.guestCount", { count: item.guestCount || 0, defaultValue: `${item.guestCount || 0} guests` }),
             amount: `kr ${calculatedGrandTotal.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -111,7 +116,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
         setHistoryOrders(mapped);
       } catch (err) {
         if (!isCancelled) {
-          setError(err.message || "Failed to load order history.");
+          setError(err.message || i18n.t("vendorMessages.historyFailed"));
         }
       } finally {
         if (!isCancelled) {
@@ -146,14 +151,14 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
       >
         <div className="flex items-start justify-between gap-3 border-b border-[#ebdcd0]/60 pb-4">
           <div>
-            <h3 className="text-[22px] font-black tracking-tight text-[#1a120b]">Order History</h3>
+            <h3 className="text-[22px] font-black tracking-tight text-[#1a120b]">{t("orders.detail.orderHistory", { defaultValue: "Order History" })}</h3>
             <p className="mt-0.5 text-[13px] font-medium text-[#7a6f63]">{customer.name}</p>
           </div>
           <button
             className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e6ddd4] bg-white text-[#766c61] shadow-sm transition-all duration-200 hover:border-[#cf6e38]/60 hover:bg-[#faf6f2] hover:text-[#cf6e38] active:scale-95"
             onClick={onClose}
             type="button"
-            aria-label="Close order history"
+            aria-label={t("orders.detail.closeOrderHistory", { defaultValue: "Close order history" })}
           >
             <X size={16} />
           </button>
@@ -178,7 +183,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
                   <span className="text-[11px] font-bold tracking-wider text-[#8a7f75] uppercase">
                     {order.id}
                   </span>
-                  <HistoryStatus status={order.status} tone={order.statusTone} />
+                  <HistoryStatus status={order.status} tone={order.statusTone} t={t} />
                 </div>
 
                 <h4 className="mt-2.5 text-[16px] font-extrabold leading-snug text-[#1f1f1f] transition-colors group-hover:text-[#cf6e38]">
@@ -199,7 +204,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
             ))
           ) : (
             <div className="rounded-[16px] border border-[#e6ddd4] bg-[#faf7f4] p-5 text-[13px] font-medium leading-[1.6] text-[#7a6f63] text-center">
-              No previous orders found for this customer.
+              {t("orders.detail.noPreviousOrders", { defaultValue: "No previous orders found for this customer." })}
             </div>
           )}
         </div>
@@ -209,6 +214,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
 }
 
 export default function CustomerInfoPanel({ customer, orderId }) {
+  const { t } = useTranslation();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const organization = `${customer.organization ?? ""}`.trim();
   const hasOrganization =
@@ -219,30 +225,30 @@ export default function CustomerInfoPanel({ customer, orderId }) {
 
   return (
     <>
-      <DetailPanel title="Customer & Contact" titleIcon={UserRound}>
+      <DetailPanel title={t("orders.detail.customerContact", { defaultValue: "Customer & Contact" })} titleIcon={UserRound}>
         <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-5">
-          <Field label={isCorporate ? "Company" : "Name"} value={customer.name} />
-          {hasOrganization ? <Field label="Organization" value={organization} /> : null}
-          {isCorporate ? <Field label="Contact" value={customer.contactName} /> : null}
-          <Field label="Type" value={customer.customerType} />
-          <Field label="Org No." value={customer.organizationNumber} />
-          <Field label="Invoice Ref." value={customer.invoiceReference} />
-          <Field label="Postal Code" value={customer.postalCode} />
-          <Field label="City" value={customer.city} />
-          <Field fullWidth label="Email Address" value={customer.email} />
+          <Field label={isCorporate ? t("orders.detail.company", { defaultValue: "Company" }) : t("orders.detail.name", { defaultValue: "Name" })} value={customer.name} />
+          {hasOrganization ? <Field label={t("orders.detail.organization", { defaultValue: "Organization" })} value={organization} /> : null}
+          {isCorporate ? <Field label={t("orders.detail.contact", { defaultValue: "Contact" })} value={customer.contactName} /> : null}
+          <Field label={t("orders.detail.type", { defaultValue: "Type" })} value={t(`orders.customerTypes.${customer.customerType}`, { defaultValue: customer.customerType })} />
+          <Field label={t("orders.detail.orgNo", { defaultValue: "Org No." })} value={customer.organizationNumber} />
+          <Field label={t("orders.detail.invoiceRef", { defaultValue: "Invoice Ref." })} value={customer.invoiceReference} />
+          <Field label={t("orders.detail.postalCode", { defaultValue: "Postal Code" })} value={customer.postalCode} />
+          <Field label={t("orders.detail.city", { defaultValue: "City" })} value={customer.city} />
+          <Field fullWidth label={t("orders.detail.emailAddress", { defaultValue: "Email Address" })} value={customer.email} />
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-2.5 rounded-[10px] bg-[#edf5ff] px-3 py-2.5">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#4f5f73]">
             <CircleAlert size={15} strokeWidth={2.1} className="text-[#1e1e1e]" />
-            {customer.historyText}
+            {t(customer.detailsVisible ? "orders.contactHistory" : "orders.contactHidden")}
           </span>
           <button
             className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-bold text-[#3e72d7]"
             onClick={() => setIsHistoryOpen(true)}
             type="button"
           >
-            View Order history
+            {t("orders.detail.viewOrderHistory", { defaultValue: "View Order history" })}
           </button>
         </div>
       </DetailPanel>

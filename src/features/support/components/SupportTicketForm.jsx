@@ -48,7 +48,7 @@ export default function SupportTicketForm({ onSubmitted, initialForm = null }) {
               <input
                 className="h-[42px] w-full rounded-[8px] border border-[#d8d0c8] bg-white px-3 text-[14px] text-[#241913] outline-none transition placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
                 onChange={handleFieldChange("relatedOrder")}
-                placeholder="Enter Order ID (e.g. #1456)"
+                placeholder={t("support.orderIdPlaceholder", { defaultValue: "Enter Order ID (e.g. #1456)" })}
                 type="text"
                 value={form.relatedOrder}
               />
@@ -61,7 +61,7 @@ export default function SupportTicketForm({ onSubmitted, initialForm = null }) {
               className="min-h-[118px] w-full resize-none rounded-[8px] border border-[#d8d0c8] bg-white px-3 py-3 text-[14px] text-[#241913] outline-none transition placeholder:text-[#a69486] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
               maxLength={1200}
               onChange={handleFieldChange("description")}
-              placeholder="Please describe your issue in detail..."
+              placeholder={t("support.descriptionPlaceholder", { defaultValue: "Please describe your issue in detail..." })}
               value={form.description}
             />
             <span className="self-end text-[10px] text-[#a69486]">
@@ -88,7 +88,7 @@ export default function SupportTicketForm({ onSubmitted, initialForm = null }) {
             <p className="text-[13px] font-semibold text-[#6f6258]">
               {submitted
                 ? submittedTicketId
-                  ? `Ticket submitted successfully. Reference: ${submittedTicketId}.`
+                  ? t("support.ticketSubmittedWithReference", { id: submittedTicketId, defaultValue: `Ticket submitted successfully. Reference: ${submittedTicketId}.` })
                   : t("support.ticketSubmitted", { defaultValue: "Ticket submitted successfully." })
                 : t("support.responseTime", { defaultValue: "Our team usually responds within 24 hours." })}
             </p>

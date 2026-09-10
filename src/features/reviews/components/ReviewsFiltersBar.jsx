@@ -34,7 +34,7 @@ export default function ReviewsFiltersBar({
         <div className="flex min-w-0 flex-wrap items-center gap-2 max-[480px]:grid max-[480px]:grid-cols-3">
           {filters.map((filter) => (
             <button
-              key={filter}
+              key={filter === "All" ? t("reviews.all") : filter}
               className={`cursor-pointer min-w-[34px] rounded-[8px] px-3 py-[7px] text-[11px] font-bold transition ${
                 activeFilter === filter
                   ? "bg-[#de6f39] text-white"
@@ -55,7 +55,7 @@ export default function ReviewsFiltersBar({
               onClick={onToggleDateMenu}
               type="button"
             >
-              <span className="min-w-0 truncate">{dateButtonLabel}</span>
+              <span className="min-w-0 truncate">{selectedDateOption === "custom" ? dateButtonLabel : dateLabel(selectedDateOption)}</span>
               {selectedDateOption !== "lastMonth" ? (
                 <span
                   className="ml-1 inline-flex shrink-0 items-center justify-center rounded-full p-0.5 text-[#746a62] transition-colors hover:bg-[#f3ece6] hover:text-[#17120e]"
@@ -93,7 +93,7 @@ export default function ReviewsFiltersBar({
                         <span>{dateLabel(option.id)}</span>
                         {isActive ? (
                           <span className="text-[10px] font-bold tracking-[0.08em]">
-                            ACTIVE
+                            {t("reviews.active")}
                           </span>
                         ) : null}
                       </button>
@@ -107,7 +107,7 @@ export default function ReviewsFiltersBar({
                       {t("reviews.customRange", { defaultValue: "Custom Range" })}
                     </p>
                     <p className="mt-2 text-[12px] leading-[1.5] text-[#7f7369]">
-                      {t("dashboard.date.description", { defaultValue: "Choose a start and end date to filter the reviews list." })}
+                      {t("reviews.rangeHelp", { defaultValue: "Choose a start and end date to filter the reviews list." })}
                     </p>
 
                     <div className="mt-4 space-y-3">

@@ -41,7 +41,7 @@ function getStatusClasses(status) {
   }
 }
 
-function MessageBubble({ item }) {
+function MessageBubble({ item, t }) {
   const isOwnReply = `${item.side ?? ""}`.toLowerCase() !== "admin";
   const imageAttachments = item.attachments.filter((attachment) =>
     /^image\//i.test(String(attachment.mimeType || "")) || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(String(attachment.url || "")),
@@ -88,7 +88,7 @@ function MessageBubble({ item }) {
                       <span className="truncate">{attachment.fileName}</span>
                     </span>
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold">
-                      View
+                      {t("support.view", { defaultValue: "View" })}
                       <ExternalLink size={12} />
                     </span>
                   </div>
@@ -164,7 +164,7 @@ export default function SupportResponsesPage() {
         setSelectedTicketId(result.items[0]?.id || "");
       }
     } catch (error) {
-      setListError(error instanceof Error ? error.message : "Unable to load your support tickets.");
+      setListError(error instanceof Error ? error.message : t("support.unableLoadTickets", { defaultValue: "Unable to load your support tickets." }));
     } finally {
       if (!silent) {
         setIsLoadingList(false);
@@ -188,7 +188,7 @@ export default function SupportResponsesPage() {
       const result = await getMySupportTicket(ticketId);
       setSelectedTicket(result);
     } catch (error) {
-      setDetailError(error instanceof Error ? error.message : "Unable to load this support ticket.");
+      setDetailError(error instanceof Error ? error.message : t("support.unableLoadTicket", { defaultValue: "Unable to load this support ticket." }));
       setSelectedTicket(null);
     } finally {
       if (!silent) {
@@ -231,8 +231,8 @@ export default function SupportResponsesPage() {
         toast: true,
         position: "top-end",
         icon: "info",
-        title: "New support reply",
-        text: "Support has replied to your ticket.",
+        title: t("support.newReply", { defaultValue: "New support reply" }),
+        text: t("support.newReplyText", { defaultValue: "Support has replied to your ticket." }),
         showConfirmButton: false,
         timer: 4500,
         timerProgressBar: true,
@@ -303,8 +303,8 @@ export default function SupportResponsesPage() {
     } catch (error) {
       await Swal.fire({
         icon: "error",
-        title: t("support.sendReply", { defaultValue: "Unable to send reply" }),
-        text: error instanceof Error ? error.message : t("support.responseTime", { defaultValue: "Please try again." }),
+        title: t("support.unableSendReply", { defaultValue: "Unable to send reply" }),
+        text: error instanceof Error ? error.message : t("support.tryAgain", { defaultValue: "Please try again." }),
         confirmButtonColor: "#cf6e38",
       });
     } finally {
@@ -341,7 +341,7 @@ export default function SupportResponsesPage() {
             <div>
               <h2 className="m-0 text-[20px] font-bold text-[#181310]">{t("support.yourTickets", { defaultValue: "Your Support Tickets" })}</h2>
               <p className="mt-1 text-[13px] text-[#8d8074]">
-                Review updates and continue existing conversations.
+                {t("support.yourTicketsDescription", { defaultValue: "Review updates and continue existing conversations." })}
               </p>
             </div>
             <button
@@ -442,7 +442,7 @@ export default function SupportResponsesPage() {
             {selectedTicketId ? (
               isLoadingDetail ? (
                 <div className="flex flex-1 items-center justify-center px-6 text-[14px] font-medium text-[#7d7068]">
-                  Loading ticket details...
+                  {t("support.loadingTicketDetails", { defaultValue: "Loading ticket details..." })}
                 </div>
               ) : detailError ? (
                 <div className="flex flex-1 items-center justify-center px-6 text-center text-[14px] font-medium text-[#c65736]">
@@ -463,15 +463,15 @@ export default function SupportResponsesPage() {
                       </span>
                     </div>
                     <p className="mt-2 text-[13px] text-[#8d8074]">
-                      Opened {selectedTicket.createdAtLabel}
-                      {selectedTicket.orderReference ? ` • Order ${selectedTicket.orderReference}` : ""}
+                      {t("support.opened", { defaultValue: "Opened" })} {selectedTicket.createdAtLabel}
+                      {selectedTicket.orderReference ? ` - ${t("support.order", { defaultValue: "Order" })} ${selectedTicket.orderReference}` : ""}
                     </p>
                   </div>
 
                   <div className="flex-1 space-y-4 overflow-y-auto bg-[#fffaf6] px-5 py-5">
                     {selectedTicket.conversation.length ? (
                       selectedTicket.conversation.map((item) => (
-                        <MessageBubble key={item.id} item={item} />
+                        <MessageBubble key={item.id} item={item} t={t} />
                       ))
                     ) : (
                       <div className="rounded-[16px] border border-dashed border-[#e5d8ce] bg-white px-5 py-10 text-center text-[14px] text-[#7d7068]">

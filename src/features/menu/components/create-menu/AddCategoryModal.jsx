@@ -1,3 +1,4 @@
+import i18n from "../../../../i18n";
 import { Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,13 +11,13 @@ export default function AddCategoryModal({
   onDelete,
   options,
   existingCategories,
-  title = "Add New Category",
-  fieldLabel = "Category Name",
-  placeholder = "Enter category name",
-  emptyErrorMessage = "Value cannot be empty.",
-  duplicateErrorMessage = "This value already exists.",
-  submitLabel = "Add",
-  submittingLabel = "Adding...",
+  title = i18n.t("vendorMessages.addCategory"),
+  fieldLabel = i18n.t("vendorMessages.categoryName"),
+  placeholder = i18n.t("vendorMessages.enterCategory"),
+  emptyErrorMessage = i18n.t("vendorMessages.empty"),
+  duplicateErrorMessage = i18n.t("vendorMessages.duplicate"),
+  submitLabel = i18n.t("vendorMessages.add"),
+  submittingLabel = i18n.t("vendorMessages.adding"),
 }) {
   const { t } = useTranslation();
   const [newCategoryName, setNewCategoryName] = useState("");

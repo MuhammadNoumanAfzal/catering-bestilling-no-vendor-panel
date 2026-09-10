@@ -1,4 +1,6 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import i18n from "../../../i18n";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Printer } from "lucide-react";
 import Swal from "sweetalert2";
@@ -31,9 +33,9 @@ import {
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
-function formatRequestValue(value) {
+function formatRequestValue(value, t) {
   const normalized = `${value ?? ""}`.trim();
-  return normalized || "No change";
+  return normalized || t("orders.detail.noChange", { defaultValue: "No change" });
 }
 
 function buildRequestFieldComparisons(request) {
@@ -47,49 +49,49 @@ function buildRequestFieldComparisons(request) {
   const fields = [
     {
       id: "eventDate",
-      label: "Date",
+      label: i18n.t("orders.adjustment.date"),
       current: currentSnapshot.eventDate,
       requested: requestedChanges.eventDate,
     },
     {
       id: "eventTime",
-      label: "Time",
+      label: i18n.t("orders.adjustment.time"),
       current: currentSnapshot.eventTime,
       requested: requestedChanges.eventTime,
     },
     {
       id: "personCount",
-      label: "Guests",
+      label: i18n.t("orders.guests"),
       current: currentSnapshot.personCount,
       requested: requestedChanges.personCount,
     },
     {
       id: "deliveryAddress",
-      label: "Address",
+      label: i18n.t("orders.deliveryAddress"),
       current: currentSnapshot.deliveryAddress,
       requested: requestedChanges.deliveryAddress,
     },
     {
       id: "deliverySuite",
-      label: "Suite / Floor",
+      label: i18n.t("orders.adjustment.apartmentFloor"),
       current: currentSnapshot.deliverySuite,
       requested: requestedChanges.deliverySuite,
     },
     {
       id: "deliveryCity",
-      label: "City",
+      label: i18n.t("orders.detail.city"),
       current: currentSnapshot.deliveryCity,
       requested: requestedChanges.deliveryCity,
     },
     {
       id: "deliveryPostalCode",
-      label: "Postal Code",
+      label: i18n.t("orders.detail.postalCode"),
       current: currentSnapshot.deliveryPostalCode,
       requested: requestedChanges.deliveryPostalCode,
     },
     {
       id: "orderNotes",
-      label: "Notes",
+      label: i18n.t("orders.detail.customerNote"),
       current: currentSnapshot.orderNotes,
       requested: requestedChanges.orderNotes,
     },
@@ -194,6 +196,7 @@ function enrichOrderAddOns(orderDetail, addOnCatalogResult) {
 
 export default function OrderDetailPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { orderId } = useParams();
   const decodedOrderId = useMemo(() => decodeURIComponent(orderId || ""), [orderId]);
   const [orderDetail, setOrderDetail] = useState(null);
@@ -245,7 +248,7 @@ export default function OrderDetailPage() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error instanceof Error ? error.message : "Unable to load the order details.",
+            error instanceof Error ? error.message : t("orders.detail.unableLoadDetails", { defaultValue: "Unable to load the order details." }),
           );
           setOrderDetail(null);
           setModificationRequests([]);
@@ -329,10 +332,10 @@ export default function OrderDetailPage() {
       <section className="flex flex-col gap-3">
         <Link className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline" to="/orders">
           <ChevronLeft size={16} />
-          Back to Orders
+          {t("orders.backToOrders", { defaultValue: "Back to Orders" })}
         </Link>
         <div className="rounded-xl border border-[#dfd8cf] bg-white px-2 pb-2.5 pt-2 shadow-[0_2px_8px_rgba(42,27,18,0.06)]">
-          <h1 className="type-h3">Order not found</h1>
+          <h1 className="type-h3">{t("orders.detail.orderNotFound", { defaultValue: "Order not found" })}</h1>
         </div>
       </section>
     );
@@ -367,16 +370,16 @@ export default function OrderDetailPage() {
   async function handleOpenAdjustmentPage() {
     if (pendingCustomerRequest) {
       await showVendorErrorAlert(
-        "A customer modification request is already pending for this order. Please approve or reject it before requesting vendor-side changes.",
-        "Adjustment unavailable",
+        t("orders.detail.customerRequestPendingBlock", { defaultValue: "A customer modification request is already pending for this order. Please approve or reject it before requesting vendor-side changes." }),
+        t("orders.detail.adjustmentUnavailable", { defaultValue: "Adjustment unavailable" }),
       );
       return;
     }
 
     if (hasPendingVendorAdjustment) {
       await showVendorErrorAlert(
-        "A vendor adjustment is already pending for this order. Please wait for the customer to respond before creating another one.",
-        "Adjustment already pending",
+        t("orders.detail.vendorAdjustmentPendingBlock", { defaultValue: "A vendor adjustment is already pending for this order. Please wait for the customer to respond before creating another one." }),
+        t("orders.detail.adjustmentAlreadyPending", { defaultValue: "Adjustment already pending" }),
       );
       return;
     }
@@ -390,7 +393,7 @@ export default function OrderDetailPage() {
     }
 
     const confirmation = await confirmOrderStatusAction(
-      "Approve modification request",
+      t("orders.detail.approveModificationRequest", { defaultValue: "Approve modification request" }),
       orderDetail.displayId || orderDetail.id,
     );
     if (!confirmation.isConfirmed) {
@@ -402,17 +405,17 @@ export default function OrderDetailPage() {
     try {
       const payload = await approveOrderModificationRequest({
         requestId: pendingCustomerRequest.id,
-        note: "Vendor approved the customer modification request.",
+        note: t("orders.detail.vendorApprovedNote", { defaultValue: "Vendor approved the customer modification request." }),
       });
       await refreshOrderDetail();
       await showVendorSuccessToast(
-        payload.message || "Customer modification request approved.",
+        payload.message || t("orders.detail.customerRequestApproved", { defaultValue: "Customer modification request approved." }),
       );
     } catch (error) {
       await showVendorErrorAlert(
         error instanceof Error
           ? error.message
-          : "Unable to approve the modification request.",
+          : t("orders.detail.unableApproveModification", { defaultValue: "Unable to approve the modification request." }),
       );
     } finally {
       setIsResolvingRequest(false);
@@ -425,23 +428,23 @@ export default function OrderDetailPage() {
     }
 
     const response = await Swal.fire({
-      title: "Reject modification request?",
-      text: "Tell the customer why you cannot accept these changes.",
+      title: t("orders.detail.rejectModificationTitle", { defaultValue: "Reject modification request?" }),
+      text: t("orders.detail.rejectModificationText", { defaultValue: "Tell the customer why you cannot accept these changes." }),
       input: "textarea",
-      inputPlaceholder: "Enter rejection reason",
+      inputPlaceholder: t("orders.detail.rejectionReasonPlaceholder", { defaultValue: "Enter rejection reason" }),
       inputAttributes: {
-        "aria-label": "Rejection reason",
+        "aria-label": t("orders.detail.rejectionReason", { defaultValue: "Rejection reason" }),
       },
       showCancelButton: true,
-      confirmButtonText: "Reject request",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("orders.detail.rejectRequest", { defaultValue: "Reject request" }),
+      cancelButtonText: t("orders.cancel", { defaultValue: "Cancel" }),
       confirmButtonColor: "#cf6e38",
       cancelButtonColor: "#d7cec6",
       background: "#fffaf6",
       color: "#201b17",
       inputValidator: (value) => {
         if (!`${value ?? ""}`.trim()) {
-          return "A rejection reason is required.";
+          return t("orders.detail.rejectionReasonRequired", { defaultValue: "A rejection reason is required." });
         }
 
         return undefined;
@@ -461,13 +464,13 @@ export default function OrderDetailPage() {
       });
       await refreshOrderDetail();
       await showVendorSuccessToast(
-        payload.message || "Customer modification request rejected.",
+        payload.message || t("orders.detail.customerRequestRejected", { defaultValue: "Customer modification request rejected." }),
       );
     } catch (error) {
       await showVendorErrorAlert(
         error instanceof Error
           ? error.message
-          : "Unable to reject the modification request.",
+          : t("orders.detail.unableRejectModification", { defaultValue: "Unable to reject the modification request." }),
       );
     } finally {
       setIsResolvingRequest(false);
@@ -477,27 +480,27 @@ export default function OrderDetailPage() {
   async function handleLifecycleActionClick(action) {
     try {
       if (/accept/i.test(action.label)) {
-        const result = await confirmOrderStatusAction("Accept order", orderDetail.displayId || orderDetail.id);
+        const result = await confirmOrderStatusAction(t("orders.accept", { defaultValue: "Accept order" }), orderDetail.displayId || orderDetail.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await updateOrderStatus("Accepted", `Order ${orderDetail.displayId || orderDetail.id} accepted.`);
+        await updateOrderStatus("Accepted", t("orders.orderAccepted", { id: orderDetail.displayId || orderDetail.id, defaultValue: `Order ${orderDetail.displayId || orderDetail.id} accepted.` }));
         return;
       }
 
       if (/reject/i.test(action.label)) {
-        const result = await confirmOrderStatusAction("Reject order", orderDetail.displayId || orderDetail.id);
+        const result = await confirmOrderStatusAction(t("orders.reject", { defaultValue: "Reject order" }), orderDetail.displayId || orderDetail.id);
         if (!result.isConfirmed) {
           return;
         }
 
-        await updateOrderStatus("Canceled", `Order ${orderDetail.displayId || orderDetail.id} rejected.`);
+        await updateOrderStatus("Canceled", t("orders.orderRejected", { id: orderDetail.displayId || orderDetail.id, defaultValue: `Order ${orderDetail.displayId || orderDetail.id} rejected.` }));
         navigate("/orders");
       }
     } catch (error) {
       await showVendorErrorAlert(
-        error instanceof Error ? error.message : "Unable to update the order right now.",
+        error instanceof Error ? error.message : t("orders.unableUpdate", { defaultValue: t("orders.unableUpdate", { defaultValue: "Unable to update the order right now." }) }),
       );
     }
   }
@@ -517,11 +520,11 @@ export default function OrderDetailPage() {
 
       await updateOrderStatus(
         nextStatus,
-        `${orderDetail.displayId || orderDetail.id} updated to ${action.label.toLowerCase()}.`,
+        t("orders.statusUpdatedToAction", { id: orderDetail.displayId || orderDetail.id, action: action.label.toLowerCase(), defaultValue: `${orderDetail.displayId || orderDetail.id} updated to ${action.label.toLowerCase()}.` }),
       );
     } catch (error) {
       await showVendorErrorAlert(
-        error instanceof Error ? error.message : "Unable to update the order right now.",
+        error instanceof Error ? error.message : t("orders.unableUpdate", { defaultValue: "Unable to update the order right now." }),
       );
     }
   }
@@ -530,11 +533,11 @@ export default function OrderDetailPage() {
     try {
       await updateOrderStatus(
         nextStatus,
-        `${orderDetail.displayId || orderDetail.id} updated to ${nextStatus.toLowerCase()}.`,
+        t("orders.statusUpdatedToAction", { id: orderDetail.displayId || orderDetail.id, action: nextStatus.toLowerCase(), defaultValue: `${orderDetail.displayId || orderDetail.id} updated to ${nextStatus.toLowerCase()}.` }),
       );
     } catch (error) {
       await showVendorErrorAlert(
-        error instanceof Error ? error.message : "Unable to update the order right now.",
+        error instanceof Error ? error.message : i18n.t("vendorMessages.updateOrderFailed"),
       );
     }
   }
@@ -544,11 +547,11 @@ export default function OrderDetailPage() {
       <header className="flex flex-col gap-1">
         <Link className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline" to="/orders">
           <ChevronLeft size={16} />
-          Back to Orders
+          {t("orders.backToOrders", { defaultValue: "Back to Orders" })}
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
           <h1 className="m-0 text-[34px] font-bold leading-tight tracking-[-0.04em] text-[#19130f]">
-            Order<span className="ml-0.5">{orderDetail.displayId || orderDetail.id}</span>
+            {t("orders.detail.orderPrefix", { defaultValue: "Order" })}<span className="ml-0.5">{orderDetail.displayId || orderDetail.id}</span>
           </h1>
           <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
             {orderDetail.date} | {orderDetail.time}
@@ -558,7 +561,7 @@ export default function OrderDetailPage() {
             onClick={() => printVendorOrder(orderDetail)}
             type="button"
           >
-            <Printer size={15} /> Print Order
+            <Printer size={15} /> {t("orders.detail.printOrder", { defaultValue: "Print Order" })}
           </button>
         </div>
       </header>
@@ -568,13 +571,13 @@ export default function OrderDetailPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
               <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#cf6e38]">
-                Adjustment Pending
+                {t("orders.detail.adjustmentPending", { defaultValue: "Adjustment Pending" })}
               </p>
               <h2 className="m-0 text-[18px] font-extrabold text-[#1c1510]">
-                Customer-facing change request has been submitted for this order.
+                {t("orders.detail.adjustmentSubmittedTitle", { defaultValue: "Customer-facing change request has been submitted for this order." })}
               </h2>
               <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">
-                The original order stays visible until the adjustment is accepted and applied.
+                {t("orders.detail.adjustmentSubmittedDescription", { defaultValue: "The original order stays visible until the adjustment is accepted and applied." })}
               </p>
             </div>
             <div className="rounded-full bg-[#fff1e8] px-3 py-1 text-[12px] font-extrabold text-[#cf6e38]">
@@ -586,18 +589,18 @@ export default function OrderDetailPage() {
             <div className="mt-3 rounded-[12px] border border-[#f1c7af] bg-[linear-gradient(135deg,#fff8f3_0%,#fffdfb_100%)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#c25b2c]">Included dish replacements</p>
-                  <p className="mt-1 text-[13px] leading-5 text-[#745d50]">These dishes will be changed within the existing menu price.</p>
+                  <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#c25b2c]">{t("orders.detail.includedDishReplacements", { defaultValue: "Included dish replacements" })}</p>
+                  <p className="mt-1 text-[13px] leading-5 text-[#745d50]">{t("orders.detail.includedDishReplacementsHelp", { defaultValue: "These dishes will be changed within the existing menu price." })}</p>
                 </div>
-                <span className="rounded-full bg-[#fff0e7] px-2.5 py-1 text-[11px] font-extrabold text-[#c25b2c]">{adjustmentNote.includedDishReplacements.length} replacements</span>
+                <span className="rounded-full bg-[#fff0e7] px-2.5 py-1 text-[11px] font-extrabold text-[#c25b2c]">{t("orders.detail.replacementsCount", { count: adjustmentNote.includedDishReplacements.length, defaultValue: `${adjustmentNote.includedDishReplacements.length} replacements` })}</span>
               </div>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
                 {adjustmentNote.includedDishReplacements.map((item, index) => (
                   <article key={`${item.previousDish}-${index}`} className="rounded-[10px] border border-[#f0dacb] bg-white p-3">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#a18979]">Was included</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#a18979]">{t("orders.detail.wasIncluded", { defaultValue: "Was included" })}</p>
                     <p className="mt-1 text-[13px] font-bold leading-5 text-[#7d5542] line-through">{item.previousDish}</p>
                     <div className="my-2 h-px bg-[#f1e4da]" />
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#5d8b68]">Replace with</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#5d8b68]">{t("orders.detail.replaceWith", { defaultValue: "Replace with" })}</p>
                     <p className="mt-1 text-[13px] font-extrabold leading-5 text-[#243a2b]">{item.replacementDish}</p>
                   </article>
                 ))}
@@ -607,10 +610,10 @@ export default function OrderDetailPage() {
             <div className="mt-3 rounded-[12px] border border-[#f1c7af] bg-[linear-gradient(135deg,#fff8f3_0%,#fffdfb_100%)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#c25b2c]">Requested dish changes</p>
-                  <p className="mt-1 text-[13px] leading-5 text-[#745d50]">The vendor has requested changes to these included dishes. No full menu item is being removed.</p>
+                  <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#c25b2c]">{t("orders.detail.requestedDishChanges", { defaultValue: "Requested dish changes" })}</p>
+                  <p className="mt-1 text-[13px] leading-5 text-[#745d50]">{t("orders.detail.requestedDishChangesHelp", { defaultValue: "The vendor has requested changes to these included dishes. No full menu item is being removed." })}</p>
                 </div>
-                <span className="rounded-full bg-[#fff0e7] px-2.5 py-1 text-[11px] font-extrabold text-[#c25b2c]">{adjustmentNote.requestedDishChanges.length} selected</span>
+                <span className="rounded-full bg-[#fff0e7] px-2.5 py-1 text-[11px] font-extrabold text-[#c25b2c]">{t("orders.detail.selectedCount", { count: adjustmentNote.requestedDishChanges.length, defaultValue: `${adjustmentNote.requestedDishChanges.length} selected` })}</span>
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {adjustmentNote.requestedDishChanges.map((item) => (
@@ -627,13 +630,13 @@ export default function OrderDetailPage() {
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                  Current Total
+                  {t("orders.detail.currentTotal", { defaultValue: "Current Total" })}
                 </span>
                 kr {Number(latestAdjustment.oldTotal || 0).toFixed(2)}
               </div>
               <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#cf6e38]">
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                  Proposed Total
+                  {t("orders.detail.proposedTotal", { defaultValue: "Proposed Total" })}
                 </span>
                 kr {Number(latestAdjustment.newTotal || 0).toFixed(2)}
               </div>
@@ -643,7 +646,7 @@ export default function OrderDetailPage() {
           {adjustmentNote.vendorNote ? (
             <div className="mt-3 rounded-[10px] border border-[#efe6de] bg-white p-3">
               <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                Vendor Note
+                {t("orders.detail.vendorNote", { defaultValue: "Vendor Note" })}
               </span>
               <p className="mt-2 whitespace-pre-line text-[13px] font-semibold leading-[1.6] text-[#2b231e]">
                 {adjustmentNote.vendorNote}
@@ -658,13 +661,13 @@ export default function OrderDetailPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
               <p className="m-0 text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#cf6e38]">
-                Customer Modification Request
+                {t("orders.detail.customerModificationRequest", { defaultValue: "Customer Modification Request" })}
               </p>
               <h2 className="m-0 text-[18px] font-extrabold text-[#1c1510]">
-                The customer requested changes to this order.
+                {t("orders.detail.customerRequestedChanges", { defaultValue: "The customer requested changes to this order." })}
               </h2>
               <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">
-                Review the requested changes below, then approve or reject them.
+                {t("orders.detail.reviewRequestedChanges", { defaultValue: "Review the requested changes below, then approve or reject them." })}
               </p>
             </div>
             <div className="rounded-full bg-[#fff1e8] px-3 py-1 text-[12px] font-extrabold text-[#cf6e38]">
@@ -683,30 +686,30 @@ export default function OrderDetailPage() {
                     {field.label}
                   </p>
                   <p className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">
-                    Current
+                    {t("orders.detail.current", { defaultValue: "Current" })}
                   </p>
                   <p className="mt-1 text-[14px] font-semibold text-[#2b231e]">
-                    {formatRequestValue(field.current)}
+                    {formatRequestValue(field.current, t)}
                   </p>
                   <p className="mt-3 text-[12px] font-semibold text-[#cf6e38]">
-                    Requested
+                    {t("orders.detail.requested", { defaultValue: "Requested" })}
                   </p>
                   <p className="mt-1 text-[14px] font-semibold text-[#2b231e]">
-                    {formatRequestValue(field.requested)}
+                    {formatRequestValue(field.requested, t)}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
             <div className="mt-4 rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#2b231e]">
-              This customer request does not include any changes to review yet.
+              {t("orders.detail.noCustomerChanges", { defaultValue: "This customer request does not include any changes to review yet." })}
             </div>
           )}
 
           {`${pendingCustomerRequest?.customerNote ?? ""}`.trim() ? (
             <div className="mt-3 rounded-[10px] border border-[#efe6de] bg-white p-3">
               <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
-                Customer Note
+                {t("orders.detail.customerNote", { defaultValue: "Customer Note" })}
               </span>
               <p className="mt-2 whitespace-pre-line text-[13px] font-semibold leading-[1.6] text-[#2b231e]">
                 {pendingCustomerRequest.customerNote}
@@ -725,7 +728,7 @@ export default function OrderDetailPage() {
                   : "cursor-pointer bg-[#cf6e38] hover:bg-[#bb602d]"
               }`}
             >
-              {isResolvingRequest ? "Updating..." : "Approve Request"}
+              {isResolvingRequest ? t("orders.updating", { defaultValue: "Updating..." }) : t("orders.detail.approveRequest", { defaultValue: "Approve Request" })}
             </button>
             <button
               type="button"
@@ -737,7 +740,7 @@ export default function OrderDetailPage() {
                   : "cursor-pointer border-[#e7c9bb] bg-white text-[#c4551d] hover:bg-[#fff6f2]"
               }`}
             >
-              Reject Request
+              {t("orders.detail.rejectRequest", { defaultValue: "Reject Request" })}
             </button>
           </div>
         </div>

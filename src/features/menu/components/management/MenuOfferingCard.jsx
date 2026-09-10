@@ -35,23 +35,23 @@ export default function MenuOfferingCard({
           {item.status === "Paused" ? t("menu.paused", { defaultValue: "Paused" }) : item.status === "Active" ? t("menu.active", { defaultValue: "Active" }) : item.status === "Draft" ? t("menu.draft", { defaultValue: "Draft" }) : item.status}
         </span>
         <span className="absolute right-2 top-2 rounded-full bg-white px-2.5 py-1 text-[12px] font-bold text-[#2a211b]">
-          {item.badge}
+          {item.badge === "Menu" ? t("menu.menuLabel") : item.badge === "Add-on" ? t("menu.addonLabel") : item.badge}
         </span>
       </div>
 
       <div className="p-3.5">
         <h3 className="m-0 type-h4 text-[#17120e]">{item.title}</h3>
         <p className="mt-2 min-h-[56px] text-[14px] font-medium leading-[1.5] text-[#7d7064]">
-          {item.description}
+          {item.description === "No description provided." ? t("menu.noDescriptionProvided") : item.description === "Optional add-on" ? t("menu.optionalAddon") : item.description}
         </p>
 
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <strong className="block text-[21px] font-extrabold text-[#17120e]">
-              {item.price}
+              {item.rawMenu && item.basePrice ? `kr ${item.basePrice}${item.pricingType ? ` (${t(`menu.pricingLabels.${item.pricingType}`, { defaultValue: item.pricingType })})` : ""}` : item.price}
             </strong>
             <span className="mt-1 block text-[13px] font-medium text-[#9a8f86]">
-              {item.meta}
+              {item.rawMenu ? (item.minimumGuests ? t("menu.minimumGuestLabel", { count: Number(item.minimumGuests) }) : t("menu.flexibleGuests")) : item.meta === "Available add-on" ? t("menu.availableAddon") : item.meta}
             </span>
           </div>
         </div>

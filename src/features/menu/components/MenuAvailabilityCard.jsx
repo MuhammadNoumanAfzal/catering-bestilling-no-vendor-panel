@@ -1,10 +1,13 @@
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 export default function MenuAvailabilityCard({ enabled, onToggle }) {
+  useTranslation();
   return (
     <div className="rounded-[8px] bg-[#f2efeb] px-3 py-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="type-subpara m-0 text-[#19130f]">Available immediately</p>
-          <p className="mt-1 text-[10px] font-medium text-[#b1a79f]">Will be visible on active menus</p>
+          <p className="type-subpara m-0 text-[#19130f]"> {i18n.t("vendorMessages.available")} </p>
+          <p className="mt-1 text-[10px] font-medium text-[#b1a79f]"> {i18n.t("vendorMessages.visible")} </p>
         </div>
 
         <button

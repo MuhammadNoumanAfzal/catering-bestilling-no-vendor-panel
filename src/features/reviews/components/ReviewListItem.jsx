@@ -1,3 +1,5 @@
+import { formatReviewAge } from "../reviewFormatting";
+import i18n from "../../../i18n";
 import { AlertCircle, CornerUpLeft, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -15,7 +17,7 @@ export default function ReviewListItem({ review }) {
         <div className="flex items-start gap-3">
           {review.avatar ? (
             <img
-              alt={review.author}
+              alt={review.author === "Anonymous Customer" ? t("reviews.anonymous") : review.author}
               className="h-9 w-9 rounded-full object-cover"
               src={review.avatar}
             />
@@ -39,7 +41,7 @@ export default function ReviewListItem({ review }) {
                   />
                 ))}
               </div>
-              <span className="text-[14px] font-medium text-[#a3978b]">{review.age}</span>
+              <span className="text-[14px] font-medium text-[#a3978b]">{formatReviewAge(review.age)}</span>
             </div>
           </div>
         </div>
@@ -79,19 +81,17 @@ export default function ReviewListItem({ review }) {
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-[#fff2ec] px-2.5 py-1 text-[12px] font-bold text-[#d96e39]">
-          {review.orderType}
+          {review.orderType === "Review" ? t("reviews.reviewLabel") : review.orderType}
         </span>
         <span className="rounded-full border border-[#ecd8d8] bg-[#fff7f7] px-2.5 py-1 text-[12px] font-bold text-[#dd7777]">
-          {review.eventLabel}
+          {review.eventLabel === "Verified Order" ? t("reviews.verifiedOrder") : review.eventLabel === "Customer Review" ? t("reviews.customerReview") : review.eventLabel}
         </span>
       </div>
 
       {review.tone === "alert" ? (
         <div className="mt-3 flex items-center gap-2 rounded-[4px] border border-[#eda5a5] bg-[#fff3f3] px-3 py-2">
           <AlertCircle size={12} className="shrink-0 text-[#d12929]" />
-          <span className="text-[12px] font-medium text-[#e62828]">
-            Priority Attention Required: Negative feedback affects merchant score.
-          </span>
+          <span className="text-[12px] font-medium text-[#e62828]"> {i18n.t("reviews.priority")} </span>
         </div>
       ) : null}
     </article>

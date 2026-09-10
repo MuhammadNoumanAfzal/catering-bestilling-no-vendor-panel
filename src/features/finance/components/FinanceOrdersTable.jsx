@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -12,8 +13,7 @@ function TransactionDetailModal({ order, onClose }) {
           <span className="text-[12px] font-bold uppercase tracking-wider text-white/80">
             GoCatering
           </span>
-          <h2 className="m-0 text-[18px] font-extrabold mt-0.5 text-white">
-            Invoice {order.invoiceNumber || order.orderId}
+          <h2 className="m-0 text-[18px] font-extrabold mt-0.5 text-white"> {translateFinanceText("Invoice")} {order.invoiceNumber || order.orderId}
           </h2>
           <button
             onClick={onClose}
@@ -29,12 +29,12 @@ function TransactionDetailModal({ order, onClose }) {
           {/* Status and Customer */}
           <div className="flex items-center justify-between border-b border-[#f2ece6] pb-3">
             <div className="flex flex-col">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">Customer</span>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]"> {translateFinanceText("Customer")} </span>
               <strong className="text-[15px] text-[#1c1510] font-extrabold">{order.customerName}</strong>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-[12px] font-bold uppercase tracking-wider text-[#9a8f85]">
-                {order.paymentStatusLabel || "Customer Invoice Status"}
+                {order.paymentStatusLabel || translateFinanceText("Customer Invoice Status")}
               </span>
               <span
                 className={`inline-flex min-h-[22px] items-center justify-center rounded-full px-3 text-[12px] font-extrabold shadow-sm mt-0.5 ${
@@ -53,39 +53,37 @@ function TransactionDetailModal({ order, onClose }) {
           {/* Details Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-[#ffefe5] border border-[#ffdcd0] p-3 text-center">
-              <span className="block text-[12px] font-extrabold text-[#c85e2f] uppercase tracking-wide">Order ID</span>
+              <span className="block text-[12px] font-extrabold text-[#c85e2f] uppercase tracking-wide"> {translateFinanceText("Order ID")} </span>
               <span className="text-[14px] font-extrabold text-[#cf6e38] mt-1 block">{order.orderId}</span>
             </div>
             <div className="rounded-xl bg-[#f0f4f8] border border-[#d6e4f0] p-3 text-center">
-              <span className="block text-[12px] font-extrabold text-[#3b70a6] uppercase tracking-wide">Delivery Date</span>
+              <span className="block text-[12px] font-extrabold text-[#3b70a6] uppercase tracking-wide"> {translateFinanceText("Delivery Date")} </span>
               <span className="text-[14px] font-extrabold text-[#3b70a6] mt-1 block">{order.eventDate}</span>
             </div>
           </div>
 
           {/* Financial Summary */}
           <div className="border-t border-[#f2ece6] pt-3">
-            <h3 className="m-0 text-[12px] font-extrabold text-[#9a8f85] uppercase tracking-wider mb-2">
-              Invoice Summary
-            </h3>
+            <h3 className="m-0 text-[12px] font-extrabold text-[#9a8f85] uppercase tracking-wider mb-2"> {translateFinanceText("Invoice Summary")} </h3>
 
             <div className="space-y-2.5">
               <div className="flex justify-between items-center text-[14px] px-1">
-                <span className="font-semibold text-[#6f6358]">Total Amount</span>
+                <span className="font-semibold text-[#6f6358]"> {translateFinanceText("Total Amount")} </span>
                 <span className="font-extrabold text-[#1c1510] text-[15px]">{order.grossAmount}</span>
               </div>
               <div className="flex justify-between items-center text-[14px] px-1">
-                <span className="font-semibold text-[#6f6358]">Payment Method</span>
+                <span className="font-semibold text-[#6f6358]"> {translateFinanceText("Payment Method")} </span>
                 <span className="font-bold text-[#3b70a6] bg-[#eef4ff] px-2 py-0.5 rounded-full text-[13px]">{order.paymentMethod}</span>
               </div>
               <div className="flex justify-between items-center text-[14px] px-1">
-                <span className="font-semibold text-[#6f6358]">Vendor payout</span>
-                <span className="font-bold text-[#237a39]">Track this in payout cards above</span>
+                <span className="font-semibold text-[#6f6358]"> {translateFinanceText("Vendor payout")} </span>
+                <span className="font-bold text-[#237a39]"> {translateFinanceText("Track this in payout cards above")} </span>
               </div>
 
               <div className="mt-3 bg-[#edf9ef] border border-[#c7ebd0] px-4 py-3 rounded-xl flex justify-between items-center shadow-sm">
                 <div className="flex flex-col">
-                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#38a657]">Canonical ID</span>
-                  <span className="text-[13px] font-medium text-[#4c8f59]">Shared across admin and vendor flows</span>
+                  <span className="text-[12px] font-bold uppercase tracking-wider text-[#38a657]"> {translateFinanceText("Canonical ID")} </span>
+                  <span className="text-[13px] font-medium text-[#4c8f59]"> {translateFinanceText("Shared across admin and vendor flows")} </span>
                 </div>
                 <span className="text-[18px] font-extrabold text-[#237a39]">{order.id}</span>
               </div>
@@ -99,9 +97,7 @@ function TransactionDetailModal({ order, onClose }) {
             onClick={onClose}
             type="button"
             className="h-[38px] px-4 cursor-pointer rounded-lg bg-[#cf6e38] text-[14px] font-bold text-white hover:bg-[#bf622f] active:scale-95 transition"
-          >
-            Close Details
-          </button>
+          > {translateFinanceText("Close Details")} </button>
         </div>
       </div>
     </div>
@@ -171,10 +167,10 @@ export default function FinanceOrdersTable({
             <tr className="border-b border-[#ede5de] text-left">
               {["Sr.", "Invoice", "Customer", "Delivery date", "Payment Method", "Total Amount", "Customer Invoice Status", ""].map((heading) => (
                 <th
-                  key={heading}
+                  key={translateFinanceText(heading)}
                   className="border-b border-[#eee7df] px-[10px] py-3 text-left text-[15px] font-extrabold text-[#17120e]"
                 >
-                  {heading}
+                  {translateFinanceText(heading)}
                 </th>
               ))}
             </tr>
@@ -185,9 +181,7 @@ export default function FinanceOrdersTable({
                 <td
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
                   colSpan={8}
-                >
-                  Loading invoices...
-                </td>
+                > {translateFinanceText("Loading invoices...")} </td>
               </tr>
             ) : rows.length ? (
               rows.map((row, index) => (
@@ -205,7 +199,7 @@ export default function FinanceOrdersTable({
                     {row.eventDate}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-semibold text-[#75695f]">
-                    {row.paymentMethod}
+                    {translateFinanceText(row.paymentMethod)}
                   </td>
                   <td className="border-b border-[#eee7df] px-[10px] py-3 text-[15px] font-extrabold text-[#17120e]">
                     {row.grossAmount}
@@ -220,7 +214,7 @@ export default function FinanceOrdersTable({
                             : "bg-[#edf9ef] text-[#38a657]"
                       }`}
                     >
-                      {row.paymentStatus}
+                      {translateFinanceText(row.paymentStatus)}
                     </span>
                   </td>
                   <td className="relative border-b border-[#eee7df] px-[10px] py-3 text-[16px]">
@@ -241,9 +235,7 @@ export default function FinanceOrdersTable({
                           onClick={() => handleViewDetail(row)}
                           className="w-full text-left rounded-md px-2.5 py-1.5 text-[13px] font-semibold text-[#17120e] hover:bg-[#fff7f2] hover:text-[#cf6e38] transition focus:outline-none"
                           type="button"
-                        >
-                          View Detail
-                        </button>
+                        > {translateFinanceText("View Detail")} </button>
                       </div>
                     )}
                   </td>
@@ -254,9 +246,7 @@ export default function FinanceOrdersTable({
                 <td
                   className="px-[10px] py-8 text-center text-[15px] font-semibold text-[#8b7d72]"
                   colSpan={8}
-                >
-                  No customer invoices match the selected filters.
-                </td>
+                > {translateFinanceText("No customer invoices match the selected filters.")} </td>
               </tr>
             )}
           </tbody>
@@ -264,11 +254,9 @@ export default function FinanceOrdersTable({
       </div>
 
       <div className="flex items-center justify-between gap-4 px-4 py-3.5 max-[860px]:flex-col max-[860px]:items-center max-[860px]:text-center">
-        <span className="type-subpara text-[14px] font-medium text-[#7a6d63]">
-          Showing <span className="font-bold text-[#1c1510]">{startItem}</span> to{" "}
-          <span className="font-bold text-[#1c1510]">{endItem}</span> of{" "}
-          <span className="font-bold text-[#1c1510]">{totalItems}</span> Invoices
-        </span>
+        <span className="type-subpara text-[14px] font-medium text-[#7a6d63]"> {translateFinanceText("Showing")} <span className="font-bold text-[#1c1510]">{startItem}</span> {translateFinanceText("to")} {" "}
+          <span className="font-bold text-[#1c1510]">{endItem}</span> {translateFinanceText("of")} {" "}
+          <span className="font-bold text-[#1c1510]">{totalItems}</span> {translateFinanceText("Invoices")} </span>
         <div className="flex items-center gap-1">
           <button
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-[6px] border border-[#d8d0c8] bg-white text-[#8c7f73] hover:bg-[#faf7f4] hover:text-[#1c1510] active:scale-95 transition disabled:pointer-events-none disabled:opacity-40"
@@ -318,9 +306,7 @@ export default function FinanceOrdersTable({
         />
       )}
       {isDetailLoading ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 text-[14px] font-semibold text-white">
-          Loading transaction details...
-        </div>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/20 text-[14px] font-semibold text-white"> {translateFinanceText("Loading transaction details...")} </div>
       ) : null}
     </section>
   );

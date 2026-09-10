@@ -170,7 +170,7 @@ export default function SettingsSpecialClosuresSection({
           disabled={disabled}
           label={`${t("settings.reason")} (${t("settings.optional")})`}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="e.g. Christmas holidays"
+          placeholder={t("settings.placeholders.closureReason", { defaultValue: "e.g. Christmas holidays" })}
           value={reason}
         />
       </div>

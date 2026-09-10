@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -46,10 +47,8 @@ export default function FinancePageHeader({
   return (
     <header className="mb-5 flex items-start justify-between gap-3">
       <div>
-        <h1 className="type-h2 m-0 text-[#15110f]">Finance &amp; Earnings</h1>
-        <p className="type-para mt-1 text-[#746a62]">
-          Track your income and financial performance.
-        </p>
+        <h1 className="type-h2 m-0 text-[#15110f]"> {translateFinanceText("Finance & Earnings")} </h1>
+        <p className="type-para mt-1 text-[#746a62]"> {translateFinanceText("Track your income and financial performance.")} </p>
       </div>
 
       <div className="relative" ref={containerRef}>
@@ -58,7 +57,7 @@ export default function FinancePageHeader({
           onClick={() => setIsOpen((prev) => !prev)}
           type="button"
         >
-          <span className="truncate">{displayLabel}</span>
+          <span className="truncate">{translateFinanceText(displayLabel)}</span>
           <ChevronDown
             className={`shrink-0 text-[#7d7064] transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
@@ -83,22 +82,18 @@ export default function FinancePageHeader({
                   onClick={() => handleSelect(filterOption.id)}
                   type="button"
                 >
-                  {filterOption.label}
+                  {translateFinanceText(filterOption.label)}
                 </button>
               );
             })}
 
             {filter === "custom" ? (
               <div className="mt-2 rounded-[12px] border border-[#f0dfd3] bg-[#fff8f4] p-3">
-                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d58a61]">
-                  Custom Range
-                </p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d58a61]"> {translateFinanceText("Custom Range")} </p>
 
                 <div className="mt-3 grid gap-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                      From
-                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]"> {translateFinanceText("From")} </span>
                     <input
                       className="h-[40px] rounded-[10px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
                       max={customTo || undefined}
@@ -109,9 +104,7 @@ export default function FinancePageHeader({
                   </label>
 
                   <label className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
-                      To
-                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]"> {translateFinanceText("To")} </span>
                     <input
                       className="h-[40px] rounded-[10px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
                       min={customFrom || undefined}
@@ -131,9 +124,7 @@ export default function FinancePageHeader({
                       setIsOpen(false);
                     }}
                     type="button"
-                  >
-                    Apply Range
-                  </button>
+                  > {translateFinanceText("Apply Range")} </button>
                 </div>
               </div>
             ) : null}

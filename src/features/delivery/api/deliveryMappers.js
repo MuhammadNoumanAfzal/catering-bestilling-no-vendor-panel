@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 const DEFAULT_DELIVERY_DAYS = ["mo", "tu", "we", "th", "fr", "sa", "su"];
 const DEFAULT_TIME_SLOTS = [
   { day: "mo", start: "11:00", end: "15:00" },
@@ -308,7 +309,7 @@ export function mapFieldErrors(errors = []) {
 
     return {
       ...accumulator,
-      [error.field]: error.message || "Invalid value.",
+      [error.field]: error.message || i18n.t("delivery.invalidValue"),
     };
   }, {});
 }

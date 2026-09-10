@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliveryTagList from "./DeliveryTagList";
@@ -30,7 +31,7 @@ export default function DeliveryAreasSection({
         error={error}
         label={t("delivery.searchArea", { defaultValue: "Search service area" })}
         onChange={onSearchChange}
-        placeholder="Search by area name or postcode"
+        placeholder={i18n.t("delivery.searchAreaPlaceholder")}
         value={searchValue}
       />
 
@@ -53,8 +54,7 @@ export default function DeliveryAreasSection({
                     <span className="block truncate text-[13px] font-bold text-[#241c17]">
                       {area.name}
                     </span>
-                    <span className="mt-1 inline-flex min-h-[22px] items-center rounded-full bg-[#f7f1eb] px-2.5 text-[11px] font-semibold text-[#6f6258]">
-                      Postcode {area.postCode}
+                    <span className="mt-1 inline-flex min-h-[22px] items-center rounded-full bg-[#f7f1eb] px-2.5 text-[11px] font-semibold text-[#6f6258]"> {i18n.t("delivery.postcode")} {area.postCode}
                     </span>
                   </span>
                   <span className="text-[12px] font-bold text-[#cf6e38]">{t("delivery.add", { defaultValue: "Add" })}</span>
@@ -63,9 +63,7 @@ export default function DeliveryAreasSection({
             </div>
           ) : (
             <div className="px-3 py-4">
-              <p className="text-[13px] font-medium text-[#8d7f73]">
-                No matching backend service areas found for this search.
-              </p>
+              <p className="text-[13px] font-medium text-[#8d7f73]"> {i18n.t("delivery.noMatchingAreas")} </p>
             </div>
           )}
         </div>
@@ -77,9 +75,7 @@ export default function DeliveryAreasSection({
         onRemove={onRemoveArea}
       />
 
-      <DeliveryInfoNote>
-        Select at least one active service area whenever delivery is enabled.
-      </DeliveryInfoNote>
+      <DeliveryInfoNote> {i18n.t("delivery.areaRequired")} </DeliveryInfoNote>
     </DeliverySectionCard>
   );
 }

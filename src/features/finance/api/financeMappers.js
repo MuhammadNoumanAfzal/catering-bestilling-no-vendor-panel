@@ -1,3 +1,4 @@
+import { translateFinanceText } from "../financeTranslations";
 function normalizeString(value) {
   return value == null ? "" : String(value);
 }
@@ -13,7 +14,7 @@ function formatPayoutStatusLabel(value) {
     case "PENDING":
       return "PENDING";
     default:
-      return normalizeString(value).trim().toUpperCase() || "PENDING";
+      return normalizeString(value).trim().toUpperCase() || translateFinanceText("PENDING");
   }
 }
 
@@ -89,7 +90,7 @@ function resolvePayoutLifecycleStatus(item) {
     return "RELEASED";
   }
 
-  return normalized || "PENDING";
+  return normalized || translateFinanceText("PENDING");
 }
 
 function sumMoney(items, field) {
@@ -222,12 +223,14 @@ export function mapPayoutStatusItems(data) {
   return [
     {
       title: "Pending Payouts",
+      descriptionKey: "pendingCount", count: pending.length,
       description: `${pending.length} payout${pending.length === 1 ? "" : "s"} waiting for release`,
       amount: formatCurrency(sumMoney(pending, "netAmount"), pendingCurrency),
       tone: "orange",
     },
     {
       title: "Released Payouts",
+      descriptionKey: "releasedCount", count: released.length,
       description: `${released.length} payout${released.length === 1 ? "" : "s"} released by admin`,
       amount: formatCurrency(sumMoney(released, "netAmount"), releasedCurrency),
       tone: "green",
@@ -235,6 +238,7 @@ export function mapPayoutStatusItems(data) {
     paid.length
       ? {
           title: "Paid Payouts",
+          descriptionKey: "paidCount", count: paid.length, latestReference: latestPaid?.payoutReference,
           description: latestPaid?.payoutReference
             ? `${paid.length} payout${paid.length === 1 ? "" : "s"} completed · Latest ref ${latestPaid.payoutReference}`
             : `${paid.length} payout${paid.length === 1 ? "" : "s"} completed`,
@@ -328,9 +332,9 @@ export function mapTransactionsConnection(data) {
           eventDate: formatDateLabel(node.deliveryDate),
           eventDateRaw: normalizeString(node.deliveryDate),
           grossAmount: formatCurrency(node.finalPrice, "NOK"),
-          paymentStatus: normalizeString(node.paymentStatus || "PENDING"),
+          paymentStatus: normalizeString(node.paymentStatus || translateFinanceText("PENDING")),
           paymentStatusLabel: "Customer invoice status",
-          paymentMethod: normalizeString(node.paymentMethod || "Not specified"),
+          paymentMethod: normalizeString(node.paymentMethod || translateFinanceText("Not specified")),
         };
       }),
     totalCount: parseNumber(connection?.totalCount),
@@ -394,9 +398,9 @@ export function mapTransactionDetail(node) {
     customerName: normalizeString(node.customerName),
     eventDate: formatDateLabel(node.deliveryDate || node.eventDate),
     grossAmount: formatCurrency(node.finalPrice, "NOK"),
-    paymentStatus: normalizeString(node.paymentStatus || "PENDING"),
+    paymentStatus: normalizeString(node.paymentStatus || translateFinanceText("PENDING")),
     paymentStatusLabel: "Customer invoice status",
-    paymentMethod: normalizeString(node.paymentMethod || "Not specified"),
+    paymentMethod: normalizeString(node.paymentMethod || translateFinanceText("Not specified")),
   };
 }
 

@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextArea from "./DeliveryTextArea";
@@ -25,7 +26,7 @@ export default function DeliveryPickupSection({
           error={errors.pickupAddress}
           label={t("delivery.pickupAddress", { defaultValue: "Pickup Address" })}
           onChange={onPickupAddressChange}
-          placeholder="Enter the pickup address"
+          placeholder={i18n.t("delivery.pickupAddressPlaceholder")}
           value={pickupAddress}
         />
         <DeliveryTextArea
@@ -33,14 +34,12 @@ export default function DeliveryPickupSection({
           error={errors.pickupInstructions}
           label={`${t("delivery.pickupInstructions", { defaultValue: "Pickup Instructions" })} (${t("settings.optional", { defaultValue: "optional" })})`}
           onChange={onPickupInstructionsChange}
-          placeholder="Share any directions, parking notes, or counter details"
+          placeholder={i18n.t("delivery.pickupInstructionsPlaceholder")}
           rows={4}
           value={pickupInstructions}
         />
       </div>
-      <DeliveryInfoNote>
-        Pickup address is required whenever pickup is enabled.
-      </DeliveryInfoNote>
+      <DeliveryInfoNote> {i18n.t("delivery.pickupRequired")} </DeliveryInfoNote>
     </DeliverySectionCard>
   );
 }

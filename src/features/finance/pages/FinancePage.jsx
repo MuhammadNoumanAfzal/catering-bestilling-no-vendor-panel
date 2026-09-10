@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import FinanceOrdersFilters from "../components/FinanceOrdersFilters";
 import FinanceOverviewSection from "../components/FinanceOverviewSection";
 import FinancePageHeader from "../components/FinancePageHeader";
@@ -7,6 +8,7 @@ import useFinancePageState from "../hooks/useFinancePageState";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 export default function FinancePage() {
+  useTranslation();
   const {
     activeStatus,
     chartPoints,
@@ -16,7 +18,6 @@ export default function FinancePage() {
     dateButtonLabel,
     handleApplyHeaderCustomDate,
     handleApplyCustomDate,
-    handleExport,
     handleHeaderFilterChange,
     handlePageChange,
     handleRequestTransactionDetail,
@@ -27,7 +28,6 @@ export default function FinancePage() {
     headerCustomTo,
     headerFilter,
     headerFilterLabel,
-    isExporting,
     isCustomDateOpen,
     isDateMenuOpen,
     isLoading,
@@ -85,8 +85,6 @@ export default function FinancePage() {
           onToggleDateMenu={handleToggleDateMenu}
           selectedDateOption={selectedDateOption}
           onClearDateFilter={handleClearDateFilter}
-          onExport={handleExport}
-          isExporting={isExporting}
         />
       </div>
 

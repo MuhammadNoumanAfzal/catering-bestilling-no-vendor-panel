@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
   GET_VENDOR_DELIVERY_SETTINGS_QUERY,
@@ -32,7 +33,7 @@ export async function updateVendorDeliverySettings(input) {
 
   return result?.updateVendorDeliverySettings || {
     success: false,
-    message: "Unable to save delivery settings.",
+    message: i18n.t("delivery.saveUnavailable"),
     errors: [],
     vendorDeliverySettings: null,
   };
@@ -59,7 +60,7 @@ export async function createValidArea({ name, postCode }) {
 
   return result?.createValidArea || {
     success: false,
-    message: "Unable to create service area.",
+    message: i18n.t("delivery.createAreaFailed"),
     errors: [],
     validArea: null,
   };

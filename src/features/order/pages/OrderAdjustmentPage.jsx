@@ -1,5 +1,7 @@
-﻿import { AlertTriangle, ChevronLeft, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
+import i18n from "../../../i18n";
+import { AlertTriangle, ChevronLeft, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showOrderStatusUpdated, showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
 import {
@@ -119,7 +121,7 @@ function buildRemovableItems(orderDetail) {
         id: item?.id || product?.id || `order-item-${index}`,
         itemId: item?.id || null,
         productId: item?.productId || product?.id || null,
-        name: item?.productName || product?.name || item?.name || "Order item",
+        name: item?.productName || product?.name || item?.name || i18n.t("orders.detail.item"),
         quantity: Number(item?.quantity ?? 0) || 0,
         totalPrice: parseCurrencyValue(item?.lineTotal ?? item?.lineSubtotal ?? item?.unitPrice),
         image: product?.coverImage?.fileUrl || "",
@@ -136,7 +138,7 @@ function buildRemovableItems(orderDetail) {
       id: cart?.id || item?.id || `cart-${index}`,
       itemId: cart?.id || item?.id || null,
       productId: item?.id || null,
-      name: item?.title || item?.name || "Order item",
+      name: item?.title || item?.name || i18n.t("orders.detail.item"),
       quantity: Number(cart?.quantity ?? 0) || 0,
       totalPrice: parseCurrencyValue(cart?.totalPriceWithTax ?? cart?.priceWithTax),
       image: item?.coverImage?.fileUrl || "",
@@ -147,6 +149,7 @@ function buildRemovableItems(orderDetail) {
 }
 
 export default function OrderAdjustmentPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { orderId } = useParams();
   const decodedOrderId = useMemo(() => decodeURIComponent(orderId || ""), [orderId]);
@@ -185,8 +188,8 @@ export default function OrderAdjustmentPage() {
         const mappedOrder = mapVendorOrderDetail(result, decodedOrderId);
         if (!canAdjustOrder(mappedOrder?.status)) {
           await showVendorErrorAlert(
-            "Order adjustment is only available before an order is delivered or canceled.",
-            "Adjustment unavailable",
+            t("orders.adjustment.onlyBeforeDelivered", { defaultValue: "Order adjustment is only available before an order is delivered or canceled." }),
+            t("orders.detail.adjustmentUnavailable", { defaultValue: "Adjustment unavailable" }),
           );
           navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
           return;
@@ -201,9 +204,9 @@ export default function OrderAdjustmentPage() {
         if (hasPendingCustomerModification || hasOpenAdjustmentRequest(existingAdjustment)) {
           await showVendorErrorAlert(
             hasPendingCustomerModification
-              ? "A customer modification request is already pending for this order. Please resolve it from the order details page first."
-              : "A vendor adjustment is already pending for this order. Please wait for the customer to respond from the order details page.",
-            "Adjustment unavailable",
+              ? t("orders.adjustment.customerPending", { defaultValue: "A customer modification request is already pending for this order. Please resolve it from the order details page first." })
+              : t("orders.adjustment.vendorPending", { defaultValue: "A vendor adjustment is already pending for this order. Please wait for the customer to respond from the order details page." }),
+            t("orders.detail.adjustmentUnavailable", { defaultValue: "Adjustment unavailable" }),
           );
           navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
           return;
@@ -215,7 +218,7 @@ export default function OrderAdjustmentPage() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error instanceof Error ? error.message : "Unable to load the order details.",
+            error instanceof Error ? error.message : t("orders.detail.unableLoadDetails", { defaultValue: "Unable to load the order details." }),
           );
           setOrderDetail(null);
         }
@@ -252,7 +255,7 @@ export default function OrderAdjustmentPage() {
               id: `included-dish-${menu.id}-${item.id || item.title}`,
               name: item.title || item.name,
               description: item.description || "",
-              sourceMenuName: menu.title || menu.name || "Vendor menu",
+              sourceMenuName: menu.title || menu.name || i18n.t("orders.adjustment.fromYourMenu"),
               sourceMenuId: menu.id,
               menuItemId: item.id,
               image: item.coverImage?.fileUrl || item.image?.fileUrl || menu.coverImage?.fileUrl || "",
@@ -418,7 +421,7 @@ export default function OrderAdjustmentPage() {
     if (item) {
       setModifiedItemQuantities((current) => ({ ...current, [itemId]: current[itemId] || item.quantity }));
       void showVendorSuccessToast(
-        isRemoving ? `${item.name} added to the adjustment.` : `${item.name} restored to the order.`,
+        isRemoving ? t("orders.adjustment.itemAdded", { item: item.name, defaultValue: `${item.name} added to the adjustment.` }) : t("orders.adjustment.itemRestored", { item: item.name, defaultValue: `${item.name} restored to the order.` }),
       );
     }
   }
@@ -440,7 +443,7 @@ export default function OrderAdjustmentPage() {
       delete remaining[key];
       setRequestedMenuItemChanges(remaining);
       if (activeReplacementKey === key) setActiveReplacementKey("");
-      void showVendorSuccessToast(`${menuItem.title || menuItem.name || "Included dish"} removed from the adjustment.`);
+      void showVendorSuccessToast(t("orders.adjustment.includedDishRemoved", { item: menuItem.title || menuItem.name || t("orders.adjustment.includedDish", { defaultValue: "Included dish" }), defaultValue: `${menuItem.title || menuItem.name || i18n.t("orders.adjustment.includedDish")} removed from the adjustment.` }));
       return;
     }
 
@@ -450,12 +453,12 @@ export default function OrderAdjustmentPage() {
         orderItemId: orderItem.itemId || orderItem.id,
         removedMenuItemId: menuItem.id,
         menuName: orderItem.name,
-        itemName: menuItem.title || menuItem.name || "Included item",
+        itemName: menuItem.title || menuItem.name || t("orders.adjustment.includedItem", { defaultValue: "Included item" }),
         replacement: null,
       },
     }));
     setActiveReplacementKey(key);
-    void showVendorSuccessToast(`Select a replacement for ${menuItem.title || menuItem.name || "this included dish"}.`);
+    void showVendorSuccessToast(t("orders.adjustment.selectReplacementFor", { item: menuItem.title || menuItem.name || t("orders.adjustment.thisIncludedDish", { defaultValue: "this included dish" }), defaultValue: `Select a replacement for ${menuItem.title || menuItem.name || "this included dish"}.` }));
   }
 
   function assignMenuItemReplacement(item) {
@@ -485,7 +488,7 @@ export default function OrderAdjustmentPage() {
       },
     }));
     setPendingReplacementItem(null);
-    void showVendorSuccessToast(`${replacement.itemName} selected as the replacement.`);
+    void showVendorSuccessToast(t("orders.adjustment.replacementSelected", { item: replacement.itemName, defaultValue: `${replacement.itemName} selected as the replacement.` }));
     setFormErrors((current) => {
       const next = { ...current };
       delete next.replacement;
@@ -523,7 +526,7 @@ export default function OrderAdjustmentPage() {
       currentItems.filter((currentItem) => currentItem.id !== itemId),
     );
     if (item) {
-      void showVendorSuccessToast(`${item.name} removed from the adjustment.`);
+      void showVendorSuccessToast(t("orders.adjustment.itemRemoved", { item: item.name, defaultValue: `${item.name} removed from the adjustment.` }));
     }
   }
 
@@ -537,15 +540,15 @@ export default function OrderAdjustmentPage() {
   async function handleAdjustOrderSubmit() {
     if (!hasFormChanges) {
       await showVendorErrorAlert(
-        "Please make at least one change before submitting the order adjustment.",
-        "Nothing to Submit",
+        i18n.t("vendorMessages.changeRequired"),
+        i18n.t("vendorMessages.nothingSubmit"),
       );
       return;
     }
 
       if (!reason) {
-        setFormErrors({ reason: "Please select a reason for the change." });
-        await showVendorErrorAlert("Please select a reason for the change.", "Validation Error");
+        setFormErrors({ reason: t("orders.adjustment.reasonRequired", { defaultValue: "Please select a reason for the change." }) });
+        await showVendorErrorAlert(t("orders.adjustment.reasonRequired", { defaultValue: "Please select a reason for the change." }), t("orders.adjustment.validationError", { defaultValue: "Validation Error" }));
         return;
       }
 
@@ -560,10 +563,10 @@ export default function OrderAdjustmentPage() {
     try {
       const requestedDishChanges = Object.values(requestedMenuItemChanges);
       if (requestedDishChanges.some((item) => !item.replacement)) {
-        setFormErrors({ replacement: "Choose a replacement dish for every selected included dish." });
+        setFormErrors({ replacement: t("orders.adjustment.replacementEveryDish", { defaultValue: "Choose a replacement dish for every selected included dish." }) });
         await showVendorErrorAlert(
-          "Choose a replacement dish for every selected included dish before sending the request.",
-          "Replacement required",
+          i18n.t("vendorMessages.replacementRequired"),
+          i18n.t("vendorMessages.replacementTitle"),
         );
         return;
       }
@@ -631,9 +634,9 @@ export default function OrderAdjustmentPage() {
 
       if (!payload?.success) {
         setFormErrors(mapErrorsByField(payload?.errors));
-        const errMsg = payload?.message || "Unable to submit the order adjustment.";
+        const errMsg = payload?.message || i18n.t("vendorMessages.adjustmentFailed");
         setSubmitError(errMsg);
-        await showVendorErrorAlert(errMsg, "Adjustment Rejected");
+        await showVendorErrorAlert(errMsg, i18n.t("vendorMessages.adjustmentRejected"));
         return;
       }
 
@@ -659,13 +662,13 @@ export default function OrderAdjustmentPage() {
       });
 
       await showOrderStatusUpdated(
-        `Order ${orderDetail?.id || decodedOrderId} adjustment submitted successfully.`,
+        t("orders.adjustment.submittedSuccessfully", { id: orderDetail?.id || decodedOrderId, defaultValue: `Order ${orderDetail?.id || decodedOrderId} adjustment submitted successfully.` }),
       );
       navigate(`/orders/${encodeURIComponent(decodedOrderId)}`);
     } catch (error) {
-      const errMsg = error instanceof Error ? error.message : "Unable to submit the order adjustment.";
+      const errMsg = error instanceof Error ? error.message : t("orders.adjustment.unableSubmit", { defaultValue: "Unable to submit the order adjustment." });
       setSubmitError(errMsg);
-      await showVendorErrorAlert(errMsg, "Submission Error");
+      await showVendorErrorAlert(errMsg, t("orders.adjustment.submissionError", { defaultValue: "Submission Error" }));
     } finally {
       setIsSubmitting(false);
     }
@@ -680,10 +683,10 @@ export default function OrderAdjustmentPage() {
       <section className="flex flex-col gap-3">
         <Link className="inline-flex items-center gap-1 text-[13px] font-bold text-[#cf6e38] no-underline transition hover:underline" to="/orders">
           <ChevronLeft size={16} />
-          Back to Orders
+          {t("orders.backToOrders", { defaultValue: "Back to Orders" })}
         </Link>
         <div className="rounded-xl border border-[#dfd8cf] bg-white px-2 pb-2.5 pt-2 shadow-[0_2px_8px_rgba(42,27,18,0.06)]">
-          <h1 className="type-h3">Order not found</h1>
+          <h1 className="type-h3">{t("orders.detail.orderNotFound", { defaultValue: "Order not found" })}</h1>
         </div>
       </section>
     );
@@ -697,14 +700,14 @@ export default function OrderAdjustmentPage() {
           to={`/orders/${encodeURIComponent(decodedOrderId)}`}
         >
           <ChevronLeft size={16} />
-          Back to Order Details
+          {t("orders.adjustment.backToOrderDetails", { defaultValue: "Back to Order Details" })}
         </Link>
         <div className="flex flex-wrap items-center gap-2.5">
           <h1 className="m-0 text-[34px] font-bold leading-tight tracking-[-0.04em] text-[#19130f]">
-            Order Adjustment
+            {t("orders.detail.orderAdjustment", { defaultValue: "Order Adjustment" })}
           </h1>
           <p className="m-0 text-[13px] font-semibold text-[#8a7a6d]">
-            Let the customer know what needs to be changed in this order.
+            {t("orders.adjustment.subtitle", { defaultValue: "Let the customer know what needs to be changed in this order." })}
           </p>
         </div>
       </header>
@@ -715,9 +718,7 @@ export default function OrderAdjustmentPage() {
             <div className="flex items-start gap-3 rounded-[10px] border border-[#ffe2cc] bg-[#fff8f2] p-3 text-[13px] font-semibold leading-[1.45] text-[#d96e39]">
               <AlertTriangle size={16} strokeWidth={2.4} className="mt-[2px] shrink-0" />
               <span>
-                <strong>Important:</strong> Please call the customer and confirm the
-                changes with them before doing adjustment in order.
-              </span>
+                <strong> {i18n.t("vendorMessages.important")} </strong> {i18n.t("vendorMessages.callCustomer")} </span>
             </div>
 
             {submitError ? (
@@ -727,16 +728,16 @@ export default function OrderAdjustmentPage() {
             ) : null}
 
             <div className="relative flex flex-col gap-1.5">
-              <span className="text-[16px] font-extrabold text-[#1c1510]">1. Reason for Change</span>
+              <span className="text-[16px] font-extrabold text-[#1c1510]">{t("orders.adjustment.reasonTitle", { defaultValue: "1. Reason for Change" })}</span>
               <span className="text-[13px] font-bold text-[#8a7a6d]">
-                Please select the main reason for requesting changes.
+                {t("orders.adjustment.reasonHelp", { defaultValue: "Please select the main reason for requesting changes." })}
               </span>
               <button
                 className="flex h-10 w-full cursor-pointer items-center justify-between rounded-[8px] border border-[#d8cec4] bg-white px-3 text-left text-[13px] font-bold text-[#2b231e] transition hover:border-[#cf6e38]"
                 onClick={() => setIsReasonDropdownOpen((current) => !current)}
                 type="button"
               >
-                <span>{reason || "Select reason for changes"}</span>
+                <span>{reason ? t(`orders.adjustment.reasons.${reason}`, { defaultValue: reason }) : t("orders.adjustment.selectReason", { defaultValue: "Select reason for changes" })}</span>
                 <ChevronRight
                   size={16}
                   className={`transform transition-transform ${
@@ -769,9 +770,9 @@ export default function OrderAdjustmentPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[16px] font-extrabold text-[#1c1510]">2. Items to Modify</span>
+              <span className="text-[16px] font-extrabold text-[#1c1510]">{t("orders.adjustment.itemsToModify", { defaultValue: "2. Items to Modify" })}</span>
               <span className="text-[13px] font-bold text-[#8a7a6d]">
-                Select an included dish, then choose a replacement from one of your menus.
+                {t("orders.adjustment.itemsHelp", { defaultValue: "Select an included dish, then choose a replacement from one of your menus." })}
               </span>
               <div className="flex flex-col gap-2 rounded-[10px] border border-[#efe6de] bg-[#faf9f6] p-1.5">
                 {removableItems.length > 0 ? removableItems.map((item) => {
@@ -798,7 +799,7 @@ export default function OrderAdjustmentPage() {
                             {item.name}
                           </span>
                           <span className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">
-                            Ordered quantity: {item.quantity}
+                            {t("orders.adjustment.orderedQuantity", { defaultValue: "Ordered quantity" })}: {item.quantity}
                           </span>
                           {item.description ? (
                             <span className="mt-1 text-[11px] leading-5 text-[#88796e]">
@@ -814,8 +815,8 @@ export default function OrderAdjustmentPage() {
                       {item.menuItems.length ? (
                         <div className="mt-3 border-t border-[#eee5de] pt-3">
                           <div className="mb-2 flex items-center justify-between">
-                            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#8a7a6d]">Included dishes</span>
-                            <span className="text-[10px] font-semibold text-[#a18f81]">Select a dish to request a change</span>
+                            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#8a7a6d]">{t("orders.adjustment.includedDishes", { defaultValue: "Included dishes" })}</span>
+                            <span className="text-[10px] font-semibold text-[#a18f81]">{t("orders.adjustment.selectDishHelp", { defaultValue: "Select a dish to request a change" })}</span>
                           </div>
                           <div className="grid gap-2 lg:grid-cols-2">
                             {item.menuItems.map((menuItem, menuItemIndex) => {
@@ -827,7 +828,7 @@ export default function OrderAdjustmentPage() {
                               return (
                                 <div key={menuItemKey} className={`flex items-start justify-between gap-3 rounded-[8px] border px-3 py-2.5 ${isRequested ? "border-[#f1c0a8] bg-[#fff7f1]" : "border-[#eee5de] bg-[#fcfbfa]"}`}>
                                   <div className="min-w-0">
-                                    <p className="m-0 text-[12px] font-extrabold text-[#3d3028]">{menuItemIndex + 1}. {menuItem.title || menuItem.name || "Included item"}</p>
+                                    <p className="m-0 text-[12px] font-extrabold text-[#3d3028]">{menuItemIndex + 1}. {menuItem.title || menuItem.name || t("orders.adjustment.includedItem", { defaultValue: "Included item" })}</p>
                                     {menuItem.description ? <p className="mt-1 text-[11px] leading-4 text-[#817268]">{menuItem.description}</p> : null}
                                   </div>
                                   <div className="flex shrink-0 flex-col items-end gap-1">
@@ -836,10 +837,10 @@ export default function OrderAdjustmentPage() {
                                       onClick={() => isRequested ? setActiveReplacementKey(menuItemKey) : toggleMenuItemChange(item, menuItem)}
                                       type="button"
                                     >
-                                      {requestedChange?.replacement ? "Change replacement" : isActiveReplacement ? "Choose below" : isRequested ? "Select replacement" : "Request change"}
+                                      {requestedChange?.replacement ? t("orders.adjustment.changeReplacement", { defaultValue: "Change replacement" }) : isActiveReplacement ? t("orders.adjustment.chooseBelow", { defaultValue: "Choose below" }) : isRequested ? t("orders.adjustment.selectReplacement", { defaultValue: "Select replacement" }) : t("orders.adjustment.requestChange", { defaultValue: "Request change" })}
                                     </button>
                                     {isRequested ? (
-                                      <button type="button" onClick={() => toggleMenuItemChange(item, menuItem)} className="text-[10px] font-semibold text-[#a05e38] hover:underline">Remove</button>
+                                      <button type="button" onClick={() => toggleMenuItemChange(item, menuItem)} className="text-[10px] font-semibold text-[#a05e38] hover:underline">{t("orders.remove", { defaultValue: "Remove" })}</button>
                                     ) : null}
                                   </div>
                                 </div>
@@ -852,45 +853,45 @@ export default function OrderAdjustmentPage() {
                   );
                 }) : (
                   <div className="rounded-[8px] border border-dashed border-[#d8cec4] bg-white px-4 py-4 text-[13px] font-semibold text-[#8a7a6d]">
-                    There are no order items available to remove.
+                    {t("orders.adjustment.noOrderItemsToRemove", { defaultValue: "There are no order items available to remove." })}
                   </div>
                 )}
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[16px] font-extrabold text-[#1c1510]">3. Suggestion (Optional)</span>
+              <span className="text-[16px] font-extrabold text-[#1c1510]">{t("orders.adjustment.suggestionTitle", { defaultValue: "3. Suggestion (Optional)" })}</span>
               <span className="text-[13px] font-bold text-[#8a7a6d]">
-                Search a replacement from your menus for the customer to review.
+                {t("orders.adjustment.suggestionHelp", { defaultValue: "Search a replacement from your menus for the customer to review." })}
               </span>
 
               {activeReplacementKey && requestedMenuItemChanges[activeReplacementKey] ? (
                 <div className="rounded-[10px] border border-[#f1c0a8] bg-[#fff7f1] px-3 py-2 text-[12px] font-semibold text-[#9a4e28]">
-                  Replacing: <strong>{requestedMenuItemChanges[activeReplacementKey].menuName} - {requestedMenuItemChanges[activeReplacementKey].itemName}</strong>. Choose a dish below.
+                  {t("orders.adjustment.replacing", { defaultValue: "Replacing" })}: <strong>{requestedMenuItemChanges[activeReplacementKey].menuName} - {requestedMenuItemChanges[activeReplacementKey].itemName}</strong>. {t("orders.adjustment.chooseDishBelow", { defaultValue: "Choose a dish below." })}
                 </div>
               ) : pendingReplacementItem ? (
                 <div className="rounded-[10px] border border-[#f1c0a8] bg-[#fff7f1] px-3 py-2 text-[12px] font-semibold text-[#9a4e28]">
-                  Replacement selected: <strong>{pendingReplacementItem.menuName} - {pendingReplacementItem.itemName}</strong>. Now select the ordered dish above using <strong>Request change</strong>.
+                  {t("orders.adjustment.replacementSelectedLabel", { defaultValue: "Replacement selected" })}: <strong>{pendingReplacementItem.menuName} - {pendingReplacementItem.itemName}</strong>. {t("orders.adjustment.nowSelectOrderedDish", { defaultValue: "Now select the ordered dish above using" })} <strong>{t("orders.adjustment.requestChange", { defaultValue: "Request change" })}</strong>.
                 </div>
               ) : (
                 <div className="rounded-[10px] border border-[#d9e5f3] bg-[#f5f9ff] px-3 py-2 text-[12px] font-semibold text-[#426487]">
-                  First select an ordered included dish above using <strong>Request change</strong>, then choose its replacement here.
+                  {t("orders.adjustment.firstSelectDish", { defaultValue: "First select an ordered included dish above using" })} <strong>{t("orders.adjustment.requestChange", { defaultValue: "Request change" })}</strong>, {t("orders.adjustment.thenChooseReplacement", { defaultValue: "then choose its replacement here." })}
                 </div>
               )}
 
               <div className="rounded-[12px] border border-[#efe6de] bg-[#fffaf6] p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[13px] font-extrabold text-[#1c1510]">From your menu</p>
-                    <p className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">Search any item from your published menus.</p>
+                    <p className="text-[13px] font-extrabold text-[#1c1510]">{t("orders.adjustment.fromYourMenu", { defaultValue: "From your menu" })}</p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-[#8a7a6d]">{t("orders.adjustment.searchPublishedMenus", { defaultValue: "Search any item from your published menus." })}</p>
                   </div>
-                  <span className="rounded-full bg-[#fff0e6] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#c75c2b]">Menu item</span>
+                  <span className="rounded-full bg-[#fff0e6] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#c75c2b]">{t("orders.adjustment.menuItem", { defaultValue: "Menu item" })}</span>
                 </div>
                 <div className="relative mt-3 flex items-center">
                   <Search size={14} className="absolute left-3 text-[#8a7a6d]" />
                   <input
                     type="text"
-                    placeholder="Search your menu items..."
+                    placeholder={t("orders.adjustment.searchMenuItems", { defaultValue: "Search your menu items..." })}
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     className="h-10 w-full rounded-[8px] border border-[#d8cec4] bg-white pl-9 pr-3 text-[13px] font-semibold text-[#1c1510] placeholder-[#a49a90] transition focus:border-[#cf6e38] focus:outline-none"
@@ -917,18 +918,18 @@ export default function OrderAdjustmentPage() {
                       ) : (
                         <div className="flex h-24 w-full flex-col items-center justify-center rounded-[8px] bg-[#f7f2ec] text-[#b28c73]">
                           <UtensilsCrossed size={22} />
-                          <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em]">Menu dish</span>
+                          <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em]">{t("orders.adjustment.menuDish", { defaultValue: "Menu dish" })}</span>
                         </div>
                       )}
                       <div className="flex flex-col gap-0.5">
                         <strong className="text-[14px] font-extrabold text-[#1c1510]">{item.name}</strong>
                         <span className="text-[12px] font-semibold text-[#8a7a6d]">
-                          {item.description || "No description available"}
+                          {item.description || t("orders.detail.noDescription", { defaultValue: "No description available" })}
                         </span>
                       </div>
                       {item.isMenuItemSuggestion ? (
                         <span className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#5d8b68]">
-                          Included in menu price
+                          {t("orders.adjustment.includedInMenuPrice", { defaultValue: "Included in menu price" })}
                         </span>
                       ) : (
                         <span className="mt-1 text-[13px] font-extrabold text-[#cf6e38]">
@@ -940,18 +941,18 @@ export default function OrderAdjustmentPage() {
                         onClick={() => addSuggestion(item)}
                         className="mt-1 flex h-8 w-full cursor-pointer items-center justify-center rounded-[6px] border border-[#ffe2cc] bg-[#fff2ec] text-[13px] font-bold text-[#d96e39] transition hover:border-[#d96e39] hover:bg-[#d96e39] hover:text-white active:scale-95"
                       >
-                        {item.isMenuItemSuggestion ? activeReplacementKey ? "Use as replacement" : "Select replacement" : "+ Add item"}
+                        {item.isMenuItemSuggestion ? activeReplacementKey ? t("orders.adjustment.useAsReplacement", { defaultValue: "Use as replacement" }) : t("orders.adjustment.selectReplacement", { defaultValue: "Select replacement" }) : t("orders.adjustment.addItem", { defaultValue: "+ Add item" })}
                       </button>
                     </div>
                   ))}
                 </div>
 
                 {isSuggestionLoading ? (
-                  <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">Loading suggestions...</div>
+                  <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">{t("orders.adjustment.loadingSuggestions", { defaultValue: "Loading suggestions..." })}</div>
                 ) : null}
 
                 {!isSuggestionLoading && searchTerm.trim() && availableSuggestions.length === 0 ? (
-                  <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">No matching items found.</div>
+                  <div className="mt-2 text-[12px] font-semibold text-[#8a7a6d]">{t("orders.adjustment.noMatchingItems", { defaultValue: "No matching items found." })}</div>
                 ) : null}
 
                 {formErrors.replacement ? (
@@ -970,10 +971,10 @@ export default function OrderAdjustmentPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-[16px] font-extrabold text-[#1c1510]">Adjusted Items</span>
+              <span className="text-[16px] font-extrabold text-[#1c1510]">{t("orders.adjustment.adjustedItems", { defaultValue: "Adjusted Items" })}</span>
               {modifiedItems.length === 0 && suggestedList.length === 0 && !hasCompletedDishReplacements ? (
                 <div className="rounded-[12px] border border-dashed border-[#d8cec4] bg-[#faf9f6] p-4 text-center text-[13px] font-medium italic text-[#8a7a6d]">
-                  No items modified or added yet. Select order items above or search suggestions to make adjustments.
+                  {t("orders.adjustment.noAdjustedItems", { defaultValue: "No items modified or added yet. Select order items above or search suggestions to make adjustments." })}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
@@ -982,15 +983,11 @@ export default function OrderAdjustmentPage() {
                       key={`removed-${item.id}`}
                       className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-red-200 bg-[#fff5f5] p-3 transition hover:border-red-300"
                     >
-                      <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-red-100 text-[12px] font-extrabold uppercase tracking-wider text-red-500">
-                        Rem
-                      </div>
+                      <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-red-100 text-[12px] font-extrabold uppercase tracking-wider text-red-500"> {i18n.t("vendorMessages.removedShort")} </div>
                       <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="break-words text-[14px] font-extrabold text-[#1c1510] line-through">{item.name}</span>
-                          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-red-700">
-                            Removed
-                          </span>
+                          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-red-700"> {i18n.t("vendorMessages.removed")} </span>
                         </div>
                         <span className="text-[13px] font-extrabold text-red-600">
                           -{formatCurrency(item.totalPrice * (item.adjustmentQuantity / Math.max(1, item.quantity)))} ({item.adjustmentQuantity} item{item.adjustmentQuantity === 1 ? "" : "s"})
@@ -1000,9 +997,7 @@ export default function OrderAdjustmentPage() {
                         type="button"
                         onClick={() => toggleItem(item.id)}
                         className="ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border border-red-300 bg-white px-3 text-[13px] font-extrabold text-red-700 transition hover:border-red-400 hover:bg-red-50 active:scale-95"
-                      >
-                        Restore
-                      </button>
+                      > {i18n.t("vendorMessages.restore")} </button>
                     </div>
                   ))}
 
@@ -1013,14 +1008,12 @@ export default function OrderAdjustmentPage() {
                         key={`${item.orderItemId}-${item.removedMenuItemId}`}
                         className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-[#ead8ca] bg-[#fffaf6] p-3"
                       >
-                        <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-[#dfc2ac] bg-[#fff0e6] text-[11px] font-extrabold uppercase tracking-wider text-[#c75c2b]">
-                          Swap
-                        </div>
+                        <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-[#dfc2ac] bg-[#fff0e6] text-[11px] font-extrabold uppercase tracking-wider text-[#c75c2b]"> {i18n.t("vendorMessages.swap")} </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9a8572]">Included dish replacement</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9a8572]"> {i18n.t("vendorMessages.replacement")} </p>
                           <p className="mt-1 text-[13px] font-bold text-[#6f6258] line-through">{item.menuName} - {item.itemName}</p>
                           <p className="mt-1 text-[14px] font-extrabold text-[#1c1510]">{item.replacement.menuName} - {item.replacement.itemName}</p>
-                          <p className="mt-1 text-[11px] font-semibold text-[#5d8b68]">Included in the existing menu price</p>
+                          <p className="mt-1 text-[11px] font-semibold text-[#5d8b68]">{t("orders.adjustment.includedExistingMenuPrice", { defaultValue: "Included in the existing menu price" })}</p>
                         </div>
                       </div>
                     ))}
@@ -1043,12 +1036,12 @@ export default function OrderAdjustmentPage() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span className="break-words text-[14px] font-extrabold text-[#1c1510]">{item.name}</span>
                           <span className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider ${item.isCustomAlternative || item.isMenuItemSuggestion ? "bg-[#fff0e6] text-[#c75c2b]" : "bg-green-100 text-green-700"}`}>
-                            {item.isCustomAlternative ? "Custom alternative" : item.isMenuItemSuggestion ? "From another menu" : "Added"}
+                            {item.isCustomAlternative ? t("orders.adjustment.customAlternative", { defaultValue: "Custom alternative" }) : item.isMenuItemSuggestion ? t("orders.adjustment.fromAnotherMenu", { defaultValue: "From another menu" }) : t("orders.adjustment.added", { defaultValue: "Added" })}
                           </span>
                         </div>
-                        {item.isMenuItemSuggestion ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">From {item.sourceMenuName}{item.description ? ` - ${item.description}` : ""}</span> : item.description ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{item.description}</span> : null}
+                        {item.isMenuItemSuggestion ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{t("orders.detail.from", { defaultValue: "From" })} {item.sourceMenuName}{item.description ? ` - ${item.description}` : ""}</span> : item.description ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{item.description}</span> : null}
                         <span className={`text-[13px] font-extrabold ${item.isCustomAlternative || item.isMenuItemSuggestion ? "text-[#a06a48]" : "text-green-600"}`}>
-                          {item.isMenuItemSuggestion ? "Included in existing menu price" : item.isCustomAlternative ? "Price to be confirmed with customer" : `+${formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}`}
+                          {item.isMenuItemSuggestion ? t("orders.adjustment.includedExistingMenuPrice", { defaultValue: "Included in existing menu price" }) : item.isCustomAlternative ? t("orders.adjustment.priceToConfirm", { defaultValue: "Price to be confirmed with customer" }) : `+${formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}`}
                         </span>
                       </div>
                       {!item.isCustomAlternative && !item.isMenuItemSuggestion ? (
@@ -1062,9 +1055,7 @@ export default function OrderAdjustmentPage() {
                         type="button"
                         onClick={() => removeSuggestion(item.id)}
                         className={`ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border bg-white px-3 text-[13px] font-extrabold transition active:scale-95 ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#dfc2ac] text-[#a05e38] hover:bg-[#fff5ef]" : "border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50"}`}
-                      >
-                        Remove
-                      </button>
+                      > {i18n.t("vendorMessages.remove")} </button>
                     </div>
                   ))}
                 </div>
@@ -1072,52 +1063,49 @@ export default function OrderAdjustmentPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[16px] font-extrabold text-[#1c1510]">Additional Details</span>
+              <span className="text-[16px] font-extrabold text-[#1c1510]">{t("orders.adjustment.additionalDetails", { defaultValue: "Additional Details" })}</span>
               <textarea
-                placeholder="Please explain the changes you would like to make..."
+                placeholder={t("orders.adjustment.additionalDetailsPlaceholder", { defaultValue: "Please explain the changes you would like to make..." })}
                 value={additionalDetails}
                 onChange={(event) => setAdditionalDetails(event.target.value)}
                 className="min-h-[90px] w-full resize-y rounded-[8px] border border-[#d8cec4] p-3 text-[13px] font-semibold text-[#1c1510] placeholder-[#a49a90] transition focus:border-[#cf6e38] focus:outline-none"
               />
             </div>
 
-            <div className="rounded-[10px] border border-[#efe6de] bg-[#fcf8f4] px-4 py-3 text-[13px] font-semibold leading-[1.6] text-[#6f655d]">
-              Vendors can only request item removals or replacement suggestions from this screen.
-              Event date, time, guest count, and delivery address remain locked.
-            </div>
+            <div className="rounded-[10px] border border-[#efe6de] bg-[#fcf8f4] px-4 py-3 text-[13px] font-semibold leading-[1.6] text-[#6f655d]"> {i18n.t("vendorMessages.locked")} </div>
           </div>
 
           <div className="flex flex-col">
             <div className="sticky top-[10px] flex flex-col gap-4 rounded-[12px] border border-[#f5ede4] bg-[#fff6ed] p-4.5 shadow-sm">
-              <strong className="text-[16px] font-extrabold text-[#1c1510]">Order Summary</strong>
+              <strong className="text-[16px] font-extrabold text-[#1c1510]">{t("orders.adjustment.orderSummary", { defaultValue: "Order Summary" })}</strong>
 
               <div className="flex flex-col gap-3 border-t border-[#f2ece6] pt-3 text-[13px]">
                 <div className="flex items-start justify-between">
-                  <span className="font-bold text-[#8a7a6d]">Order ID</span>
+                  <span className="font-bold text-[#8a7a6d]">{t("orders.orderId", { defaultValue: "Order ID" })}</span>
                   <span className="text-right font-extrabold text-[#1c1510]">{orderDetail.id}</span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="font-bold text-[#8a7a6d]">Customer</span>
+                  <span className="font-bold text-[#8a7a6d]">{t("orders.customer", { defaultValue: "Customer" })}</span>
                   <span className="text-right font-extrabold text-[#1c1510]">
-                    {orderDetail.customer?.name || "Customer unavailable"}
+                    {orderDetail.customer?.name || t("orders.customerUnavailable", { defaultValue: "Customer unavailable" })}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="font-bold text-[#8a7a6d]">Order Date</span>
+                  <span className="font-bold text-[#8a7a6d]">{t("orders.adjustment.orderDate", { defaultValue: "Order Date" })}</span>
                   <span className="text-right font-extrabold text-[#1c1510]">
                     {orderDetail.date} - {orderDetail.time || "-"}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="font-bold text-[#8a7a6d]">Persons</span>
+                  <span className="font-bold text-[#8a7a6d]">{t("orders.adjustment.persons", { defaultValue: "Persons" })}</span>
                   <span className="text-right font-extrabold text-[#1c1510]">{orderDetail.guests}</span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="font-bold text-[#8a7a6d]">Delivery Address</span>
+                  <span className="font-bold text-[#8a7a6d]">{t("orders.deliveryAddress", { defaultValue: "Delivery Address" })}</span>
                   <span className="max-w-[170px] text-right font-extrabold leading-[1.3] text-[#1c1510]">
                     {orderDetail.logistics?.fullAddress || orderDetail.logistics?.deliveryAddress || "-"}
                   </span>
@@ -1139,20 +1127,20 @@ export default function OrderAdjustmentPage() {
 
                 {modifiedItems.length > 0 ? (
                   <div className="flex items-start justify-between font-bold text-red-600">
-                    <span>Removed Items Offset</span>
+                    <span>{t("orders.adjustment.removedItemsOffset", { defaultValue: "Removed Items Offset" })}</span>
                     <span className="text-right">-{formatCurrency(removedCost)}</span>
                   </div>
                 ) : null}
 
                 {suggestedList.some((item) => !item.isCustomAlternative && !item.isMenuItemSuggestion) ? (
                   <div className="flex items-start justify-between font-bold text-green-600">
-                    <span>Added Items Offset</span>
+                    <span>{t("orders.adjustment.addedItemsOffset", { defaultValue: "Added Items Offset" })}</span>
                     <span className="text-right">+{formatCurrency(addedCost)}</span>
                   </div>
                 ) : null}
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
-                  <span className="font-bold text-[#8a7a6d]">Old Total Amount</span>
+                  <span className="font-bold text-[#8a7a6d]">{t("orders.adjustment.oldTotalAmount", { defaultValue: "Old Total Amount" })}</span>
                   <span className="text-right font-extrabold text-[#1c1510]">
                     {formatCurrency(oldTotal)}
                   </span>
@@ -1160,10 +1148,10 @@ export default function OrderAdjustmentPage() {
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
                   <span className="font-bold text-[#8a7a6d]">
-                    {hasPricingChanges ? "Updated Total Amount" : "Price Impact"}
+                    {hasPricingChanges ? t("orders.adjustment.updatedTotalAmount", { defaultValue: "Updated Total Amount" }) : t("orders.adjustment.priceImpact", { defaultValue: "Price Impact" })}
                   </span>
                   <span className="text-right text-[16px] font-black text-[#d96e39]">
-                    {hasPricingChanges ? formatCurrency(effectiveNewTotal) : "No price change"}
+                    {hasPricingChanges ? formatCurrency(effectiveNewTotal) : t("orders.adjustment.noPriceChange", { defaultValue: "No price change" })}
                   </span>
                 </div>
               </div>
@@ -1176,7 +1164,7 @@ export default function OrderAdjustmentPage() {
             to={`/orders/${orderId}`}
             className="inline-flex h-10 items-center justify-center rounded-[8px] border border-[#d8cec4] bg-white px-6 text-[13px] font-extrabold text-[#2b231e] no-underline transition hover:bg-[#faf7f4] active:scale-95"
           >
-            Cancel
+            {t("orders.cancel", { defaultValue: "Cancel" })}
           </Link>
           <button
             className="h-10 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[13px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] transition hover:bg-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
@@ -1184,7 +1172,7 @@ export default function OrderAdjustmentPage() {
             onClick={handleAdjustOrderSubmit}
             type="button"
           >
-            {isSubmitting ? "Submitting..." : "Adjust Order"}
+            {isSubmitting ? t("orders.adjustment.submitting", { defaultValue: "Submitting..." }) : t("orders.adjustment.adjustOrder", { defaultValue: "Adjust Order" })}
           </button>
         </div>
       </div>

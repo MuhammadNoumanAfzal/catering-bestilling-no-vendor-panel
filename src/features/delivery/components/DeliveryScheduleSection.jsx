@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySchedulePicker from "./DeliverySchedulePicker";
 import DeliverySectionCard from "./DeliverySectionCard";
@@ -91,15 +92,13 @@ export default function DeliveryScheduleSection({
                         </span>
                         <span className="min-w-0">
                           <span className="block truncate text-[13px] font-extrabold">
-                            {dayLabels[slot.day] || slot.day.toUpperCase()}
+                            {t(`delivery.${slot.day}`, { defaultValue: dayLabels[slot.day] || slot.day.toUpperCase() })}
                           </span>
                           <span className="mt-1 block text-[12px] font-semibold text-[#6b5f56]">
                             {slot.label}
                           </span>
                           {isInvalidSlot ? (
-                            <span className="mt-1 block text-[11px] font-bold text-[#cf5f38]">
-                              Legacy time format. Remove and re-add this slot.
-                            </span>
+                            <span className="mt-1 block text-[11px] font-bold text-[#cf5f38]"> {i18n.t("delivery.legacySlot")} </span>
                           ) : null}
                         </span>
                       </span>
@@ -121,9 +120,7 @@ export default function DeliveryScheduleSection({
                 <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">
                   {t("delivery.noSlots", { defaultValue: "No delivery slots added yet." })}
                 </p>
-                <p className="mt-1 text-[12px] text-[#9a8b7f]">
-                  Add at least one slot so customers can choose delivery times.
-                </p>
+                <p className="mt-1 text-[12px] text-[#9a8b7f]"> {i18n.t("delivery.addSlotHelp")} </p>
               </div>
             )}
           </div>
@@ -141,9 +138,7 @@ export default function DeliveryScheduleSection({
             + {t("delivery.addSlot", { defaultValue: "Add custom slot" })}
           </button>
           {!hasActiveDays ? (
-            <p className="type-subpara m-0 text-[#8c5a48]">
-              Select at least one delivery day before adding a slot.
-            </p>
+            <p className="type-subpara m-0 text-[#8c5a48]"> {i18n.t("delivery.selectDayHelp")} </p>
           ) : null}
         </div>
       </div>
@@ -154,9 +149,7 @@ export default function DeliveryScheduleSection({
         </div>
       ) : null}
 
-      <DeliveryInfoNote>
-        This section controls customer-facing delivery slot selection. It is separate from your general business hours.
-      </DeliveryInfoNote>
+      <DeliveryInfoNote> {i18n.t("delivery.scheduleHelp")} </DeliveryInfoNote>
     </DeliverySectionCard>
   );
 }

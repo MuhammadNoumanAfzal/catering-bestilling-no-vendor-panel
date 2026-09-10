@@ -5,15 +5,16 @@ import {
   HelpCircle,
   Play
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 
 const STAGES = [
-  { id: "New", label: "New Order", desc: "Incoming request" },
-  { id: "Accepted", label: "Confirmed", desc: "Scheduled for production" },
-  { id: "Preparing", label: "Preparing", desc: "Kitchen staff working" },
-  { id: "Ready", label: "Food Ready", desc: "Packed & awaiting dispatch" },
-  { id: "Out for delivery", label: "In Transit", desc: "Driver on the way" },
-  { id: "Delivered", label: "Delivered", desc: "Arrived at customer" },
+  { id: "New", labelKey: "orders.detail.stageNew", defaultLabel: "New Order", descKey: "orders.detail.stageIncoming", defaultDesc: "Incoming request" },
+  { id: "Accepted", labelKey: "orders.detail.stageConfirmed", defaultLabel: "Confirmed", descKey: "orders.detail.stageScheduled", defaultDesc: "Scheduled for production" },
+  { id: "Preparing", labelKey: "orders.preparing", defaultLabel: "Preparing", descKey: "orders.detail.stageKitchen", defaultDesc: "Kitchen staff working" },
+  { id: "Ready", labelKey: "orders.detail.stageFoodReady", defaultLabel: "Food Ready", descKey: "orders.detail.stagePacked", defaultDesc: "Packed & awaiting dispatch" },
+  { id: "Out for delivery", labelKey: "orders.detail.stageTransit", defaultLabel: "In Transit", descKey: "orders.detail.stageDriver", defaultDesc: "Driver on the way" },
+  { id: "Delivered", labelKey: "orders.delivered", defaultLabel: "Delivered", descKey: "orders.detail.stageArrived", defaultDesc: "Arrived at customer" },
 ];
 
 export default function LifecyclePanel({ 
@@ -21,18 +22,19 @@ export default function LifecyclePanel({
   onActionClick, 
   onOrderAdjustmentClick 
 }) {
+  const { t } = useTranslation();
   return (
-    <DetailPanel title="Order Lifecycle">
+    <DetailPanel title={t("orders.detail.orderLifecycle", { defaultValue: "Order Lifecycle" })}>
       {/* Onboarding Incoming Alert Box */}
       <div className="mb-4 flex flex-col gap-2 rounded-xl border border-[#bde3f9] bg-[#e3f4ff] p-3 text-left">
         <div className="flex items-center gap-2 text-[#1d70a2]">
           <AlertCircle size={16} strokeWidth={2.5} className="animate-pulse" />
           <strong className="text-[12px] font-extrabold uppercase tracking-wider">
-            Review Requested
+            {t("orders.detail.reviewRequested", { defaultValue: "Review Requested" })}
           </strong>
         </div>
         <p className="m-0 text-[11px] font-semibold leading-[1.45] text-[#5e6d7a]">
-          Please review the order details and choose whether to accept the scheduled delivery date.
+          {t("orders.detail.reviewRequestedHelp", { defaultValue: "Please review the order details and choose whether to accept the scheduled delivery date." })}
         </p>
       </div>
 
@@ -65,11 +67,11 @@ export default function LifecyclePanel({
                 <span className={`text-[12px] font-extrabold ${
                   isActive ? "text-[#1d70a2]" : "text-[#8f7f73]"
                 }`}>
-                  {stage.label}
+                  {t(stage.labelKey, { defaultValue: stage.defaultLabel })}
                 </span>
                 {isActive && (
                   <span className="text-[10px] text-[#8f7f73] font-semibold mt-0.5">
-                    {stage.desc}
+                    {t(stage.descKey, { defaultValue: stage.defaultDesc })}
                   </span>
                 )}
               </div>
@@ -105,7 +107,7 @@ export default function LifecyclePanel({
               type="button"
             >
               <Icon size={13} strokeWidth={isAccept || isReject ? 3 : 2} />
-              <span>{action.label}</span>
+              <span>{t(`orders.actionLabels.${action.label}`, { defaultValue: action.label })}</span>
             </button>
           );
         })}
@@ -116,7 +118,7 @@ export default function LifecyclePanel({
             onClick={onOrderAdjustmentClick}
             type="button"
           >
-            <span>Order Adjustment</span>
+            <span>{t("orders.detail.orderAdjustment", { defaultValue: "Order Adjustment" })}</span>
           </button>
         ) : null}
       </div>

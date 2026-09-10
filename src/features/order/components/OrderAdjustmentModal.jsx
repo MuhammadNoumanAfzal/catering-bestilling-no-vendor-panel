@@ -1,5 +1,6 @@
 import { AlertTriangle, ChevronRight, X, Search, Calendar, Clock, Minus, Plus } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { showOrderStatusUpdated } from "../../../utils/vendorAlerts";
 
 const MOCK_SUGGESTIONS = [
@@ -7,6 +8,7 @@ const MOCK_SUGGESTIONS = [
     id: "sug-1",
     name: "Lemon tea",
     serves: "Serves 10 persons",
+    servesCount: 10,
     price: 1200,
     priceStr: "kr 120.00",
     image: "/heroBg.webp",
@@ -15,6 +17,7 @@ const MOCK_SUGGESTIONS = [
     id: "sug-2",
     name: "Apple juice",
     serves: "Serves 10 persons",
+    servesCount: 10,
     price: 1000,
     priceStr: "kr 100.00",
     image: "/heroBg.webp",
@@ -23,6 +26,7 @@ const MOCK_SUGGESTIONS = [
     id: "sug-3",
     name: "Berry smoothie",
     serves: "Serves 10 persons",
+    servesCount: 10,
     price: 1500,
     priceStr: "kr 150.00",
     image: "/heroBg.webp",
@@ -31,6 +35,7 @@ const MOCK_SUGGESTIONS = [
     id: "sug-4",
     name: "Soft drink pack",
     serves: "Serves 12 persons",
+    servesCount: 12,
     price: 800,
     priceStr: "kr 80.00",
     image: "/heroBg.webp",
@@ -56,6 +61,7 @@ const CHECKBOX_ITEMS = [
 ];
 
 export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState("");
   const [isReasonDropdownOpen, setIsReasonDropdownOpen] = useState(false);
   const [modifiedItems, setModifiedItems] = useState([]);
@@ -129,7 +135,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
 
   const handleAdjustOrderSubmit = async () => {
     if (!reason) {
-      alert("Please select a reason for the change.");
+      alert(t("orders.adjustment.reasonRequired", { defaultValue: "Please select a reason for the change." }));
       return;
     }
 
@@ -152,7 +158,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
     if (onSave) {
       onSave(adjustmentDetails);
     } else {
-      await showOrderStatusUpdated(`Order ${orderDetail.id} successfully adjusted.`);
+      await showOrderStatusUpdated(t("orders.adjustment.submittedSuccessfully", { id: orderDetail.id, defaultValue: `Order ${orderDetail.id} adjustment submitted.` }));
     }
     onClose();
   };
@@ -165,16 +171,16 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
           className="absolute right-4 top-4 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#efe6de] bg-white text-[#7a6d63] hover:bg-[#faf7f4] hover:text-[#181310] transition"
           onClick={onClose}
           type="button"
-          aria-label="Close"
+          aria-label={t("orders.close", { defaultValue: "Close" })}
         >
           <X size={15} />
         </button>
 
         {/* Modal Header */}
         <div className="border-b border-[#efe6de] pb-4 mb-4">
-          <h2 className="type-h2 m-0 font-extrabold text-[#1c1510]">Order Adjustment</h2>
+          <h2 className="type-h2 m-0 font-extrabold text-[#1c1510]">{t("orders.detail.orderAdjustment", { defaultValue: "Order Adjustment" })}</h2>
           <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
-            Let the customer know what needs to be changed in this order.
+            {t("orders.adjustment.subtitle", { defaultValue: "Let the customer know what needs to be changed in this order." })}
           </p>
         </div>
 
@@ -187,22 +193,22 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             <div className="flex items-start gap-3 rounded-[10px] bg-[#fff8f2] border border-[#ffe2cc] p-3 text-[12px] font-semibold text-[#d96e39] leading-[1.45]">
               <AlertTriangle size={16} strokeWidth={2.4} className="shrink-0 mt-[2px]" />
               <span>
-                <strong>Important:</strong> Please call the customer and confirm the changes with them before doing adjustment in order.
+                <strong>{t("orders.adjustment.important", { defaultValue: "Important:" })}</strong> {t("orders.adjustment.importantHelp", { defaultValue: "Please call the customer and confirm the changes with them before doing adjustment in order." })}
               </span>
             </div>
 
             {/* 1. Reason for Change */}
             <div className="flex flex-col gap-1.5 relative">
-              <span className="text-[14px] font-extrabold text-[#1c1510]">1. Reason for Change</span>
+              <span className="text-[14px] font-extrabold text-[#1c1510]">{t("orders.adjustment.reasonTitle", { defaultValue: "1. Reason for Change" })}</span>
               <span className="text-[11px] font-bold text-[#8a7a6d]">
-                Please select the main reason for requesting changes.
+                {t("orders.adjustment.reasonHelp", { defaultValue: "Please select the main reason for requesting changes." })}
               </span>
               <button
                 className="w-full h-10 px-3 flex items-center justify-between rounded-[8px] border border-[#d8cec4] bg-white text-[13px] font-bold text-[#2b231e] text-left cursor-pointer hover:border-[#cf6e38] transition"
                 onClick={() => setIsReasonDropdownOpen(!isReasonDropdownOpen)}
                 type="button"
               >
-                <span>{reason || "Select reason for changes"}</span>
+                <span>{reason ? t(`orders.adjustment.reasons.${reason}`, { defaultValue: reason }) : t("orders.adjustment.selectReason", { defaultValue: "Select reason for changes" })}</span>
                 <ChevronRight size={16} className={`transform transition-transform ${isReasonDropdownOpen ? "rotate-90" : ""}`} />
               </button>
 
@@ -218,7 +224,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                       }}
                       type="button"
                     >
-                      {opt}
+                      {t(`orders.adjustment.reasons.${opt}`, { defaultValue: opt })}
                     </button>
                   ))}
                 </div>
@@ -227,9 +233,9 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
 
             {/* 2. Items to Modify */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-extrabold text-[#1c1510]">2. Items to Modify</span>
+              <span className="text-[14px] font-extrabold text-[#1c1510]">{t("orders.adjustment.itemsToModify", { defaultValue: "2. Items to Modify" })}</span>
               <span className="text-[11px] font-bold text-[#8a7a6d]">
-                Select the items that need to be changed.
+                {t("orders.adjustment.selectItemsHelp", { defaultValue: "Select the items that need to be changed." })}
               </span>
               <div className="flex flex-col gap-2 rounded-[10px] border border-[#efe6de] p-1.5 bg-[#faf9f6]">
                 {CHECKBOX_ITEMS.map((item) => {
@@ -262,9 +268,9 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
 
             {/* 3. Suggestion (Optional) */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-extrabold text-[#1c1510]">3. Suggestion (Optional)</span>
+              <span className="text-[14px] font-extrabold text-[#1c1510]">{t("orders.adjustment.suggestionTitle", { defaultValue: "3. Suggestion (Optional)" })}</span>
               <span className="text-[11px] font-bold text-[#8a7a6d]">
-                Suggest alternative items that could better fit the customer's needs.
+                {t("orders.adjustment.suggestAlternative", { defaultValue: "Suggest alternative items that could better fit the customer's needs." })}
               </span>
               
               {/* Search Box */}
@@ -272,7 +278,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                 <Search size={14} className="absolute left-3 text-[#8a7a6d]" />
                 <input
                   type="text"
-                  placeholder="Search items to suggest..."
+                  placeholder={t("orders.adjustment.searchItemsToSuggest", { defaultValue: "Search items to suggest..." })}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full h-9 pl-9 pr-3 rounded-[8px] border border-[#d8cec4] bg-white text-[12px] font-semibold text-[#1c1510] placeholder-[#a49a90] focus:border-[#cf6e38] focus:outline-none transition"
@@ -297,7 +303,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                       />
                       <div className="flex flex-col leading-[1.2]">
                         <strong className="text-[11px] font-extrabold text-[#1c1510]">{item.name}</strong>
-                        <span className="text-[9px] font-bold text-[#8a7a6d]">{item.serves}</span>
+                        <span className="text-[9px] font-bold text-[#8a7a6d]">{item.servesCount ? t("orders.detail.persons", { count: item.servesCount, defaultValue: item.serves }) : item.serves}</span>
                       </div>
                       <div className="flex items-center justify-between gap-1 mt-auto">
                         <span className="text-[10px] font-extrabold text-[#cf6e38]">{item.priceStr}</span>
@@ -306,7 +312,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                           onClick={() => addSuggestion(item)}
                           className="h-5 px-2.5 rounded-[4px] bg-[#fff2ec] border border-[#ffe2cc] text-[9.5px] font-extrabold text-[#d96e39] cursor-pointer hover:bg-[#d96e39] hover:text-white transition active:scale-95"
                         >
-                          + Add
+                          {t("orders.adjustment.addItem", { defaultValue: "+ Add item" })}
                         </button>
                       </div>
                     </div>
@@ -325,7 +331,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             {/* Adjusted Items section (Only renders if suggest list not empty) */}
             {suggestedList.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-[13px] font-extrabold text-[#1c1510]">Adjusted Items</span>
+                <span className="text-[13px] font-extrabold text-[#1c1510]">{t("orders.adjustment.adjustedItems", { defaultValue: "Adjusted Items" })}</span>
                 <div className="flex flex-wrap gap-2">
                   {suggestedList.map((item) => (
                     <div
@@ -346,7 +352,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                         onClick={() => removeSuggestion(item.id)}
                         className="h-5 px-2 rounded-[4px] bg-[#ffebeb] border border-[#ffd1d1] text-[9.5px] font-extrabold text-[#dc1010] cursor-pointer hover:bg-[#dc1010] hover:text-white transition active:scale-95"
                       >
-                        Remove
+                        {t("orders.remove", { defaultValue: "Remove" })}
                       </button>
                     </div>
                   ))}
@@ -356,9 +362,9 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
 
             {/* Additional Details */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-extrabold text-[#1c1510]">Additional Details</span>
+              <span className="text-[14px] font-extrabold text-[#1c1510]">{t("orders.adjustment.additionalDetails", { defaultValue: "Additional Details" })}</span>
               <textarea
-                placeholder="Please explain the changes you would like to make..."
+                placeholder={t("orders.adjustment.additionalDetailsPlaceholder", { defaultValue: "Please explain the changes you would like to make..." })}
                 value={additionalDetails}
                 onChange={(e) => setAdditionalDetails(e.target.value)}
                 className="w-full min-h-[90px] p-3 rounded-[8px] border border-[#d8cec4] text-[12px] font-semibold text-[#1c1510] placeholder-[#a49a90] focus:border-[#cf6e38] focus:outline-none transition resize-y"
@@ -368,7 +374,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             {/* Form Fields: Date & Time Grid */}
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-extrabold text-[#1c1510]">Date</span>
+                <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.adjustment.date", { defaultValue: "Date" })}</span>
                 <div className="relative flex items-center">
                   <Calendar size={14} className="absolute left-3 text-[#8a7a6d]" />
                   <input
@@ -381,7 +387,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-extrabold text-[#1c1510]">Time</span>
+                <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.adjustment.time", { defaultValue: "Time" })}</span>
                 <div className="relative flex items-center">
                   <Clock size={14} className="absolute left-3 text-[#8a7a6d]" />
                   <input
@@ -396,7 +402,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
 
             {/* Counter: Person Count */}
             <div className="flex flex-col gap-1.5 max-w-[200px]">
-              <span className="text-[12px] font-extrabold text-[#1c1510]">Person Count</span>
+              <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.adjustment.personCount", { defaultValue: "Person Count" })}</span>
               <div className="flex items-center justify-between h-10 border border-[#d8cec4] rounded-[8px] bg-white overflow-hidden">
                 <button
                   type="button"
@@ -419,7 +425,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             {/* Address fields */}
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-extrabold text-[#1c1510]">Address</span>
+                <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.adjustment.address", { defaultValue: "Address" })}</span>
                 <input
                   type="text"
                   value={address}
@@ -429,7 +435,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-extrabold text-[#1c1510]">Apartment/Floor (Optional)</span>
+                <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.adjustment.apartmentFloor", { defaultValue: "Apartment/Floor (Optional)" })}</span>
                 <input
                   type="text"
                   value={apartment}
@@ -442,7 +448,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             {/* City & Postal Code */}
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-extrabold text-[#1c1510]">City</span>
+                <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.detail.city", { defaultValue: "City" })}</span>
                 <input
                   type="text"
                   value={city}
@@ -452,7 +458,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-extrabold text-[#1c1510]">Postal Code</span>
+                <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.detail.postalCode", { defaultValue: "Postal Code" })}</span>
                 <input
                   type="text"
                   value={postalCode}
@@ -467,49 +473,49 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
           {/* Right Column: Order Summary Panel */}
           <div className="flex flex-col">
             <div className="sticky top-0 rounded-[12px] bg-[#fff6ed] border border-[#f5ede4] p-4.5 flex flex-col gap-4">
-              <strong className="text-[15px] font-extrabold text-[#1c1510]">Order Summary</strong>
+              <strong className="text-[15px] font-extrabold text-[#1c1510]">{t("orders.adjustment.orderSummary", { defaultValue: "Order Summary" })}</strong>
               
               <div className="border-t border-[#f2ece6] pt-3 flex flex-col gap-3 text-[11px] sm:text-[12px]">
                 <div className="flex items-start justify-between">
-                  <span className="text-[#8a7a6d] font-bold">Order ID</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.orderId", { defaultValue: "Order ID" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right">#{orderDetail?.id || "ORD-12549"}</span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="text-[#8a7a6d] font-bold">Customer</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.customer", { defaultValue: "Customer" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right">
                     {orderDetail?.customer?.name || orderDetail?.customer || "John Doe"}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="text-[#8a7a6d] font-bold">Order Date</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.adjustment.orderDate", { defaultValue: "Order Date" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right">
                     {orderDetail?.date || "15 May, 2026"} - {orderDetail?.time || "10:30 AM"}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="text-[#8a7a6d] font-bold">Persons</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.adjustment.persons", { defaultValue: "Persons" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right">{personCount}</span>
                 </div>
 
                 <div className="flex items-start justify-between">
-                  <span className="text-[#8a7a6d] font-bold">Delivery Address</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.deliveryAddress", { defaultValue: "Delivery Address" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right max-w-[150px] leading-[1.3] truncate">
                     {address}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
-                  <span className="text-[#8a7a6d] font-bold">Old Total Amount</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.adjustment.oldTotalAmount", { defaultValue: "Old Total Amount" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right">
                     kr {oldTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
-                  <span className="text-[#8a7a6d] font-bold">Updated Total Amount</span>
+                  <span className="text-[#8a7a6d] font-bold">{t("orders.adjustment.updatedTotalAmount", { defaultValue: "Updated Total Amount" })}</span>
                   <span className="text-[#d96e39] font-black text-right text-[14px]">
                     kr {newTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
@@ -527,14 +533,14 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             onClick={onClose}
             type="button"
           >
-            Cancel
+            {t("orders.cancel", { defaultValue: "Cancel" })}
           </button>
           <button
             className="h-10 cursor-pointer rounded-[8px] bg-[#d96e39] px-6 text-[12px] font-extrabold text-white shadow-[0_2px_6px_rgba(217,110,57,0.18)] hover:bg-[#cf6e38] active:scale-95 transition"
             onClick={handleAdjustOrderSubmit}
             type="button"
           >
-            Adjust Order
+            {t("orders.adjustment.adjustOrder", { defaultValue: "Adjust Order" })}
           </button>
         </div>
 

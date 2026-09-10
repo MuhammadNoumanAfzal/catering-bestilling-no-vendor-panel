@@ -1,16 +1,16 @@
 export const supportIssueTypeOptions = [
-  { value: "payout-delay", label: "Payout delayed" },
-  { value: "earning-discrepancy", label: "Earning discrepancy" },
-  { value: "order-management", label: "Order management issue" },
-  { value: "unable-update-menu", label: "Unable to update menu" },
-  { value: "delivery-config", label: "Delivery configuration issue" },
-  { value: "store-visibility", label: "Store visibility issue" },
-  { value: "account-verification", label: "Account verification issue" },
-  { value: "customer-dispute", label: "Customer dispute" },
-  { value: "technical-platform", label: "Technical platform bug" },
-  { value: "notification", label: "Notification issue" },
-  { value: "menu-upload", label: "Menu upload issue" },
-  { value: "general-support", label: "General support request" },
+  { value: "payout-delay", label: "Payout delayed", labelKey: "support.issueTypes.payoutDelay" },
+  { value: "earning-discrepancy", label: "Earning discrepancy", labelKey: "support.issueTypes.earningDiscrepancy" },
+  { value: "order-management", label: "Order management issue", labelKey: "support.issueTypes.orderManagement" },
+  { value: "unable-update-menu", label: "Unable to update menu", labelKey: "support.issueTypes.unableUpdateMenu" },
+  { value: "delivery-config", label: "Delivery configuration issue", labelKey: "support.issueTypes.deliveryConfig" },
+  { value: "store-visibility", label: "Store visibility issue", labelKey: "support.issueTypes.storeVisibility" },
+  { value: "account-verification", label: "Account verification issue", labelKey: "support.issueTypes.accountVerification" },
+  { value: "customer-dispute", label: "Customer dispute", labelKey: "support.issueTypes.customerDispute" },
+  { value: "technical-platform", label: "Technical platform bug", labelKey: "support.issueTypes.technicalPlatform" },
+  { value: "notification", label: "Notification issue", labelKey: "support.issueTypes.notification" },
+  { value: "menu-upload", label: "Menu upload issue", labelKey: "support.issueTypes.menuUpload" },
+  { value: "general-support", label: "General support request", labelKey: "support.issueTypes.generalSupport" },
 ];
 
 export const initialSupportTicketForm = {

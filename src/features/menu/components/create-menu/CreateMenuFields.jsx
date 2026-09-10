@@ -1,3 +1,4 @@
+import i18n from "../../../../i18n";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -183,7 +184,7 @@ export function UploadBox({
   compact = false,
   disabled = false,
   image,
-  label = "Click to drag to upload",
+  label = i18n.t("vendorMessages.upload"),
   onFileSelect,
 }) {
   const { t } = useTranslation();

@@ -1,3 +1,4 @@
+import LanguageSettingsCard from "./LanguageSettingsCard";
 import SettingsSpecialClosuresSection from "./SettingsSpecialClosuresSection";
 import SettingsSectionCard from "./SettingsSectionCard";
 import SettingsSelectField from "./SettingsSelectField";
@@ -38,28 +39,28 @@ export default function SettingsBusinessProfilePanel({
                 disabled={disabled}
                 label={t("settings.businessName")}
                 onChange={handleFieldChange("businessName")}
-                placeholder="Enter business name"
+                placeholder={t("settings.placeholders.businessName", { defaultValue: "Enter business name" })}
                 value={settings.businessName}
               />
               <SettingsTextField
                 disabled={disabled}
                 label={t("settings.businessEmail")}
                 onChange={handleFieldChange("businessEmail")}
-                placeholder="Enter business email"
+                placeholder={t("settings.placeholders.businessEmail", { defaultValue: "Enter business email" })}
                 value={settings.businessEmail}
               />
               <SettingsTextField
                 disabled={disabled}
                 label={t("settings.phone")}
                 onChange={handleFieldChange("phoneNumber")}
-                placeholder="Enter phone number"
+                placeholder={t("settings.placeholders.phone", { defaultValue: "Enter phone number" })}
                 value={settings.phoneNumber}
               />
               <SettingsTextField
                 disabled={disabled}
                 label={t("settings.address")}
                 onChange={handleFieldChange("businessAddress")}
-                placeholder="Enter business address"
+                placeholder={t("settings.placeholders.address", { defaultValue: "Enter business address" })}
                 value={settings.businessAddress}
               />
               <div className="col-span-2 grid grid-cols-3 gap-3 max-[960px]:grid-cols-1">
@@ -67,21 +68,21 @@ export default function SettingsBusinessProfilePanel({
                   disabled={disabled}
                   label={t("settings.companyId", { defaultValue: "Company ID Number" })}
                   onChange={handleFieldChange("taxId")}
-                  placeholder="Enter company ID number"
+                  placeholder={t("settings.placeholders.companyId", { defaultValue: "Enter company ID number" })}
                   value={settings.taxId}
                 />
                 <SettingsTextField
                   disabled={disabled}
                   label={t("settings.city", { defaultValue: "City" })}
                   onChange={handleFieldChange("payoutProfile.city")}
-                  placeholder="Enter city"
+                  placeholder={t("settings.placeholders.city", { defaultValue: "Enter city" })}
                   value={settings.payoutProfile.city}
                 />
                 <SettingsTextField
                   disabled
                   label={t("settings.postalCode", { defaultValue: "Postal Code" })}
                   onChange={handleFieldChange("postalCode")}
-                  placeholder="Enter postal code"
+                  placeholder={t("settings.placeholders.postalCode", { defaultValue: "Enter postal code" })}
                   value={settings.postalCode}
                 />
               </div>
@@ -93,7 +94,7 @@ export default function SettingsBusinessProfilePanel({
                 label={t("settings.businessDescription", { defaultValue: "Business Description" })}
                 multiline
                 onChange={handleFieldChange("businessDescription")}
-                placeholder="Describe your business"
+                placeholder={t("settings.placeholders.businessDescription", { defaultValue: "Describe your business" })}
                 value={settings.businessDescription}
               />
             </div>
@@ -110,7 +111,7 @@ export default function SettingsBusinessProfilePanel({
                   label={t("settings.cuisine", { defaultValue: "Cuisine Type" })}
                   onChange={handleFieldChange("cuisineType")}
                   options={cuisineOptions}
-                  placeholder="Select cuisine"
+                  placeholder={t("settings.placeholders.cuisine", { defaultValue: "Select cuisine" })}
                   value={settings.cuisineType}
                 />
                 {settings.customCuisineType || settings.cuisineType === "Custom" ? (
@@ -118,7 +119,7 @@ export default function SettingsBusinessProfilePanel({
                     disabled={disabled}
                     label={t("settings.customCuisine", { defaultValue: "Custom Cuisine" })}
                     onChange={handleFieldChange("customCuisineType")}
-                    placeholder="Enter custom cuisine"
+                    placeholder={t("settings.placeholders.customCuisine", { defaultValue: "Enter custom cuisine" })}
                     value={settings.customCuisineType || ""}
                   />
                 ) : null}
@@ -129,7 +130,7 @@ export default function SettingsBusinessProfilePanel({
                   label={t("settings.businessType", { defaultValue: "Business Type" })}
                   onChange={handleFieldChange("businessType")}
                   options={businessTypeOptions}
-                  placeholder="Select business type"
+                  placeholder={t("settings.placeholders.businessType", { defaultValue: "Select business type" })}
                   value={settings.businessType}
                 />
                 {settings.customBusinessType || settings.businessType === "Custom" ? (
@@ -137,7 +138,7 @@ export default function SettingsBusinessProfilePanel({
                     disabled={disabled}
                     label={t("settings.customBusinessType", { defaultValue: "Custom Business Type" })}
                     onChange={handleFieldChange("customBusinessType")}
-                    placeholder="Enter custom business type"
+                    placeholder={t("settings.placeholders.customBusinessType", { defaultValue: "Enter custom business type" })}
                     value={settings.customBusinessType || ""}
                   />
                 ) : null}
@@ -159,7 +160,7 @@ export default function SettingsBusinessProfilePanel({
                     },
                   })
                 }
-                placeholder="Enter year"
+                placeholder={t("settings.placeholders.establishedYear", { defaultValue: "Enter year" })}
                 pattern="[0-9]{4}"
                 type="number"
                 value={settings.establishedYear}
@@ -172,13 +173,13 @@ export default function SettingsBusinessProfilePanel({
             title={t("settings.payoutDetails", { defaultValue: "Payout Bank Details" })}
           >
             <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
-              <SettingsTextField disabled={disabled} label={t("settings.accountHolder", { defaultValue: "Account Holder Name" })} onChange={handleFieldChange("payoutProfile.accountHolderName")} placeholder="Enter account holder name" value={settings.payoutProfile.accountHolderName} />
-              <SettingsTextField disabled={disabled} label={t("settings.bankName", { defaultValue: "Bank Name" })} onChange={handleFieldChange("payoutProfile.bankName")} placeholder="Enter bank name" value={settings.payoutProfile.bankName} />
-              <SettingsTextField disabled={disabled} label={t("settings.accountNumber", { defaultValue: "Account Number" })} onChange={handleFieldChange("payoutProfile.accountNumber")} placeholder="Enter account number" value={settings.payoutProfile.accountNumber} />
+              <SettingsTextField disabled={disabled} label={t("settings.accountHolder", { defaultValue: "Account Holder Name" })} onChange={handleFieldChange("payoutProfile.accountHolderName")} placeholder={t("settings.placeholders.accountHolder", { defaultValue: "Enter account holder name" })} value={settings.payoutProfile.accountHolderName} />
+              <SettingsTextField disabled={disabled} label={t("settings.bankName", { defaultValue: "Bank Name" })} onChange={handleFieldChange("payoutProfile.bankName")} placeholder={t("settings.placeholders.bankName", { defaultValue: "Enter bank name" })} value={settings.payoutProfile.bankName} />
+              <SettingsTextField disabled={disabled} label={t("settings.accountNumber", { defaultValue: "Account Number" })} onChange={handleFieldChange("payoutProfile.accountNumber")} placeholder={t("settings.placeholders.accountNumber", { defaultValue: "Enter account number" })} value={settings.payoutProfile.accountNumber} />
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#ecdccf] bg-[#fffdfb] px-4 py-3">
-              <div><p className="text-[13px] font-semibold text-[#201914]">Payout review: {settings.payoutProfile.verificationStatus || "Pending review"}</p><p className="mt-1 text-[12px] text-[#7a6d63]">{settings.payoutProfile.bankDetailsVerified ? "Bank details confirmed" : "Waiting for admin confirmation"}</p></div>
-              <button className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[12px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={disabled || isSaving || !hasUnsavedChanges} onClick={handleSave} type="button">{isSaving ? "Saving..." : "Save Bank Details"}</button>
+              <div><p className="text-[13px] font-semibold text-[#201914]">{t("settings.payoutReview", { defaultValue: "Payout review" })}: {settings.payoutProfile.verificationStatus || t("settings.pendingReview", { defaultValue: "Pending review" })}</p><p className="mt-1 text-[12px] text-[#7a6d63]">{settings.payoutProfile.bankDetailsVerified ? t("settings.bankDetailsConfirmed", { defaultValue: "Bank details confirmed" }) : t("settings.waitingAdminConfirmation", { defaultValue: "Waiting for admin confirmation" })}</p></div>
+              <button className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[12px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={disabled || isSaving || !hasUnsavedChanges} onClick={handleSave} type="button">{isSaving ? t("settings.saving", { defaultValue: "Saving..." }) : t("settings.saveBankDetails", { defaultValue: "Save Bank Details" })}</button>
             </div>
           </SettingsSectionCard>
 
@@ -196,42 +197,44 @@ export default function SettingsBusinessProfilePanel({
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
+          <LanguageSettingsCard />
+
           <SettingsSectionCard
-            description="Choose which alerts and updates you want to receive."
+            description={t("settings.notificationsDescription", { defaultValue: "Choose which alerts and updates you want to receive." })}
             title={t("settings.notifications")}
           >
             <SettingsToggleRow
               checked={settings.notifications.newOrder}
               disabled={disabled}
-              helper="Receive instant alerts when a new order comes in."
+              helper={t("settings.newOrderHelper", { defaultValue: "Receive instant alerts when a new order comes in." })}
               label={t("settings.newOrder", { defaultValue: "New Order" })}
               onToggle={() => handleNotificationToggle("newOrder")}
             />
             <SettingsToggleRow
               checked={settings.notifications.orderUpdates}
               disabled={disabled}
-              helper="Know when the status of orders changes."
+              helper={t("settings.orderUpdatesHelper", { defaultValue: "Know when the status of orders changes." })}
               label={t("settings.orderUpdates", { defaultValue: "Order Updates" })}
               onToggle={() => handleNotificationToggle("orderUpdates")}
             />
             <SettingsToggleRow
               checked={settings.notifications.reviewsRatings}
               disabled={disabled}
-              helper="Get notified when a customer leaves feedback."
+              helper={t("settings.reviewsRatingsHelper", { defaultValue: "Get notified when a customer leaves feedback." })}
               label={t("settings.reviewsRatings", { defaultValue: "Reviews & Ratings" })}
               onToggle={() => handleNotificationToggle("reviewsRatings")}
             />
             <SettingsToggleRow
               checked={settings.notifications.emailNotifications}
               disabled={disabled}
-              helper="Receive important updates in your email inbox."
+              helper={t("settings.emailNotificationsHelper", { defaultValue: "Receive important updates in your email inbox." })}
               label={t("settings.emailNotifications")}
               onToggle={() => handleNotificationToggle("emailNotifications")}
             />
             <SettingsToggleRow
               checked={settings.notifications.pushNotifications}
               disabled={disabled}
-              helper="Receive push alerts on supported devices."
+              helper={t("settings.pushNotificationsHelper", { defaultValue: "Receive push alerts on supported devices." })}
               label={t("settings.pushNotifications")}
               onToggle={() => handleNotificationToggle("pushNotifications")}
             />
@@ -247,7 +250,7 @@ export default function SettingsBusinessProfilePanel({
                 <div>
                   <p className="text-[12px] font-bold text-[#201914]">{t("settings.resetAll", { defaultValue: "Reset All Settings" })}</p>
                   <p className="mt-1 text-[11px] text-[#8a7c70]">
-                    Return all settings to their default values.
+                    {t("settings.resetAllDescription", { defaultValue: "Return all settings to their default values." })}
                   </p>
                 </div>
                 <button
@@ -256,14 +259,14 @@ export default function SettingsBusinessProfilePanel({
                   onClick={handleResetAllSettings}
                   type="button"
                 >
-                  Reset
+                  {t("settings.reset", { defaultValue: "Reset" })}
                 </button>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-[8px] border border-[#f0dfd3] bg-white px-3 py-3">
                 <div>
                   <p className="text-[12px] font-bold text-[#201914]">{t("settings.deactivateStore", { defaultValue: "Deactivate Store" })}</p>
                   <p className="mt-1 text-[11px] text-[#8a7c70]">
-                    Temporarily hide your store from customers.
+                    {t("settings.deactivateStoreDescription", { defaultValue: "Temporarily hide your store from customers." })}
                   </p>
                 </div>
                 <button
@@ -272,14 +275,14 @@ export default function SettingsBusinessProfilePanel({
                   onClick={handleDeactivateStore}
                   type="button"
                 >
-                  Deactivate
+                  {t("settings.deactivate", { defaultValue: "Deactivate" })}
                 </button>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-[8px] border border-[#f0dfd3] bg-white px-3 py-3">
                 <div>
                   <p className="text-[12px] font-bold text-[#201914]">{t("settings.deleteStore", { defaultValue: "Delete Store" })}</p>
                   <p className="mt-1 text-[11px] text-[#8a7c70]">
-                    Permanently remove your store data.
+                    {t("settings.deleteStoreDescription", { defaultValue: "Permanently remove your store data." })}
                   </p>
                 </div>
                 <button
@@ -288,7 +291,7 @@ export default function SettingsBusinessProfilePanel({
                   onClick={handleDeleteStore}
                   type="button"
                 >
-                  Delete
+                  {t("settings.delete", { defaultValue: "Delete" })}
                 </button>
               </div>
             </div>
@@ -308,21 +311,21 @@ export default function SettingsBusinessProfilePanel({
               disabled={disabled}
               label="Account Holder Name"
               onChange={handleFieldChange("payoutProfile.accountHolderName")}
-              placeholder="Enter account holder name"
+              placeholder={t("settings.placeholders.accountHolder", { defaultValue: "Enter account holder name" })}
               value={settings.payoutProfile.accountHolderName}
             />
             <SettingsTextField
               disabled={disabled}
               label="Bank Name"
               onChange={handleFieldChange("payoutProfile.bankName")}
-              placeholder="Enter bank name"
+              placeholder={t("settings.placeholders.bankName", { defaultValue: "Enter bank name" })}
               value={settings.payoutProfile.bankName}
             />
             <SettingsTextField
               disabled={disabled}
               label="Account Number"
               onChange={handleFieldChange("payoutProfile.accountNumber")}
-              placeholder="Enter account number"
+              placeholder={t("settings.placeholders.accountNumber", { defaultValue: "Enter account number" })}
               value={settings.payoutProfile.accountNumber}
             />
           </div>
@@ -352,7 +355,7 @@ export default function SettingsBusinessProfilePanel({
               onClick={handleSave}
               type="button"
             >
-              {isSaving ? "Saving..." : "Save Bank Details"}
+              {isSaving ? t("settings.saving", { defaultValue: "Saving..." }) : t("settings.saveBankDetails", { defaultValue: "Save Bank Details" })}
             </button>
           </div>
           </SettingsSectionCard>

@@ -1,3 +1,5 @@
+import { resolveVendorNotificationTarget } from "../notificationNavigation";
+import { translateNotificationText } from "../notificationTranslations";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -67,8 +69,8 @@ export default function useNotificationsPageState() {
       } catch (error) {
         if (!isCancelled && !silent) {
           await showVendorErrorAlert(
-            error.message || "Unable to load notifications right now.",
-            "Notifications unavailable",
+            error.message || translateNotificationText("Unable to load notifications right now."),
+            translateNotificationText("Notifications unavailable"),
           );
         }
       } finally {
@@ -174,21 +176,12 @@ export default function useNotificationsPageState() {
         }
       }
     } catch {
-      // Opening the modal should still continue even if mark-as-read fails.
+      // Opening the notification should continue even if mark-as-read fails.
     }
 
-    if (notification.type === "ORDER" && notification.orderId) {
-      navigate(`/orders/${encodeURIComponent(notification.orderId)}`);
-      return;
-    }
-
-    if (notification.type === "REVIEW") {
-      navigate("/reviews");
-      return;
-    }
-
-    if (notification.type === "PAYOUT") {
-      navigate("/finance");
+    const target = resolveVendorNotificationTarget(notification);
+    if (target) {
+      navigate(target);
       return;
     }
 
@@ -218,10 +211,10 @@ export default function useNotificationsPageState() {
           : current.map((notification) => ({ ...notification, isRead: true })),
       );
       setUnreadCount(result.unreadCount ?? 0);
-      await showVendorSuccessToast(result.message || "All notifications marked as read.");
+      await showVendorSuccessToast(translateNotificationText("All notifications marked as read."));
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to mark notifications as read.",
+        error.message || translateNotificationText("Unable to mark notifications as read."),
       );
     } finally {
       setIsMarkingAllRead(false);
@@ -249,7 +242,7 @@ export default function useNotificationsPageState() {
       setUnreadCount(mapped.unreadCount);
     } catch (error) {
       await showVendorErrorAlert(
-        error.message || "Unable to load more notifications.",
+        error.message || translateNotificationText("Unable to load more notifications."),
       );
     } finally {
       setIsLoadingMore(false);

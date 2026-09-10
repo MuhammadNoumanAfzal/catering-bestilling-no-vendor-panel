@@ -1,4 +1,4 @@
-import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
+﻿import { CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -112,13 +112,13 @@ export default function SettingsAccountSecurityPanel({
           <div className="flex h-[56px] w-[56px] items-center justify-center rounded-[10px] border border-[#f0d5b7] bg-[#fff1d8]">
             {profileImage?.fileUrl ? (
               <img
-                alt={businessName || "Business"}
+                alt={businessName || t("settings.businessProfile", { defaultValue: "Business profile" })}
                 className="max-h-[42px] w-auto rounded-[8px] object-contain"
                 src={profileImage.fileUrl}
               />
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#9a7d62]">
-                No Logo
+                {t("settings.noLogo", { defaultValue: "No Logo" })}
               </span>
             )}
           </div>
@@ -130,7 +130,7 @@ export default function SettingsAccountSecurityPanel({
                 onClick={() => profileImageInputRef.current?.click()}
                 type="button"
               >
-                Change Logo
+                {t("settings.changeLogo", { defaultValue: "Change Logo" })}
               </button>
               {profileImage?.fileUrl ? (
                 <button
@@ -139,7 +139,7 @@ export default function SettingsAccountSecurityPanel({
                   onClick={handleRemoveProfileImage}
                   type="button"
                 >
-                  Remove
+                  {t("settings.remove", { defaultValue: "Remove" })}
                 </button>
               ) : null}
             </div>
@@ -159,8 +159,8 @@ export default function SettingsAccountSecurityPanel({
               }}
               type="file"
             />
-            <p className="text-[12px] font-bold text-[#211915]">{businessName || "Business profile"}</p>
-            <p className="text-[10px] text-[#8c8075]">PNG, JPG up to 5 MB</p>
+            <p className="text-[12px] font-bold text-[#211915]">{businessName || t("settings.businessProfile", { defaultValue: "Business profile" })}</p>
+            <p className="text-[10px] text-[#8c8075]">{t("settings.imageUploadHint", { defaultValue: "PNG, JPG up to 5 MB" })}</p>
           </div>
         </div>
 
@@ -168,9 +168,9 @@ export default function SettingsAccountSecurityPanel({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6d625a]">
-                Banner Image
+                {t("settings.bannerImage", { defaultValue: "Banner Image" })}
               </p>
-              <p className="text-[10px] text-[#8c8075]">PNG, JPG up to 5 MB</p>
+              <p className="text-[10px] text-[#8c8075]">{t("settings.imageUploadHint", { defaultValue: "PNG, JPG up to 5 MB" })}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -179,7 +179,7 @@ export default function SettingsAccountSecurityPanel({
                 onClick={() => bannerImageInputRef.current?.click()}
                 type="button"
               >
-                Add Banner
+                {t("settings.addBanner", { defaultValue: "Add Banner" })}
               </button>
               {bannerImage?.fileUrl ? (
                 <button
@@ -188,7 +188,7 @@ export default function SettingsAccountSecurityPanel({
                   onClick={handleRemoveBannerImage}
                   type="button"
                 >
-                  Remove
+                  {t("settings.remove", { defaultValue: "Remove" })}
                 </button>
               ) : null}
             </div>
@@ -214,13 +214,13 @@ export default function SettingsAccountSecurityPanel({
           <div className="flex h-[120px] items-center justify-center overflow-hidden rounded-[12px] border border-[#f0d5b7] bg-white">
             {bannerImage?.fileUrl ? (
               <img
-                alt={businessName || "Banner"}
+                alt={businessName || t("settings.bannerImage", { defaultValue: "Banner image" })}
                 className="h-full w-full object-cover"
                 src={bannerImage.fileUrl}
               />
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#9a7d62]">
-                No Banner
+                {t("settings.noBanner", { defaultValue: "No Banner" })}
               </span>
             )}
           </div>
@@ -283,7 +283,7 @@ export default function SettingsAccountSecurityPanel({
             name="currentPassword"
             onChange={handlePasswordChange("currentPassword")}
             onToggleVisibility={() => handleTogglePasswordVisibility("currentPassword")}
-            placeholder="Enter your current password"
+            placeholder={t("settings.placeholders.currentPassword", { defaultValue: "Enter your current password" })}
             value={passwordForm.currentPassword}
             visible={passwordVisibility.currentPassword}
           />
@@ -295,7 +295,7 @@ export default function SettingsAccountSecurityPanel({
             name="newPassword"
             onChange={handlePasswordChange("newPassword")}
             onToggleVisibility={() => handleTogglePasswordVisibility("newPassword")}
-            placeholder="Enter your new password"
+            placeholder={t("settings.placeholders.newPassword", { defaultValue: "Enter your new password" })}
             value={passwordForm.newPassword}
             visible={passwordVisibility.newPassword}
           />
@@ -341,7 +341,7 @@ export default function SettingsAccountSecurityPanel({
             name="confirmPassword"
             onChange={handlePasswordChange("confirmPassword")}
             onToggleVisibility={() => handleTogglePasswordVisibility("confirmPassword")}
-            placeholder="Confirm your new password"
+            placeholder={t("settings.placeholders.confirmPassword", { defaultValue: "Confirm your new password" })}
             value={passwordForm.confirmPassword}
             visible={passwordVisibility.confirmPassword}
           />
@@ -351,16 +351,14 @@ export default function SettingsAccountSecurityPanel({
               <div className="flex items-start gap-2 text-[#179a74]">
                 <CheckCircle2 className="mt-[1px] shrink-0" size={14} />
                 <p className="text-[10px] font-medium">
-                  Passwords match. Use at least 8 characters with a mix of letters,
-                  numbers, and symbols.
+                  {t("settings.passwordsMatchHint", { defaultValue: "Passwords match. Use at least 8 characters with a mix of letters, numbers, and symbols." })}
                 </p>
               </div>
             ) : (
               <div className="flex items-start gap-2 text-[#7b7169]">
                 <ShieldCheck className="mt-[1px] shrink-0" size={14} />
                 <p className="text-[10px] font-medium">
-                  Use at least 8 characters with uppercase, lowercase, numbers, and
-                  symbols.
+                  {t("settings.passwordRequirementsHint", { defaultValue: "Use at least 8 characters with uppercase, lowercase, numbers, and symbols." })}
                 </p>
               </div>
             )}

@@ -27,7 +27,9 @@ export default function CreateMenuPricingSection({
   }
 
   function getModeLabel(mode) {
-    return typeof mode === "string" ? mode : mode.label;
+    const label = typeof mode === "string" ? mode : mode.label;
+    const key = String(getModeValue(mode)).toLowerCase().replaceAll(" ", "_");
+    return t(`menu.pricingLabels.${key}`, { defaultValue: label });
   }
 
   const hasPricingModes = pricingModes.length > 0;

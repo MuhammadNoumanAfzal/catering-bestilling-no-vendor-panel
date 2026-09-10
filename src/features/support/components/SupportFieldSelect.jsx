@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function SupportFieldSelect({
   label,
@@ -7,6 +8,8 @@ export default function SupportFieldSelect({
   options,
   placeholder,
 }) {
+  const { t } = useTranslation();
+
   return (
     <label className="flex flex-col gap-1">
       <span className="text-[14px] font-bold text-[#2a211b]">{label}</span>
@@ -19,7 +22,7 @@ export default function SupportFieldSelect({
           <option value="">{placeholder}</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {option.labelKey ? t(option.labelKey, { defaultValue: option.label }) : option.label}
             </option>
           ))}
         </select>

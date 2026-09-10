@@ -1,3 +1,4 @@
+import i18n from "../../../i18n";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
 import DeliveryTextInput from "./DeliveryTextInput";
@@ -33,7 +34,7 @@ export default function DeliveryPricingSection({
         ? `Customer will pay ${formattedBaseFee} delivery fee on standard orders.`
         : formattedFreeDelivery
           ? `Free delivery applies to orders from ${formattedFreeDelivery}.`
-          : "Set a delivery fee and optional free delivery threshold.";
+          : i18n.t("delivery.feeHelp");
 
   return (
     <DeliverySectionCard
