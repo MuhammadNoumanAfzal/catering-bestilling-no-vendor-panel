@@ -87,11 +87,11 @@ export default function NewPasswordPage() {
 
   const passwordRules = useMemo(
     () => [
-      { label: "8+ characters", isValid: formState.newPassword.length >= 8 },
-      { label: "1 uppercase", isValid: /[A-Z]/.test(formState.newPassword) },
-      { label: "1 lowercase", isValid: /[a-z]/.test(formState.newPassword) },
-      { label: "1 number", isValid: /\d/.test(formState.newPassword) },
-      { label: "1 symbol", isValid: /[^A-Za-z0-9]/.test(formState.newPassword) },
+      { label: t("auth.rules.characters"), isValid: formState.newPassword.length >= 8 },
+      { label: t("auth.rules.uppercase"), isValid: /[A-Z]/.test(formState.newPassword) },
+      { label: t("auth.rules.lowercase"), isValid: /[a-z]/.test(formState.newPassword) },
+      { label: t("auth.rules.number"), isValid: /\d/.test(formState.newPassword) },
+      { label: t("auth.rules.symbol"), isValid: /[^A-Za-z0-9]/.test(formState.newPassword) },
     ],
     [formState.newPassword],
   );
@@ -121,20 +121,20 @@ export default function NewPasswordPage() {
     }
 
     if (!formState.token.trim()) {
-      await showVendorErrorAlert("Please enter the verification code you received.", "Code required");
+      await showVendorErrorAlert(t("auth.validation.codeRequired"), t("auth.validation.codeRequiredTitle"));
       return;
     }
 
     if (!isStrongPassword(formState.newPassword)) {
       await showVendorErrorAlert(
-        "Use at least 8 characters with uppercase, lowercase, number, and symbol.",
-        "Weak password",
+        t("auth.validation.weakPassword"),
+        t("auth.validation.weakPasswordTitle"),
       );
       return;
     }
 
     if (formState.newPassword !== formState.confirmPassword) {
-      await showVendorErrorAlert("New password and confirm password must match.");
+      await showVendorErrorAlert(t("auth.validation.passwordsMismatch"), t("auth.validation.mismatchTitle"));
       return;
     }
 
@@ -148,7 +148,7 @@ export default function NewPasswordPage() {
       await showVendorSuccessToast(result.message);
       navigate("/auth/login", { replace: true });
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to reset the password.");
+      await showVendorErrorAlert(error.message || t("auth.validation.resetFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -163,7 +163,7 @@ export default function NewPasswordPage() {
           {
             label: t("auth.emailAddress"),
             autoComplete: "email",
-            helperText: "This should match the email used in the reset flow.",
+            helperText: t("auth.reset.emailHelp"),
             name: "email",
             onChange: handleFieldChange("email"),
             placeholder: "vendor@example.com",
@@ -173,7 +173,7 @@ export default function NewPasswordPage() {
           {
             label: t("auth.verificationCode"),
             autoComplete: "one-time-code",
-            helperText: "Use the verified code from your email.",
+            helperText: t("auth.reset.codeHelp"),
             name: "token",
             onChange: handleFieldChange("token"),
             placeholder: "5391",
@@ -186,7 +186,7 @@ export default function NewPasswordPage() {
             onChange: handleFieldChange("newPassword"),
             strengthIndicator: passwordStrength,
             type: "password",
-            placeholder: "Enter new password",
+            placeholder: t("auth.reset.newPlaceholder"),
             value: formState.newPassword,
           },
           {
@@ -195,15 +195,15 @@ export default function NewPasswordPage() {
             name: "confirmPassword",
             onChange: handleFieldChange("confirmPassword"),
             type: "password",
-            placeholder: "Confirm new password",
+            placeholder: t("auth.reset.confirmPlaceholder"),
             value: formState.confirmPassword,
           },
         ]}
         extraContent={
           <div className="rounded-[18px] border border-[#efe2d5] bg-[#fff8f2] px-4 py-3 text-left">
-            <p className="type-subpara m-0 text-[#3f3229]">Almost done.</p>
+            <p className="type-subpara m-0 text-[#3f3229]">{t("auth.reset.almostDone")}</p>
             <p className="type-subpara mt-1 text-[#8a7769]">
-              Your password should be unique and not reused across other services.
+              {t("auth.reset.uniquePassword")}
             </p>
           </div>
         }
@@ -215,7 +215,7 @@ export default function NewPasswordPage() {
           !formState.newPassword.trim() ||
           !formState.confirmPassword.trim()
         }
-        actionLabel={isSubmitting ? "Updating password..." : "Reset Password"}
+        actionLabel={isSubmitting ? t("auth.reset.updating") : t("auth.reset.submit")}
         onAction={handleSubmit}
         backLinkLabel={t("auth.reset.back")}
         backLinkTo={`/auth/verification?email=${encodeURIComponent(formState.email.trim())}`}

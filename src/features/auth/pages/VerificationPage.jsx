@@ -57,7 +57,7 @@ export default function VerificationPage() {
         { replace: true },
       );
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to verify the reset code.");
+      await showVendorErrorAlert(error.message || t("auth.validation.unableToVerify"));
     } finally {
       setIsVerifying(false);
     }
@@ -67,12 +67,12 @@ export default function VerificationPage() {
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      await showVendorErrorAlert("Add your email first so we know where to resend the code.");
+      await showVendorErrorAlert(t("auth.validation.emailRequired"), t("auth.validation.emailRequiredTitle"));
       return;
     }
 
     if (!isValidEmail(trimmedEmail)) {
-      await showVendorErrorAlert("Please enter a valid email address.", "Invalid email");
+      await showVendorErrorAlert(t("auth.validation.invalidEmail"), t("auth.validation.invalidEmailTitle"));
       return;
     }
 
@@ -81,7 +81,7 @@ export default function VerificationPage() {
       const result = await requestPasswordResetMail({ email: trimmedEmail });
       await showVendorSuccessToast(result.message);
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to resend the reset code.");
+      await showVendorErrorAlert(error.message || t("auth.validation.unableToSend"));
     } finally {
       setIsResending(false);
     }
@@ -91,13 +91,13 @@ export default function VerificationPage() {
     <AuthLayout>
       <AuthCard
         actionDisabled={isVerifying || !email.trim() || !verificationCode.trim()}
-        actionLabel={isVerifying ? "Verifying..." : "Verify Code"}
+        actionLabel={isVerifying ? t("auth.verify.verifying") : t("auth.verify.submit")}
         extraContent={
           <div className="flex items-center justify-between gap-3 rounded-[18px] border border-[#efe2d5] bg-[#fff8f2] px-4 py-3 max-[520px]:flex-col max-[520px]:items-stretch">
             <div>
-              <p className="type-subpara m-0 text-[#3f3229]">Didn&apos;t receive the code?</p>
+              <p className="type-subpara m-0 text-[#3f3229]">{t("auth.verify.noCode")}</p>
               <p className="type-subpara mt-1 text-[#8a7769]">
-                Check spam first, then request a fresh code.
+                {t("auth.verify.noCodeHelp")}
               </p>
             </div>
             <button
@@ -106,7 +106,7 @@ export default function VerificationPage() {
               onClick={handleResendCode}
               type="button"
             >
-              {isResending ? "Resending..." : "Resend Code"}
+              {isResending ? t("auth.verify.resending") : t("auth.verify.resend")}
             </button>
           </div>
         }
@@ -114,7 +114,7 @@ export default function VerificationPage() {
           {
             label: t("auth.emailAddress"),
             autoComplete: "email",
-            helperText: "Use the same email where you requested the reset code.",
+            helperText: t("auth.verify.emailHelp"),
             name: "email",
             onChange: (event) => setEmail(event.target.value),
             placeholder: "vendor@example.com",
@@ -124,7 +124,7 @@ export default function VerificationPage() {
           {
             label: t("auth.verificationCode"),
             autoComplete: "one-time-code",
-            helperText: "Enter the 4-digit code from your email.",
+            helperText: t("auth.verify.helper"),
             name: "verificationCode",
             onChange: (event) => setVerificationCode(event.target.value),
             placeholder: "5391",

@@ -16,6 +16,19 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+function localizeVendorMessage(message) {
+  const normalized = String(message || "").trim().toLowerCase();
+  const key = {
+    "no user is associated with this email address.": "auth.validation.accountNotFound",
+    "no user is associated with this email address": "auth.validation.accountNotFound",
+    "unable to request password reset.": "auth.validation.requestFailed",
+    "unable to reset the password.": "auth.validation.resetFailed",
+    "unable to verify the reset code.": "auth.validation.unableToVerify",
+    "unable to resend the reset code.": "auth.validation.unableToSend",
+  }[normalized];
+  return key ? i18n.t(key) : message;
+}
+
 function withBaseOptions(options) {
   return {
     background: POPUP_BACKGROUND,
@@ -76,7 +89,7 @@ export function showVendorErrorAlert(message, title = i18n.t("vendorMessages.wro
     withBaseOptions({
       icon: "error",
       title,
-      text: message,
+      text: localizeVendorMessage(message),
       confirmButtonText: i18n.t("vendorMessages.retry"),
     }),
   );

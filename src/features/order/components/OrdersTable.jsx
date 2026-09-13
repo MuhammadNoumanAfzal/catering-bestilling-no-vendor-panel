@@ -224,7 +224,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                     onClick={(event) => handleMenuToggle(row.rawId, event)}
                     type="button"
                   >
-                    {row.status}
+                    {t(`orders.${{ Accepted: "accepted", Preparing: "preparing", Ready: "ready", "Out for delivery": "outForDelivery", "Out for Delivery": "outForDelivery", Delivered: "delivered", Canceled: "canceled", Modified: "modified" }[row.status] || "status"}`, { defaultValue: row.status })}
                     <ChevronDown size={14} className={openMenu?.key === row.rawId ? "rotate-180 transition-transform" : "transition-transform"} />
                   </button>
                   {openMenu?.key === row.rawId ? (

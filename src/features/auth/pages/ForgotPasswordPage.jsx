@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
         replace: true,
       });
     } catch (error) {
-      await showVendorErrorAlert(error.message || "Unable to request password reset.");
+      await showVendorErrorAlert(error.message || t("auth.validation.requestFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -52,13 +52,13 @@ export default function ForgotPasswordPage() {
     <AuthLayout>
       <AuthCard
         actionDisabled={isSubmitting || !email.trim()}
-        actionLabel={isSubmitting ? "Sending code..." : "Send Verification Code"}
+        actionLabel={isSubmitting ? t("auth.forgot.sending") : t("auth.forgot.submit")}
         actionNote="We’ll send a 4-digit verification code to this email."
         extraContent={
           <div className="rounded-[18px] border border-[#efe2d5] bg-[#fff8f2] px-4 py-3 text-left">
-            <p className="type-subpara m-0 text-[#3f3229]">Reset your vendor access securely.</p>
+            <p className="type-subpara m-0 text-[#3f3229]">{t("auth.forgot.secure")}</p>
             <p className="type-subpara mt-1 text-[#8a7769]">
-              Use the same email linked to your vendor account and we&apos;ll guide you through the next step.
+              {t("auth.forgot.secureDescription")}
             </p>
           </div>
         }

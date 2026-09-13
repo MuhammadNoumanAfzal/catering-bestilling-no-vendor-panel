@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   Truck,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const iconMap = {
   badge: BadgeCheck,
@@ -20,14 +21,32 @@ const iconMap = {
 };
 
 export default function OrderMetricCard({ label, value, helper, helperTone, icon }) {
+  const { t } = useTranslation();
   const Icon = iconMap[icon];
+  const labelKey = {
+    "Total Orders": "totalOrders",
+    "New Orders": "newOrders",
+    Accepted: "accepted",
+    Preparing: "preparing",
+    Ready: "ready",
+    "Out for Delivery": "outForDelivery",
+    Delivered: "delivered",
+  }[label];
+  const helperKey = {
+    "Awaiting review": "awaitingReview",
+    Confirmed: "confirmed",
+    "In kitchen": "inKitchen",
+    "Awaiting dispatch": "awaitingDispatch",
+    "On the way": "onTheWay",
+    Completed: "completed",
+  }[helper];
 
   return (
     <article className="rounded-lg border border-[#e3ddd5] bg-white px-[11px] pb-2.5 pt-[11px] shadow-[0_1px_4px_rgba(38,23,14,0.05)]">
       <div className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#fff4ef]">
         {Icon ? <Icon className="text-[#d66c3a]" size={28} strokeWidth={2.1} /> : null}
       </div>
-      <p className="type-para mt-2 font-bold text-black leading-[1.25] ">{label}</p>
+      <p className="type-para mt-2 font-bold text-black leading-[1.25] ">{labelKey ? t(`orders.${labelKey}`, { defaultValue: label }) : label}</p>
       <strong className="type-h2 mt-1.5 block text-[31px] leading-none text-[#19130f]">{value}</strong>
       <p className="type-para mt-[7px] flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[10px] text-[#6d6259]">
         {helperTone === "is-positive" ? (
@@ -35,7 +54,7 @@ export default function OrderMetricCard({ label, value, helper, helperTone, icon
             <ArrowUp size={11} strokeWidth={2.2} />
           </span>
         ) : null}
-        {helper}
+        {helperKey ? t(`orders.${helperKey}`, { defaultValue: helper }) : helper}
       </p>
     </article>
   );
