@@ -12,6 +12,17 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function resolveIconUrl(value) {
+  const url = normalizeString(value).trim();
+  if (!url || /^(?:data:|blob:)/i.test(url)) return url;
+
+  const apiUrl = import.meta.env.VITE_GRAPHQL_API_URL ?? import.meta.env.VITE_GRAPHQL_URL ?? "https://api.gocatering.no/graphql/";
+  const parsedUrl = new URL(url, apiUrl);
+  return parsedUrl.pathname.startsWith("/media/")
+    ? new URL(`${parsedUrl.pathname}${parsedUrl.search}`, apiUrl).toString()
+    : parsedUrl.toString();
+}
+
 function parseDecimalStringOrNull(value) {
   const trimmedValue = normalizeString(value).trim();
 
@@ -133,6 +144,7 @@ export function mapFoodTypesToOptions(foodTypes = []) {
   return safeArray(foodTypes).map((foodType) => ({
     label: foodType.name || formatChoiceLabel(foodType.slug || ""),
     value: foodType.id || foodType.slug,
+    iconUrl: resolveIconUrl(foodType.iconUrl),
   }));
 }
 
@@ -140,7 +152,7 @@ export function mapOccasionsToOptions(occasions = []) {
   return safeArray(occasions).map((occasion) => ({
     label: occasion.name || formatChoiceLabel(occasion.slug || ""),
     value: occasion.id || occasion.slug,
-    iconUrl: occasion.iconUrl || "",
+    iconUrl: resolveIconUrl(occasion.iconUrl),
   }));
 }
 

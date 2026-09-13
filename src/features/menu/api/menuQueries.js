@@ -7,6 +7,7 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       id
       name
       slug
+      iconUrl
     }
     occasions {
       id
@@ -82,6 +83,7 @@ export const GET_VENDOR_MENU_DETAIL_QUERY = `
         id
         name
         slug
+        iconUrl
       }
       occasions {
         id
@@ -383,6 +385,7 @@ export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
       id
       name
       slug
+      iconUrl
     }
     dietaryTags {
       id

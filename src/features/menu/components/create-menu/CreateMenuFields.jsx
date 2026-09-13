@@ -165,6 +165,13 @@ export function MultiSelectInput({
                     onChange={() => handleToggle(optionValue)}
                     className="h-4 w-4 cursor-pointer accent-[#cf6e38]"
                   />
+                  {typeof option !== "string" && option.iconUrl ? (
+                    <img
+                      alt=""
+                      className="h-5 w-5 shrink-0 rounded object-cover"
+                      src={option.iconUrl}
+                    />
+                  ) : null}
                   <span>{optionLabel}</span>
                 </label>
               );

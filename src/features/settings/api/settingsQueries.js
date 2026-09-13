@@ -149,6 +149,7 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
         id
         name
         slug
+        iconUrl
         isActive
         sortOrder
       }
