@@ -83,6 +83,135 @@ function buildNewOrderRequests(rows = [], t) {
     }));
 }
 
+function getOrderDateValue(row) {
+  const raw = row?.raw || {};
+  return raw.eventDate || raw.deliveryDate || raw.placedAt || raw.createdOn || row?.date || "";
+}
+
+function startOfDay(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getLatestOrderDate(rows = []) {
+  return rows.reduce((latest, row) => {
+    const rowDate = startOfDay(getOrderDateValue(row));
+
+    if (!rowDate) {
+      return latest;
+    }
+
+    return !latest || rowDate > latest ? rowDate : latest;
+  }, null);
+}
+
+function buildDashboardLocalRange(rows = [], dateFilter, startDate, endDate) {
+  if (!dateFilter || dateFilter === "All Time") {
+    return { from: null, to: null };
+  }
+
+  if (dateFilter === "Custom Date") {
+    return {
+      from: startDate ? new Date(`${startDate}T00:00:00`) : null,
+      to: endDate ? new Date(`${endDate}T23:59:59`) : null,
+    };
+  }
+
+  const latest = getLatestOrderDate(rows) || startOfDay(new Date());
+  const to = new Date(latest);
+  to.setHours(23, 59, 59, 999);
+  const from = new Date(latest);
+
+  if (dateFilter === "Last 2 Days") {
+    from.setDate(from.getDate() - 1);
+  } else if (dateFilter === "Last 7 Days") {
+    from.setDate(from.getDate() - 6);
+  } else if (dateFilter === "Last Month") {
+    from.setDate(from.getDate() - 29);
+  } else if (dateFilter === "Last 3 Months") {
+    from.setDate(from.getDate() - 89);
+  } else if (dateFilter === "Last 6 Months") {
+    from.setDate(from.getDate() - 179);
+  } else if (dateFilter === "This Year") {
+    from.setMonth(0, 1);
+  } else {
+    return { from: null, to: null };
+  }
+
+  from.setHours(0, 0, 0, 0);
+  return { from, to };
+}
+
+function filterRowsByDashboardRange(rows = [], dateFilter, startDate, endDate) {
+  const { from, to } = buildDashboardLocalRange(rows, dateFilter, startDate, endDate);
+
+  if (!from && !to) {
+    return rows;
+  }
+
+  return rows.filter((row) => {
+    const rowDate = startOfDay(getOrderDateValue(row));
+
+    if (!rowDate) {
+      return false;
+    }
+
+    if (from && rowDate < from) {
+      return false;
+    }
+
+    if (to && rowDate > to) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function countUpcomingOrders(rows = [], hours = 4) {
+  const now = new Date();
+  const end = new Date(now.getTime() + hours * 60 * 60 * 1000);
+
+  return rows.filter((row) => {
+    const raw = row?.raw || {};
+    const dateValue = raw.eventDate || raw.deliveryDate;
+    const timeValue = raw.eventTime || raw.deliveryWindow?.start || row?.time || "";
+    const candidate = new Date(`${dateValue || ""}T${timeValue || "00:00"}`);
+
+    return !Number.isNaN(candidate.getTime()) && candidate >= now && candidate <= end;
+  }).length;
+}
+
+function buildSummaryFromFilteredRows(rows = []) {
+  const base = mapVendorOrderSummary(null, rows);
+  const urgentOrders = rows.filter((row) => ["New", "Pending", "Placed"].includes(row.status)).length;
+
+  return {
+    ...base,
+    totalOrders: rows.length,
+    upcomingOrders: countUpcomingOrders(rows),
+    urgentOrders,
+  };
+}
+function getDashboardDateFilterLabel(dateFilter, t) {
+  const labels = {
+    "All Time": t("dashboard.date.allTime", { defaultValue: "All time" }),
+    "Last 2 Days": t("dashboard.date.last2"),
+    "Last 7 Days": t("dashboard.date.last7"),
+    "Last Month": t("dashboard.date.lastMonth", { defaultValue: "Last Month" }),
+    "Last 3 Months": t("dashboard.date.last3Months", { defaultValue: "Last 3 Months" }),
+    "Last 6 Months": t("dashboard.date.last6Months", { defaultValue: "Last 6 Months" }),
+    "This Year": t("dashboard.date.thisYear", { defaultValue: "This Year" }),
+    "Custom Date": t("dashboard.date.custom"),
+  };
+
+  return labels[dateFilter] || labels["Last 7 Days"];
+}
 function buildOrderChartFallback(rows = [], locale = "nb-NO") {
   const totalsByDate = new Map();
 
@@ -165,35 +294,35 @@ export default function useDashboardPageState() {
         }
 
         const mappedOrders = mapVendorOrdersResult(ordersResult);
-        const ordersSummary = mapVendorOrderSummary(
-          mappedOrders.summary,
-          mappedOrders.rows,
-        );
-        const newOrderRequests = buildNewOrderRequests(mappedOrders.rows, t);
+        const filteredOrderRows = filterRowsByDashboardRange(mappedOrders.rows, dateFilter, startDate, endDate);
+        const ordersSummary = buildSummaryFromFilteredRows(filteredOrderRows);
+        const newOrderRequests = buildNewOrderRequests(filteredOrderRows, t);
         const backendChartPoints = result?.vendorFinanceOverviewChart?.points;
-        const chartPoints = Array.isArray(backendChartPoints) && backendChartPoints.length
-          ? backendChartPoints
-          : buildOrderChartFallback(mappedOrders.rows, i18n.language);
+        const fallbackChartPoints = buildOrderChartFallback(filteredOrderRows, i18n.language);
+        const chartPoints = fallbackChartPoints.length
+          ? fallbackChartPoints
+          : Array.isArray(backendChartPoints)
+            ? backendChartPoints
+            : [];
         const dashboardResult = {
           ...result,
+          vendorDashboardSummary: {
+            ...(result?.vendorDashboardSummary || {}),
+            ...ordersSummary,
+          },
           vendorFinanceOverviewChart: { points: chartPoints },
         };
 
         setDashboard({
           ...mapDashboardResponse(dashboardResult, {
-            dateFilterLabel:
-              dateFilter === "Last 2 Days"
-                ? t("dashboard.date.last2")
-                : dateFilter === "Custom Date"
-                  ? t("dashboard.date.custom")
-                  : t("dashboard.date.last7"),
+            dateFilterLabel: getDashboardDateFilterLabel(dateFilter, t),
             customDateLabel,
             kitchenSummary:
               ordersSummary ||
               result?.vendorKitchenStatus ||
               result?.vendorOrderSummaryAllTime ||
               result?.vendorOrderSummary,
-            totalOrdersOverride: mappedOrders.totalCount || ordersSummary.total,
+            totalOrdersOverride: ordersSummary.totalOrders ?? filteredOrderRows.length,
             t,
             locale: i18n.language,
           }),
