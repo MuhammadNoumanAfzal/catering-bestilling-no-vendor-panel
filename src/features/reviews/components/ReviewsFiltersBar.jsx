@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { LocalizedDateField } from "../../dashboard/components/DateRangeDropdown";
 
 const dateOptions = [
   { id: "lastMonth", label: "Last Month" },
@@ -115,24 +116,14 @@ export default function ReviewsFiltersBar({
                         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
                           {t("reviews.from", { defaultValue: "From" })}
                         </span>
-                        <input
-                          className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
-                          onChange={(event) => onCustomFromChange(event.target.value)}
-                          type="date"
-                          value={customFrom}
-                        />
+                        <LocalizedDateField label={t("reviews.from", { defaultValue: "From" })} onChange={onCustomFromChange} value={customFrom} />
                       </label>
 
                       <label className="flex flex-col gap-1">
                         <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b7b66]">
                           {t("reviews.to", { defaultValue: "To" })}
                         </span>
-                        <input
-                          className="h-[44px] cursor-pointer rounded-[14px] border border-[#dfcfc3] bg-white px-3 text-[12px] font-medium text-[#231b16] outline-none"
-                          onChange={(event) => onCustomToChange(event.target.value)}
-                          type="date"
-                          value={customTo}
-                        />
+                        <LocalizedDateField label={t("reviews.to", { defaultValue: "To" })} onChange={onCustomToChange} value={customTo} />
                       </label>
                     </div>
 

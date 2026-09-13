@@ -15,6 +15,41 @@ const options = [
   "Custom Date",
 ];
 
+const monthKeys = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const weekdayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const englishWeekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function toIsoDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function parseIsoDate(value) {
+  const [year, month, day] = String(value || "").split("-").map(Number);
+  return Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day) ? new Date(year, month - 1, day) : null;
+}
+
+export function LocalizedDateField({ label, onChange, value, className = "" }) {
+  const { t, i18n } = useTranslation();
+  const selectedDate = parseIsoDate(value);
+  const [open, setOpen] = useState(false);
+  const [visibleMonth, setVisibleMonth] = useState(() => selectedDate || new Date());
+  const year = visibleMonth.getFullYear();
+  const month = visibleMonth.getMonth();
+  const firstOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const displayValue = selectedDate ? new Intl.DateTimeFormat(i18n.language === "nb" ? "nb-NO" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(selectedDate) : "";
+
+  return <div className={`relative ${className}`}>
+    <button aria-expanded={open} aria-label={label} className="flex h-10 w-full cursor-pointer items-center justify-between rounded-[10px] border border-[#d8ccc2] bg-white px-3 text-left text-[12px] font-semibold text-[#231913]" onClick={() => setOpen((current) => !current)} type="button"><span className={displayValue ? "" : "text-[#9a8f86]"}>{displayValue || label}</span><Calendar size={15} /></button>
+    {open ? <div className="absolute left-0 top-[calc(100%+6px)] z-[110] w-full rounded-[12px] border border-[#d8ccc2] bg-white p-3 shadow-[0_16px_36px_rgba(45,28,16,0.18)]">
+      <div className="mb-3 flex items-center justify-between"><button aria-label={t("dashboard.date.previousMonth", { defaultValue: "Previous month" })} className="p-1.5" onClick={() => setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))} type="button">‹</button><strong className="text-[13px]">{t(`dashboard.date.months.${monthKeys[month]}`, { defaultValue: englishMonths[month] })} {year}</strong><button aria-label={t("dashboard.date.nextMonth", { defaultValue: "Next month" })} className="p-1.5" onClick={() => setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))} type="button">›</button></div>
+      <div className="grid grid-cols-7 gap-1 text-center">{weekdayKeys.map((key, index) => <span key={key} className="py-1 text-[10px] font-bold text-[#746a62]">{t(`dashboard.date.weekdays.${key}`, { defaultValue: englishWeekdays[index] })}</span>)}{Array.from({ length: firstOffset }).map((_, index) => <span key={`empty-${index}`} />)}{Array.from({ length: daysInMonth }, (_, index) => index + 1).map((day) => { const dateValue = toIsoDate(new Date(year, month, day)); return <button key={day} className={`h-8 rounded-full text-[11px] font-semibold ${value === dateValue ? "bg-[#cf6e38] text-white" : "hover:bg-[#fff3ec]"}`} onClick={() => { onChange(dateValue); setOpen(false); }} type="button">{day}</button>; })}</div>
+      <div className="mt-3 flex justify-between border-t border-[#f1e9e2] pt-2"><button className="text-[11px] font-bold text-[#c75f2e]" onClick={() => { onChange(""); setOpen(false); }} type="button">{t("dashboard.date.clearDate", { defaultValue: "Clear date" })}</button><button className="text-[11px] font-bold text-[#c75f2e]" onClick={() => { const today = new Date(); onChange(toIsoDate(today)); setVisibleMonth(today); setOpen(false); }} type="button">{t("dashboard.date.today", { defaultValue: "Today" })}</button></div>
+    </div> : null}
+  </div>;
+}
+
 export default function DateRangeDropdown({
   onChange,
   initialOption = DEFAULT_OPTION,
@@ -60,15 +95,18 @@ export default function DateRangeDropdown({
       if (!anchor) return;
 
       const width = Math.min(256, window.innerWidth - 32);
-      const height = menuRef.current?.offsetHeight || 404;
+      const height = menuRef.current?.offsetHeight || (showCustomFields ? 430 : 390);
       const below = window.innerHeight - anchor.bottom - 22;
       const above = anchor.top - 22;
       const opensAbove = below < height && above > below;
+      const availableHeight = opensAbove ? above : below;
 
       setMenuPosition({
         left: Math.max(16, Math.min(anchor.right - width, window.innerWidth - width - 16)),
         top: opensAbove ? Math.max(16, anchor.top - height - 6) : anchor.bottom + 6,
-        maxHeight: Math.max(180, opensAbove ? above : below),
+        // Keep the complete preset list visible on normal desktop screens. Only
+        // constrain it when the viewport genuinely cannot accommodate it.
+        maxHeight: Math.max(160, Math.min(height, availableHeight)),
       });
     };
 
@@ -213,7 +251,7 @@ export default function DateRangeDropdown({
 
       {isOpen && createPortal(
         <div
-          className="fixed z-[100] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-[16px] border border-[#eadfd5] bg-white p-2 shadow-[0_18px_44px_rgba(45,28,16,0.14)]"
+          className={`fixed z-[100] w-64 max-w-[calc(100vw-2rem)] rounded-[16px] border border-[#eadfd5] bg-white p-2 shadow-[0_18px_44px_rgba(45,28,16,0.14)] ${showCustomFields ? "overflow-visible" : "overflow-y-auto"}`}
           ref={menuRef}
           style={menuPosition}
         >
@@ -267,26 +305,12 @@ export default function DateRangeDropdown({
               <div className="space-y-2">
                 <div>
                   <label className="mb-1 block text-[11px] font-bold text-[#6f655e]">{t("dashboard.date.from")}</label>
-                  <input
-                    aria-label={t("dashboard.date.from")}
-                    className="h-10 w-full cursor-pointer rounded-[10px] border border-[#d8ccc2] bg-white px-3 py-1 text-[12px] font-semibold text-[#231913] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-                    onChange={(event) => setTempStart(event.target.value)}
-                    required
-                    type="date"
-                    value={tempStart}
-                  />
+                  <LocalizedDateField label={t("dashboard.date.from")} onChange={setTempStart} value={tempStart} />
                 </div>
 
                 <div>
                   <label className="mb-1 block text-[11px] font-bold text-[#6f655e]">{t("dashboard.date.to")}</label>
-                  <input
-                    aria-label={t("dashboard.date.to")}
-                    className="h-10 w-full cursor-pointer rounded-[10px] border border-[#d8ccc2] bg-white px-3 py-1 text-[12px] font-semibold text-[#231913] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.12)]"
-                    onChange={(event) => setTempEnd(event.target.value)}
-                    required
-                    type="date"
-                    value={tempEnd}
-                  />
+                  <LocalizedDateField label={t("dashboard.date.to")} onChange={setTempEnd} value={tempEnd} />
                 </div>
               </div>
 

@@ -1,6 +1,7 @@
 import { translateNotificationText } from "../notificationTranslations";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { LocalizedDateField } from "../../dashboard/components/DateRangeDropdown";
 
 function formatDateLabel(dateValue) {
   if (!dateValue) {
@@ -79,25 +80,11 @@ export default function NotificationFilterDropdown({
               <div className="grid gap-2">
                 <label className="flex flex-col gap-1">
                   <span className="type-subpara text-[#7f7064]">{t("notifications.from", { defaultValue: "From" })}</span>
-                  <input
-                    className="type-subpara h-[36px] rounded-[8px] border border-[#efc3af] bg-white px-3 text-[#1f1813] outline-none focus:border-[#d86f39]"
-                    onChange={(event) =>
-                      onCustomRangeChange("from", event.target.value)
-                    }
-                    type="date"
-                    value={customRange.from}
-                  />
+                  <LocalizedDateField label={t("notifications.from", { defaultValue: "From" })} onChange={(value) => onCustomRangeChange("from", value)} value={customRange.from} />
                 </label>
                 <label className="flex flex-col gap-1">
                   <span className="type-subpara text-[#7f7064]">{t("notifications.to", { defaultValue: "To" })}</span>
-                  <input
-                    className="type-subpara h-[36px] rounded-[8px] border border-[#efc3af] bg-white px-3 text-[#1f1813] outline-none focus:border-[#d86f39]"
-                    onChange={(event) =>
-                      onCustomRangeChange("to", event.target.value)
-                    }
-                    type="date"
-                    value={customRange.to}
-                  />
+                  <LocalizedDateField label={t("notifications.to", { defaultValue: "To" })} onChange={(value) => onCustomRangeChange("to", value)} value={customRange.to} />
                 </label>
               </div>
 

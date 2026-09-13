@@ -20,6 +20,28 @@ function formatDate(dateStr, locale) {
   return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
+const monthKeys = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+const weekdayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+function toIsoDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function ClosureDateField({ disabled, label, minDate, onChange, value }) {
+  const { t, i18n } = useTranslation();
+  const selected = value ? new Date(`${value}T00:00:00`) : null;
+  const [open, setOpen] = useState(false);
+  const [monthDate, setMonthDate] = useState(() => selected || new Date());
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+  const days = new Date(year, month + 1, 0).getDate();
+  const display = selected ? new Intl.DateTimeFormat(i18n.language === "nb" ? "nb-NO" : "en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(selected) : label;
+  const minimum = minDate || "";
+
+  return <div className="relative min-w-0 w-full"><button aria-label={label} className="type-subpara flex h-[38px] w-full items-center justify-between rounded-[7px] border border-[#cec5bd] bg-white px-3 text-left text-[#201712]" disabled={disabled} onClick={() => setOpen((current) => !current)} type="button"><span className={value ? "" : "text-[#b0a59b]"}>{display}</span><Calendar size={16} className="text-[#7d7064]" /></button>{open ? <div className="absolute bottom-[calc(100%+5px)] left-0 z-50 w-full min-w-[250px] rounded-[10px] border border-[#cec5bd] bg-white p-3 shadow-lg"><div className="mb-2 flex items-center justify-between"><button aria-label={t("dashboard.date.previousMonth", { defaultValue: "Previous month" })} onClick={() => setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))} type="button">‹</button><strong className="text-[12px]">{t(`dashboard.date.months.${monthKeys[month]}`, { defaultValue: monthKeys[month] })} {year}</strong><button aria-label={t("dashboard.date.nextMonth", { defaultValue: "Next month" })} onClick={() => setMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))} type="button">›</button></div><div className="grid grid-cols-7 gap-1 text-center">{weekdayKeys.map((key) => <span key={key} className="py-1 text-[9px] font-bold">{t(`dashboard.date.weekdays.${key}`, { defaultValue: key })}</span>)}{Array.from({ length: offset }).map((_, index) => <span key={index} />)}{Array.from({ length: days }, (_, index) => index + 1).map((day) => { const next = toIsoDate(new Date(year, month, day)); const invalid = minimum && next < minimum; return <button key={day} disabled={invalid} className={`h-7 rounded-full text-[10px] ${next === value ? "bg-[#cf6e38] text-white" : "hover:bg-[#fff1e8]"} disabled:opacity-30`} onClick={() => { onChange(next); setOpen(false); }} type="button">{day}</button>; })}</div><div className="mt-2 flex justify-between border-t pt-2"><button className="text-[10px] text-[#cf6e38]" onClick={() => { onChange(""); setOpen(false); }} type="button">{t("dashboard.date.clearDate", { defaultValue: "Clear date" })}</button><button className="text-[10px] text-[#cf6e38]" onClick={() => { const today = new Date(); onChange(toIsoDate(today)); setMonthDate(today); setOpen(false); }} type="button">{t("dashboard.date.today", { defaultValue: "Today" })}</button></div></div> : null}</div>;
+}
+
 export default function SettingsSpecialClosuresSection({
   closures = [],
   onAddOrUpdateClosure,
@@ -35,6 +57,10 @@ export default function SettingsSpecialClosuresSection({
   const [reason, setReason] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [dateError, setDateError] = useState("");
+  const translatedClosureTypes = closureTypeOptions.map((option) => ({
+    ...option,
+    label: t(`settings.closureTypes.${option.value}`, { defaultValue: option.label }),
+  }));
 
   function handleStartDateChange(nextValue) {
     if (!nextValue) {
@@ -125,45 +151,19 @@ export default function SettingsSpecialClosuresSection({
           disabled={disabled}
           label={t("settings.closureType")}
           onChange={(event) => setClosureType(event.target.value)}
-          options={closureTypeOptions}
+          options={translatedClosureTypes}
           placeholder={t("settings.addClosureType")}
           value={closureType}
         />
 
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-[13px] font-bold text-[#2a211b]">{t("settings.startDate")}</span>
-          <div className="relative min-w-0 w-full">
-            <input
-              className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
-              disabled={disabled}
-              min={minDate}
-              type="date"
-              value={startDate}
-              onChange={(event) => handleStartDateChange(event.target.value)}
-            />
-            <Calendar
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
-              size={16}
-            />
-          </div>
+          <ClosureDateField disabled={disabled} label={t("settings.startDate")} minDate={minDate} onChange={handleStartDateChange} value={startDate} />
         </label>
 
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-[13px] font-bold text-[#2a211b]">{t("settings.endDate")}</span>
-          <div className="relative min-w-0 w-full">
-            <input
-              className="type-subpara h-[38px] w-full min-w-0 rounded-[7px] border border-[#cec5bd] bg-white pl-3 pr-10 text-[#201712] outline-none transition placeholder:text-[#b0a59b] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer disabled:cursor-not-allowed disabled:bg-[#f5f0eb] disabled:text-[#8d7f73]"
-              disabled={disabled}
-              min={startDate || minDate}
-              type="date"
-              value={endDate}
-              onChange={(event) => handleEndDateChange(event.target.value)}
-            />
-            <Calendar
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#7d7064]"
-              size={16}
-            />
-          </div>
+          <ClosureDateField disabled={disabled} label={t("settings.endDate")} minDate={startDate || minDate} onChange={handleEndDateChange} value={endDate} />
         </label>
 
         <SettingsTextField
