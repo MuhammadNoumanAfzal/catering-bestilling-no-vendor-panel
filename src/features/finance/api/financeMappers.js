@@ -1,4 +1,5 @@
 import { translateFinanceText } from "../financeTranslations";
+import i18n from "../../../i18n";
 function normalizeString(value) {
   return value == null ? "" : String(value);
 }
@@ -35,7 +36,7 @@ function formatDateLabel(dateValue) {
     return normalizeString(dateValue);
   }
 
-  return date.toLocaleDateString("en-GB", {
+  return date.toLocaleDateString(i18n.language?.startsWith("nb") ? "nb-NO" : "en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",

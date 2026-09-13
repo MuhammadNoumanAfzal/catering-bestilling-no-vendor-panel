@@ -1,7 +1,8 @@
-import { AlertTriangle, ChevronRight, X, Search, Calendar, Clock, Minus, Plus } from "lucide-react";
+import { AlertTriangle, ChevronRight, X, Search, Clock, Minus, Plus } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { showOrderStatusUpdated } from "../../../utils/vendorAlerts";
+import { LocalizedDateField } from "../../dashboard/components/DateRangeDropdown";
 
 const MOCK_SUGGESTIONS = [
   {
@@ -375,15 +376,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
             <div className="grid grid-cols-2 gap-4 max-[480px]:grid-cols-1">
               <div className="flex flex-col gap-1.5">
                 <span className="text-[12px] font-extrabold text-[#1c1510]">{t("orders.adjustment.date", { defaultValue: "Date" })}</span>
-                <div className="relative flex items-center">
-                  <Calendar size={14} className="absolute left-3 text-[#8a7a6d]" />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full h-10 pl-9 pr-3 rounded-[8px] border border-[#d8cec4] text-[12px] font-bold text-[#1c1510] focus:border-[#cf6e38] focus:outline-none transition"
-                  />
-                </div>
+                <LocalizedDateField label={t("orders.adjustment.date", { defaultValue: "Date" })} onChange={setDate} value={date} />
               </div>
 
               <div className="flex flex-col gap-1.5">
