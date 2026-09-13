@@ -206,8 +206,8 @@ export default function RegisterPage() {
 
     if (!isValidNorwegianPhone(formState.phone)) {
       await showVendorErrorAlert(
-        "Enter a valid Norwegian phone number with 8 digits after +47.",
-        "Invalid phone number",
+        t("auth.validation.invalidPhone"),
+        t("auth.validation.invalidPhoneTitle"),
       );
       return;
     }
@@ -216,8 +216,8 @@ export default function RegisterPage() {
 
     if (!isStrongPassword(formState.password)) {
       await showVendorErrorAlert(
-        "Use at least 8 characters with uppercase, lowercase, number, and symbol.",
-        "Weak password",
+        t("auth.validation.weakPassword"),
+        t("auth.validation.weakPasswordTitle"),
       );
       return;
     }
@@ -237,7 +237,7 @@ export default function RegisterPage() {
       setOtpCode("");
       setOtpError("");
       setSignupStep(SIGNUP_STEP.VERIFY);
-      await showVendorSuccessToast(result.message || "Verification code sent to your email.");
+      await showVendorSuccessToast(result.message || t("auth.register.codeSent"));
     } catch (error) {
       const phoneError = error?.fieldErrors?.phone?.[0] || "";
       const emailError = error?.fieldErrors?.email?.[0] || "";
@@ -249,7 +249,7 @@ export default function RegisterPage() {
         });
       }
 
-      await showVendorErrorAlert(getReadableErrorMessage(error), "Unable to send code");
+      await showVendorErrorAlert(getReadableErrorMessage(error), t("auth.validation.unableToSend"));
     } finally {
       setIsSendingOtp(false);
     }
@@ -271,7 +271,7 @@ export default function RegisterPage() {
         email: formState.email,
         otp: otpCode,
       });
-      await showVendorSuccessToast(result?.message || "Account created successfully.");
+      await showVendorSuccessToast(result?.message || t("auth.register.created"));
       setFormState(initialFormState);
       setOtpCode("");
       setSignupStep(SIGNUP_STEP.FORM);
@@ -284,7 +284,7 @@ export default function RegisterPage() {
       } else {
         await showVendorErrorAlert(
           getReadableErrorMessage(error),
-          "Unable to verify code",
+          t("auth.validation.unableToVerify"),
         );
       }
     } finally {
@@ -299,13 +299,13 @@ export default function RegisterPage() {
         actionLabel={
           signupStep === SIGNUP_STEP.VERIFY
             ? isVerifyingOtp
-              ? "Verifying..."
-              : "Verify & Create Account"
+              ? t("auth.register.verifying")
+              : t("auth.register.verifySubmit")
             : isSendingOtp
-              ? "Sending code..."
-              : "Register"
+              ? t("auth.register.sending")
+              : t("auth.register.submit")
         }
-        auxiliaryLinkLabel="Already have an account?"
+        auxiliaryLinkLabel={t("auth.register.alreadyAccount")}
         auxiliaryLinkTo="/auth/login"
         fieldsColumnsClassName="grid grid-cols-1 gap-3 sm:grid-cols-2"
         fields={
@@ -334,11 +334,11 @@ export default function RegisterPage() {
                   type: "email",
                   value: formState.email,
                   errorText: formErrors.email,
-                  helperText: "We will send a verification code after you click Register.",
+                  helperText: t("auth.register.emailHelp"),
                 },
                 {
                   errorText: formErrors.phone,
-                  helperText: "Norway only. Enter the 8 digits after +47.",
+                  helperText: t("auth.validation.phoneHelp"),
                   inputMode: "numeric",
                   label: t("auth.register.phone"),
                   maxLength: 8,
@@ -370,7 +370,7 @@ export default function RegisterPage() {
                   autoComplete: "new-password",
                   name: "password",
                   onChange: handleFieldChange("password"),
-                  placeholder: "Create a strong password",
+                  placeholder: t("auth.register.createPassword"),
                   strengthIndicator: passwordStrength,
                   type: "password",
                   value: formState.password,
@@ -380,7 +380,7 @@ export default function RegisterPage() {
                   autoComplete: "new-password",
                   name: "confirmPassword",
                   onChange: handleFieldChange("confirmPassword"),
-                  placeholder: "Confirm your password",
+                  placeholder: t("auth.register.confirmPlaceholder"),
                   type: "password",
                   value: formState.confirmPassword,
                 },

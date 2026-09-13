@@ -1,4 +1,5 @@
 import { clearPendingAdjustment, getPendingAdjustment } from "../utils/pendingAdjustments";
+import i18n from "../../../i18n";
 
 function normalizeString(value) {
   return value == null ? "" : String(value);
@@ -79,18 +80,18 @@ function formatDateParts(value) {
 
   if (Number.isNaN(date.getTime())) {
     return {
-      dateLabel: "Date unavailable",
-      timeLabel: "Time unavailable",
+      dateLabel: i18n.t("orders.detail.dateUnavailable", { defaultValue: "Date unavailable" }),
+      timeLabel: i18n.t("orders.detail.unknown", { defaultValue: "Time unavailable" }),
     };
   }
 
   return {
-    dateLabel: date.toLocaleDateString("en-GB", {
+    dateLabel: date.toLocaleDateString(i18n.language?.startsWith("nb") ? "nb-NO" : "en-GB", {
       day: "numeric",
       month: "long",
       year: "numeric",
     }),
-    timeLabel: date.toLocaleTimeString("en-GB", {
+    timeLabel: date.toLocaleTimeString(i18n.language?.startsWith("nb") ? "nb-NO" : "en-GB", {
       hour: "2-digit",
       minute: "2-digit",
     }),
