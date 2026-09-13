@@ -15,26 +15,14 @@ export default function FinancePage() {
     currentPage,
     customFrom,
     customTo,
-    dateButtonLabel,
-    handleApplyHeaderCustomDate,
-    handleApplyCustomDate,
-    handleHeaderFilterChange,
+    handleDateFilterChange,
     handlePageChange,
     handleRequestTransactionDetail,
-    handleSelectDateOption,
     handleStatusChange,
-    handleToggleDateMenu,
-    headerCustomFrom,
-    headerCustomTo,
+    hasLoadedFinance,
     headerFilter,
-    headerFilterLabel,
-    isCustomDateOpen,
-    isDateMenuOpen,
     isLoading,
-    onCustomFromChange,
-    onCustomToChange,
-    onHeaderCustomFromChange,
-    onHeaderCustomToChange,
+
     pageSize,
     paginatedOrders,
     payoutStatuses,
@@ -42,24 +30,19 @@ export default function FinancePage() {
     totalItems,
     totalPages,
     selectedDateOption,
-    handleClearDateFilter,
   } = useFinancePageState();
 
-  if (isLoading) {
+  if (isLoading && !hasLoadedFinance) {
     return <VendorPageLoadingState />;
   }
 
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <FinancePageHeader
-        customFrom={headerCustomFrom}
-        customTo={headerCustomTo}
-        displayLabel={headerFilterLabel}
-        filter={headerFilter}
-        onApplyCustomDate={handleApplyHeaderCustomDate}
-        onCustomFromChange={onHeaderCustomFromChange}
-        onCustomToChange={onHeaderCustomToChange}
-        onFilterChange={handleHeaderFilterChange}
+        customFrom={customFrom}
+        customTo={customTo}
+        dateFilter={headerFilter}
+        onDateFilterChange={handleDateFilterChange}
       />
 
       <FinanceSummaryGrid cards={summaryCards} />
@@ -74,17 +57,9 @@ export default function FinancePage() {
           activeStatus={activeStatus}
           customFrom={customFrom}
           customTo={customTo}
-          dateButtonLabel={dateButtonLabel}
-          isCustomDateOpen={isCustomDateOpen}
-          isDateMenuOpen={isDateMenuOpen}
-          onApplyCustomDate={handleApplyCustomDate}
-          onCustomFromChange={onCustomFromChange}
-          onCustomToChange={onCustomToChange}
-          onSelectDateOption={handleSelectDateOption}
+          onDateFilterChange={handleDateFilterChange}
           onStatusChange={handleStatusChange}
-          onToggleDateMenu={handleToggleDateMenu}
           selectedDateOption={selectedDateOption}
-          onClearDateFilter={handleClearDateFilter}
         />
       </div>
 

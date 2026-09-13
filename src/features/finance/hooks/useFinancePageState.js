@@ -74,11 +74,11 @@ function formatDateLabel(dateValue) {
 
 export default function useFinancePageState() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [headerFilter, setHeaderFilter] = useState("30days");
+  const [headerFilter, setHeaderFilter] = useState("Last 7 Days");
   const [headerCustomFrom, setHeaderCustomFrom] = useState("");
   const [headerCustomTo, setHeaderCustomTo] = useState("");
   const [activeStatus, setActiveStatus] = useState("All");
-  const [selectedDateOption, setSelectedDateOption] = useState("30days");
+  const [selectedDateOption, setSelectedDateOption] = useState("Last 7 Days");
   const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
   const [isCustomDateOpen, setIsCustomDateOpen] = useState(false);
   const [customFrom, setCustomFrom] = useState("");
@@ -89,6 +89,7 @@ export default function useFinancePageState() {
   const [payoutStatuses, setPayoutStatuses] = useState([]);
   const [payoutRows, setPayoutRows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedFinance, setHasLoadedFinance] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
@@ -238,40 +239,13 @@ export default function useFinancePageState() {
   );
 
   const dateButtonLabel =
-    selectedDateOption === "custom" &&
+    selectedDateOption === "Custom Date" &&
     appliedCustomRange?.from &&
     appliedCustomRange?.to
       ? i18n.t("finance.dateRange", { from: formatDateLabel(appliedCustomRange.from), to: formatDateLabel(appliedCustomRange.to) })
-      : selectedDateOption === "30days"
-        ? "Last 30 Days"
-        : selectedDateOption === "lastMonth"
-          ? "Last Month"
-          : selectedDateOption === "thisMonth"
-            ? "This Month"
-            : selectedDateOption === "thisYear"
-              ? "This Year"
-              : selectedDateOption === "custom"
-                ? "Custom Date"
-                : "Last 30 Days";
+      : selectedDateOption;
 
-  const headerFilterLabel =
-    headerFilter === "custom" &&
-    appliedCustomRange?.from &&
-    appliedCustomRange?.to
-      ? `${formatDateLabel(appliedCustomRange.from)} - ${formatDateLabel(appliedCustomRange.to)}`
-      : headerFilter === "7days"
-        ? "Last 7 days"
-        : headerFilter === "30days"
-          ? "Last 30 days"
-          : headerFilter === "thisMonth"
-            ? "This Month"
-            : headerFilter === "lastMonth"
-              ? "Last Month"
-              : headerFilter === "thisYear"
-                ? "This Year"
-                : headerFilter === "custom"
-                  ? "Custom Range"
-                  : "Last 7 days";
+  const headerFilterLabel = dateButtonLabel;
 
   async function handlePageChange(nextPage) {
     if (nextPage < 1 || nextPage > totalPages) {
@@ -285,32 +259,53 @@ export default function useFinancePageState() {
     setActiveStatus(nextStatus);
   }
 
-  function handleHeaderFilterChange(nextFilter) {
-    setHeaderFilter(nextFilter);
-    setSelectedDateOption(nextFilter);
+  function normalizeDateFilterOption(option) {
+    const legacyMap = {
+      "7days": "Last 7 Days",
+      "30days": "Last Month",
+      lastMonth: "Last Month",
+      thisMonth: "Last Month",
+      thisYear: "This Year",
+      custom: "Custom Date",
+    };
 
-    if (nextFilter !== "custom") {
-      setHeaderCustomFrom("");
-      setHeaderCustomTo("");
-      setAppliedCustomRange(null);
-      setCustomFrom("");
-      setCustomTo("");
-    }
+    return legacyMap[option] || option || "Last 7 Days";
   }
 
-  function handleApplyHeaderCustomDate() {
-    if (!headerCustomFrom || !headerCustomTo || headerCustomFrom > headerCustomTo) {
+  function handleDateFilterChange(option, start = "", end = "") {
+    const nextOption = normalizeDateFilterOption(option);
+
+    setHeaderFilter(nextOption);
+    setSelectedDateOption(nextOption);
+    setIsDateMenuOpen(false);
+    setIsCustomDateOpen(false);
+
+    if (nextOption === "Custom Date") {
+      if (!start || !end || start > end) {
+        return;
+      }
+
+      setAppliedCustomRange({ from: start, to: end });
+      setCustomFrom(start);
+      setCustomTo(end);
+      setHeaderCustomFrom(start);
+      setHeaderCustomTo(end);
       return;
     }
 
-    setAppliedCustomRange({
-      from: headerCustomFrom,
-      to: headerCustomTo,
-    });
-    setHeaderFilter("custom");
-    setSelectedDateOption("custom");
-    setCustomFrom(headerCustomFrom);
-    setCustomTo(headerCustomTo);
+    setAppliedCustomRange(null);
+    setCustomFrom("");
+    setCustomTo("");
+    setHeaderCustomFrom("");
+    setHeaderCustomTo("");
+  }
+
+  function handleHeaderFilterChange(nextFilter, start = "", end = "") {
+    handleDateFilterChange(nextFilter, start, end);
+  }
+
+  function handleApplyHeaderCustomDate() {
+    handleDateFilterChange("Custom Date", headerCustomFrom, headerCustomTo);
   }
 
   function handleToggleDateMenu() {
@@ -318,37 +313,11 @@ export default function useFinancePageState() {
   }
 
   function handleSelectDateOption(optionId) {
-    setSelectedDateOption(optionId);
-    setHeaderFilter(optionId);
-
-    if (optionId === "custom") {
-      setIsCustomDateOpen(true);
-      setIsDateMenuOpen(true);
-      return;
-    }
-
-    setIsDateMenuOpen(false);
-    setIsCustomDateOpen(false);
-    setAppliedCustomRange(null);
-    setHeaderCustomFrom("");
-    setHeaderCustomTo("");
+    handleDateFilterChange(optionId);
   }
 
   function handleApplyCustomDate() {
-    if (!customFrom || !customTo) {
-      return;
-    }
-
-    setAppliedCustomRange({
-      from: customFrom,
-      to: customTo,
-    });
-    setSelectedDateOption("custom");
-    setHeaderFilter("custom");
-    setHeaderCustomFrom(customFrom);
-    setHeaderCustomTo(customTo);
-    setIsDateMenuOpen(false);
-    setIsCustomDateOpen(false);
+    handleDateFilterChange("Custom Date", customFrom, customTo);
   }
 
   async function handleRequestTransactionDetail(id) {
@@ -394,17 +363,18 @@ export default function useFinancePageState() {
     handleApplyHeaderCustomDate,
     handleApplyCustomDate,
     handleClearDateFilter: () => {
-      setSelectedDateOption("30days");
+      setSelectedDateOption("All Time");
       setAppliedCustomRange(null);
       setCustomFrom("");
       setCustomTo("");
-      setHeaderFilter("30days");
+      setHeaderFilter("All Time");
       setHeaderCustomFrom("");
       setHeaderCustomTo("");
       setIsCustomDateOpen(false);
       setIsDateMenuOpen(false);
     },
     handleExport,
+    handleDateFilterChange,
     handleHeaderFilterChange,
     handlePageChange,
     handleRequestTransactionDetail,
@@ -413,6 +383,7 @@ export default function useFinancePageState() {
     handleToggleDateMenu,
     headerCustomFrom,
     headerCustomTo,
+    hasLoadedFinance,
     headerFilter,
     headerFilterLabel,
     isExporting,
