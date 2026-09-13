@@ -133,29 +133,26 @@ function buildBackendDateFilters(selectedFilter, fromDate, toDate) {
     };
   }
 
-  if (selectedFilter === "Last 7 Days") {
+  const rollingDayRanges = {
+    "Last 7 Days": 6,
+    "Last 14 Days": 13,
+    "Last Month": 30,
+    "Last 3 Months": 90,
+    "Last 6 Months": 180,
+  };
+
+  if (Object.prototype.hasOwnProperty.call(rollingDayRanges, selectedFilter)) {
     const start = new Date(today);
-    start.setDate(today.getDate() - 6);
+    start.setDate(today.getDate() - rollingDayRanges[selectedFilter]);
     return {
       dateFrom: toIsoDateString(start),
       dateTo: toIsoDateString(today),
     };
   }
 
-  if (selectedFilter === "Last 14 Days") {
-    const start = new Date(today);
-    start.setDate(today.getDate() - 13);
+  if (selectedFilter === "This Year") {
     return {
-      dateFrom: toIsoDateString(start),
-      dateTo: toIsoDateString(today),
-    };
-  }
-
-  if (selectedFilter === "Last Month") {
-    const start = new Date(today);
-    start.setMonth(today.getMonth() - 1);
-    return {
-      dateFrom: toIsoDateString(start),
+      dateFrom: `${today.getFullYear()}-01-01`,
       dateTo: toIsoDateString(today),
     };
   }
@@ -388,6 +385,14 @@ export default function OrdersPage() {
     }
   }, [searchParams]);
 
+  function handleDateFilterSelect(option, startDate = "", endDate = "") {
+    const nextOption = option || "All Time";
+
+    setSelectedFilter(nextOption);
+    setFromDate(startDate || "");
+    setToDate(endDate || "");
+    setCurrentPage(1);
+  }
   function handleTabChange(tabLabel) {
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete("filter");
@@ -579,7 +584,7 @@ export default function OrdersPage() {
         filterDisabled={isLiveUpcomingView}
         filterDisabledLabel={t("orders.liveNext", { hours: upcomingHours, defaultValue: `Live next ${upcomingHours} hours` })}
         selectedFilter={selectedFilter}
-        onFilterSelect={setSelectedFilter}
+        onFilterSelect={handleDateFilterSelect}
         fromDate={fromDate}
         onFromDateChange={setFromDate}
         toDate={toDate}

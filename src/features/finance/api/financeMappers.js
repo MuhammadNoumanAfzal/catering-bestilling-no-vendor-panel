@@ -435,7 +435,11 @@ function getRangeLengthInDays(customFrom, customTo) {
 }
 
 export function getFinanceDateRangeVariables({ rangePreset, customFrom, customTo }) {
-  if (rangePreset === "custom" && customFrom && customTo) {
+  if (rangePreset === "All Time") {
+    return {};
+  }
+
+  if ((rangePreset === "Custom Date" || rangePreset === "custom") && customFrom && customTo) {
     return {
       dateFrom: customFrom,
       dateTo: customTo,
@@ -447,27 +451,31 @@ export function getFinanceDateRangeVariables({ rangePreset, customFrom, customTo
   const dateFromDate = new Date(today);
 
   switch (rangePreset) {
+    case "Last 7 Days":
+    case "Last 7 days":
     case "7days":
       dateFromDate.setDate(today.getDate() - 6);
       break;
+    case "Last Month":
     case "30days":
+    case "lastMonth":
       dateFromDate.setDate(today.getDate() - 29);
+      break;
+    case "Last 3 Months":
+      dateFromDate.setDate(today.getDate() - 89);
+      break;
+    case "Last 6 Months":
+      dateFromDate.setDate(today.getDate() - 179);
+      break;
+    case "This Year":
+    case "thisYear":
+      dateFromDate.setMonth(0, 1);
       break;
     case "thisMonth":
       dateFromDate.setDate(1);
       break;
-    case "lastMonth":
-      dateFromDate.setMonth(today.getMonth() - 1, 1);
-      today.setDate(0);
-      return {
-        dateFrom: toYmd(dateFromDate),
-        dateTo: toYmd(today),
-      };
-    case "thisYear":
-      dateFromDate.setMonth(0, 1);
-      break;
     default:
-      dateFromDate.setDate(today.getDate() - 29);
+      dateFromDate.setDate(today.getDate() - 6);
       break;
   }
 
@@ -478,21 +486,16 @@ export function getFinanceDateRangeVariables({ rangePreset, customFrom, customTo
 }
 
 export function getFinanceSummaryVariables({ rangePreset, customFrom, customTo }) {
-  if (rangePreset === "custom" && customFrom && customTo) {
-    return {
-      rangePreset,
-      dateFrom: customFrom,
-      dateTo: customTo,
-    };
-  }
+  const dateVariables = getFinanceDateRangeVariables({ rangePreset, customFrom, customTo });
 
   return {
     rangePreset,
+    ...dateVariables,
   };
 }
 
 export function getChartGroupBy(rangePreset, customFrom, customTo) {
-  if (rangePreset === "custom") {
+  if (rangePreset === "Custom Date" || rangePreset === "custom") {
     const rangeLength = getRangeLengthInDays(customFrom, customTo);
 
     if (rangeLength == null || rangeLength <= 31) {
@@ -506,11 +509,11 @@ export function getChartGroupBy(rangePreset, customFrom, customTo) {
     return "month";
   }
 
-  if (rangePreset === "7days" || rangePreset === "30days") {
+  if (rangePreset === "Last 7 Days" || rangePreset === "Last 7 days" || rangePreset === "7days") {
     return "day";
   }
 
-  if (rangePreset === "thisMonth" || rangePreset === "lastMonth") {
+  if (rangePreset === "Last Month" || rangePreset === "30days" || rangePreset === "lastMonth" || rangePreset === "Last 3 Months") {
     return "week";
   }
 

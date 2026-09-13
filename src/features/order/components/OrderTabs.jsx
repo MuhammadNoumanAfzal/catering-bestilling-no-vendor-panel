@@ -1,14 +1,5 @@
-import { ChevronDown, X } from "lucide-react";
-import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-const filterOptions = [
-  { value: "All Time", labelKey: "orders.allTime", defaultLabel: "All Time" },
-  { value: "Last 7 Days", labelKey: "orders.last7Days", defaultLabel: "Last 7 Days" },
-  { value: "Last 14 Days", labelKey: "orders.last14Days", defaultLabel: "Last 14 Days" },
-  { value: "Last Month", labelKey: "orders.lastMonth", defaultLabel: "Last Month" },
-  { value: "Custom Date", labelKey: "orders.customDate", defaultLabel: "Custom Date" },
-];
+import DateRangeDropdown from "../../dashboard/components/DateRangeDropdown";
 
 const tabKeyByLabel = {
   All: "all",
@@ -26,20 +17,6 @@ const tabKeyByLabel = {
 
 function translateTabLabel(label, t) {
   return t(`orders.${tabKeyByLabel[label] || "status"}`, { defaultValue: label });
-}
-
-function translateFilterLabel(value, t) {
-  const option = filterOptions.find((item) => item.value === value);
-  return option ? t(option.labelKey, { defaultValue: option.defaultLabel }) : value;
-}
-
-function formatCustomDate(value) {
-  if (!value) {
-    return "";
-  }
-
-  const [year, month, day] = value.split("-");
-  return `${month}-${day}-${year}`;
 }
 
 export default function OrderTabs({
@@ -60,21 +37,20 @@ export default function OrderTabs({
     ...tabs.filter((tab) => tab.label === "All"),
     ...tabs.filter((tab) => tab.label !== "All"),
   ];
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const formattedRange = useMemo(() => {
-    if (selectedFilter !== "Custom Date" || !fromDate || !toDate) {
-      return "";
+  function handleDateRangeChange(option, startDate = "", endDate = "") {
+    const nextOption = option || "All Time";
+
+    if (nextOption === "Custom Date") {
+      onFromDateChange(startDate);
+      onToDateChange(endDate);
+      onFilterSelect("Custom Date", startDate, endDate);
+      return;
     }
 
-    return `${t("orders.from", { defaultValue: "From" })}: ${formatCustomDate(fromDate)}   ${t("orders.to", { defaultValue: "To" })}: ${formatCustomDate(toDate)}`;
-  }, [fromDate, selectedFilter, t, toDate]);
-
-  function handleFilterSelect(option) {
-    onFilterSelect(option);
-    if (option !== "Custom Date") {
-      setIsFilterOpen(false);
-    }
+    onFromDateChange("");
+    onToDateChange("");
+    onFilterSelect(nextOption, "", "");
   }
 
   return (
@@ -101,94 +77,18 @@ export default function OrderTabs({
           ))}
         </div>
 
-        <div className="flex items-center gap-3 max-[720px]:w-full max-[720px]:flex-wrap">
-          {formattedRange ? (
-            <div className="type-subpara flex items-center gap-1.5 rounded-full bg-[#ffd8c9] px-4 py-[7px] text-[#c56e4b]">
-              <span>{formattedRange}</span>
-              <button
-                className="inline-flex cursor-pointer items-center justify-center rounded-full p-0.5 hover:bg-[#ffc8b3] text-[#c56e4b] hover:text-[#9c4d2d] transition-colors border-0 bg-transparent"
-                onClick={() => onFilterSelect("")}
-                type="button"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          ) : null}
-
+        <div className="flex items-center gap-3 max-[720px]:w-full max-[720px]:justify-end">
           {filterDisabled ? (
-            <div className="type-para inline-flex min-h-[32px] shrink-0 items-center justify-center rounded-full border border-[#f1dccf] bg-[#fff5ef] px-4 font-medium text-[#b7653f]">
+            <div className="type-para inline-flex min-h-[40px] shrink-0 items-center justify-center rounded-[12px] border border-[#f1dccf] bg-[#fff5ef] px-4 font-medium text-[#b7653f]">
               {filterDisabledLabel || t("orders.liveFilterActive", { defaultValue: "Live filter active" })}
             </div>
           ) : (
-            <div className="relative">
-              <button
-                className="type-para inline-flex min-h-[32px] cursor-pointer shrink-0 items-center justify-center gap-1 rounded-full border border-[#d8cfc6] bg-white px-4 font-medium text-[#2d261f]"
-                onClick={() => setIsFilterOpen((currentState) => !currentState)}
-                type="button"
-              >
-                {selectedFilter ? translateFilterLabel(selectedFilter, t) : t("orders.filterDate", { defaultValue: "Filter Date" })}
-                {selectedFilter ? (
-                  <span
-                    className="ml-1.5 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-[#f3ece6] text-[#746a62] hover:text-[#17120e] transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onFilterSelect("");
-                    }}
-                  >
-                    <X size={14} />
-                  </span>
-                ) : (
-                  <ChevronDown size={14} />
-                )}
-              </button>
-
-              {isFilterOpen ? (
-                <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[150px] rounded-[6px] border border-[#ddd4cb] bg-white p-1 shadow-[0_10px_24px_rgba(25,18,12,0.16)]">
-                  {filterOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      className={`block w-full cursor-pointer rounded-[4px] px-2 py-1.5 text-left text-[10px] font-medium transition ${
-                        selectedFilter === option.value
-                          ? "bg-[#f7efe8] text-[#cf6e38]"
-                          : "text-[#5e554d] hover:bg-[#f6f1eb]"
-                      }`}
-                      onClick={() => handleFilterSelect(option.value)}
-                      type="button"
-                    >{t(option.labelKey, { defaultValue: option.defaultLabel })}</button>
-                  ))}
-
-                  {selectedFilter === "Custom Date" ? (
-                    <div className="mt-1 border-t border-[#ece3d9] px-1 pt-2">
-                      <label className="mb-1 block text-[10px] font-medium text-[#6f645b]">
-                        {t("orders.from", { defaultValue: "From" })}
-                      </label>
-                      <input
-                        className="mb-2 h-8 w-full cursor-pointer rounded-[6px] border border-[#d8cfc6] bg-white px-2 text-[11px] text-[#2d261f] outline-none"
-                        onChange={(event) => onFromDateChange(event.target.value)}
-                        type="date"
-                        value={fromDate}
-                      />
-                      <label className="mb-1 block text-[10px] font-medium text-[#6f645b]">
-                        {t("orders.to", { defaultValue: "To" })}
-                      </label>
-                      <input
-                        className="h-8 w-full cursor-pointer rounded-[6px] border border-[#d8cfc6] bg-white px-2 text-[11px] text-[#2d261f] outline-none"
-                        onChange={(event) => onToDateChange(event.target.value)}
-                        type="date"
-                        value={toDate}
-                      />
-                      <button
-                        className="mt-2 inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-[6px] bg-[#cf6e38] px-3 text-[11px] font-semibold text-white"
-                        onClick={() => setIsFilterOpen(false)}
-                        type="button"
-                      >
-                        {t("orders.apply", { defaultValue: "Apply" })}
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+            <DateRangeDropdown
+              initialEnd={toDate}
+              initialOption={selectedFilter || "All Time"}
+              initialStart={fromDate}
+              onChange={handleDateRangeChange}
+            />
           )}
         </div>
       </div>
