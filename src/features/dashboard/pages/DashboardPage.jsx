@@ -1,4 +1,4 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import EarningChart from "../components/EarningChart";
@@ -11,6 +11,29 @@ import SectionCard from "../components/SectionCard";
 import DateRangeDropdown from "../components/DateRangeDropdown";
 import useDashboardPageState from "../hooks/useDashboardPageState";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
+
+function buildOrdersTarget(statId, dateFilter, startDate, endDate) {
+  const params = new URLSearchParams();
+
+  if (statId === "upcoming") {
+    params.set("tab", "Upcoming");
+    params.set("hours", "4");
+  } else if (statId === "urgent") {
+    params.set("filter", "New");
+  }
+
+  if (dateFilter) {
+    params.set("date", dateFilter);
+  }
+
+  if (dateFilter === "Custom Date") {
+    if (startDate) params.set("from", startDate);
+    if (endDate) params.set("to", endDate);
+  }
+
+  const query = params.toString();
+  return query ? `/orders?${query}` : "/orders";
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -142,27 +165,23 @@ export default function DashboardPage() {
 
       <section className="grid grid-cols-4 gap-3 max-[1180px]:grid-cols-2 max-[960px]:grid-cols-1 max-[640px]:grid-cols-2">
         {overviewCards.map((stat) => (
-              <OverviewCard
-                key={stat.label}
-                {...stat}
-                onClick={
-                  stat.id === "total"
-                    ? () => navigate("/orders")
-                    : stat.id === "upcoming"
-                      ? () => navigate("/orders?tab=Upcoming&hours=4")
-                      : stat.id === "urgent"
-                        ? () => navigate("/orders?filter=New")
-                        : () => navigate("/delivery")
-                }
-              />
-            ))}
+          <OverviewCard
+            key={stat.label}
+            {...stat}
+            onClick={
+              stat.id === "capacity"
+                ? () => navigate("/delivery")
+                : () => navigate(buildOrdersTarget(stat.id, dateFilter, startDate, endDate))
+            }
+          />
+        ))}
       </section>
 
       <SectionCard
         title={t("dashboard.newOrders")}
         badgeCount={urgentOrdersCount}
         actionLabel={t("dashboard.viewAll")}
-        onActionClick={() => navigate("/orders?filter=New")}
+        onActionClick={() => navigate(buildOrdersTarget("urgent", dateFilter, startDate, endDate))}
       >
         {urgentOrders.length ? (
           <div className="flex flex-col gap-2.5">

@@ -261,12 +261,11 @@ export function mapDashboardResponse(
     (highest, point) => Math.max(highest, toNumber(point?.earnings)),
     0,
   );
-  const totalOrders = Math.max(
-    toNumber(summary.totalOrders),
-    toNumber(totalOrdersOverride),
-  );
-  const upcomingOrders = toNumber(summary.upcomingOrders);
-  const urgentOrdersCount = toNumber(summary.urgentOrders);
+  const totalOrders = totalOrdersOverride == null
+    ? toNumber(summary.totalOrders)
+    : toNumber(totalOrdersOverride);
+  const upcomingOrders = toNumber(summary.upcomingOrders ?? summary.upcoming);
+  const urgentOrdersCount = toNumber(summary.urgentOrders ?? summary.newOrders);
   const totalOrdersTrendMeta = buildTrendMeta(
     totalOrders,
     summary.totalOrdersTrend,
@@ -429,18 +428,29 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
   let dateFrom = null;
   let dateTo = null;
 
-  if (dateFilter === "Last 2 Days") {
+  const applyRangeDays = (days) => {
     const start = new Date(end);
-    start.setDate(end.getDate() - 1);
+    start.setDate(end.getDate() - (days - 1));
     dateFrom = formatAsIsoDate(start);
     dateTo = formatAsIsoDate(end);
+  };
+
+  if (dateFilter === "Last 2 Days") {
+    applyRangeDays(2);
   } else if (dateFilter === "Last 7 Days") {
-    const start = new Date(end);
-    start.setDate(end.getDate() - 6);
+    applyRangeDays(7);
     summaryPreset = "last-7-days";
     urgentPreset = "this_week";
     reviewsPreset = "lastMonth";
-    dateFrom = formatAsIsoDate(start);
+  } else if (dateFilter === "Last Month") {
+    applyRangeDays(30);
+    reviewsPreset = "lastMonth";
+  } else if (dateFilter === "Last 3 Months") {
+    applyRangeDays(90);
+  } else if (dateFilter === "Last 6 Months") {
+    applyRangeDays(180);
+  } else if (dateFilter === "This Year") {
+    dateFrom = `${end.getFullYear()}-01-01`;
     dateTo = formatAsIsoDate(end);
   } else if (dateFilter === "Custom Date" && startDate && endDate) {
     dateFrom = startDate;
@@ -455,7 +465,7 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
             (new Date(dateTo).getTime() - new Date(dateFrom).getTime()) / (1000 * 60 * 60 * 24),
           ) + 1,
         )
-      : 7;
+      : 365;
 
   return {
     hoursWindow: 4,
