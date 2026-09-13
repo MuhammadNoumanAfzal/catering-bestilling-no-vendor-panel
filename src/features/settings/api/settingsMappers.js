@@ -18,6 +18,17 @@ const FALLBACK_CLOSURE_TYPE_OPTIONS = [
 ];
 const SUPPORTED_VENDOR_LANGUAGE_CODES = new Set(["en", "no", "nb", "nn"]);
 
+function resolveIconUrl(value) {
+  const url = normalizeString(value).trim();
+  if (!url || /^(?:data:|blob:)/i.test(url)) return url;
+
+  const apiUrl = import.meta.env.VITE_GRAPHQL_API_URL ?? import.meta.env.VITE_GRAPHQL_URL ?? "https://api.gocatering.no/graphql/";
+  const parsedUrl = new URL(url, apiUrl);
+  return parsedUrl.pathname.startsWith("/media/")
+    ? new URL(`${parsedUrl.pathname}${parsedUrl.search}`, apiUrl).toString()
+    : parsedUrl.toString();
+}
+
 function formatNorwegianPostCode(value) {
   const postCode = normalizeString(value).trim();
   return /^\d{1,4}$/.test(postCode) ? postCode.padStart(4, "0") : postCode;
@@ -208,6 +219,7 @@ function mapTaxonomyOptions(items = []) {
     .map((item) => ({
       value: item?.id || item?.slug || item?.name || "",
       label: item?.name || item?.slug || item?.id || "",
+      iconUrl: resolveIconUrl(item?.iconUrl),
     }))
     .filter((item) => item.value && item.label);
 }

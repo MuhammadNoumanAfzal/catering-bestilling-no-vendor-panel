@@ -43,8 +43,9 @@ export default function SettingsSelectField({
           onClick={() => setIsOpen((current) => !current)}
           type="button"
         >
-          <span className={`min-w-0 truncate ${selectedOption ? (disabled ? "text-[#8d7f73]" : "text-[#201712]") : "text-[#b0a59b]"}`}>
-            {selectedOption?.label || placeholder}
+          <span className={`flex min-w-0 items-center gap-2 truncate ${selectedOption ? (disabled ? "text-[#8d7f73]" : "text-[#201712]") : "text-[#b0a59b]"}`}>
+            {selectedOption?.iconUrl ? <img alt="" className="h-5 w-5 shrink-0 rounded object-cover" src={selectedOption.iconUrl} /> : null}
+            <span className="truncate">{selectedOption?.label || placeholder}</span>
           </span>
           <ChevronDown
             className={`shrink-0 text-[#7d7064] transition ${isOpen ? "rotate-180" : ""}`}
@@ -70,7 +71,10 @@ export default function SettingsSelectField({
                       onClick={() => handleSelect(option.value)}
                       type="button"
                     >
-                      {option.label}
+                      <span className="flex items-center gap-2">
+                        {option.iconUrl ? <img alt="" className="h-5 w-5 rounded object-cover" src={option.iconUrl} /> : null}
+                        {option.label}
+                      </span>
                     </button>
                   );
                 })
