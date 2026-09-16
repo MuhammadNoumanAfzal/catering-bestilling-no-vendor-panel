@@ -42,6 +42,7 @@ export const defaultSettingsState = {
   postalCode: "",
   businessDescription: "",
   cuisineType: "",
+  cuisineTypeIds: [],
   customCuisineType: "",
   businessType: "",
   customBusinessType: "",
@@ -219,6 +220,7 @@ function mapTaxonomyOptions(items = []) {
     .map((item) => ({
       value: item?.id || item?.slug || item?.name || "",
       label: item?.name || item?.slug || item?.id || "",
+      slug: item?.slug || "",
       iconUrl: resolveIconUrl(item?.iconUrl),
     }))
     .filter((item) => item.value && item.label);
@@ -415,6 +417,11 @@ export function mapVendorSettingsPage(result, options = {}) {
         settings.businessProfile?.cuisineType?.id ||
         settings.businessProfile?.cuisineType?.slug ||
         "",
+      cuisineTypeIds: Array.isArray(settings.businessProfile?.cuisineTypes)
+        ? settings.businessProfile.cuisineTypes.map((item) => item?.id || item?.slug).filter(Boolean)
+        : settings.businessProfile?.cuisineType?.id || settings.businessProfile?.cuisineType?.slug
+          ? [settings.businessProfile.cuisineType.id || settings.businessProfile.cuisineType.slug]
+          : [],
       customCuisineType: normalizeString(settings.businessProfile?.customCuisineType),
       businessType:
         settings.businessProfile?.businessType?.id ||
@@ -514,7 +521,10 @@ export function buildBusinessProfileInput(settings) {
     phoneNumber: normalizeString(settings.phoneNumber).trim(),
     businessAddress: normalizeString(settings.businessAddress).trim(),
     businessDescription: normalizeString(settings.businessDescription).trim() || null,
-    cuisineType: settings.cuisineType || null,
+    cuisineType: (Array.isArray(settings.cuisineTypeIds) && settings.cuisineTypeIds[0]) || settings.cuisineType || null,
+    cuisineTypeIds: Array.isArray(settings.cuisineTypeIds)
+      ? [...new Set(settings.cuisineTypeIds.filter(Boolean))]
+      : settings.cuisineType ? [settings.cuisineType] : [],
     customCuisineType: normalizeString(settings.customCuisineType).trim() || null,
     businessType: settings.businessType || null,
     customBusinessType: normalizeString(settings.customBusinessType).trim() || null,
