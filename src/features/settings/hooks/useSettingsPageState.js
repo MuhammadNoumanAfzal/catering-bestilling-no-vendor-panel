@@ -241,6 +241,13 @@ function notifyVendorProfileUpdated(settings) {
   }
 }
 
+function getMutationErrorMessage(result, fallbackMessage) {
+  const details = (result?.errors || [])
+    .map((error) => error?.message || error?.field)
+    .filter(Boolean);
+
+  return details.length ? details.join(". ") : result?.message || fallbackMessage;
+}
 export default function useSettingsPageState() {
   const authUser = useMemo(() => {
     const authSession = loadStoredAuthSession();
@@ -1060,7 +1067,7 @@ export default function useSettingsPageState() {
       );
 
       if (!result.success) {
-        await showVendorErrorAlert(result.message || "Unable to save special closure.");
+        await showVendorErrorAlert(getMutationErrorMessage(result, "Unable to save special closure."));
         return;
       }
       await refreshSettingsPageState();
@@ -1085,7 +1092,7 @@ export default function useSettingsPageState() {
       const result = await deleteVendorSpecialClosure(id);
 
       if (!result.success) {
-        await showVendorErrorAlert(result.message || "Unable to delete special closure.");
+        await showVendorErrorAlert(getMutationErrorMessage(result, "Unable to delete special closure."));
         return;
       }
       await refreshSettingsPageState();
