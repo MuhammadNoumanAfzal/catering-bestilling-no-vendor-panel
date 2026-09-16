@@ -21,6 +21,7 @@ function isValidQuarterHourTime(value) {
 export default function DeliveryScheduleSection({
   activeDays,
   days,
+  onToggleAllDays,
   onToggleDay,
   timeSlots,
   onRemoveTimeSlot,
@@ -49,6 +50,7 @@ export default function DeliveryScheduleSection({
             activeDays={activeDays}
             days={days}
             disabled={disabled}
+            onToggleAllDays={onToggleAllDays}
             onToggleDay={onToggleDay}
           />
           {errors.deliveryDays ? (

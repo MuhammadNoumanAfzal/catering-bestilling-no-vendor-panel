@@ -19,9 +19,11 @@ export default function DeliveryPage() {
     activeDays,
     baseFee,
     customSlotDraft,
+    cityServiceAreas,
     fieldErrors,
     freeDelivery,
     handleAddServiceArea,
+    handleAddServiceAreas,
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
@@ -31,6 +33,7 @@ export default function DeliveryPage() {
     handleSaveChanges,
     handleSaveCustomSlot,
     handleServiceAreaSearchChange,
+    handleSetAllDays,
     handleToggleDay,
     handleToggleMode,
     hasUnsavedChanges,
@@ -111,8 +114,10 @@ export default function DeliveryPage() {
           <DeliveryAreasSection
             disabled={isPageDisabled || isDeliveryDisabled}
             error={fieldErrors.validAreaIds || fieldErrors.serviceAreas || ""}
+            cityAreas={cityServiceAreas}
             isSearching={isSearchingAreas}
             onAddArea={handleAddServiceArea}
+            onAddCityAreas={handleAddServiceAreas}
             onRemoveArea={handleRemoveServiceArea}
             onSearchChange={(event) => handleServiceAreaSearchChange(event.target.value)}
             searchResults={serviceAreaResults}
@@ -145,6 +150,8 @@ export default function DeliveryPage() {
             errors={fieldErrors}
             onAddCustomSlot={handleOpenAddSlotModal}
             onRemoveTimeSlot={handleRemoveTimeSlot}
+            onToggleAllDays={() => handleSetAllDays(deliveryDays.map((day) => day.value))}
+            onToggleAllDays={() => handleSetAllDays(deliveryDays.map((day) => day.value))}
             onToggleDay={handleToggleDay}
             timeSlots={timeSlots}
           />

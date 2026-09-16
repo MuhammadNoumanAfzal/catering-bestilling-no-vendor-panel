@@ -1,6 +1,7 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-function formatReviewDate(value) {
+function formatReviewDate(value, locale = "en-GB") {
   if (!value) {
     return "";
   }
@@ -10,14 +11,14 @@ function formatReviewDate(value) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
   }).format(parsed);
 }
 
-function getStatusConfig(status) {
+function getStatusConfig(status, t) {
   switch (`${status ?? ""}`.trim().toUpperCase()) {
     case "CHANGES_REQUESTED":
       return {
@@ -25,14 +26,13 @@ function getStatusConfig(status) {
         titleColor: "text-[#8a311f]",
         bodyColor: "text-[#6e554b]",
         badge: "bg-[#fff1ea] text-[#c95e2c]",
-        title: "Admin requested updates to your application",
-        description:
-          "Your vendor panel is still open so you can fix the required information. Review your business profile, address, bank details, images, delivery timing, and menu setup, then save everything before asking for another review.",
+        title: t("settings.applicationStatus.changesRequested.title"),
+        description: t("settings.applicationStatus.changesRequested.description"),
         checklist: [
-          "Complete business profile details like business name, address, contact number, tax number, and description.",
-          "Upload or correct your logo and banner.",
-          "Check delivery timings and menu items on their own pages.",
-          "Save your corrections so admin can review the latest version.",
+          t("settings.applicationStatus.changesRequested.checklist.profile"),
+          t("settings.applicationStatus.changesRequested.checklist.brandAssets"),
+          t("settings.applicationStatus.changesRequested.checklist.deliveryAndMenu"),
+          t("settings.applicationStatus.changesRequested.checklist.save"),
         ],
       };
     case "REVIEWING":
@@ -41,13 +41,12 @@ function getStatusConfig(status) {
         titleColor: "text-[#7b4a1a]",
         bodyColor: "text-[#6e554b]",
         badge: "bg-[#fff3df] text-[#8a5318]",
-        title: "Your application is under admin review",
-        description:
-          "Your submitted information is being reviewed. You can still keep your profile polished by checking business details, images, payout details, delivery timing, and menu completeness.",
+        title: t("settings.applicationStatus.reviewing.title"),
+        description: t("settings.applicationStatus.reviewing.description"),
         checklist: [
-          "Double-check address, contact details, and uploaded images.",
-          "Make sure payout bank details are complete.",
-          "Keep delivery schedule and menu items up to date.",
+          t("settings.applicationStatus.reviewing.checklist.profile"),
+          t("settings.applicationStatus.reviewing.checklist.payout"),
+          t("settings.applicationStatus.reviewing.checklist.deliveryAndMenu"),
         ],
       };
     case "PENDING_APPROVAL":
@@ -56,15 +55,14 @@ function getStatusConfig(status) {
         titleColor: "text-[#7b4a1a]",
         bodyColor: "text-[#6e554b]",
         badge: "bg-[#fff3df] text-[#8a5318]",
-        title: "Your application is waiting for approval",
-        description:
-          "You can continue completing your business details while the application is pending. A complete profile with correct address, timing, bank details, images, delivery schedule, and menu helps the admin approval process move faster.",
+        title: t("settings.applicationStatus.pending.title"),
+        description: t("settings.applicationStatus.pending.description"),
         checklist: [
-          "Fill out business and account information, including address, phone number, tax number, and description.",
-          "Upload a clear profile image or logo and banner image.",
-          "Make sure delivery timing is correct on the Delivery page.",
-          "Check your Menu page and add complete menu items so the store is ready to go live.",
-          "Save bank payout details so finance information is ready for review.",
+          t("settings.applicationStatus.pending.checklist.profile"),
+          t("settings.applicationStatus.pending.checklist.brandAssets"),
+          t("settings.applicationStatus.pending.checklist.delivery"),
+          t("settings.applicationStatus.pending.checklist.menu"),
+          t("settings.applicationStatus.pending.checklist.payout"),
         ],
       };
     case "REJECTED":
@@ -73,12 +71,11 @@ function getStatusConfig(status) {
         titleColor: "text-[#972f2f]",
         bodyColor: "text-[#6c4f4f]",
         badge: "bg-[#ffe7e7] text-[#b33a3a]",
-        title: "Your application was rejected",
-        description:
-          "You can still review your saved business information here, but the exact next step depends on admin/backend rules for resubmission.",
+        title: t("settings.applicationStatus.rejected.title"),
+        description: t("settings.applicationStatus.rejected.description"),
         checklist: [
-          "Review all saved business information carefully.",
-          "Contact admin or support if you need re-submission guidance.",
+          t("settings.applicationStatus.rejected.checklist.review"),
+          t("settings.applicationStatus.rejected.checklist.support"),
         ],
       };
     default:
@@ -114,21 +111,21 @@ function hasPayoutDetailsCompleted(settings) {
   ].every(hasValue);
 }
 
-function buildChecklistItems({ settings }) {
+function buildChecklistItems({ settings, t }) {
   const checklistItems = [];
 
   if (!hasBusinessProfileCompleted(settings)) {
     checklistItems.push(
-      "Fill out your business details like business name, email, phone number, address, and description.",
+      t("settings.applicationStatus.dynamicChecklist.profile"),
     );
   }
 
   if (!hasBrandAssetsCompleted(settings)) {
-    checklistItems.push("Upload both your logo/profile image and banner image.");
+    checklistItems.push(t("settings.applicationStatus.dynamicChecklist.brandAssets"));
   }
 
   if (!hasPayoutDetailsCompleted(settings)) {
-    checklistItems.push("Save your payout bank details so finance information is ready for review.");
+    checklistItems.push(t("settings.applicationStatus.dynamicChecklist.payout"));
   }
 
   return checklistItems;
@@ -142,9 +139,10 @@ export default function VendorApplicationStatusNotice({
   missingRequirements = [],
   settings = null,
 }) {
+  const { i18n, t } = useTranslation();
   const navigate = useNavigate();
-  const config = getStatusConfig(status);
-  const reviewedLabel = formatReviewDate(reviewedAt);
+  const config = getStatusConfig(status, t);
+  const reviewedLabel = formatReviewDate(reviewedAt, i18n.language);
   const normalizedStatus = `${status}`.trim().toUpperCase();
   const shouldShowChangeRequestDetails = normalizedStatus === "CHANGES_REQUESTED";
   const detailFields = shouldShowChangeRequestDetails
@@ -152,6 +150,7 @@ export default function VendorApplicationStatusNotice({
     : [];
   const dynamicChecklist = buildChecklistItems({
     settings,
+    t,
   });
   const requestBasedChecklist = detailFields
     .map((item) => item?.label || item?.code || "")
@@ -168,7 +167,7 @@ export default function VendorApplicationStatusNotice({
 
   const requestReviewMessage =
     changeRequestMessage
-    || "I have completed the requested changes. Please review my vendor application again.";
+    || t("settings.applicationStatus.defaultReviewRequest");
 
   function handleOpenReviewSupport() {
     const requestedItemSummary = detailFields
@@ -177,14 +176,14 @@ export default function VendorApplicationStatusNotice({
       .join(", ");
 
     const descriptionLines = [
-      "I have completed the requested application changes and would like admin to review my vendor profile again.",
+      t("settings.applicationStatus.supportIntro"),
       "",
-      "Admin request:",
+      t("settings.applicationStatus.adminRequest"),
       requestReviewMessage,
     ];
 
     if (requestedItemSummary) {
-      descriptionLines.push("", `Updated items: ${requestedItemSummary}`);
+      descriptionLines.push("", t("settings.applicationStatus.updatedItems", { items: requestedItemSummary }));
     }
 
     navigate("/support", {
@@ -210,7 +209,7 @@ export default function VendorApplicationStatusNotice({
       <div className="grid gap-0 xl:grid-cols-[minmax(0,1.45fr)_360px]">
         <div className="px-5 py-5 sm:px-6 sm:py-6">
           <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${config.badge}`}>
-            {status || "Application Update"}
+            {t(`settings.applicationStatus.badges.${normalizedStatus}`, { defaultValue: t("settings.applicationStatus.applicationUpdate") })}
           </span>
           <h2 className={`mt-3 text-[24px] font-bold tracking-[-0.03em] ${config.titleColor}`}>
             {config.title}
@@ -220,13 +219,13 @@ export default function VendorApplicationStatusNotice({
           </p>
           {reviewedLabel ? (
             <p className="mt-3 text-[12px] font-bold uppercase tracking-[0.08em] text-[#8e776a]">
-              Last reviewed on {reviewedLabel}
+              {t("settings.applicationStatus.lastReviewed", { date: reviewedLabel })}
             </p>
           ) : null}
           {shouldShowChangeRequestDetails && changeRequestMessage ? (
             <div className="mt-4 rounded-[18px] border border-white/80 bg-white/85 px-4 py-4">
               <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-                Message From Admin
+                {t("settings.applicationStatus.messageFromAdmin")}
               </p>
               <p className="mt-2 text-[14px] leading-7 text-[#4f433c]">
                 {changeRequestMessage}
@@ -237,10 +236,10 @@ export default function VendorApplicationStatusNotice({
           <div className="mt-5">
             <div className="flex items-center justify-between gap-3">
               <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-                Approval Checklist
+                {t("settings.applicationStatus.approvalChecklist")}
               </p>
               <p className="text-[12px] font-semibold text-[#8c776b]">
-                {checklistItems.length ? "Complete these before go-live" : "Current status"}
+                {checklistItems.length ? t("settings.applicationStatus.completeBeforeGoLive") : t("settings.applicationStatus.currentStatus")}
               </p>
             </div>
             {checklistItems.length ? (
@@ -262,7 +261,7 @@ export default function VendorApplicationStatusNotice({
             ) : (
               <div className="mt-3 rounded-[16px] border border-white/80 bg-white/80 px-4 py-4 shadow-[0_8px_22px_rgba(56,34,18,0.04)]">
                 <p className="text-[14px] leading-6 text-[#5f4f46]">
-                  Your business details currently look complete here. Your application is now mainly waiting for admin review.
+                  {t("settings.applicationStatus.completeMessage")}
                 </p>
               </div>
             )}
@@ -274,14 +273,14 @@ export default function VendorApplicationStatusNotice({
               onClick={handleOpenDelivery}
               type="button"
             >
-              Open Delivery
+              {t("settings.applicationStatus.openDelivery")}
             </button>
             <button
               className="inline-flex h-[46px] items-center justify-center rounded-[14px] border border-[#ead8ca] bg-white px-4 text-[14px] font-bold text-[#5f4f46] transition hover:bg-[#faf6f2]"
               onClick={handleOpenMenu}
               type="button"
             >
-              Open Menu
+              {t("settings.applicationStatus.openMenu")}
             </button>
             {shouldShowChangeRequestDetails ? (
               <button
@@ -289,13 +288,13 @@ export default function VendorApplicationStatusNotice({
                 onClick={handleOpenReviewSupport}
                 type="button"
               >
-                I fixed the changes
+                {t("settings.applicationStatus.fixedChanges")}
               </button>
             ) : null}
           </div>
           {shouldShowChangeRequestDetails ? (
             <p className="mt-3 text-[12px] leading-5 text-[#7a675d]">
-              This opens a support ticket so admin can re-check your updated application.
+              {t("settings.applicationStatus.supportHint")}
             </p>
           ) : null}
         </div>
@@ -303,7 +302,7 @@ export default function VendorApplicationStatusNotice({
         <div className="border-t border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74)_0%,rgba(255,255,255,0.9)_100%)] px-5 py-5 backdrop-blur xl:border-l xl:border-t-0">
           <div className="rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_24px_rgba(56,34,18,0.04)]">
             <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-              Next Steps
+              {t("settings.applicationStatus.nextSteps")}
             </p>
             {checklistItems.length ? (
               <div className="mt-3 space-y-2">
@@ -315,7 +314,7 @@ export default function VendorApplicationStatusNotice({
               </div>
             ) : (
               <div className="mt-3 rounded-[12px] bg-[#fffaf7] px-3 py-3 text-[13px] leading-6 text-[#5f4f46]">
-                No missing items are currently flagged on this page.
+                {t("settings.applicationStatus.noMissingItems")}
               </div>
             )}
           </div>
@@ -323,7 +322,7 @@ export default function VendorApplicationStatusNotice({
           {detailFields.length ? (
             <div className="mt-4 rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_24px_rgba(56,34,18,0.04)]">
               <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-                Requested Items
+                {t("settings.applicationStatus.requestedItems")}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {detailFields.map((item) => (
@@ -340,22 +339,15 @@ export default function VendorApplicationStatusNotice({
 
           <div className="mt-4 rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_24px_rgba(56,34,18,0.04)]">
             <p className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-[#8c776b]">
-              Focus Areas
+              {t("settings.applicationStatus.focusAreas")}
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {[
-                "Business profile",
-                "Logo and banner",
-                "Bank details",
-                "Delivery timing",
-                "Menu setup",
-                "Account info",
-              ].map((item) => (
+              {["businessProfile", "logoAndBanner", "bankDetails", "deliveryTiming", "menuSetup", "accountInfo"].map((item) => (
                 <div
                   key={item}
                   className="rounded-[12px] border border-[#efe1d6] bg-[#fffaf7] px-3 py-2 text-[12px] font-semibold text-[#5f4f46]"
                 >
-                  {item}
+                  {t(`settings.applicationStatus.focus.${item}`)}
                 </div>
               ))}
             </div>

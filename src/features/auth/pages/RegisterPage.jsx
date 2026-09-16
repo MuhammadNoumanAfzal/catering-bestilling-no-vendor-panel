@@ -400,7 +400,7 @@ export default function RegisterPage() {
                   placeholder: "Enter 6-digit code",
                   type: "text",
                   value: otpCode,
-                  helperText: `We sent a verification code to ${formState.email}. It expires in 10 minutes.`,
+                  helperText: t("auth.register.codeHelp", { email: formState.email }),
                   errorText: otpError,
                   containerClassName: "sm:col-span-2",
                 },

@@ -214,7 +214,7 @@ export default function useDeliverySettings() {
       setIsSearchingAreas(true);
 
       try {
-        const areas = await searchAvailableAreas({ term: searchValue, first: 10 });
+        const areas = await searchAvailableAreas({ term: searchValue, first: 200 });
 
         if (serviceAreaSearchRequestIdRef.current !== requestId) {
           return;
@@ -249,6 +249,15 @@ export default function useDeliverySettings() {
   ]);
 
   const serviceAreaResults = searchResults.length ? searchResults : localServiceAreaResults;
+
+  const cityServiceAreas = useMemo(() => {
+    const cityName = serviceAreaSearch.trim().toLowerCase();
+    if (!cityName) return [];
+
+    return (searchResults.length ? searchResults : localServiceAreaResults)
+      .filter((area) => `${area.name || ""}`.trim().toLowerCase() === cityName);
+  }, [localServiceAreaResults, searchResults, serviceAreaSearch]);
+
 
   const currentComparable = useMemo(
     () => getComparableDeliverySettings(formState),
@@ -346,6 +355,23 @@ export default function useDeliverySettings() {
     clearServiceAreaErrors();
   }
 
+  function handleAddServiceAreas(areas) {
+    const normalizedAreas = (Array.isArray(areas) ? areas : [])
+      .map(normalizeServiceArea)
+      .filter((area) => area.id);
+
+    if (!normalizedAreas.length) return;
+
+    setFormState((current) => {
+      const selectedIds = new Set(current.serviceAreas.map((area) => area.id));
+      const newAreas = normalizedAreas.filter((area) => !selectedIds.has(area.id));
+      return newAreas.length
+        ? { ...current, serviceAreas: [...current.serviceAreas, ...newAreas] }
+        : current;
+    });
+    resetServiceAreaSearchState();
+    clearServiceAreaErrors();
+  }
   function handleRemoveServiceArea(areaId) {
     setFormState((current) => ({
       ...current,
@@ -370,8 +396,25 @@ export default function useDeliverySettings() {
       return {
         ...current,
         activeDays: nextActiveDays,
+        timeSlots: nextActiveDays.includes(dayValue)
+          ? current.timeSlots
+          : current.timeSlots.filter((slot) => slot.day !== dayValue),
       };
     });
+  }
+
+  function handleSetAllDays(dayValues) {
+    const nextActiveDays = Array.isArray(dayValues) ? [...new Set(dayValues)] : [];
+
+    setFormState((current) => ({
+      ...current,
+      activeDays: nextActiveDays,
+      timeSlots: current.timeSlots.filter((slot) => nextActiveDays.includes(slot.day)),
+    }));
+    setCustomSlotDraft((draft) => ({
+      ...draft,
+      day: nextActiveDays[0] || DEFAULT_CUSTOM_SLOT_DRAFT.day,
+    }));
   }
 
   function handleRemoveTimeSlot(slotToRemove) {
@@ -396,7 +439,9 @@ export default function useDeliverySettings() {
   }
 
   function handleSaveCustomSlot() {
-    if (!customSlotDraft.day) {
+    const selectedDays = formState.activeDays || [];
+
+    if (!selectedDays.length) {
       setSlotDraftError(i18n.t("delivery.dayRequired"));
       return;
     }
@@ -411,25 +456,21 @@ export default function useDeliverySettings() {
       return;
     }
 
-    const nextSlot = {
-      day: customSlotDraft.day,
+    const nextSlots = selectedDays.map((day) => ({
+      day,
       start: customSlotDraft.start,
       end: customSlotDraft.end,
-    };
+    }));
 
     setFormState((current) => ({
       ...current,
-      timeSlots: current.timeSlots.some((slot) => (
-        slot.day === nextSlot.day &&
-        slot.start === nextSlot.start &&
-        slot.end === nextSlot.end
-      ))
-        ? current.timeSlots
-        : [...current.timeSlots, nextSlot],
+      timeSlots: [
+        ...current.timeSlots.filter((slot) => !selectedDays.includes(slot.day)),
+        ...nextSlots,
+      ],
     }));
     handleCloseAddSlotModal();
   }
-
   async function handleCancelChanges() {
     setFormState(savedSettings);
     setFieldErrors({});
@@ -493,9 +534,11 @@ export default function useDeliverySettings() {
     activeDays: formState.activeDays,
     baseFee: formState.baseFee,
     customSlotDraft,
+    cityServiceAreas,
     fieldErrors,
     freeDelivery: formState.freeDelivery,
     handleAddServiceArea,
+    handleAddServiceAreas,
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
@@ -504,6 +547,7 @@ export default function useDeliverySettings() {
     handleSaveChanges,
     handleSaveCustomSlot,
     handleServiceAreaSearchChange,
+    handleSetAllDays,
     handleToggleDay,
     handleToggleMode,
     hasUnsavedChanges:
