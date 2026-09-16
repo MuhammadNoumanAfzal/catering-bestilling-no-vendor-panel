@@ -746,6 +746,9 @@ export default function useSettingsPageState() {
             result.businessProfile?.cuisineType?.id ||
             result.businessProfile?.cuisineType?.slug ||
             nextSettings.cuisineType,
+          cuisineTypeIds: Array.isArray(result.businessProfile?.cuisineTypes)
+            ? result.businessProfile.cuisineTypes.map((item) => item?.id || item?.slug).filter(Boolean)
+            : nextSettings.cuisineTypeIds,
           customCuisineType:
             result.businessProfile?.customCuisineType ??
             nextSettings.customCuisineType,

@@ -5,8 +5,68 @@ import SettingsSelectField from "./SettingsSelectField";
 import SettingsTextField from "./SettingsTextField";
 import SettingsToggleRow from "./SettingsToggleRow";
 import { useTranslation } from "react-i18next";
+import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { getCurrentYear, getTodayDateValue, sanitizeYearInput } from "../../../utils/dateValidation";
 
+function SettingsCuisineMultiSelect({ disabled, label, onChange, options = [], value = [] }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+  const selectedIds = Array.isArray(value) ? value : [];
+  const selectedOptions = options.filter((option) => selectedIds.includes(option.value));
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!containerRef.current?.contains(event.target)) setIsOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function toggleCuisine(id) {
+    const nextIds = selectedIds.includes(id)
+      ? selectedIds.filter((selectedId) => selectedId !== id)
+      : [...selectedIds, id];
+    onChange({ target: { value: nextIds } });
+  }
+
+  return (
+    <div className="flex min-w-0 flex-col gap-1" ref={containerRef}>
+      <span className="text-[13px] font-bold text-[#2a211b]">{label}</span>
+      <div className="relative">
+        <button
+          aria-expanded={isOpen}
+          className="type-subpara flex h-[38px] w-full min-w-0 items-center justify-between rounded-[7px] border border-[#cec5bd] bg-white px-3 text-left outline-none transition hover:border-[#cf6e38] focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] disabled:pointer-events-none disabled:opacity-45"
+          disabled={disabled}
+          onClick={() => setIsOpen((current) => !current)}
+          type="button"
+        >
+          <span className={`truncate text-[12px] ${selectedOptions.length ? "font-medium text-[#201712]" : "text-[#b0a59b]"}`}>
+            {selectedOptions.length ? selectedOptions.map((option) => option.label).join(", ") : "Select cuisines"}
+          </span>
+          <ChevronDown className={`shrink-0 text-[#7d7064] transition ${isOpen ? "rotate-180" : ""}`} size={14} />
+        </button>
+        {isOpen ? (
+          <div className="absolute left-0 top-[calc(100%+6px)] z-30 w-full overflow-hidden rounded-[8px] border border-[#ddd4cc] bg-white py-1 shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+            <div className="max-h-[220px] overflow-y-auto overscroll-contain p-1">
+              {options.map((option) => {
+                const isSelected = selectedIds.includes(option.value);
+                return (
+                  <label className={`flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-2 text-[12px] transition ${isSelected ? "bg-[#fff1eb] font-semibold text-[#c95f2e]" : "text-[#40352f] hover:bg-[#faf5f1]"}`} key={option.value}>
+                    <input checked={isSelected} className="h-4 w-4 rounded border-[#cfc2b8] text-[#d96e39] focus:ring-[#cf6e38]" disabled={disabled} onChange={() => toggleCuisine(option.value)} type="checkbox" />
+                    {option.iconUrl ? <img alt="" className="h-5 w-5 shrink-0 rounded object-cover" src={option.iconUrl} /> : null}
+                    <span>{option.label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 export default function SettingsBusinessProfilePanel({
   businessTypeOptions,
   closureTypeOptions,
@@ -25,7 +85,14 @@ export default function SettingsBusinessProfilePanel({
   handleSaveClosure,
   handleDeleteClosure,
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation();  const selectedCuisineIds = Array.isArray(settings.cuisineTypeIds) && settings.cuisineTypeIds.length
+    ? settings.cuisineTypeIds
+    : settings.cuisineType ? [settings.cuisineType] : [];
+  const hasCustomCuisine = cuisineOptions.some(
+    (option) =>
+      selectedCuisineIds.includes(option.value) &&
+      (option.slug === "custom" || option.label.trim().toLowerCase() === "custom"),
+  );
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(320px,1fr)] items-start gap-3 max-[1120px]:grid-cols-1">
@@ -106,15 +173,14 @@ export default function SettingsBusinessProfilePanel({
           >
             <div className="grid grid-cols-2 gap-3 max-[760px]:grid-cols-1">
               <div className="flex flex-col gap-3">
-                <SettingsSelectField
+                <SettingsCuisineMultiSelect
                   disabled={disabled}
                   label={t("settings.cuisine", { defaultValue: "Cuisine Type" })}
-                  onChange={handleFieldChange("cuisineType")}
+                  onChange={handleFieldChange("cuisineTypeIds")}
                   options={cuisineOptions}
-                  placeholder={t("settings.placeholders.cuisine", { defaultValue: "Select cuisine" })}
-                  value={settings.cuisineType}
+                  value={selectedCuisineIds}
                 />
-                {settings.customCuisineType || settings.cuisineType === "Custom" ? (
+                {settings.customCuisineType || hasCustomCuisine ? (
                   <SettingsTextField
                     disabled={disabled}
                     label={t("settings.customCuisine", { defaultValue: "Custom Cuisine" })}
