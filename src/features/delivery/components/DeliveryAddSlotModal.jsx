@@ -19,7 +19,7 @@ export default function DeliveryAddSlotModal({
 }) {
   const { t } = useTranslation();
   const selectableDays = deliveryDays.filter((day) => activeDays.includes(day.value));
-  const isReadyToSave = draftSlot.day && draftSlot.start && draftSlot.end;
+  const isReadyToSave = selectableDays.length > 0 && draftSlot.start && draftSlot.end;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6">
@@ -44,26 +44,16 @@ export default function DeliveryAddSlotModal({
 
         <p className="type-para mt-3 text-[#6f6258]"> {i18n.t("delivery.slotRangeHelp")} </p>
 
-        <label className="mt-4 flex flex-col gap-1">
-          <span className="type-para text-[#1a1410]">{t("delivery.deliveryDay", { defaultValue: "Delivery day" })}</span>
-          <select
-            autoFocus
-            className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
-              error ? "border-[#d25545]" : "border-[#cec5bd]"
-            }`}
-            onChange={(event) => onDraftChange({
-              ...draftSlot,
-              day: event.target.value,
-            })}
-            value={draftSlot.day}
-          >
+        <div className="mt-4">
+          <span className="type-para text-[#1a1410]">{t("delivery.applyToDays", { defaultValue: "Apply to selected delivery days" })}</span>
+          <div className="mt-2 flex flex-wrap gap-2">
             {selectableDays.map((day) => (
-              <option key={day.value} value={day.value}>
+              <span className="rounded-full bg-[#fff1ea] px-2.5 py-1 text-[12px] font-bold text-[#b6542b]" key={day.value}>
                 {t(`delivery.${day.value}`, { defaultValue: day.label })}
-              </option>
+              </span>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
 
         <label className="mt-4 flex flex-col gap-1">
           <span className="type-para text-[#1a1410]">{t("delivery.deliveryTimeSlot", { defaultValue: "Delivery time slot" })}</span>

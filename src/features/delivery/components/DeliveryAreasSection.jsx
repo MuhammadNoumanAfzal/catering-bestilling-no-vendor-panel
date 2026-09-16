@@ -8,9 +8,11 @@ import { useTranslation } from "react-i18next";
 export default function DeliveryAreasSection({
   searchValue,
   searchResults,
+  cityAreas = [],
   selectedAreas = [],
   onSearchChange,
   onAddArea,
+  onAddCityAreas,
   onRemoveArea,
   disabled = false,
   error = "",
@@ -19,6 +21,7 @@ export default function DeliveryAreasSection({
   const { t } = useTranslation();
   const showDropdown = !disabled && searchValue.trim();
   const hasResults = searchResults.length > 0;
+  const cityName = cityAreas[0]?.name || "";
 
   return (
     <DeliverySectionCard
@@ -35,6 +38,15 @@ export default function DeliveryAreasSection({
         value={searchValue}
       />
 
+      {showDropdown && cityAreas.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#f0d7c6] bg-[#fff7f1] px-3 py-3">
+          <div>
+            <p className="text-[13px] font-bold text-[#241c17]">{t("delivery.cityPostalCodes", { city: cityName, count: cityAreas.length, defaultValue: `${cityName} postal codes (${cityAreas.length})` })}</p>
+            <p className="mt-0.5 text-[12px] text-[#7d6d61]">{t("delivery.addAllCityHint", { defaultValue: "Add every available postal code for this city." })}</p>
+          </div>
+          <button className="inline-flex h-9 items-center justify-center rounded-[8px] bg-[#d96e39] px-3 text-[12px] font-bold text-white transition hover:bg-[#c95f2c]" onClick={() => onAddCityAreas?.(cityAreas)} type="button">{t("delivery.addAllCity", { city: cityName, defaultValue: `Add all ${cityName}` })}</button>
+        </div>
+      ) : null}
       {showDropdown ? (
         <div className="mt-3 rounded-[10px] border border-[#e3dad2] bg-[#fffdfb]">
           {isSearching ? (
@@ -43,7 +55,7 @@ export default function DeliveryAreasSection({
             </p>
           ) : hasResults ? (
             <div className="divide-y divide-[#efe7df]">
-              {searchResults.map((area) => (
+              {searchResults.slice(0, 10).map((area) => (
                 <button
                   key={area.id}
                   className="flex w-full items-center justify-between gap-3 px-3 py-3 text-left transition hover:bg-[#faf4ef]"

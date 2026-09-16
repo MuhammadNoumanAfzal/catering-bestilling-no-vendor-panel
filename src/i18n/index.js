@@ -4,11 +4,12 @@ import nb from "./nb";
 import en from "./en";
 
 const LANGUAGE_STORAGE_KEY = "vendor-portal-language";
+const DEFAULT_LANGUAGE = "nb";
 const supportedLanguages = ["nb", "en"];
 
 function resolveInitialLanguage() {
   if (typeof window === "undefined") {
-    return "en";
+    return DEFAULT_LANGUAGE;
   }
 
   const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -16,10 +17,7 @@ function resolveInitialLanguage() {
     return savedLanguage;
   }
 
-  const browserLanguage = window.navigator.language?.toLowerCase() || "";
-  return browserLanguage.startsWith("nb") || browserLanguage.startsWith("no")
-    ? "nb"
-    : "en";
+  return DEFAULT_LANGUAGE;
 }
 
 const initialLanguage = resolveInitialLanguage();
@@ -27,7 +25,7 @@ const initialLanguage = resolveInitialLanguage();
 i18n.use(initReactI18next).init({
   resources: { nb: { translation: nb }, en: { translation: en } },
   lng: initialLanguage,
-  fallbackLng: "en",
+  fallbackLng: DEFAULT_LANGUAGE,
   supportedLngs: supportedLanguages,
   interpolation: { escapeValue: false },
   react: { useSuspense: false },

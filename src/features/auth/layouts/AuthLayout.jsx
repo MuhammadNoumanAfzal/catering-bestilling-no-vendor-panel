@@ -1,5 +1,3 @@
-import AppFooter from "../../../app/components/AppFooter";
-
 export default function AuthLayout({ children }) {
   return (
     <main className="min-h-screen bg-white">
@@ -13,7 +11,7 @@ export default function AuthLayout({ children }) {
             }}
           />
 
-          <div className="relative z-[1] flex min-h-[calc(100vh-90px)] flex-col items-center justify-center gap-[22px] px-4 pb-[118px] pt-8 max-[720px]:min-h-0 max-[720px]:pb-[140px]">
+          <div className="relative z-[1] flex min-h-screen flex-col items-center justify-center gap-[22px] px-4 py-8">
             <img
               className="h-auto w-[clamp(120px,18vw,178px)]"
               src="/logo (2).png"
@@ -21,8 +19,6 @@ export default function AuthLayout({ children }) {
             />
             {children}
           </div>
-
-          <AppFooter overlay />
         </section>
       </div>
     </main>
