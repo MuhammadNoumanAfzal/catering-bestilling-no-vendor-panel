@@ -384,9 +384,9 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#211f1f] text-[#201914]">
-      <div className="min-h-screen w-full overflow-x-clip bg-[#f4f1ee] lg:grid lg:grid-cols-[236px_minmax(0,1fr)] max-[960px]:block">
-      <aside className="relative flex min-h-screen w-[236px] flex-col bg-[linear-gradient(180deg,#cb6432_0%,#c55b2d_100%)] text-white max-[960px]:hidden lg:w-auto">
+    <div className="min-h-dvh overflow-x-hidden bg-[#f4f1ee] text-[#201914]">
+      <div className="min-h-dvh w-full overflow-x-clip bg-[#f4f1ee] lg:grid lg:grid-cols-[236px_minmax(0,1fr)] max-[960px]:block">
+      <aside className="relative flex min-h-dvh w-[236px] flex-col bg-[linear-gradient(180deg,#cb6432_0%,#c55b2d_100%)] text-white max-[960px]:hidden lg:w-auto">
         <div className="relative flex min-h-0 flex-1 flex-col">
           <div className="mx-4 mt-4 rounded-[22px] border border-white/10 bg-white/12 px-4 py-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
             <img className="block h-auto w-32 object-contain" src="/whiteLogo.png" alt="GoCatering" />
