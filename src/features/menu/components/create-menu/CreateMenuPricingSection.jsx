@@ -83,6 +83,7 @@ export default function CreateMenuPricingSection({
         </div>
         <div>
           <Label>{t("menu.minimumGuests", { defaultValue: "Minimum Guests" })}</Label>
+          <p aria-hidden="true" className="invisible mb-1 text-[12px]">&nbsp;</p>
           <TextInput
             disabled={disabled}
             onChange={onMinimumGuestsChange}
