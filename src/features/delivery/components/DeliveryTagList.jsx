@@ -1,8 +1,22 @@
 import i18n from "../../../i18n";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const AREAS_PER_PAGE = 15;
 
 export default function DeliveryTagList({ items, onRemove, disabled = false }) {
   const { t } = useTranslation();
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(items.length / AREAS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = items.length ? (currentPage - 1) * AREAS_PER_PAGE : 0;
+  const pageEnd = Math.min(pageStart + AREAS_PER_PAGE, items.length);
+  const paginatedItems = useMemo(() => items.slice(pageStart, pageEnd), [items, pageEnd, pageStart]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
   if (!items.length) {
     return (
       <div className="mt-4 rounded-[14px] border border-dashed border-[#dfd5cc] bg-[#fffaf6] px-4 py-4 text-center">
@@ -61,7 +75,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {items.map((item) => {
+      {paginatedItems.map((item) => {
         const inactive = isItemInactive(item);
         return (
           <div
@@ -114,6 +128,24 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
         );
       })}
       </div>
+
+      {items.length > AREAS_PER_PAGE ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#eee5de] pt-3">
+          <p className="text-[12px] font-semibold text-[#7d7067]">
+            {t("delivery.selectedAreasRange", {
+              start: pageStart + 1,
+              end: pageEnd,
+              total: items.length,
+              defaultValue: `Showing ${pageStart + 1}-${pageEnd} of ${items.length}`,
+            })}
+          </p>
+          <div className="flex items-center gap-2">
+            <button aria-label={t("delivery.previousPage", { defaultValue: "Previous page" })} className="flex h-8 w-8 items-center justify-center rounded-[7px] border border-[#ded5ce] bg-white text-[#71645b] transition hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-45" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)} type="button"><ChevronLeft size={15} /></button>
+            <span className="min-w-[72px] text-center text-[12px] font-bold text-[#5d5149]">{t("delivery.pageOf", { current: currentPage, total: totalPages, defaultValue: `Page ${currentPage} of ${totalPages}` })}</span>
+            <button aria-label={t("delivery.nextPage", { defaultValue: "Next page" })} className="flex h-8 w-8 items-center justify-center rounded-[7px] border border-[#ded5ce] bg-white text-[#71645b] transition hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-45" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)} type="button"><ChevronRight size={15} /></button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

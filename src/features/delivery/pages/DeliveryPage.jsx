@@ -20,6 +20,7 @@ export default function DeliveryPage() {
     baseFee,
     customSlotDraft,
     cityServiceAreas,
+    editingSlot,
     fieldErrors,
     freeDelivery,
     handleAddServiceArea,
@@ -27,6 +28,7 @@ export default function DeliveryPage() {
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
+    handleOpenEditSlotModal,
     handleRemoveTimeSlot,
     handleRemoveServiceArea,
     loadError,
@@ -149,9 +151,10 @@ export default function DeliveryPage() {
             disabled={isPageDisabled || isDeliveryDisabled}
             errors={fieldErrors}
             onAddCustomSlot={handleOpenAddSlotModal}
+            onAddSlotForAllDays={() => handleOpenAddSlotModal(deliveryDays.map((day) => day.value))}
+            onEditTimeSlot={handleOpenEditSlotModal}
             onRemoveTimeSlot={handleRemoveTimeSlot}
-            onToggleAllDays={() => handleSetAllDays(deliveryDays.map((day) => day.value))}
-            onToggleAllDays={() => handleSetAllDays(deliveryDays.map((day) => day.value))}
+            onToggleAllDays={handleSetAllDays}
             onToggleDay={handleToggleDay}
             timeSlots={timeSlots}
           />
@@ -192,6 +195,7 @@ export default function DeliveryPage() {
           activeDays={activeDays}
           draftSlot={customSlotDraft}
           error={slotDraftError}
+          isEditing={Boolean(editingSlot)}
           onClose={handleCloseAddSlotModal}
           onDraftChange={setCustomSlotDraft}
           onSave={handleSaveCustomSlot}

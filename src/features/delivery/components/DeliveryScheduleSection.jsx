@@ -2,19 +2,14 @@ import i18n from "../../../i18n";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySchedulePicker from "./DeliverySchedulePicker";
 import DeliverySectionCard from "./DeliverySectionCard";
-import { AlertCircle, Clock3, X } from "lucide-react";
+import { AlertCircle, Clock3, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 function isValidQuarterHourTime(value) {
   const match = String(value || "").match(/^(\d{2}):(\d{2})$/);
-
-  if (!match) {
-    return false;
-  }
-
+  if (!match) return false;
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
-
   return hours >= 0 && hours <= 23 && [0, 15, 30, 45].includes(minutes);
 }
 
@@ -25,133 +20,72 @@ export default function DeliveryScheduleSection({
   onToggleDay,
   timeSlots,
   onRemoveTimeSlot,
+  onEditTimeSlot,
   onAddCustomSlot,
+  onAddSlotForAllDays,
   disabled = false,
   errors = {},
 }) {
   const { t } = useTranslation();
-  const dayLabels = days.reduce((accumulator, day) => ({
-    ...accumulator,
-    [typeof day === "string" ? day : day.value]: typeof day === "string" ? day : day.label,
-  }), {});
+  const dayLabels = days.reduce((accumulator, day) => ({ ...accumulator, [typeof day === "string" ? day : day.value]: typeof day === "string" ? day : day.label }), {});
   const hasActiveDays = activeDays.length > 0;
   const hasSlotError = Boolean(errors.deliveryTimeSlots);
+  const dayOrder = new Map(days.map((day, index) => [typeof day === "string" ? day : day.value, index]));
+  const orderedTimeSlots = [...timeSlots].sort((firstSlot, secondSlot) => (
+    (dayOrder.get(firstSlot.day) ?? Number.MAX_SAFE_INTEGER) -
+    (dayOrder.get(secondSlot.day) ?? Number.MAX_SAFE_INTEGER)
+  ));
 
   return (
-    <DeliverySectionCard
-      description={t("delivery.scheduleDescription", { defaultValue: "Choose the exact days and time slots customers can book for delivery." })}
-      disabled={disabled}
-      title={t("delivery.schedule", { defaultValue: "Delivery Schedule" })}
-    >
+    <DeliverySectionCard description={t("delivery.scheduleDescription", { defaultValue: "Choose the exact days and time slots customers can book for delivery." })} disabled={disabled} title={t("delivery.schedule", { defaultValue: "Delivery Schedule" })}>
       <div className="grid grid-cols-[minmax(0,180px)_minmax(0,1fr)] items-start gap-x-6 gap-y-4 max-[760px]:grid-cols-1">
         <div>
           <p className="type-para mb-3 mt-0 text-[#2a221d]">{t("delivery.delivery", { defaultValue: "Delivery" })}</p>
-          <DeliverySchedulePicker
-            activeDays={activeDays}
-            days={days}
-            disabled={disabled}
-            onToggleAllDays={onToggleAllDays}
-            onToggleDay={onToggleDay}
-          />
-          {errors.deliveryDays ? (
-            <p className="type-subpara mt-2 text-[#d25545]">{errors.deliveryDays}</p>
-          ) : null}
+          <DeliverySchedulePicker activeDays={activeDays} days={days} disabled={disabled} onToggleAllDays={onToggleAllDays} onToggleDay={onToggleDay} />
+          {errors.deliveryDays ? <p className="type-subpara mt-2 text-[#d25545]">{errors.deliveryDays}</p> : null}
         </div>
 
         <div className="flex flex-col gap-3">
-          <div
-            className={`rounded-[14px] border p-3 transition ${
-              hasSlotError
-                ? "border-[#f2b5ad] bg-[#fff6f4]"
-                : "border-[#ece3db] bg-[#fcfbfa]"
-            }`}
-          >
-            {timeSlots.length ? (
+          <div className={`rounded-[14px] border p-3 transition ${hasSlotError ? "border-[#f2b5ad] bg-[#fff6f4]" : "border-[#ece3db] bg-[#fcfbfa]"}`}>
+            {orderedTimeSlots.length ? (
               <div className="grid gap-2 sm:grid-cols-2">
-                {timeSlots.map((slot) => {
-                  const isInvalidSlot =
-                    !isValidQuarterHourTime(slot.start) || !isValidQuarterHourTime(slot.end);
-
+                {orderedTimeSlots.map((slot) => {
+                  const isInvalidSlot = !isValidQuarterHourTime(slot.start) || !isValidQuarterHourTime(slot.end);
                   return (
-                    <button
-                      key={`${slot.day}-${slot.start}-${slot.end}`}
-                      className={`group flex min-h-[64px] items-start justify-between gap-3 rounded-[12px] border px-3 py-3 text-left transition ${
-                        isInvalidSlot
-                          ? "border-[#f0b2a4] bg-[#fff4ef] text-[#8e3d24]"
-                          : "border-[#ddd4cc] bg-white text-[#2a221d] hover:border-[#cf6e38] hover:shadow-[0_6px_18px_rgba(42,27,18,0.07)]"
-                      } ${disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
-                      disabled={disabled}
-                      onClick={() => onRemoveTimeSlot(slot)}
-                      type="button"
-                    >
+                    <div key={`${slot.day}-${slot.start}-${slot.end}`} className={`group flex min-h-[64px] items-start justify-between gap-3 rounded-[12px] border px-3 py-3 transition ${isInvalidSlot ? "border-[#f0b2a4] bg-[#fff4ef] text-[#8e3d24]" : "border-[#ddd4cc] bg-white text-[#2a221d] hover:border-[#cf6e38] hover:shadow-[0_6px_18px_rgba(42,27,18,0.07)]"} ${disabled ? "opacity-70" : ""}`}>
                       <span className="flex min-w-0 flex-1 items-start gap-2.5">
-                        <span
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                            isInvalidSlot ? "bg-[#fde2d9] text-[#cf5f38]" : "bg-[#fff1ea] text-[#cf6e38]"
-                          }`}
-                        >
-                          <Clock3 size={15} />
-                        </span>
+                        <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isInvalidSlot ? "bg-[#fde2d9] text-[#cf5f38]" : "bg-[#fff1ea] text-[#cf6e38]"}`}><Clock3 size={15} /></span>
                         <span className="min-w-0">
-                          <span className="block truncate text-[13px] font-extrabold">
-                            {t(`delivery.${slot.day}`, { defaultValue: dayLabels[slot.day] || slot.day.toUpperCase() })}
-                          </span>
-                          <span className="mt-1 block text-[12px] font-semibold text-[#6b5f56]">
-                            {slot.label}
-                          </span>
-                          {isInvalidSlot ? (
-                            <span className="mt-1 block text-[11px] font-bold text-[#cf5f38]"> {i18n.t("delivery.legacySlot")} </span>
-                          ) : null}
+                          <span className="block truncate text-[13px] font-extrabold">{t(`delivery.${slot.day}`, { defaultValue: dayLabels[slot.day] || slot.day.toUpperCase() })}</span>
+                          <span className="mt-1 block text-[12px] font-semibold text-[#6b5f56]">{slot.label}</span>
+                          {isInvalidSlot ? <span className="mt-1 block text-[11px] font-bold text-[#cf5f38]">{i18n.t("delivery.legacySlot")}</span> : null}
                         </span>
                       </span>
-                      <span
-                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
-                          isInvalidSlot
-                            ? "border-[#f3c7bb] bg-white text-[#cf5f38]"
-                            : "border-[#e7ded6] bg-white text-[#7d7067] group-hover:border-[#cf6e38] group-hover:text-[#cf6e38]"
-                        }`}
-                      >
-                        <X size={14} />
+                      <span className="flex shrink-0 gap-1">
+                        <button aria-label={t("delivery.editSlot", { defaultValue: "Edit slot" })} className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-[#e7ded6] bg-white text-[#7d7067] transition hover:border-[#cf6e38] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-60" disabled={disabled} onClick={() => onEditTimeSlot(slot)} type="button"><Pencil size={13} /></button>
+                        <button aria-label={t("delivery.removeSlot", { defaultValue: "Remove slot" })} className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-[#e7ded6] bg-white text-[#7d7067] transition hover:border-[#d25545] hover:text-[#d25545] disabled:cursor-not-allowed disabled:opacity-60" disabled={disabled} onClick={() => onRemoveTimeSlot(slot)} type="button"><Trash2 size={13} /></button>
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
             ) : (
               <div className="rounded-[12px] border border-dashed border-[#ddd4cc] bg-white px-4 py-5 text-center">
-                <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">
-                  {t("delivery.noSlots", { defaultValue: "No delivery slots added yet." })}
-                </p>
-                <p className="mt-1 text-[12px] text-[#9a8b7f]"> {i18n.t("delivery.addSlotHelp")} </p>
+                <p className="m-0 text-[13px] font-semibold text-[#7a6d63]">{t("delivery.noSlots", { defaultValue: "No delivery slots added yet." })}</p>
+                <p className="mt-1 text-[12px] text-[#9a8b7f]">{i18n.t("delivery.addSlotHelp")}</p>
               </div>
             )}
           </div>
 
-          <button
-            className={`type-subpara w-fit rounded-[6px] border border-[#ddd6ce] bg-white px-4 py-[8px] text-[#9d9187] transition ${
-              disabled || !hasActiveDays
-                ? "cursor-not-allowed bg-[#f6f3ef] text-[#b0a49a]"
-                : "cursor-pointer hover:border-[#c9bfb7] hover:text-[#7c7067]"
-            }`}
-            disabled={disabled || !hasActiveDays}
-            onClick={onAddCustomSlot}
-            type="button"
-          >
-            + {t("delivery.addSlot", { defaultValue: "Add custom slot" })}
-          </button>
-          {!hasActiveDays ? (
-            <p className="type-subpara m-0 text-[#8c5a48]"> {i18n.t("delivery.selectDayHelp")} </p>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <button className={`type-subpara w-fit rounded-[6px] border border-[#ddd6ce] bg-white px-4 py-[8px] text-[#9d9187] transition ${disabled || !hasActiveDays ? "cursor-not-allowed bg-[#f6f3ef] text-[#b0a49a]" : "cursor-pointer hover:border-[#c9bfb7] hover:text-[#7c7067]"}`} disabled={disabled || !hasActiveDays} onClick={onAddCustomSlot} type="button">+ {t("delivery.addSlotByDay", { defaultValue: "Add slot by day" })}</button>
+            <button className="type-subpara w-fit rounded-[6px] border border-[#cf6e38] bg-[#fff8f4] px-4 py-[8px] text-[#b9562e] transition hover:bg-[#fff1ea] disabled:cursor-not-allowed disabled:opacity-50" disabled={disabled} onClick={onAddSlotForAllDays} type="button">+ {t("delivery.addSlotAllDays", { defaultValue: "Add slot for all days" })}</button>
+          </div>
+          {!hasActiveDays ? <p className="type-subpara m-0 text-[#8c5a48]">{i18n.t("delivery.selectDayHelp")}</p> : null}
         </div>
       </div>
-      {errors.deliveryTimeSlots ? (
-        <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-[#f1beb7] bg-[#fff5f3] px-3 py-2.5 text-[#b44938]">
-          <AlertCircle className="mt-0.5 shrink-0" size={16} />
-          <p className="m-0 text-[12px] font-semibold leading-[1.5]">{errors.deliveryTimeSlots}</p>
-        </div>
-      ) : null}
-
-      <DeliveryInfoNote> {i18n.t("delivery.scheduleHelp")} </DeliveryInfoNote>
+      {errors.deliveryTimeSlots ? <div className="mt-3 flex items-start gap-2 rounded-[10px] border border-[#f1beb7] bg-[#fff5f3] px-3 py-2.5 text-[#b44938]"><AlertCircle className="mt-0.5 shrink-0" size={16} /><p className="m-0 text-[12px] font-semibold leading-[1.5]">{errors.deliveryTimeSlots}</p></div> : null}
+      <DeliveryInfoNote>{i18n.t("delivery.scheduleHelp")}</DeliveryInfoNote>
     </DeliverySectionCard>
   );
 }
