@@ -72,6 +72,7 @@ export default function CreateMenuPricingSection({
       <div className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
         <div>
           <Label>{t("menu.basePrice", { defaultValue: "Base Price" })}</Label>
+          <p className="mb-1 text-[12px] text-[#7c7067]">{t("menu.priceIncludesVat", { defaultValue: "The entered price includes VAT." })}</p>
           <TextInput
             disabled={disabled}
             onChange={onBasePriceChange}

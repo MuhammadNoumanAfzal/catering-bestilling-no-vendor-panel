@@ -10,48 +10,56 @@ const TIME_OPTIONS = Array.from({ length: 96 }, (_, index) => {
 });
 
 export default function DeliveryAddSlotModal({
-  activeDays = [],
   draftSlot,
   onClose,
   onDraftChange,
   onSave,
   error = "",
+  isEditing = false,
 }) {
   const { t } = useTranslation();
-  const selectableDays = deliveryDays.filter((day) => activeDays.includes(day.value));
-  const isReadyToSave = selectableDays.length > 0 && draftSlot.start && draftSlot.end;
+  const selectedDays = Array.isArray(draftSlot.days) ? draftSlot.days : [];
+  const isReadyToSave = selectedDays.length > 0 && draftSlot.start && draftSlot.end;
+
+  function toggleDay(dayValue) {
+    if (isEditing) return;
+
+    const nextDays = selectedDays.includes(dayValue)
+      ? selectedDays.filter((day) => day !== dayValue)
+      : [...selectedDays, dayValue];
+    onDraftChange({ ...draftSlot, days: nextDays, day: nextDays[0] || draftSlot.day });
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 py-6">
-      <div
-        aria-modal="true"
-        className="w-full max-w-[460px] rounded-[14px] bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,0.3)]"
-        role="dialog"
-      >
+      <div aria-modal="true" className="w-full max-w-[460px] rounded-[14px] bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,0.3)]" role="dialog">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="type-subpara m-0 text-[#d86f39]">{t("delivery.customSlot", { defaultValue: "Custom Time Slot" })}</p>
-            <h2 className="type-h4 mt-1 text-[#1c1510]">{t("delivery.addDeliverySlot", { defaultValue: "Add delivery slot" })}</h2>
+            <h2 className="type-h4 mt-1 text-[#1c1510]">{isEditing ? t("delivery.editDeliverySlot", { defaultValue: "Edit delivery slot" }) : t("delivery.addDeliverySlot", { defaultValue: "Add delivery slot" })}</h2>
           </div>
-          <button
-            className="cursor-pointer text-[#473d36]"
-            onClick={onClose}
-            type="button"
-          >
-            <X size={16} />
-          </button>
+          <button aria-label={t("delivery.close", { defaultValue: "Close" })} className="cursor-pointer text-[#473d36]" onClick={onClose} type="button"><X size={16} /></button>
         </div>
 
-        <p className="type-para mt-3 text-[#6f6258]"> {i18n.t("delivery.slotRangeHelp")} </p>
+        <p className="type-para mt-3 text-[#6f6258]">{i18n.t("delivery.slotRangeHelp")}</p>
 
         <div className="mt-4">
-          <span className="type-para text-[#1a1410]">{t("delivery.applyToDays", { defaultValue: "Apply to selected delivery days" })}</span>
+          <span className="type-para text-[#1a1410]">{isEditing ? t("delivery.deliveryDay", { defaultValue: "Delivery day" }) : t("delivery.applyToDays", { defaultValue: "Apply to days" })}</span>
           <div className="mt-2 flex flex-wrap gap-2">
-            {selectableDays.map((day) => (
-              <span className="rounded-full bg-[#fff1ea] px-2.5 py-1 text-[12px] font-bold text-[#b6542b]" key={day.value}>
-                {t(`delivery.${day.value}`, { defaultValue: day.label })}
-              </span>
-            ))}
+            {deliveryDays.map((day) => {
+              const isSelected = selectedDays.includes(day.value);
+              return (
+                <button
+                  className={`rounded-full border px-2.5 py-1 text-[12px] font-bold transition ${isSelected ? "border-[#ef8b5d] bg-[#fff1ea] text-[#b6542b]" : "border-[#ddd4cc] bg-white text-[#7a6d63]"} ${isEditing ? "cursor-default" : "cursor-pointer"}`}
+                  disabled={isEditing}
+                  key={day.value}
+                  onClick={() => toggleDay(day.value)}
+                  type="button"
+                >
+                  {t(`delivery.${day.value}`, { defaultValue: day.label })}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -60,66 +68,25 @@ export default function DeliveryAddSlotModal({
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
               <span className="type-subpara text-[#6f6258]">{t("delivery.startTime", { defaultValue: "Start time" })}</span>
-              <select
-                className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
-                  error ? "border-[#d25545]" : "border-[#cec5bd]"
-                }`}
-                onChange={(event) => onDraftChange({
-                  ...draftSlot,
-                  start: event.target.value,
-                })}
-                value={draftSlot.start}
-              >
+              <select className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${error ? "border-[#d25545]" : "border-[#cec5bd]"}`} onChange={(event) => onDraftChange({ ...draftSlot, start: event.target.value })} value={draftSlot.start}>
                 <option value="">{t("delivery.selectTime", { defaultValue: "Select time" })}</option>
-                {TIME_OPTIONS.map((timeOption) => (
-                  <option key={timeOption} value={timeOption}>
-                    {timeOption}
-                  </option>
-                ))}
+                {TIME_OPTIONS.map((timeOption) => <option key={timeOption} value={timeOption}>{timeOption}</option>)}
               </select>
             </label>
             <label className="flex flex-col gap-1">
               <span className="type-subpara text-[#6f6258]">{t("delivery.endTime", { defaultValue: "End time" })}</span>
-              <select
-                className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${
-                  error ? "border-[#d25545]" : "border-[#cec5bd]"
-                }`}
-                onChange={(event) => onDraftChange({
-                  ...draftSlot,
-                  end: event.target.value,
-                })}
-                value={draftSlot.end}
-              >
+              <select className={`type-para h-[42px] rounded-[8px] border bg-white px-3 text-[#201712] outline-none transition focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] ${error ? "border-[#d25545]" : "border-[#cec5bd]"}`} onChange={(event) => onDraftChange({ ...draftSlot, end: event.target.value })} value={draftSlot.end}>
                 <option value="">{t("delivery.selectTime", { defaultValue: "Select time" })}</option>
-                {TIME_OPTIONS.map((timeOption) => (
-                  <option key={timeOption} value={timeOption}>
-                    {timeOption}
-                  </option>
-                ))}
+                {TIME_OPTIONS.map((timeOption) => <option key={timeOption} value={timeOption}>{timeOption}</option>)}
               </select>
             </label>
           </div>
-          {error ? (
-            <span className="type-subpara text-[#d25545]">{error}</span>
-          ) : null}
+          {error ? <span className="type-subpara text-[#d25545]">{error}</span> : null}
         </label>
 
         <div className="mt-4 flex items-center justify-end gap-2">
-          <button
-            className="type-subpara cursor-pointer rounded-[8px] border border-[#cfc7bf] bg-white px-4 py-[9px] text-[#241c17]"
-            onClick={onClose}
-            type="button"
-          >
-            {t("delivery.cancel", { defaultValue: "Cancel" })}
-          </button>
-          <button
-            className="type-subpara cursor-pointer rounded-[8px] bg-[#de6f39] px-4 py-[9px] text-white disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!isReadyToSave}
-            onClick={onSave}
-            type="button"
-          >
-            {t("delivery.addSlot", { defaultValue: "Add Slot" })}
-          </button>
+          <button className="type-subpara cursor-pointer rounded-[8px] border border-[#cfc7bf] bg-white px-4 py-[9px] text-[#241c17]" onClick={onClose} type="button">{t("delivery.cancel", { defaultValue: "Cancel" })}</button>
+          <button className="type-subpara cursor-pointer rounded-[8px] bg-[#de6f39] px-4 py-[9px] text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={!isReadyToSave} onClick={onSave} type="button">{isEditing ? t("delivery.updateSlot", { defaultValue: "Update slot" }) : t("delivery.addSlot", { defaultValue: "Add slot" })}</button>
         </div>
       </div>
     </div>

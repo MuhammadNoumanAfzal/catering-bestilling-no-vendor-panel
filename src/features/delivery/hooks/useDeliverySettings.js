@@ -19,7 +19,7 @@ import {
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
 
-const DEFAULT_CUSTOM_SLOT_DRAFT = { day: "mo", start: "18:00", end: "21:00" };
+const DEFAULT_CUSTOM_SLOT_DRAFT = { day: "mo", days: [], start: "18:00", end: "21:00" };
 const defaultValidationState = {
   isValid: true,
   issues: [],
@@ -59,6 +59,7 @@ export default function useDeliverySettings() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
   const [customSlotDraft, setCustomSlotDraft] = useState(DEFAULT_CUSTOM_SLOT_DRAFT);
+  const [editingSlot, setEditingSlot] = useState(null);
   const [slotDraftError, setSlotDraftError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [serviceAreaSearch, setServiceAreaSearch] = useState("");
@@ -73,6 +74,7 @@ export default function useDeliverySettings() {
     return {
       ...DEFAULT_CUSTOM_SLOT_DRAFT,
       day: activeDays?.[0] || DEFAULT_CUSTOM_SLOT_DRAFT.day,
+      days: [...(activeDays || [])],
     };
   }
 
@@ -428,18 +430,39 @@ export default function useDeliverySettings() {
     }));
   }
 
-  function handleOpenAddSlotModal() {
-    resetSlotDraftState();
+  function handleOpenAddSlotModal(days = formState.activeDays) {
+    const selectedDays = Array.isArray(days) ? [...new Set(days)] : [];
+    setEditingSlot(null);
+    setCustomSlotDraft({
+      ...getDefaultSlotDraft(selectedDays),
+      days: selectedDays,
+    });
+    setSlotDraftError("");
+    setIsAddSlotModalOpen(true);
+  }
+
+  function handleOpenEditSlotModal(slot) {
+    setEditingSlot(slot);
+    setCustomSlotDraft({
+      day: slot.day,
+      days: [slot.day],
+      start: slot.start,
+      end: slot.end,
+    });
+    setSlotDraftError("");
     setIsAddSlotModalOpen(true);
   }
 
   function handleCloseAddSlotModal() {
     setIsAddSlotModalOpen(false);
+    setEditingSlot(null);
     resetSlotDraftState();
   }
 
   function handleSaveCustomSlot() {
-    const selectedDays = formState.activeDays || [];
+    const selectedDays = editingSlot
+      ? [editingSlot.day]
+      : (customSlotDraft.days || []);
 
     if (!selectedDays.length) {
       setSlotDraftError(i18n.t("delivery.dayRequired"));
@@ -462,13 +485,24 @@ export default function useDeliverySettings() {
       end: customSlotDraft.end,
     }));
 
-    setFormState((current) => ({
-      ...current,
-      timeSlots: [
-        ...current.timeSlots.filter((slot) => !selectedDays.includes(slot.day)),
-        ...nextSlots,
-      ],
-    }));
+    setFormState((current) => {
+      const remainingSlots = current.timeSlots.filter((slot) => !editingSlot || (
+        slot.day !== editingSlot.day ||
+        slot.start !== editingSlot.start ||
+        slot.end !== editingSlot.end
+      ));
+      const uniqueSlots = nextSlots.filter((nextSlot) => !remainingSlots.some((slot) => (
+        slot.day === nextSlot.day &&
+        slot.start === nextSlot.start &&
+        slot.end === nextSlot.end
+      )));
+
+      return {
+        ...current,
+        activeDays: [...new Set([...current.activeDays, ...selectedDays])],
+        timeSlots: [...remainingSlots, ...uniqueSlots],
+      };
+    });
     handleCloseAddSlotModal();
   }
   async function handleCancelChanges() {
@@ -542,6 +576,7 @@ export default function useDeliverySettings() {
     handleCancelChanges,
     handleCloseAddSlotModal,
     handleOpenAddSlotModal,
+    handleOpenEditSlotModal,
     handleRemoveTimeSlot,
     handleRemoveServiceArea,
     handleSaveChanges,
@@ -553,6 +588,7 @@ export default function useDeliverySettings() {
     hasUnsavedChanges:
       JSON.stringify(currentComparable) !== JSON.stringify(savedComparable),
     isAddSlotModalOpen,
+    editingSlot,
     loadError,
     isDeliveryDisabled,
     isLoading,

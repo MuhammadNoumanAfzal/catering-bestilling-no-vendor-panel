@@ -461,6 +461,7 @@ export default {
   "pricingDescription": "Set how you want to charge for this menu.",
   "pricingCapacity": "Pricing & Capacity",
   "basePrice": "Base Price",
+  "priceIncludesVat": "The entered price includes VAT.",
   "minimumGuests": "Minimum Guests",
   "importTitle": "Import from Previous Menu",
   "closeImport": "Close import modal",

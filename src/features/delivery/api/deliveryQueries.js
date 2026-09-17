@@ -48,12 +48,21 @@ export const GET_VENDOR_DELIVERY_SETTINGS_QUERY = `
 `;
 
 export const SEARCH_AVAILABLE_AREAS_QUERY = `
-  query SearchAvailableAreas($term: String, $first: Int) {
-    vendorAvailableDeliveryAreas(term: $term, first: $first) {
-      id
-      name
-      postCode
-      isActive
+  query SearchAvailableAreas($term: String, $first: Int, $after: String) {
+    vendorAvailableDeliveryAreas(term: $term, first: $first, after: $after) {
+      edges {
+        cursor
+        node {
+          id
+          name
+          postCode
+          isActive
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
     validAreasSearch(term: $term, first: $first) {
       id

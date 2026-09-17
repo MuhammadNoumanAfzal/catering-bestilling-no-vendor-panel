@@ -12,17 +12,37 @@ export function getVendorDeliverySettings() {
   return executeProtectedGraphqlRequest(GET_VENDOR_DELIVERY_SETTINGS_QUERY, {});
 }
 
-export async function searchAvailableAreas({ term, first = 10 }) {
-  const result = await executeProtectedGraphqlRequest(
-    SEARCH_AVAILABLE_AREAS_QUERY,
-    { term: term || null, first },
-  );
+export async function searchAvailableAreas({ term, first = 200 }) {
+  const collectedAreas = [];
+  let after = null;
+  let hasNextPage = true;
+  let requestCount = 0;
 
-  if (Array.isArray(result?.vendorAvailableDeliveryAreas)) {
-    return result.vendorAvailableDeliveryAreas;
+  while (hasNextPage && requestCount < 50) {
+    const result = await executeProtectedGraphqlRequest(
+      SEARCH_AVAILABLE_AREAS_QUERY,
+      { term: term || null, first, after },
+    );
+    const connection = result?.vendorAvailableDeliveryAreas;
+
+    if (!connection?.edges) {
+      return Array.isArray(result?.validAreasSearch) ? result.validAreasSearch : [];
+    }
+
+    collectedAreas.push(
+      ...connection.edges.map((edge) => edge?.node).filter(Boolean),
+    );
+
+    hasNextPage = Boolean(connection.pageInfo?.hasNextPage);
+    after = connection.pageInfo?.endCursor || null;
+    requestCount += 1;
+
+    if (hasNextPage && !after) {
+      break;
+    }
   }
 
-  return Array.isArray(result?.validAreasSearch) ? result.validAreasSearch : [];
+  return collectedAreas;
 }
 
 export async function updateVendorDeliverySettings(input) {
