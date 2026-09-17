@@ -52,7 +52,9 @@ export default function ReviewsFiltersBar({
         <div className="flex min-w-0 items-center gap-2 max-[760px]:w-full max-[760px]:flex-col max-[760px]:items-stretch">
           <div className="relative min-w-0 max-[760px]:w-full">
             <button
-              className="flex min-w-[108px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-full border border-[#d7cfc7] bg-white px-4 py-[7px] text-[12px] font-semibold text-[#231b16] max-[760px]:w-full max-[760px]:max-w-none"
+              aria-expanded={isDateMenuOpen}
+              aria-haspopup="menu"
+              className="flex min-w-[150px] max-w-[320px] cursor-pointer items-center justify-between gap-2 rounded-[8px] border border-[#d7cfc7] bg-white px-3 py-[7px] text-[12px] font-semibold text-[#231b16] transition hover:border-[#d96e39] max-[760px]:w-full max-[760px]:max-w-none"
               onClick={onToggleDateMenu}
               type="button"
             >
@@ -75,7 +77,7 @@ export default function ReviewsFiltersBar({
             </button>
 
             {isDateMenuOpen ? (
-              <div className="absolute right-0 top-[calc(100%+10px)] z-20 w-[320px] max-w-[calc(100vw-40px)] rounded-[20px] border border-[#eadcd1] bg-white p-3 shadow-[0_18px_40px_rgba(0,0,0,0.14)] max-[760px]:left-0 max-[760px]:right-auto max-[760px]:w-full max-[760px]:max-w-none">
+              <div className={`absolute right-0 top-full z-20 mt-2 max-w-[calc(100vw-40px)] rounded-[10px] border border-[#eadcd1] bg-white p-1.5 shadow-[0_10px_24px_rgba(53,34,20,0.14)] ${isCustomDateOpen ? "w-[320px]" : "w-[224px]"} max-[760px]:left-0 max-[760px]:right-auto max-[760px]:w-full max-[760px]:max-w-none`}>
                 <div className="space-y-1">
                   {dateOptions.map((option) => {
                     const isActive = option.id === "custom" && isCustomDateOpen;
@@ -83,7 +85,7 @@ export default function ReviewsFiltersBar({
                     return (
                       <button
                         key={option.id}
-                        className={`flex w-full cursor-pointer items-center justify-between rounded-[10px] px-3 py-2.5 text-left text-[12px] font-medium transition ${
+                        className={`flex w-full cursor-pointer items-center justify-between rounded-[7px] px-3 py-2 text-left text-[12px] font-medium transition ${
                           isActive
                             ? "border border-[#1f1814] bg-[#fff3ec] text-[#d96e39]"
                             : "border border-transparent text-[#3b2f29] hover:bg-[#fff1ea] hover:text-[#d96e39]"
@@ -103,7 +105,7 @@ export default function ReviewsFiltersBar({
                 </div>
 
                 {isCustomDateOpen ? (
-                  <div className="mt-3 rounded-[18px] border border-[#f0dfd3] bg-[#fff8f4] p-4">
+                  <div className="mt-2 rounded-[8px] border border-[#f0dfd3] bg-[#fff8f4] p-3">
                     <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#d58a61]">
                       {t("reviews.customRange", { defaultValue: "Custom Range" })}
                     </p>
