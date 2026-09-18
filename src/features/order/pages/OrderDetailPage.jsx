@@ -15,7 +15,7 @@ import { printVendorOrder } from "../utils/printOrder";
 import { getVendorAddOns } from "../../menu/api/menuApi";
 import {
   approveOrderModificationRequest,
-  getVendorOrderDetail,
+  getVendorOrderDetailWithResolvedId,
   getVendorOrderModificationRequests,
   rejectOrderModificationRequest,
   updateVendorOrderStatus,
@@ -203,6 +203,25 @@ export default function OrderDetailPage() {
   const [modificationRequests, setModificationRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isResolvingRequest, setIsResolvingRequest] = useState(false);
+  const [resolvedOrderId, setResolvedOrderId] = useState("");
+
+  async function loadResolvedOrderData() {
+    const detailResolution = await getVendorOrderDetailWithResolvedId(decodedOrderId);
+    const canonicalOrderId = detailResolution.orderId || decodedOrderId;
+    const [requestResults, addOnCatalogResult] = await Promise.all([
+      getVendorOrderModificationRequests(canonicalOrderId),
+      getVendorAddOns().catch(() => null),
+    ]);
+
+    return {
+      canonicalOrderId,
+      detail: enrichOrderAddOns(
+        mapVendorOrderDetail(detailResolution.result, canonicalOrderId),
+        addOnCatalogResult,
+      ),
+      modificationRequests: Array.isArray(requestResults) ? requestResults : [],
+    };
+  }
 
   async function refreshOrderDetail(options = {}) {
     const { silent = false } = options;
@@ -212,14 +231,10 @@ export default function OrderDetailPage() {
     }
 
     try {
-      const [detailResult, requestResults, addOnCatalogResult] = await Promise.all([
-        getVendorOrderDetail(decodedOrderId),
-        getVendorOrderModificationRequests(decodedOrderId),
-        getVendorAddOns().catch(() => null),
-      ]);
-
-      setOrderDetail(enrichOrderAddOns(mapVendorOrderDetail(detailResult, decodedOrderId), addOnCatalogResult));
-      setModificationRequests(Array.isArray(requestResults) ? requestResults : []);
+      const resolvedData = await loadResolvedOrderData();
+      setResolvedOrderId(resolvedData.canonicalOrderId);
+      setOrderDetail(resolvedData.detail);
+      setModificationRequests(resolvedData.modificationRequests);
     } finally {
       if (!silent) {
         setIsLoading(false);
@@ -234,17 +249,14 @@ export default function OrderDetailPage() {
       setIsLoading(true);
 
       try {
-        const [detailResult, requestResults, addOnCatalogResult] = await Promise.all([
-          getVendorOrderDetail(decodedOrderId),
-          getVendorOrderModificationRequests(decodedOrderId),
-          getVendorAddOns().catch(() => null),
-        ]);
+        const resolvedData = await loadResolvedOrderData();
         if (isCancelled) {
           return;
         }
 
-        setOrderDetail(enrichOrderAddOns(mapVendorOrderDetail(detailResult, decodedOrderId), addOnCatalogResult));
-        setModificationRequests(Array.isArray(requestResults) ? requestResults : []);
+        setResolvedOrderId(resolvedData.canonicalOrderId);
+        setOrderDetail(resolvedData.detail);
+        setModificationRequests(resolvedData.modificationRequests);
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
@@ -289,7 +301,7 @@ export default function OrderDetailPage() {
 
   async function updateOrderStatus(nextStatus, message) {
     const payload = await updateVendorOrderStatus({
-      id: decodedOrderId,
+      id: orderDetail?.rawId || resolvedOrderId || decodedOrderId,
       status: getStatusMutationValue(nextStatus),
       note: "",
     });
@@ -299,7 +311,7 @@ export default function OrderDetailPage() {
     const normalizedUpdatedStatus = normalizeBackendStatus(updatedBackendStatus);
 
     if (normalizedUpdatedStatus === "Delivered" || normalizedUpdatedStatus === "Canceled") {
-      clearPendingAdjustment(decodedOrderId);
+      clearPendingAdjustment(orderDetail?.rawId || resolvedOrderId || decodedOrderId);
     }
 
     setOrderDetail((current) => {
@@ -384,7 +396,7 @@ export default function OrderDetailPage() {
       return;
     }
 
-    navigate(`/orders/${encodeURIComponent(decodedOrderId)}/adjust`);
+    navigate(`/orders/${encodeURIComponent(orderDetail?.rawId || resolvedOrderId || decodedOrderId)}/adjust`);
   }
 
   async function handleApproveModificationRequest() {

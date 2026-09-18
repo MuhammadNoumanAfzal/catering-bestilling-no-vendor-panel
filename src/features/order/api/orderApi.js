@@ -192,6 +192,42 @@ export async function getVendorOrderDetail(id) {
   return executeProtectedGraphqlRequest(GET_VENDOR_ORDER_DETAIL_QUERY, variables);
 }
 
+function getVendorOrderNode(result) {
+  return result?.vendorOrder || result?.order || null;
+}
+
+export async function getVendorOrderDetailWithResolvedId(reference) {
+  const requestedId = String(reference || "").trim();
+  const directResult = await getVendorOrderDetail(requestedId);
+  const directOrder = getVendorOrderNode(directResult);
+
+  if (directOrder?.id) {
+    return { result: directResult, orderId: String(directOrder.id) };
+  }
+
+  if (!requestedId) {
+    return { result: directResult, orderId: requestedId };
+  }
+
+  const listResult = await getAllVendorOrders({ search: requestedId });
+  const candidates = Array.isArray(listResult?.orders?.edges)
+    ? listResult.orders.edges.map((edge) => edge?.node).filter(Boolean)
+    : [];
+  const normalizedReference = requestedId.toLowerCase();
+  const matchedOrder = candidates.find((order) =>
+    [order?.id, order?.invoiceNumber, order?.orderNumber]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase() === normalizedReference),
+  );
+
+  if (!matchedOrder?.id) {
+    return { result: directResult, orderId: requestedId };
+  }
+
+  const resolvedResult = await getVendorOrderDetail(String(matchedOrder.id));
+  return { result: resolvedResult, orderId: String(matchedOrder.id) };
+}
+
 export async function getVendorOrderModificationRequests(orderId) {
   const result = await executeProtectedGraphqlRequest(
     GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY,
