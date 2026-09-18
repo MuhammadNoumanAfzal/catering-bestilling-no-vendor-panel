@@ -120,7 +120,9 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
             selectedOptions: item?.selectedOptions || {},
             selectedAddons: Array.isArray(item?.selectedAddons) ? item.selectedAddons : [],
             specialInstructions: item?.specialInstructions || "",
-            menuItems: Array.isArray(item?.product?.menuItems) ? item.product.menuItems : [],
+            menuItems: Array.isArray(item?.product?.menuItems)
+              ? item.product.menuItems
+              : (item?.product?.menuItems?.edges || []).map((e) => e?.node).filter(Boolean),
           }))
         : carts.map((cart, index) => {
             const item = cart?.item || {};

@@ -126,7 +126,9 @@ function buildRemovableItems(orderDetail) {
         totalPrice: parseCurrencyValue(item?.lineTotal ?? item?.lineSubtotal ?? item?.unitPrice),
         image: product?.coverImage?.fileUrl || "",
         description: product?.description || item?.description || addonsLabel,
-        menuItems: Array.isArray(product?.menuItems) ? product.menuItems : [],
+        menuItems: Array.isArray(product?.menuItems)
+          ? product.menuItems
+          : (product?.menuItems?.edges || []).map((e) => e?.node).filter(Boolean),
       };
     });
   }

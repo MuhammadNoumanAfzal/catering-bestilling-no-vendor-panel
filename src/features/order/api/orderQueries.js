@@ -312,17 +312,17 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
             fileUrl
           }
           menuItems {
-            id
-            title
-            description
-            coverImage {
-              fileUrl
-              fileId
-            }
-            allergens {
-              id
-              name
-              slug
+            edges {
+              node {
+                id
+                title
+                description
+                allergens {
+                  id
+                  name
+                  slug
+                }
+              }
             }
           }
         }
@@ -445,14 +445,12 @@ export const CREATE_VENDOR_ORDER_ADJUSTMENT_MUTATION = `
             id
             title
             description
-            coverImage { fileUrl }
           }
           replacementMenu { id name }
           replacementMenuItem {
             id
             title
             description
-            coverImage { fileUrl }
           }
         }
       }
@@ -469,9 +467,6 @@ export const SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY = `
           name
           description
           priceWithTax
-          coverImage {
-            fileUrl
-          }
         }
       }
     }
