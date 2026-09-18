@@ -72,7 +72,10 @@ export function printVendorOrder(order) {
     .map((item) => {
       const title = item?.productName || item?.name || i18n.t("orders.print.item");
       const description = item?.description || item?.product?.description || "";
-      const menuItems = Array.isArray(item?.product?.menuItems) ? item.product.menuItems : [];
+      const rawMenuItems = item?.product?.menuItems;
+      const menuItems = Array.isArray(rawMenuItems)
+        ? rawMenuItems
+        : (rawMenuItems?.edges || []).map((e) => e?.node).filter(Boolean);
       const itemAllergens = Array.isArray(item?.allergens)
         ? item.allergens.map((allergen) => allergen?.name || allergen?.slug || allergen).filter(Boolean)
         : [];

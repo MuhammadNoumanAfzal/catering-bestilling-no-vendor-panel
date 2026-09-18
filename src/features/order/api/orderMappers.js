@@ -296,9 +296,13 @@ function buildOrderItems(items = [], carts = []) {
     carts.forEach((cart) => {
       const item = cart?.item || {};
       const itemTitle = firstNonEmpty(item.title, item.name);
+      const rawMenuItems = item.menuItems || item.product?.menuItems;
+      const menuItemsList = Array.isArray(rawMenuItems)
+        ? rawMenuItems
+        : (rawMenuItems?.edges || []).map((e) => e?.node).filter(Boolean);
 
-      if (Array.isArray(item.menuItems) && item.menuItems.length > 0) {
-        item.menuItems.forEach((mi) => {
+      if (menuItemsList.length > 0) {
+        menuItemsList.forEach((mi) => {
           const title = mi.title || mi.name;
           if (title) {
             includedItems.push(title);
