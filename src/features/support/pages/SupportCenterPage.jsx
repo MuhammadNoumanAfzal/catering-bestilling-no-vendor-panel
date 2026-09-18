@@ -18,10 +18,10 @@ export default function SupportCenterPage() {
         </div>
 
         <Link
-          className="inline-flex h-[42px] items-center justify-center rounded-[10px] border border-[#dfd3c8] bg-white px-4 text-[14px] font-bold text-[#2a211b] no-underline transition hover:bg-[#faf6f2] hover:text-[#cf6e38]"
+          className="inline-flex h-[42px] items-center justify-center gap-2 rounded-[10px] border border-[#cf6e38] bg-[#cf6e38] px-5 text-[14px] font-bold text-white no-underline shadow-sm transition hover:bg-[#b85d2b] hover:border-[#b85d2b] active:scale-[0.98]"
           to="/support/responses"
         >
-          {t("support.responses", { defaultValue: "View Responses" })}
+          Vis innboks
         </Link>
       </header>
 
