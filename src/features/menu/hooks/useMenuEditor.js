@@ -53,10 +53,10 @@ const MENU_EDITOR_DRAFT_STORAGE_KEY = "vendor-menu-editor-draft";
 function normalizeMenuItemsForEditor(menuItems = []) {
   return menuItems.length
     ? menuItems.map((item, index) => ({
-        ...item,
-        isSaved: item.isSaved ?? Boolean(item.title?.trim() || item.description?.trim() || item.image),
-        isExpanded: item.isExpanded ?? index === 0,
-      }))
+      ...item,
+      isSaved: item.isSaved ?? Boolean(item.title?.trim() || item.description?.trim() || item.image),
+      isExpanded: item.isExpanded ?? index === 0,
+    }))
     : [createEmptyMenuItem()];
 }
 
@@ -236,14 +236,14 @@ export function useMenuEditor() {
 
         setFormState((current) => {
           const baseState = {
-          ...current,
-          menuItems: normalizeMenuItemsForEditor(current.menuItems),
-          productType:
-            current.productType ||
-            nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
-            nextProductTypeOptions[0]?.value ||
-            "",
-          pricingMode: current.pricingMode || nextPricingModes[0]?.value || "",
+            ...current,
+            menuItems: normalizeMenuItemsForEditor(current.menuItems),
+            productType:
+              current.productType ||
+              nextProductTypeOptions.find((option) => option.value === "menu")?.value ||
+              nextProductTypeOptions[0]?.value ||
+              "",
+            pricingMode: current.pricingMode || nextPricingModes[0]?.value || "",
           };
 
           if (!storedDraft?.formState) {
@@ -364,10 +364,10 @@ export function useMenuEditor() {
       menuItems: current.menuItems.map((item) =>
         item.id === id
           ? {
-              ...item,
-              [field]: value,
-              isSaved: false,
-            }
+            ...item,
+            [field]: value,
+            isSaved: false,
+          }
           : item,
       ),
     }));
@@ -424,10 +424,10 @@ export function useMenuEditor() {
       menuItems: current.menuItems.map((item) =>
         item.id === id
           ? {
-              ...item,
-              isSaved: true,
-              isExpanded: false,
-            }
+            ...item,
+            isSaved: true,
+            isExpanded: false,
+          }
           : item,
       ),
     }));
@@ -508,12 +508,12 @@ export function useMenuEditor() {
         menuItems: isSingleEmpty
           ? normalizedItems
           : [
-              ...current.menuItems.map((item) => ({
-                ...item,
-                isExpanded: false,
-              })),
-              ...normalizedItems,
-            ],
+            ...current.menuItems.map((item) => ({
+              ...item,
+              isExpanded: false,
+            })),
+            ...normalizedItems,
+          ],
       };
     });
   }
@@ -525,7 +525,7 @@ export function useMenuEditor() {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      await showVendorErrorAlert(i18n.t("vendorMessages.image2MB"));
+      await showVendorErrorAlert(i18n.t("vendorMessages.image5MB"));
       return;
     }
 
