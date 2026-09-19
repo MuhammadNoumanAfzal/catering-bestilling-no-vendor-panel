@@ -99,7 +99,7 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
 
     if (nextFile.size > MAX_ATTACHMENT_SIZE_BYTES) {
       setAttachment(null);
-      setAttachmentError(t("support.attachmentTooLarge", { defaultValue: "Please upload a screenshot under 2MB." }));
+      setAttachmentError(t("support.attachmentTooLarge", { defaultValue: "Please upload a screenshot under 5MB." }));
       return;
     }
 
