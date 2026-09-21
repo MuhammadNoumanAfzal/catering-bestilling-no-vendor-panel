@@ -20,7 +20,6 @@ const ALLOWED_ATTACHMENT_TYPES = [
   "image/jpg",
   "image/webp",
 ];
-const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
 
 function buildInitialForm(prefill = null) {
   return {
@@ -97,12 +96,6 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
       return;
     }
 
-    if (nextFile.size > MAX_ATTACHMENT_SIZE_BYTES) {
-      setAttachment(null);
-      setAttachmentError(t("support.attachmentTooLarge", { defaultValue: "Please upload a screenshot under 5MB." }));
-      return;
-    }
-
     setAttachment(nextFile);
   }
 
@@ -123,7 +116,7 @@ export default function useSupportTicketForm(onSubmitted, initialForm = null) {
       setIsSubmitting(true);
 
       const uploadedAttachment = attachment
-        ? await uploadMenuImage(attachment)
+        ? await uploadMenuImage(attachment, { optimize: true })
         : null;
       const selectedIssueLabel =
         (() => {
