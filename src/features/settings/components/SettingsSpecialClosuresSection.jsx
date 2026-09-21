@@ -22,6 +22,38 @@ function formatDate(dateStr, locale) {
 
 const monthKeys = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
 const weekdayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const closureTypeKeyAliases = {
+  emergency: "emergency",
+  holiday: "holiday",
+  maintenance: "maintenance",
+  "private event": "private_event",
+  private_event: "private_event",
+  "private-event": "private_event",
+  vacation: "vacation",
+};
+
+function getClosureTypeTranslationKey(option) {
+  const candidates = [option?.slug, option?.value, option?.label];
+
+  for (const candidate of candidates) {
+    const normalized = String(candidate || "")
+      .trim()
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_");
+    const spaced = normalized.replace(/_/g, " ");
+
+    if (closureTypeKeyAliases[normalized]) {
+      return closureTypeKeyAliases[normalized];
+    }
+
+    if (closureTypeKeyAliases[spaced]) {
+      return closureTypeKeyAliases[spaced];
+    }
+  }
+
+  return "";
+}
 
 function toIsoDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -59,7 +91,7 @@ export default function SettingsSpecialClosuresSection({
   const [dateError, setDateError] = useState("");
   const translatedClosureTypes = closureTypeOptions.map((option) => ({
     ...option,
-    label: t(`settings.closureTypes.${option.value}`, { defaultValue: option.label }),
+    label: t(`settings.closureTypes.${getClosureTypeTranslationKey(option)}`, { defaultValue: option.label }),
   }));
 
   function handleStartDateChange(nextValue) {

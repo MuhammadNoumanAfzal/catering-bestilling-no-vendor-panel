@@ -1,6 +1,27 @@
 import { Copy, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+function formatMenuCardPrice(item, t) {
+  if (!item.rawMenu || !item.basePrice) {
+    return item.price;
+  }
+
+  const amount = Number(item.basePrice);
+  const formattedAmount = Number.isFinite(amount)
+    ? new Intl.NumberFormat("nb-NO", {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+      }).format(amount)
+    : item.basePrice;
+  const suffix = item.pricingType === "per-person"
+    ? t("menu.pricingShortLabels.perPerson", { defaultValue: "pr person" })
+    : item.pricingType
+      ? t(`menu.pricingLabels.${item.pricingType}`, { defaultValue: item.pricingType })
+      : "";
+
+  return suffix ? `${formattedAmount},- ${suffix}` : `${formattedAmount},-`;
+}
+
 const toneClasses = {
   active: "bg-[#2fca52] text-white",
   paused: "bg-[#ffd86f] text-[#8a6200]",
@@ -48,7 +69,7 @@ export default function MenuOfferingCard({
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <strong className="block text-[21px] font-extrabold text-[#17120e]">
-              {item.rawMenu && item.basePrice ? `kr ${item.basePrice}${item.pricingType ? ` (${t(`menu.pricingLabels.${item.pricingType}`, { defaultValue: item.pricingType })})` : ""}` : item.price}
+              {formatMenuCardPrice(item, t)}
             </strong>
             <span className="mt-1 block text-[13px] font-medium text-[#9a8f86]">
               {item.rawMenu ? (item.minimumGuests ? t("menu.minimumGuestLabel", { count: Number(item.minimumGuests) }) : t("menu.flexibleGuests")) : item.meta === "Available add-on" ? t("menu.availableAddon") : item.meta}

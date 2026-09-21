@@ -1,4 +1,4 @@
-﻿import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export default function SupportAttachmentDropzone({
@@ -40,7 +40,7 @@ export default function SupportAttachmentDropzone({
         <p className="mt-1 text-[11px] text-[#9b8f84]">
           {disabled
             ? t("support.attachmentUnavailableHint", { defaultValue: "Ticket submission still works without a screenshot." })
-            : t("support.attachmentHint", { defaultValue: "PNG, JPG, JPEG or WEBP under 5MB" })}
+            : t("support.attachmentHint", { defaultValue: "PNG, JPG, JPEG or WEBP image" })}
         </p>
       </label>
 
