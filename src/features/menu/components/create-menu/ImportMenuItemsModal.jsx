@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, ChevronUp, LoaderCircle, Search, X } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp, ImageIcon, LoaderCircle, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -184,11 +184,17 @@ export default function ImportMenuItemsModal({
                     className="flex cursor-pointer items-center justify-between p-3 transition hover:bg-[#fff9f4]"
                   >
                     <div className="flex min-w-0 flex-1 items-center">
-                      <img
-                        src={menu.image || "/heroBg.webp"}
-                        alt={menu.title}
-                        className="mr-3 h-[54px] w-[54px] rounded-lg bg-[#f2ece6] object-cover"
-                      />
+                      {menu.image ? (
+                        <img
+                          src={menu.image}
+                          alt={menu.title}
+                          className="mr-3 h-[54px] w-[54px] rounded-lg bg-[#f2ece6] object-cover"
+                        />
+                      ) : (
+                        <span className="mr-3 flex h-[54px] w-[54px] items-center justify-center rounded-lg bg-[#f4f1ee] text-[#9b8f86]">
+                          <ImageIcon size={18} />
+                        </span>
+                      )}
                       <div className="min-w-0 pr-2">
                         <h3 className="m-0 truncate text-[15px] font-extrabold text-[#211913]">
                           {menu.title}
@@ -247,11 +253,17 @@ export default function ImportMenuItemsModal({
                                   onChange={() => {}}
                                   className="h-4.5 w-4.5 cursor-pointer rounded border-[#d6cdc4] accent-[#cf6e38]"
                                 />
-                                <img
-                                  src={item.image || "/heroBg.webp"}
-                                  alt={item.title}
-                                  className="ml-3 mr-3.5 h-10 w-10 rounded-md bg-[#f2ece6] object-cover"
-                                />
+                                {item.image ? (
+                                  <img
+                                    src={item.image}
+                                    alt={item.title}
+                                    className="ml-3 mr-3.5 h-10 w-10 rounded-md bg-[#f2ece6] object-cover"
+                                  />
+                                ) : (
+                                  <span className="ml-3 mr-3.5 flex h-10 w-10 items-center justify-center rounded-md bg-[#f4f1ee] text-[#9b8f86]">
+                                    <ImageIcon size={15} />
+                                  </span>
+                                )}
                                 <span className="text-[14px] font-extrabold text-[#211913]">
                                   {item.title}
                                 </span>

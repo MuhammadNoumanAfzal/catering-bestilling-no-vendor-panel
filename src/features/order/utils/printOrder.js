@@ -22,7 +22,7 @@ function formatServiceType(value) {
 }
 
 function translateSummaryLabel(label) {
-  const key = { "delivery fee": "deliveryFee", "sales tax": "salesTax", "add-ons": "addOns", tip: "tip", "service fee": "serviceFee", discount: "discount", "customer responsibility": "customerResponsibility", "company responsibility": "companyResponsibility", total: "total" }[String(label || "").toLowerCase()];
+  const key = { "delivery fee": "deliveryFee", "sales tax": "salesTax", "vat (included)": "vatIncluded", "add-ons": "addOns", tip: "tip", "service fee": "serviceFee", discount: "discount", "customer responsibility": "customerResponsibility", "company responsibility": "companyResponsibility", total: "total" }[String(label || "").toLowerCase()];
   if (key) return i18n.t("orders.detail." + key);
   return String(label || "").replace(/^Subtotal/i, i18n.t("orders.detail.subtotal")).replace(/guests/i, i18n.t("orders.guests"));
 }
