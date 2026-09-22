@@ -1,10 +1,9 @@
 import CreateMenuSectionCard from "../create-menu/CreateMenuSectionCard";
-import { Label, TextInput } from "../create-menu/CreateMenuFields";
+import { Label } from "../create-menu/CreateMenuFields";
 import { useTranslation } from "react-i18next";
 
 export default function CreateAddOnAvailabilitySection({
   availableImmediately,
-  customCategory,
   disabled = false,
   dietaryOptions,
   onAvailabilityToggle,
@@ -71,15 +70,6 @@ export default function CreateAddOnAvailabilitySection({
               />
             </button>
           </div>
-        </div>
-
-        <div>
-          <Label>{t("menu.selectedCategories", { defaultValue: "Selected Categories" })}</Label>
-          <TextInput
-            disabled
-            placeholder={t("menu.noCategories", { defaultValue: "No categories selected yet" })}
-            value={customCategory}
-          />
         </div>
       </div>
     </CreateMenuSectionCard>

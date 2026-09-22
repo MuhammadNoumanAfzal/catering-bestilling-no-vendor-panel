@@ -286,7 +286,7 @@ export function mapVendorAddOnDetailToForm(addOn) {
     addOnName: addOn.name || "",
     description: addOn.description || "",
     price: addOn.priceWithTax ? String(addOn.priceWithTax) : "",
-    categories: getCategoryIds(addOn.categories, addOn.category),
+    categories: [],
     customCategory: "",
     image: coverImage,
     mealTypes: safeArray(addOn.foodTypes)
@@ -445,9 +445,7 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
   };
 }
 
-export function buildSaveVendorAddOnVariables(formState, options = {}) {
-  const resolvedCategoryIds = safeArray(options.categoryIds || formState.categories).filter(Boolean);
-  const primaryCategoryId = resolvedCategoryIds[0] || "";
+export function buildSaveVendorAddOnVariables(formState) {
   const selectedStatus = formState.availableImmediately ? "active" : formState.status || "draft";
   const attachments = formState.image?.fileUrl
     ? [
@@ -464,8 +462,7 @@ export function buildSaveVendorAddOnVariables(formState, options = {}) {
       ...(formState.id ? { id: formState.id } : {}),
       name: formState.addOnName.trim(),
       description: formState.description?.trim() || "",
-      category: primaryCategoryId,
-      categories: resolvedCategoryIds,
+      categories: [],
       priceWithTax: formatDecimalStringOrNull(formState.price),
       menuStatus: selectedStatus,
       dietaryTags: safeArray(formState.selectedDietary),
