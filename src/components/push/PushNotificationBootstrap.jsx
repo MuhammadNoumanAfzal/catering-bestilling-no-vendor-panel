@@ -5,6 +5,8 @@ import { useAuth } from "../../features/auth/hooks/useAuth";
 import { startFirebasePush } from "../../lib/push/firebasePush";
 import { showNewNotificationToast } from "../../utils/vendorAlerts";
 
+const VENDOR_FINANCE_NOTIFICATION_EVENT = "vendor-finance-notification-received";
+
 const REGISTER_DEVICE_TOKEN_MUTATION = `
   mutation RegisterDeviceToken($deviceToken: String!, $deviceType: String!) {
     deviceToken(deviceToken: $deviceToken, deviceType: $deviceType) {
@@ -80,6 +82,14 @@ export default function PushNotificationBootstrap() {
           const link = getPushLink(payload);
 
           showForegroundBrowserNotification(title, body, link, navigate);
+
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent(VENDOR_FINANCE_NOTIFICATION_EVENT, {
+                detail: { notification: payload },
+              }),
+            );
+          }
 
           void showNewNotificationToast(title, body).then((result) => {
             if (result.isConfirmed) {
