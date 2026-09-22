@@ -1,5 +1,5 @@
 import i18n from "../../../i18n";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -12,7 +12,6 @@ import {
 } from "../api/menuApi";
 import {
   buildSaveVendorAddOnVariables,
-  mapCategoriesToOptions,
   mapDietaryTagsToOptions,
   mapFoodTypesToOptions,
   mapVendorAddOnDetailToForm,
@@ -28,14 +27,12 @@ import {
 const emptyFieldErrors = {
   addOnName: "",
   price: "",
-  categories: "",
   mealTypes: "",
 };
 
 function mapAddOnMutationErrors(errors = []) {
   const fieldMap = {
     name: "addOnName",
-    category: "categories",
     categories: "categories",
     priceWithTax: "price",
     foodTypes: "mealTypes",
@@ -66,7 +63,6 @@ export function useAddOnEditor() {
   const isDuplicateMode = mode === "duplicate";
 
   const [formState, setFormState] = useState(getInitialAddOnState);
-  const [categoryOptions, setCategoryOptions] = useState([]);
   const [mealTypeOptions, setMealTypeOptions] = useState([]);
   const [dietaryOptions, setDietaryOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
@@ -88,11 +84,8 @@ export function useAddOnEditor() {
         if (isCancelled) {
           return;
         }
-
-        const nextCategoryOptions = mapCategoriesToOptions(bootstrapResult.categories);
         const nextMealTypeOptions = mapFoodTypesToOptions(bootstrapResult.foodTypes);
         const nextDietaryOptions = mapDietaryTagsToOptions(bootstrapResult.dietaryTags);
-        setCategoryOptions(nextCategoryOptions);
         setMealTypeOptions(nextMealTypeOptions);
         setDietaryOptions(nextDietaryOptions);
 
@@ -113,15 +106,9 @@ export function useAddOnEditor() {
             return;
           }
         }
-
         setFormState((current) => ({
           ...current,
-          categories:
-            Array.isArray(current.categories) && current.categories.length
-              ? current.categories
-              : nextCategoryOptions[0]?.value
-                ? [nextCategoryOptions[0].value]
-                : [],
+          categories: [],
         }));
       } catch (error) {
         if (!isCancelled) {
@@ -145,17 +132,6 @@ export function useAddOnEditor() {
     };
   }, [editId, isDuplicateMode, navigate, t]);
 
-  const resolvedCategories = useMemo(
-    () => (Array.isArray(formState.categories) ? formState.categories.filter(Boolean) : []),
-    [formState.categories],
-  );
-
-  const selectedCategoryLabels = useMemo(() => {
-    return resolvedCategories
-      .map((value) => categoryOptions.find((option) => option.value === value)?.label || "")
-      .filter(Boolean);
-  }, [categoryOptions, resolvedCategories]);
-
   function setField(field, value) {
     setFieldErrors((current) => ({
       ...current,
@@ -166,31 +142,9 @@ export function useAddOnEditor() {
       [field]: value,
     }));
   }
-
   function resetForm() {
     setFieldErrors(emptyFieldErrors);
-    setFormState({
-      ...getInitialAddOnState(),
-      categories: categoryOptions[0]?.value ? [categoryOptions[0].value] : [],
-    });
-  }
-
-  function toggleCategory(categoryId) {
-    setFieldErrors((current) => ({
-      ...current,
-      categories: "",
-    }));
-    setFormState((current) => {
-      const currentValues = Array.isArray(current.categories) ? current.categories : [];
-      const nextCategories = currentValues.includes(categoryId)
-        ? currentValues.filter((item) => item !== categoryId)
-        : [...currentValues, categoryId];
-
-      return {
-        ...current,
-        categories: nextCategories,
-      };
-    });
+    setFormState(getInitialAddOnState());
   }
 
   function toggleDietaryTag(tag) {
@@ -238,15 +192,6 @@ export function useAddOnEditor() {
         price: i18n.t("vendorMessages.addonPriceRequired"),
       }));
       await showVendorErrorAlert(i18n.t("vendorMessages.addonPriceRequired"));
-      return false;
-    }
-
-    if (!resolvedCategories.length) {
-      setFieldErrors((current) => ({
-        ...current,
-        categories: t("menu.categoryRequired", { defaultValue: "Please choose at least one category." }),
-      }));
-      await showVendorErrorAlert(t("menu.categoryRequired", { defaultValue: "Please choose at least one category." }));
       return false;
     }
 
@@ -312,16 +257,14 @@ export function useAddOnEditor() {
       return;
     }
 
-    const resolvedCategoryIds = resolvedCategories;
-
     try {
       setIsSaving(true);
       const variables = buildSaveVendorAddOnVariables(
         {
           ...formState,
-          categories: resolvedCategoryIds,
+          categories: [],
         },
-        { categoryIds: resolvedCategoryIds },
+        { categoryIds: [] },
       );
       const result = await saveVendorAddOn(variables);
       setFieldErrors(emptyFieldErrors);
@@ -360,7 +303,6 @@ export function useAddOnEditor() {
   }
 
   return {
-    categoryOptions,
     fieldErrors,
     formState,
     imageUrl: resolveMediaUrl(formState.image),
@@ -370,8 +312,6 @@ export function useAddOnEditor() {
     isSaving,
     dietaryOptions,
     mealTypeOptions,
-    resolvedCategories,
-    selectedCategoryLabels,
     actions: {
       handleAddAnother,
       handleAddMealTypeClick,
@@ -382,7 +322,6 @@ export function useAddOnEditor() {
       handleImageUpload,
       handleSave,
       setField,
-      toggleCategory,
       toggleDietaryTag,
     },
   };

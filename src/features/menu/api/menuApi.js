@@ -104,16 +104,12 @@ export async function saveVendorAddOn(variables) {
     if (!isLegacyCategoriesBackendError(error)) {
       throw error;
     }
-
     const legacyVariables = {
       ...variables,
       input: {
         ...variables?.input,
-        categories: undefined,
-        category:
-          variables?.input?.category ||
-          (Array.isArray(variables?.input?.categories) ? variables.input.categories[0] : "") ||
-          "",
+        categories: [],
+        category: undefined,
       },
     };
     const fallbackResult = await executeProtectedGraphqlRequest(
