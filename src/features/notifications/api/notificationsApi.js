@@ -8,7 +8,6 @@ import {
   GET_VENDOR_NOTIFICATIONS_QUERY,
   GET_VENDOR_NOTIFICATION_SETTINGS_QUERY,
   MARK_ALL_VENDOR_NOTIFICATIONS_AS_READ_MUTATION,
-  MARK_VENDOR_NOTIFICATIONS_AS_READ_MUTATION,
   MARK_VENDOR_NOTIFICATION_AS_READ_MUTATION,
   UPDATE_VENDOR_NOTIFICATION_SETTINGS_MUTATION,
 } from "./notificationsQueries";
@@ -80,26 +79,9 @@ function getSyntheticOrderNotificationOrderId(id) {
 
 function isOrderNotificationRead(order, notificationState) {
   const readIds = Array.isArray(notificationState?.readIds) ? notificationState.readIds : [];
-  const readAllBefore = String(notificationState?.readAllBefore || "");
-  const createdOn = String(order?.createdOn || "");
   const syntheticId = buildSyntheticOrderNotificationId(order?.id);
 
-  if (readIds.includes(syntheticId)) {
-    return true;
-  }
-
-  if (!readAllBefore || !createdOn) {
-    return false;
-  }
-
-  const createdOnTime = new Date(createdOn).getTime();
-  const readAllBeforeTime = new Date(readAllBefore).getTime();
-
-  if (Number.isNaN(createdOnTime) || Number.isNaN(readAllBeforeTime)) {
-    return false;
-  }
-
-  return createdOnTime <= readAllBeforeTime;
+  return readIds.includes(syntheticId);
 }
 
 function isOrderLikeNotification(node) {
@@ -115,7 +97,18 @@ function isOrderLikeNotification(node) {
 
 function isNewOrder(order) {
   const status = String(order?.status || order?.statusLabel || "").trim().toUpperCase();
-  return ["NEW", "PENDING", "PLACED"].includes(status);
+  const normalizedStatus = status.replace(/[_-]+/g, " ");
+  const terminalStatuses = new Set([
+    "CANCELED",
+    "CANCELLED",
+    "REJECTED",
+    "FAILED",
+    "REFUNDED",
+    "DELIVERED",
+    "COMPLETED",
+  ]);
+
+  return !terminalStatuses.has(normalizedStatus);
 }
 
 function buildSyntheticOrderNotificationNode(order, notificationState) {
@@ -185,8 +178,9 @@ async function fetchSyntheticOrderNotificationNodes(variables = {}) {
     dateTo: variables?.dateTo || null,
   });
 
-  const orderEdges = Array.isArray(ordersResponse?.vendorOrders?.edges)
-    ? ordersResponse.vendorOrders.edges
+  const ordersConnection = ordersResponse?.vendorOrders || ordersResponse?.orders || ordersResponse?.vendorUpcomingOrders;
+  const orderEdges = Array.isArray(ordersConnection?.edges)
+    ? ordersConnection.edges
     : [];
 
   const syntheticItems = orderEdges
@@ -241,16 +235,18 @@ function mergeVendorNotificationConnections(financeConnection, syntheticNodes) {
 }
 
 export async function getVendorNotifications(variables) {
-  const [financeResult, syntheticOrderNodes] = await Promise.all([
+  const [financeResult, syntheticOrderNodes] = await Promise.allSettled([
     executeProtectedGraphqlRequest(GET_VENDOR_NOTIFICATIONS_QUERY, variables),
-    fetchSyntheticOrderNotificationNodes(variables).catch(() => []),
+    fetchSyntheticOrderNotificationNodes(variables),
   ]);
+  const financePayload = financeResult.status === "fulfilled" ? financeResult.value : {};
+  const orderNodes = syntheticOrderNodes.status === "fulfilled" ? syntheticOrderNodes.value : [];
 
   return {
-    ...financeResult,
+    ...financePayload,
     vendorFinanceNotifications: mergeVendorNotificationConnections(
-      financeResult?.vendorFinanceNotifications,
-      syntheticOrderNodes,
+      financePayload?.vendorFinanceNotifications,
+      orderNodes,
     ),
   };
 }
@@ -259,8 +255,19 @@ export function getVendorNotificationDetail(id) {
   return executeProtectedGraphqlRequest(GET_VENDOR_NOTIFICATION_DETAIL_QUERY, { id });
 }
 
-export function getVendorNotificationCounts() {
-  return executeProtectedGraphqlRequest(GET_VENDOR_NOTIFICATION_COUNTS_QUERY, {});
+export async function getVendorNotificationCounts() {
+  const [financeResult, syntheticOrderNodes] = await Promise.allSettled([
+    executeProtectedGraphqlRequest(GET_VENDOR_NOTIFICATION_COUNTS_QUERY, {}),
+    fetchSyntheticOrderNotificationNodes({ first: 100 }),
+  ]);
+  const financePayload = financeResult.status === "fulfilled" ? financeResult.value : {};
+  const financeConnection = financePayload?.vendorFinanceNotifications;
+  const orderNodes = syntheticOrderNodes.status === "fulfilled" ? syntheticOrderNodes.value : [];
+
+  return {
+    ...financePayload,
+    vendorFinanceNotifications: mergeVendorNotificationConnections(financeConnection, orderNodes),
+  };
 }
 
 export async function markVendorNotificationAsRead(id) {
@@ -317,10 +324,53 @@ export async function markVendorNotificationsAsRead(ids) {
     });
   }
 
-  return markAllVendorNotificationsAsRead();
+  const financeIds = Array.isArray(ids)
+    ? ids.filter((id) => !isSyntheticOrderNotificationId(id))
+    : [];
+
+  if (financeIds.length === 0) {
+    return {
+      success: true,
+      message: "Notifications marked as read.",
+      unreadCount: null,
+    };
+  }
+
+  const results = await Promise.allSettled(
+    financeIds.map((id) =>
+      executeProtectedGraphqlRequest(MARK_VENDOR_NOTIFICATION_AS_READ_MUTATION, { id }),
+    ),
+  );
+  const failedResult = results.find((item) => {
+    if (item.status === "rejected") return true;
+    const payload = item.value?.markFinanceNotificationRead;
+    return !payload?.success;
+  });
+
+  if (failedResult) {
+    throw new Error(translateNotificationText("Unable to mark notifications as read."));
+  }
+
+  return {
+    success: true,
+    message: "Notifications marked as read.",
+    unreadCount: null,
+  };
 }
 
 export async function markAllVendorNotificationsAsRead() {
+  const currentState = readVendorOrderNotificationState();
+  const currentOrderNotifications = await fetchSyntheticOrderNotificationNodes({ first: 100 });
+  const currentOrderNotificationIds = currentOrderNotifications
+    .map((notification) => notification?.id)
+    .filter(Boolean);
+
+  writeVendorOrderNotificationState({
+    ...currentState,
+    readIds: Array.from(new Set([...currentState.readIds, ...currentOrderNotificationIds])),
+    readAllBefore: new Date().toISOString(),
+  });
+
   const result = await executeProtectedGraphqlRequest(
     MARK_ALL_VENDOR_NOTIFICATIONS_AS_READ_MUTATION,
     {},
@@ -330,12 +380,6 @@ export async function markAllVendorNotificationsAsRead() {
   if (!payload?.success) {
     throw new Error(payload?.message || translateNotificationText("Unable to mark all notifications as read."));
   }
-
-  const currentState = readVendorOrderNotificationState();
-  writeVendorOrderNotificationState({
-    ...currentState,
-    readAllBefore: new Date().toISOString(),
-  });
 
   return {
     success: true,
