@@ -216,6 +216,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       eventDate
       eventTime
       personCount
+      finalPrice
       customerName
       eventName
       deliveryAddress

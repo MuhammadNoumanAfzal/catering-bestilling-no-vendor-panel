@@ -49,7 +49,7 @@ export function getInitialMenuState() {
 export function toAddOnDisplay(addOn) {
   return {
     ...addOn,
-    image: addOn.coverImage?.fileUrl || addOn.image || "/heroBg.webp",
+    image: addOn.coverImage?.fileUrl || addOn.image || "",
     price: addOn.priceWithTax || addOn.price || "",
   };
 }

@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { ImageIcon, Search } from "lucide-react";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
 import { useTranslation } from "react-i18next";
@@ -45,11 +45,17 @@ export default function CreateMenuAddOnsSection({
                 onChange={() => toggleAddOn(item.id)}
                 type="checkbox"
               />
-              <img
-                alt={item.addOnName || item.name}
-                className="h-9 w-9 rounded-[8px] object-cover"
-                src={item.image}
-              />
+              {item.image ? (
+                <img
+                  alt={item.addOnName || item.name}
+                  className="h-9 w-9 rounded-[8px] object-cover"
+                  src={item.image}
+                />
+              ) : (
+                <span className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[#f4f1ee] text-[#9b8f86]">
+                  <ImageIcon size={15} />
+                </span>
+              )}
               <span className="min-w-0 flex-1 text-[13px] font-semibold text-[#201914]">
                 {item.addOnName || item.name}
               </span>

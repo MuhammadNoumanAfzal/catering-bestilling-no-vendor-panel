@@ -1,4 +1,4 @@
-import { Copy, Pencil, Trash2 } from "lucide-react";
+import { Copy, ImageIcon, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 function formatMenuCardPrice(item, t) {
@@ -42,8 +42,19 @@ export default function MenuOfferingCard({
 
   return (
     <article className="overflow-hidden rounded-[14px] border border-[#ddd4cb] bg-white shadow-[0_2px_10px_rgba(43,30,20,0.03)]">
-      <div className="relative h-[126px] bg-[#ece7e2]">
-        <img alt={item.title} className="h-full w-full object-cover" src={item.image} />
+      <div className="relative h-[126px] bg-[#f4f1ee]">
+        {item.image ? (
+          <img alt={item.title} className="h-full w-full object-cover" src={item.image} />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#9b8f86]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+              <ImageIcon size={20} />
+            </span>
+            <span className="text-[12px] font-bold">
+              {t("menu.noImage", { defaultValue: "No image" })}
+            </span>
+          </div>
+        )}
         <span
           className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[12px] font-bold ${
             isActive

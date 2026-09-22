@@ -4,7 +4,7 @@ import DetailPanel from "./DetailPanel";
 function translateSummaryLabel(label, t) {
   const normalized = String(label || "").toLowerCase();
   if (normalized.startsWith("subtotal")) return label.replace(/^Subtotal/i, t("orders.detail.subtotal", { defaultValue: "Subtotal" })).replace(/guests/i, t("orders.guests", { defaultValue: "guests" }));
-  const key = { "delivery fee": "deliveryFee", "sales tax": "salesTax", "add-ons": "addOns", tip: "tip", "service fee": "serviceFee", discount: "discount", "customer responsibility": "customerResponsibility", "company responsibility": "companyResponsibility", total: "total" }[normalized];
+  const key = { "delivery fee": "deliveryFee", "sales tax": "salesTax", "vat (included)": "vatIncluded", "add-ons": "addOns", tip: "tip", "service fee": "serviceFee", discount: "discount", "customer responsibility": "customerResponsibility", "company responsibility": "companyResponsibility", total: "total" }[normalized];
   return key ? t(`orders.detail.${key}`, { defaultValue: label }) : label;
 }
 

@@ -430,30 +430,36 @@ function calculateAdjustedSubtotalFromItems(order, guestCount) {
 function buildFinancialSummary(order, carts) {
   const pricing = getPricingBlock(order);
   const guestCount = resolveGuestCount(order);
-  const originalSubtotal =
-    parseAmount(pricing.subtotal) ||
-    carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0) ||
-    parseAmount(order?.finalPrice);
+  const backendSubtotal = parseAmount(pricing.subtotal);
+  const cartGrossTotal = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
+  const itemGrossTotal = Array.isArray(order?.items)
+    ? order.items.reduce((sum, item) => sum + parseAmount(item?.lineTotal), 0)
+    : 0;
+  const finalPrice = parseAmount(order?.finalPrice);
   const deliveryFee = parseAmount(pricing.deliveryFee);
   const tipAmount = parseAmount(pricing.tipAmount);
   const addOnsTotal = parseAmount(pricing.addOnsTotal || order?.addOnsTotal);
   const discountAmount = parseAmount(pricing.discountAmount);
   const serviceFee = parseAmount(pricing.serviceFee);
-  const adjustedSubtotal = calculateAdjustedSubtotalFromItems(order, guestCount);
-  const baseSubtotal = adjustedSubtotal || originalSubtotal;
-  const taxBase = Math.max(0, baseSubtotal + addOnsTotal);
-  const derivedTaxRate =
-    normalizeTaxRate(pricing.taxRate) ||
-    (originalSubtotal + addOnsTotal > 0
-      ? parseAmount(pricing.taxAmount) / (originalSubtotal + addOnsTotal)
-      : 0);
-  const taxAmount = taxBase > 0 ? taxBase * derivedTaxRate : parseAmount(pricing.taxAmount);
-  const calculatedGrandTotal =
-    baseSubtotal + deliveryFee + taxAmount + addOnsTotal + tipAmount + serviceFee - discountAmount;
-  const grandTotal =
-    adjustedSubtotal != null
-      ? calculatedGrandTotal
-      : parseAmount(pricing.grandTotal) || calculatedGrandTotal;
+  const includedVat = parseAmount(pricing.taxAmount);
+  const taxRate = normalizeTaxRate(pricing.taxRate);
+  const backendGrandTotal = parseAmount(pricing.grandTotal);
+  const backendAmountDue = parseAmount(pricing.amountDue);
+  const payableCandidates = [
+    finalPrice,
+    backendGrandTotal,
+    backendAmountDue,
+    itemGrossTotal + addOnsTotal + deliveryFee + tipAmount + serviceFee - discountAmount,
+    cartGrossTotal + addOnsTotal + deliveryFee + tipAmount + serviceFee - discountAmount,
+    backendSubtotal + addOnsTotal + deliveryFee + tipAmount + serviceFee - discountAmount,
+  ].filter((amount) => Number.isFinite(amount) && amount > 0);
+  const grandTotal = payableCandidates.length ? Math.max(...payableCandidates) : 0;
+  const merchandiseGross = Math.max(0, grandTotal - deliveryFee - tipAmount - serviceFee + discountAmount);
+  const baseSubtotal = Math.max(0, merchandiseGross - addOnsTotal) || backendSubtotal || itemGrossTotal || cartGrossTotal;
+  const calculatedIncludedVat = taxRate > 0 && merchandiseGross > 0
+    ? merchandiseGross * (taxRate / (1 + taxRate))
+    : 0;
+  const taxAmount = calculatedIncludedVat || includedVat;
 
   const companyAllowance = parseAmount(order?.companyAllowance);
   const customerAllowance = parseAmount(order?.customerAllowance);
@@ -474,7 +480,7 @@ function buildFinancialSummary(order, carts) {
 
   if (taxAmount > 0) {
     summary.push({
-      label: "Sales Tax",
+      label: "VAT (included)",
       value: formatCurrency(taxAmount),
     });
   }
