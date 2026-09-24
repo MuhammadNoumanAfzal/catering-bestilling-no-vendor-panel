@@ -83,6 +83,14 @@ const authSlice = createSlice({
       state.registerStatus = "idle";
       state.registerError = null;
     },
+    authUserUpdated(state, action) {
+      state.user = state.user
+        ? {
+            ...state.user,
+            ...(action.payload || {}),
+          }
+        : state.user;
+    },
     sessionInvalidated(state) {
       state.accessToken = null;
       state.user = null;
@@ -140,6 +148,7 @@ export const {
   clearAuthError,
   clearRegisterError,
   clearRegisterState,
+  authUserUpdated,
   sessionInvalidated,
 } = authSlice.actions;
 

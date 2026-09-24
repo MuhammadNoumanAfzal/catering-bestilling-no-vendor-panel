@@ -1,36 +1,36 @@
-function normalizeString(value) {
-  return value == null ? "" : String(value);
-}
-
-function toNumber(value, fallback = 0) {
-  const numericValue = Number(value);
-  return Number.isFinite(numericValue) ? numericValue : fallback;
-}
-
-function formatCurrency(value, currency = "NOK") {
-  const amount = toNumber(value);
-  const normalizedCurrency = normalizeString(currency).trim().toUpperCase();
-  const prefix = normalizedCurrency === "NOK" ? "kr" : normalizedCurrency || "kr";
-  return `${prefix} ${amount.toFixed(2)}`;
-}
-
-function formatAxisCurrency(value, currency = "NOK") {
-  const amount = toNumber(value);
-  const normalizedCurrency = normalizeString(currency).trim().toUpperCase();
-  const prefix = normalizedCurrency === "NOK" ? "kr" : normalizedCurrency || "kr";
-  return `${prefix} ${Math.round(amount)}`;
-}
-
+function normalizeString(value) {
+  return value == null ? "" : String(value);
+}
+
+function toNumber(value, fallback = 0) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : fallback;
+}
+
+function formatCurrency(value, currency = "NOK") {
+  const amount = toNumber(value);
+  const normalizedCurrency = normalizeString(currency).trim().toUpperCase();
+  const prefix = normalizedCurrency === "NOK" ? "kr" : normalizedCurrency || "kr";
+  return `${prefix} ${amount.toFixed(2)}`;
+}
+
+function formatAxisCurrency(value, currency = "NOK") {
+  const amount = toNumber(value);
+  const normalizedCurrency = normalizeString(currency).trim().toUpperCase();
+  const prefix = normalizedCurrency === "NOK" ? "kr" : normalizedCurrency || "kr";
+  return `${prefix} ${Math.round(amount)}`;
+}
+
 function formatDateLabel(dateValue, locale = "nb-NO") {
   const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return normalizeString(dateValue);
-  }
-
+
+  if (Number.isNaN(date.getTime())) {
+    return normalizeString(dateValue);
+  }
+
   return date.toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "short",
+    day: "2-digit",
+    month: "short",
   });
 }
 
@@ -61,34 +61,34 @@ function formatChartTooltipLabel(dateValue, locale = "en-GB") {
 
 function formatDateTimeValue(value, locale = "nb-NO") {
   const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return normalizeString(value);
-  }
-
+
+  if (Number.isNaN(date.getTime())) {
+    return normalizeString(value);
+  }
+
   return date.toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatTrendValue(value) {
-  const amount = toNumber(value);
-  return `${Math.abs(amount).toFixed(1)}%`;
-}
-
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatTrendValue(value) {
+  const amount = toNumber(value);
+  return `${Math.abs(amount).toFixed(1)}%`;
+}
+
 function mapTrendDirection(value) {
   const amount = toNumber(value);
-
-  if (amount > 0) {
-    return "up";
-  }
-
-  if (amount < 0) {
-    return "down";
-  }
-
+
+  if (amount > 0) {
+    return "up";
+  }
+
+  if (amount < 0) {
+    return "down";
+  }
+
   return "none";
 }
 
@@ -155,71 +155,77 @@ function buildTrendMeta(value, trendValue, timeLabel, t) {
 function buildCapacityHelper(capacityPercent, t) {
   if (capacityPercent >= 75) {
     return t("dashboard.orders.highDemand");
-  }
-
-  if (capacityPercent >= 40) {
+  }
+
+  if (capacityPercent >= 40) {
     return t("dashboard.orders.moderateDemand");
-  }
-
+  }
+
   return t("dashboard.orders.lowDemand");
-}
-
-function formatDeliveryWindow(windowValue, deliveryDate, locale = "nb-NO") {
-  if (windowValue && typeof windowValue === "object") {
-    const label = normalizeString(windowValue.label).trim();
-    const start = normalizeString(windowValue.start).trim();
-    const end = normalizeString(windowValue.end).trim();
-    const date = normalizeString(windowValue.date).trim() || normalizeString(deliveryDate).trim();
-
-    if (label) {
-      return label;
-    }
-
-    if (start && end) {
-      return `${start} - ${end}`;
-    }
-
-    if (date) {
-      return formatDateLabel(date, locale);
-    }
-  }
-
-  return normalizeString(deliveryDate).trim() ? formatDateLabel(deliveryDate, locale) : "--";
-}
-
-function mapUrgentOrderTone(deliveryDate) {
-  const today = new Date();
-  const currentDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const dueDate = new Date(deliveryDate);
-
-  if (Number.isNaN(dueDate.getTime())) {
-    return "is-danger";
-  }
-
-  const normalizedDueDate = new Date(
-    dueDate.getFullYear(),
-    dueDate.getMonth(),
-    dueDate.getDate(),
-  );
-
-  return normalizedDueDate < currentDate ? "is-danger" : "is-warning";
-}
-
+}
+
+function formatDeliveryWindow(windowValue, deliveryDate, locale = "nb-NO") {
+  if (windowValue && typeof windowValue === "object") {
+    const label = normalizeString(windowValue.label).trim();
+    const start = normalizeString(windowValue.start).trim();
+    const end = normalizeString(windowValue.end).trim();
+    const date = normalizeString(windowValue.date).trim() || normalizeString(deliveryDate).trim();
+
+    if (label) {
+      return label;
+    }
+
+    if (start && end) {
+      return `${start} - ${end}`;
+    }
+
+    if (date) {
+      return formatDateLabel(date, locale);
+    }
+  }
+
+  return normalizeString(deliveryDate).trim() ? formatDateLabel(deliveryDate, locale) : "--";
+}
+
+function mapUrgentOrderTone(deliveryDate) {
+  const today = new Date();
+  const currentDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const dueDate = new Date(deliveryDate);
+
+  if (Number.isNaN(dueDate.getTime())) {
+    return "is-danger";
+  }
+
+  const normalizedDueDate = new Date(
+    dueDate.getFullYear(),
+    dueDate.getMonth(),
+    dueDate.getDate(),
+  );
+
+  return normalizedDueDate < currentDate ? "is-danger" : "is-warning";
+}
+
 export function createEmptyDashboardState() {
   return {
-    welcomeName: "",
-    overviewCards: [],
-    urgentOrders: [],
-    urgentOrdersCount: 0,
-    kitchenStatus: [],
-    chartValues: [],
-    chartYAxisLabels: [],
-    chartSubtitle: "",
-    reviews: [],
+    identityVerification: {
+      isVerified: false,
+      subject: "",
+      verifiedAt: "",
+      provider: "",
+    },
+    welcomeName: "",
+    overviewCards: [],
+    urgentOrders: [],
+    urgentOrdersCount: 0,
+    kitchenStatus: [],
+    chartValues: [],
+    chartYAxisLabels: [],
+    chartSubtitle: "",
+    reviews: [],
   };
 }
 
@@ -250,19 +256,19 @@ export function mapDashboardResponse(
   data,
   { dateFilterLabel, customDateLabel, kitchenSummary, totalOrdersOverride, t, locale = "nb-NO" } = {},
 ) {
-  const me = data?.me || null;
-  const summary = data?.vendorDashboardSummary || {};
-  const currency = normalizeString(summary.currency || "NOK");
-  const capacityPercent = Math.max(0, Math.round(toNumber(summary.capacityPercent)));
-  const chartPoints = Array.isArray(data?.vendorFinanceOverviewChart?.points)
-    ? data.vendorFinanceOverviewChart.points
-    : [];
+  const me = data?.me || null;
+  const summary = data?.vendorDashboardSummary || {};
+  const currency = normalizeString(summary.currency || "NOK");
+  const capacityPercent = Math.max(0, Math.round(toNumber(summary.capacityPercent)));
+  const chartPoints = Array.isArray(data?.vendorFinanceOverviewChart?.points)
+    ? data.vendorFinanceOverviewChart.points
+    : [];
   const maxChartValue = chartPoints.reduce(
     (highest, point) => Math.max(highest, toNumber(point?.earnings)),
     0,
   );
-  const totalOrders = totalOrdersOverride == null
-    ? toNumber(summary.totalOrders)
+  const totalOrders = totalOrdersOverride == null
+    ? toNumber(summary.totalOrders)
     : toNumber(totalOrdersOverride);
   const upcomingOrders = toNumber(summary.upcomingOrders ?? summary.upcoming);
   const urgentOrdersCount = toNumber(summary.urgentOrders ?? summary.newOrders);
@@ -332,35 +338,35 @@ export function mapDashboardResponse(
       timeLabel: capacityTrendMeta.timeLabel,
     },
   ];
-
-  const urgentOrderEdges = Array.isArray(data?.vendorUrgentOrders?.edges)
-    ? data.vendorUrgentOrders.edges
-    : [];
-
-  const urgentOrders = urgentOrderEdges
-    .map((edge) => edge?.node)
-    .filter(Boolean)
-    .map((node) => {
-      const displayCustomer =
-        normalizeString(node?.customerInfo?.fullName).trim() ||
-        normalizeString(node?.customerName).trim() ||
+
+  const urgentOrderEdges = Array.isArray(data?.vendorUrgentOrders?.edges)
+    ? data.vendorUrgentOrders.edges
+    : [];
+
+  const urgentOrders = urgentOrderEdges
+    .map((edge) => edge?.node)
+    .filter(Boolean)
+    .map((node) => {
+      const displayCustomer =
+        normalizeString(node?.customerInfo?.fullName).trim() ||
+        normalizeString(node?.customerName).trim() ||
         t("dashboard.orders.unavailableCustomer");
-
+
       return {
         rawId: normalizeString(node.id),
         rawStatus: normalizeString(node.status || node.statusLabel).toUpperCase(),
         id: `#${normalizeString(node.orderNumber || node.id)}`,
         title: normalizeString(node.eventName) || t("dashboard.orders.order"),
-        amount: formatCurrency(node.finalPrice, currency),
+        amount: formatCurrency(node.finalPrice, currency),
         statusLabel: normalizeString(node.statusLabel || node.status) || t("dashboard.orders.urgentLabel"),
         guests: t("dashboard.orders.guests", { count: toNumber(node.guestCount) }),
-        timing: formatDeliveryWindow(node.deliveryWindow, node.deliveryDate, locale),
+        timing: formatDeliveryWindow(node.deliveryWindow, node.deliveryDate, locale),
         address: t("dashboard.orders.customer", { name: displayCustomer }),
-        tone: mapUrgentOrderTone(node.deliveryDate),
+        tone: mapUrgentOrderTone(node.deliveryDate),
       };
     })
     .filter((order) => ["NEW", "PENDING", "PLACED"].includes(order.rawStatus));
-
+
   const dashboardKitchenSummary =
     kitchenSummary ||
     (data?.vendorOrderSummaryAllTime && typeof data.vendorOrderSummaryAllTime === "object"
@@ -368,7 +374,7 @@ export function mapDashboardResponse(
       : null) ||
     {};
   const kitchenStatus = buildKitchenStatusFromSummary(dashboardKitchenSummary, t);
-
+
   const chartValues = chartPoints.map((point) => ({
     month: formatShortChartLabel(point?.label, locale) || "--",
     tooltipLabel: formatChartTooltipLabel(point?.label, locale) || normalizeString(point?.label) || "--",
@@ -376,49 +382,58 @@ export function mapDashboardResponse(
     amountLabel: formatCurrency(point?.earnings, currency),
     value: maxChartValue > 0 ? Math.max(6, Math.round((toNumber(point?.earnings) / maxChartValue) * 100)) : 0,
   }));
-
-  const chartYAxisLabels =
-    maxChartValue > 0
-      ? [1, 0.75, 0.5, 0.25, 0].map((ratio) => formatAxisCurrency(maxChartValue * ratio, currency))
-      : [];
-
-  const reviewEdges = Array.isArray(data?.vendorReviews?.edges) ? data.vendorReviews.edges : [];
-  const reviews = reviewEdges
-    .map((edge) => edge?.node)
-    .filter(Boolean)
-    .map((node) => ({
+
+  const chartYAxisLabels =
+    maxChartValue > 0
+      ? [1, 0.75, 0.5, 0.25, 0].map((ratio) => formatAxisCurrency(maxChartValue * ratio, currency))
+      : [];
+
+  const reviewEdges = Array.isArray(data?.vendorReviews?.edges) ? data.vendorReviews.edges : [];
+  const reviews = reviewEdges
+    .map((edge) => edge?.node)
+    .filter(Boolean)
+    .map((node) => ({
       name: normalizeString(node?.customer?.fullName) || t("dashboard.review.anonymous"),
-      rating: String(toNumber(node?.rating)),
+      rating: String(toNumber(node?.rating)),
       time: normalizeString(node?.ageLabel) || formatDateTimeValue(node?.createdOn, locale),
       summary: normalizeString(node?.comment) || normalizeString(node?.title) || t("dashboard.review.noText"),
-      id: `#REV-${normalizeString(node?.id)}`,
-    }));
-
-  const subtitleLabel =
-    dateFilterLabel === t("dashboard.date.custom") && customDateLabel
+      id: `#REV-${normalizeString(node?.id)}`,
+    }));
+
+  const subtitleLabel =
+    dateFilterLabel === t("dashboard.date.custom") && customDateLabel
       ? t("dashboard.chart.revenueFrom", { date: customDateLabel })
       : t("dashboard.chart.revenueOver", { period: normalizeString(dateFilterLabel).toLowerCase() });
-
-  return {
-    welcomeName:
-      normalizeString(me?.firstName).trim() ||
-      normalizeString(me?.lastName).trim() ||
-      normalizeString(me?.email).trim(),
-    overviewCards,
-    urgentOrders,
+
+  const vendorIdentity = me?.vendor || {};
+  const identityVerification = {
+    isVerified: Boolean(me?.identityVerified || vendorIdentity?.identityVerified),
+    subject: normalizeString(me?.signicatSubject),
+    verifiedAt: normalizeString(me?.signicatVerifiedAt || vendorIdentity?.signicatVerifiedAt),
+    provider: normalizeString(me?.signicatProvider || vendorIdentity?.signicatProvider),
+  };
+
+  return {
+    identityVerification,
+    welcomeName:
+      normalizeString(me?.firstName).trim() ||
+      normalizeString(me?.lastName).trim() ||
+      normalizeString(me?.email).trim(),
+    overviewCards,
+    urgentOrders,
     urgentOrdersCount: urgentOrders.length,
-    kitchenStatus,
-    chartValues,
-    chartYAxisLabels,
-    chartSubtitle: subtitleLabel,
-    reviews,
-  };
-}
-
-function formatAsIsoDate(date) {
-  return date.toISOString().slice(0, 10);
-}
-
+    kitchenStatus,
+    chartValues,
+    chartYAxisLabels,
+    chartSubtitle: subtitleLabel,
+    reviews,
+  };
+}
+
+function formatAsIsoDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
 export function buildDashboardQueryVariables({ dateFilter, startDate, endDate }) {
   const today = new Date();
   const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -478,12 +493,12 @@ export function buildDashboardQueryVariables({ dateFilter, startDate, endDate })
     reviewsFirst: 5,
     chartGroupBy: daySpan > 31 ? "week" : "day",
   };
-}
-
+}
+
 export function buildCustomDateLabel(startDate, endDate, locale) {
-  if (!startDate || !endDate) {
-    return "";
-  }
-
+  if (!startDate || !endDate) {
+    return "";
+  }
+
   return `${formatDateLabel(startDate, locale)}–${formatDateLabel(endDate, locale)}`;
-}
+}

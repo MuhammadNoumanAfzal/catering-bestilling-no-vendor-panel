@@ -112,6 +112,39 @@ export function persistAuthSession(session, options = {}) {
   targetStorage.setItem(targetKey, JSON.stringify(session));
 }
 
+export function updateStoredAuthUser(userPatch = {}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  [window.sessionStorage, window.localStorage].forEach((storage) => {
+    const key = storage === window.sessionStorage
+      ? SESSION_AUTH_STORAGE_KEY
+      : PERSISTENT_AUTH_STORAGE_KEY;
+    const rawSession = storage.getItem(key);
+
+    if (!rawSession) {
+      return;
+    }
+
+    try {
+      const parsedSession = JSON.parse(rawSession);
+      const nextSession = {
+        ...parsedSession,
+        user: {
+          ...(parsedSession.user || {}),
+          ...userPatch,
+        },
+      };
+
+      if (nextSession.accessToken && isVendorSessionAllowed(nextSession.user)) {
+        storage.setItem(key, JSON.stringify(nextSession));
+      }
+    } catch {
+      storage.removeItem(key);
+    }
+  });
+}
 export function clearStoredAuthSession() {
   if (typeof window === "undefined") {
     return;

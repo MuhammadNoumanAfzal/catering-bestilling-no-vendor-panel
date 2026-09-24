@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import EarningChart from "../components/EarningChart";
@@ -9,8 +10,10 @@ import QuickActions from "../components/QuickActions";
 import ReviewsList from "../components/ReviewsList";
 import SectionCard from "../components/SectionCard";
 import DateRangeDropdown from "../components/DateRangeDropdown";
+import SignicatVerificationBanner from "../components/SignicatVerificationBanner";
 import useDashboardPageState from "../hooks/useDashboardPageState";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
+import { showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
 
 function buildOrdersTarget(statId, dateFilter, startDate, endDate) {
   const params = new URLSearchParams();
@@ -37,6 +40,7 @@ function buildOrdersTarget(statId, dateFilter, startDate, endDate) {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const {
     businessProfilePrompt,
@@ -49,6 +53,7 @@ export default function DashboardPage() {
     handleNewOrderAccept,
     handleNewOrderReject,
     handleNewOrderViewDetails,
+    identityVerification,
     isLoading,
     isRefreshing,
     overviewCards,
@@ -61,6 +66,26 @@ export default function DashboardPage() {
     dateFilter,
   } = useDashboardPageState();
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const status = params.get("identity_verified");
+    const error = params.get("error");
+
+    if (!status && !error) {
+      return;
+    }
+
+    if (status === "success") {
+      void showVendorSuccessToast("Identity successfully verified with BankID.");
+    } else {
+      void showVendorErrorAlert(
+        "Identity verification was not completed. Please try again.",
+        "Identity verification",
+      );
+    }
+
+    navigate(location.pathname, { replace: true });
+  }, [location.pathname, location.search, navigate]);
   if (isLoading) {
     return <VendorPageLoadingState variant="detail" />;
   }
@@ -85,6 +110,8 @@ export default function DashboardPage() {
           </p>
         </div>
       </header>
+
+      <SignicatVerificationBanner identityVerification={identityVerification} />
 
       {businessProfilePrompt.isVisible ? (
         <section className="relative overflow-hidden rounded-[28px] border border-[#f0ddd0] bg-[linear-gradient(135deg,#fffdfb_0%,#fff6f0_46%,#fff1e7_100%)] px-6 py-6 shadow-[0_18px_46px_rgba(45,31,20,0.07)] max-[720px]:px-4 max-[720px]:py-5">

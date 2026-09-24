@@ -5,6 +5,16 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
       applicationStatus
       vendorStatus
       status
+      identityVerified
+      signicatSubject
+      signicatVerifiedAt
+      signicatProvider
+      vendor {
+        id
+        identityVerified
+        signicatVerifiedAt
+        signicatProvider
+      }
     }
     vendorSettings {
       id

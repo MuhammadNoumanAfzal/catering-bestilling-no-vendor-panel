@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import SettingsAccountSecurityPanel from "../components/SettingsAccountSecurityPanel";
 import SettingsActionsBar from "../components/SettingsActionsBar";
 import SettingsBusinessProfilePanel from "../components/SettingsBusinessProfilePanel";
@@ -6,6 +9,10 @@ import { useTranslation } from "react-i18next";
 import VendorApplicationStatusNotice from "../components/VendorApplicationStatusNotice";
 import useSettingsPageState from "../hooks/useSettingsPageState";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
+import SignicatVerificationBanner from "../../dashboard/components/SignicatVerificationBanner";
+import { showVendorErrorAlert, showVendorSuccessToast } from "../../../utils/vendorAlerts";
+import { authUserUpdated } from "../../auth/store/authSlice";
+import { updateStoredAuthUser } from "../../auth/store/authStorage";
 
 function resolveSettingsNoticeStatus(applicationReview, authUser) {
   const reviewStatus = `${applicationReview?.applicationStatus ?? ""}`.trim().toUpperCase();
@@ -38,6 +45,9 @@ function resolveSettingsNoticeStatus(applicationReview, authUser) {
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     activeTab,
     authUser,
@@ -59,6 +69,8 @@ export default function SettingsPage() {
     handleSaveClosure,
     handleTogglePasswordVisibility,
     hasUnsavedChanges,
+    identityVerification,
+    markIdentityVerificationComplete,
     isLoading,
     isSaving,
     fieldErrors,
@@ -72,6 +84,51 @@ export default function SettingsPage() {
     settingsOptions,
   } = useSettingsPageState();
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const status = params.get("identity_verified");
+    const provider = params.get("provider");
+    const verifiedAt = params.get("verified_at");
+    const error = params.get("error");
+
+    if (!status && !error) {
+      return;
+    }
+
+    if (status === "success") {
+      markIdentityVerificationComplete({ provider, verifiedAt });
+      void showVendorSuccessToast("Identity successfully verified with BankID.");
+    } else {
+      void showVendorErrorAlert(
+        "Identity verification was not completed. Please try again.",
+        "Identity verification",
+      );
+    }
+
+    navigate(location.pathname, { replace: true });
+  }, [location.pathname, location.search, markIdentityVerificationComplete, navigate]);
+
+  useEffect(() => {
+    if (!identityVerification?.isVerified) {
+      return;
+    }
+
+    const userPatch = {
+      identityVerified: true,
+      signicatSubject: identityVerification.subject || "",
+      signicatVerifiedAt: identityVerification.verifiedAt || "",
+      signicatProvider: identityVerification.provider || "BankID",
+    };
+
+    dispatch(authUserUpdated(userPatch));
+    updateStoredAuthUser(userPatch);
+  }, [
+    dispatch,
+    identityVerification?.isVerified,
+    identityVerification?.provider,
+    identityVerification?.subject,
+    identityVerification?.verifiedAt,
+  ]);
   const pageContent =
     activeTab === "security"
       ? {
@@ -106,6 +163,12 @@ export default function SettingsPage() {
           missingRequirements={applicationReview?.missingRequirements || []}
           settings={settings}
         />
+      ) : null}
+
+      {!isLoading ? (
+        <div className="mb-5">
+          <SignicatVerificationBanner identityVerification={identityVerification} />
+        </div>
       ) : null}
 
       <SettingsTabs activeTab={activeTab} onChange={setActiveTab} />

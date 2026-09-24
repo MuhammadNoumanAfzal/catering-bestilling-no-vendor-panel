@@ -6,6 +6,7 @@ import { FiArrowRight, FiEdit3 } from "react-icons/fi";
 import AuthCard from "../components/AuthCard";
 import AuthLayout from "../layouts/AuthLayout";
 import { useAuth } from "../hooks/useAuth";
+import { getVendorPostLoginPath } from "../api/authApi";
 import {
   sendSignupOtpRequest,
   verifySignupOtpRequest,
@@ -134,7 +135,7 @@ function getPasswordStrength(password) {
 export default function RegisterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [signupStep, setSignupStep] = useState(SIGNUP_STEP.FORM);
   const [formState, setFormState] = useState(initialFormState);
   const [otpCode, setOtpCode] = useState("");
@@ -148,7 +149,7 @@ export default function RegisterPage() {
   );
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getVendorPostLoginPath(user)} replace />;
   }
 
   function handleFieldChange(field) {

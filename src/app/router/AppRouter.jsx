@@ -8,6 +8,7 @@ import NewPasswordPage from "../../features/auth/pages/NewPasswordPage";
 import ProtectedRoute from "../../features/auth/components/ProtectedRoute";
 import RegisterPage from "../../features/auth/pages/RegisterPage";
 import VerificationPage from "../../features/auth/pages/VerificationPage";
+import IdentityVerificationPage from "../../features/identity/pages/IdentityVerificationPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import DeliveryPage from "../../features/delivery/pages/DeliveryPage";
 import FinancePage from "../../features/finance/pages/FinancePage";
@@ -34,6 +35,7 @@ export default function AppRouter() {
       <Route path="/auth/verification" element={<VerificationPage />} />
       <Route path="/auth/new-password" element={<NewPasswordPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="identity-verification" element={<IdentityVerificationPage />} />
         <Route path="/" element={<AppLayout />}>
           <Route path="home" element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
