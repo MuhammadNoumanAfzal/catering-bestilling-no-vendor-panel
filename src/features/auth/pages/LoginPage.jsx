@@ -59,7 +59,9 @@ export default function LoginPage() {
     try {
       const session = await login(formState);
       await showVendorSuccessToast(t("auth.login.success"));
-      const nextPath = location.state?.from?.pathname || getVendorPostLoginPath(session?.user);
+      const nextPath = session?.user?.identityVerified
+        ? location.state?.from?.pathname || getVendorPostLoginPath(session?.user)
+        : getVendorPostLoginPath(session?.user);
       navigate(nextPath, { replace: true });
     } catch (error) {
       await showVendorErrorAlert(error.message || t("auth.login.failed"), t("auth.login.failed"));

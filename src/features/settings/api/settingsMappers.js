@@ -373,6 +373,16 @@ function mapApplicationReview(review) {
   };
 }
 
+function mapIdentityVerification(me, authUser) {
+  const vendorIdentity = me?.vendor || authUser?.vendor || {};
+
+  return {
+    isVerified: Boolean(me?.identityVerified || authUser?.identityVerified || vendorIdentity?.identityVerified),
+    subject: normalizeString(me?.signicatSubject || authUser?.signicatSubject),
+    verifiedAt: normalizeString(me?.signicatVerifiedAt || authUser?.signicatVerifiedAt || vendorIdentity?.signicatVerifiedAt),
+    provider: normalizeString(me?.signicatProvider || authUser?.signicatProvider || vendorIdentity?.signicatProvider),
+  };
+}
 function resolveCurrentVendorStatuses(me, authUser) {
   return {
     applicationStatus: normalizeString(
@@ -389,11 +399,13 @@ export function mapVendorSettingsPage(result, options = {}) {
   const authUser = options?.authUser || null;
   const me = result?.me || null;
   const currentStatuses = resolveCurrentVendorStatuses(me, authUser);
+  const identityVerification = mapIdentityVerification(me, authUser);
 
   if (!settings) {
     return {
       settings: defaultSettingsState,
       options: defaultSettingsOptions,
+      identityVerification,
       applicationReview: {
         ...defaultApplicationReviewState,
         applicationStatus: currentStatuses.applicationStatus,
@@ -483,6 +495,7 @@ export function mapVendorSettingsPage(result, options = {}) {
       hours: mapBusinessHours(settings.businessHours),
       closures: mapSpecialClosures(settings.specialClosures),
     },
+    identityVerification,
     options: {
       cuisineOptions: mapTaxonomyOptions(bootstrap?.cuisineTypes),
       businessTypeOptions: mapTaxonomyOptions(bootstrap?.businessTypes),

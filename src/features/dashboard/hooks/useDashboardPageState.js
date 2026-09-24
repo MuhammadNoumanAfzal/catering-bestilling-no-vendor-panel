@@ -452,6 +452,7 @@ export default function useDashboardPageState() {
   }
 
   return {
+    identityVerification: dashboard.identityVerification,
     chartSubtitle: dashboard.chartSubtitle,
     chartValues: dashboard.chartValues,
     chartYAxisLabels: dashboard.chartYAxisLabels,

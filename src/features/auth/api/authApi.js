@@ -72,6 +72,10 @@ function normalizeUser(user) {
     applicationStatus: user.applicationStatus ?? "",
     vendorStatus: user.vendorStatus ?? "",
     status: user.status ?? "",
+    identityVerified: Boolean(user.identityVerified || user.vendor?.identityVerified),
+    signicatSubject: user.signicatSubject ?? "",
+    signicatVerifiedAt: user.signicatVerifiedAt ?? user.vendor?.signicatVerifiedAt ?? "",
+    signicatProvider: user.signicatProvider ?? user.vendor?.signicatProvider ?? "",
   };
 }
 
@@ -109,6 +113,10 @@ function resolveVendorAccessError(user) {
 export function getVendorPostLoginPath(user) {
   const applicationStatus = `${user?.applicationStatus ?? ""}`.trim().toUpperCase();
   const vendorStatus = `${user?.vendorStatus ?? user?.status ?? ""}`.trim().toUpperCase();
+
+  if (!user?.identityVerified) {
+    return "/identity-verification";
+  }
 
   if (["ACTIVE", "APPROVED"].includes(applicationStatus) || ["ACTIVE", "APPROVED"].includes(vendorStatus)) {
     return "/dashboard";

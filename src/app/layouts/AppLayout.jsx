@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { confirmVendorLogout, showNewNotificationToast } from "../../utils/vendorAlerts";
 import {
@@ -85,6 +85,8 @@ export default function AppLayout() {
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { pathname } = useLocation();
+  const isIdentityVerified = Boolean(user?.identityVerified);
+  const isIdentityVerificationRoute = pathname === "/identity-verification";
   const searchParamValue = searchParams.get("search") || "";
   const isSearchablePage = pathname === "/orders" || pathname === "/menu";
   const localSearch = isSearchablePage ? searchParamValue : headerSearch;
@@ -360,6 +362,10 @@ export default function AppLayout() {
     setIsDesktopProfileMenuOpen(false);
     setIsMobileProfileMenuOpen(false);
     navigate("/notifications");
+  }
+
+  if (!isIdentityVerified && !isIdentityVerificationRoute) {
+    return <Navigate replace to="/identity-verification" />;
   }
 
   function renderProfileAvatar(sizeClass = "h-7 w-7", textClass = "text-[11px]") {

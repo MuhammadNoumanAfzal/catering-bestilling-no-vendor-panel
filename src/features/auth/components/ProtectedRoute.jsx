@@ -7,6 +7,8 @@ export default function ProtectedRoute() {
   const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
   const normalizedRole = `${user?.role ?? ""}`.trim().toLowerCase();
+  const isIdentityVerificationRoute = location.pathname === "/identity-verification";
+  const needsIdentityVerification = isAuthenticated && !user?.identityVerified;
   const isInvalidVendorSession =
     isAuthenticated &&
     (
@@ -27,6 +29,10 @@ export default function ProtectedRoute() {
 
   if (isInvalidVendorSession) {
     return <Navigate replace to="/auth/login" />;
+  }
+
+  if (needsIdentityVerification && !isIdentityVerificationRoute) {
+    return <Navigate replace state={{ from: location }} to={{ pathname: "/identity-verification", search: location.search }} />;
   }
 
   return <Outlet />;
