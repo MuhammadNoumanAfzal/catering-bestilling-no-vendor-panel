@@ -6,7 +6,7 @@ import { showVendorErrorAlert } from "../../../utils/vendorAlerts";
 function formatProvider(provider) {
   const normalized = `${provider ?? ""}`.trim();
 
-  if (!normalized) {
+  if (!normalized || normalized.toLowerCase() === "signicat") {
     return "BankID";
   }
 
@@ -28,8 +28,8 @@ export default function SignicatVerificationBanner({ identityVerification }) {
     } catch (error) {
       setIsStarting(false);
       await showVendorErrorAlert(
-        error.message || "Unable to start BankID verification. Please try again.",
-        "Identity verification",
+        error.message || "Kunne ikke starte BankID-verifisering. Vennligst prøv igjen.",
+        "Identitetsverifisering",
       );
     }
   }
@@ -43,13 +43,13 @@ export default function SignicatVerificationBanner({ identityVerification }) {
               <BadgeCheck className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-[14px] font-bold text-[#173b25]">Identity verified with {providerLabel}</p>
-              <p className="mt-0.5 text-[12px] text-[#52715d]">Your vendor account identity check is complete.</p>
+              <p className="text-[14px] font-bold text-[#173b25]">Identitet verifisert med {providerLabel}</p>
+              <p className="mt-0.5 text-[12px] text-[#52715d]">Identitetskontrollen for din leverandørkonto er fullført.</p>
             </div>
           </div>
           {identityVerification?.verifiedAt ? (
             <span className="rounded-full border border-[#cde9d5] bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#16803b]">
-              Verified
+              Verifisert
             </span>
           ) : null}
         </div>
@@ -61,13 +61,13 @@ export default function SignicatVerificationBanner({ identityVerification }) {
     <section className="rounded-[24px] border border-[#f0d9bf] bg-[linear-gradient(135deg,#fff9ef_0%,#fff3e3_100%)] px-5 py-5 shadow-[0_18px_42px_rgba(134,81,31,0.08)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex max-w-[760px] items-start gap-3">
-          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#cf6e38] shadow-[0_10px_24px_rgba(207,110,56,0.14)]">
-            <ShieldCheck className="h-5 w-5" />
+          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white p-2 shadow-[0_10px_24px_rgba(207,110,56,0.14)]">
+            <img src="/bankgo.jpeg" alt="BankID" className="h-full w-full object-contain" />
           </span>
           <div>
-            <p className="text-[15px] font-bold text-[#231913]">Identity verification required</p>
+            <p className="text-[15px] font-bold text-[#231913]">Identitetsverifisering påkrevd</p>
             <p className="mt-1 max-w-[640px] text-[13px] leading-[1.6] text-[#7b6250]">
-              Verify your identity with BankID via Signicat to activate your vendor account and continue securely.
+              Verifiser identiteten din med BankID for å aktivere leverandørkontoen din og fortsette trygt.
             </p>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function SignicatVerificationBanner({ identityVerification }) {
           onClick={handleStartVerification}
           type="button"
         >
-          {isStarting ? "Connecting to BankID..." : "Verify with BankID"}
+          {isStarting ? "Kobler til BankID..." : "Verifiser med BankID"}
         </button>
       </div>
     </section>
