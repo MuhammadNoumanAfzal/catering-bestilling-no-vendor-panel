@@ -61,7 +61,7 @@ export default function SignicatVerificationBanner({ identityVerification }) {
     <section className="rounded-[24px] border border-[#f0d9bf] bg-[linear-gradient(135deg,#fff9ef_0%,#fff3e3_100%)] px-5 py-5 shadow-[0_18px_42px_rgba(134,81,31,0.08)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex max-w-[760px] items-start gap-3">
-          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white p-2 shadow-[0_10px_24px_rgba(207,110,56,0.14)]">
+          <span className="mt-0.5 flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-white p-2.5 shadow-[0_10px_24px_rgba(207,110,56,0.14)]">
             <img src="/banklogo.png" alt="BankID" className="h-full w-full object-contain" />
           </span>
           <div>
