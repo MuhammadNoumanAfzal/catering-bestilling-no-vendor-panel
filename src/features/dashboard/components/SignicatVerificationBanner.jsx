@@ -62,7 +62,7 @@ export default function SignicatVerificationBanner({ identityVerification }) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex max-w-[760px] items-start gap-3">
           <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white p-2 shadow-[0_10px_24px_rgba(207,110,56,0.14)]">
-            <img src="/bankgo.jpeg" alt="BankID" className="h-full w-full object-contain" />
+            <img src="/banklogo.jpeg" alt="BankID" className="h-full w-full object-contain" />
           </span>
           <div>
             <p className="text-[15px] font-bold text-[#231913]">Identitetsverifisering påkrevd</p>
