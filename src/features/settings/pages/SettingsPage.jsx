@@ -97,11 +97,11 @@ export default function SettingsPage() {
 
     if (status === "success") {
       markIdentityVerificationComplete({ provider, verifiedAt });
-      void showVendorSuccessToast("Identity successfully verified with BankID.");
+      void showVendorSuccessToast("Identiteten ble verifisert med BankID.");
     } else {
       void showVendorErrorAlert(
-        "Identity verification was not completed. Please try again.",
-        "Identity verification",
+        "Identitetsverifisering ble ikke fullført. Vennligst prøv igjen.",
+        "Identitetsverifisering",
       );
     }
 
