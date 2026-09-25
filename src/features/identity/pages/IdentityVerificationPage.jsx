@@ -77,7 +77,7 @@ export default function IdentityVerificationPage() {
   }
 
   async function handleLogout() {
-    await logout().catch(() => {});
+    await logout().catch(() => { });
     navigate("/auth/login", { replace: true });
   }
 
@@ -94,7 +94,7 @@ export default function IdentityVerificationPage() {
           <div className="flex items-center gap-3">
             <img className="h-auto w-32 sm:w-36 object-contain" src="/logo (2).png" alt="GoCatering" />
             <span className="hidden h-6 w-px bg-[#e2d5cb] sm:block" />
-            <img className="h-7 sm:h-8 w-auto object-contain" src="/banklogo.png" alt="BankID" />
+            <img className="h-7 sm:h-8 w-auto object-contain" src="/banklogo.jpeg" alt="BankID" />
           </div>
           <button
             className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#e3d3c7] bg-white/90 px-4 text-[13px] font-bold text-[#7a4c35] shadow-sm transition hover:bg-white"
@@ -123,7 +123,7 @@ export default function IdentityVerificationPage() {
           <div className="w-full min-w-0 shrink-0 lg:w-[380px] xl:w-[410px]">
             <div className="rounded-[28px] border border-[#ead8cc] bg-white/95 p-6 sm:p-7 shadow-[0_24px_70px_rgba(84,57,39,0.14)] backdrop-blur">
               <div className="flex items-center justify-between gap-3 border-b border-[#f3e6dc] pb-4">
-                <img src="/banklogo.png" alt="BankID" className="h-9 sm:h-10 w-auto object-contain" />
+                <img src="/banklogo.jpeg" alt="BankID" className="h-9 sm:h-10 w-auto object-contain" />
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f0f7f3] px-3 py-1 text-[11px] font-extrabold text-[#1f7a42]">
                   <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
                   BankID
