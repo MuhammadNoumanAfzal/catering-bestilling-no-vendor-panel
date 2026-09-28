@@ -10,6 +10,7 @@ export default function DeliveryAreasSection({
   searchResults,
   cityAreas = [],
   selectedAreas = [],
+  selectedSearchResults = [],
   onSearchChange,
   onAddArea,
   onAddCityAreas,
@@ -21,6 +22,8 @@ export default function DeliveryAreasSection({
   const { t } = useTranslation();
   const showDropdown = !disabled && searchValue.trim();
   const hasResults = searchResults.length > 0;
+  const hasSelectedSearchResults = selectedSearchResults.length > 0;
+  const displayedSelectedAreas = showDropdown && hasSelectedSearchResults ? selectedSearchResults : selectedAreas;
   const cityName = cityAreas[0]?.name || "";
 
   return (
@@ -73,6 +76,10 @@ export default function DeliveryAreasSection({
                 </button>
               ))}
             </div>
+          ) : hasSelectedSearchResults ? (
+            <div className="px-3 py-4">
+              <p className="text-[13px] font-medium text-[#8d7f73]">{t("delivery.matchingAreasAlreadySelected", { defaultValue: "All matching service areas are already selected below." })}</p>
+            </div>
           ) : (
             <div className="px-3 py-4">
               <p className="text-[13px] font-medium text-[#8d7f73]"> {i18n.t("delivery.noMatchingAreas")} </p>
@@ -83,7 +90,7 @@ export default function DeliveryAreasSection({
 
       <DeliveryTagList
         disabled={disabled}
-        items={selectedAreas}
+        items={displayedSelectedAreas}
         onRemove={onRemoveArea}
       />
 
