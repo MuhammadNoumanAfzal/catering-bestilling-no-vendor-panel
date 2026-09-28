@@ -404,17 +404,7 @@ export function mapDashboardResponse(
     dateFilterLabel === t("dashboard.date.custom") && customDateLabel
       ? t("dashboard.chart.revenueFrom", { date: customDateLabel })
       : t("dashboard.chart.revenueOver", { period: normalizeString(dateFilterLabel).toLowerCase() });
-
-  const vendorIdentity = me?.vendor || {};
-  const identityVerification = {
-    isVerified: Boolean(me?.identityVerified || vendorIdentity?.identityVerified),
-    subject: normalizeString(me?.signicatSubject),
-    verifiedAt: normalizeString(me?.signicatVerifiedAt || vendorIdentity?.signicatVerifiedAt),
-    provider: normalizeString(me?.signicatProvider || vendorIdentity?.signicatProvider),
-  };
-
-  return {
-    identityVerification,
+return {
     welcomeName:
       normalizeString(me?.firstName).trim() ||
       normalizeString(me?.lastName).trim() ||

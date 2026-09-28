@@ -29,15 +29,8 @@ export const LOGIN_USER_MUTATION = `
         applicationStatus
         vendorStatus
         status
-        identityVerified
-        signicatSubject
-        signicatVerifiedAt
-        signicatProvider
         vendor {
           id
-          identityVerified
-          signicatVerifiedAt
-          signicatProvider
         }
       }
     }
@@ -62,15 +55,8 @@ export const REGISTER_VENDOR_MUTATION = `
         applicationStatus
         vendorStatus
         status
-        identityVerified
-        signicatSubject
-        signicatVerifiedAt
-        signicatProvider
         vendor {
           id
-          identityVerified
-          signicatVerifiedAt
-          signicatProvider
         }
       }
     }
