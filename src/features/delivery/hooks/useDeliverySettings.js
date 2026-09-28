@@ -252,6 +252,19 @@ export default function useDeliverySettings() {
 
   const serviceAreaResults = searchResults.length ? searchResults : localServiceAreaResults;
 
+  const selectedServiceAreaResults = useMemo(() => {
+    const searchValue = serviceAreaSearch.trim().toLowerCase();
+
+    if (!searchValue || !formState.selectedModes.includes("delivery") || loadError) {
+      return [];
+    }
+
+    return (formState.serviceAreas || []).filter((area) => {
+      const areaName = `${area.name || ""}`.toLowerCase();
+      const areaPostCode = `${area.postCode || ""}`.toLowerCase();
+      return areaName.includes(searchValue) || areaPostCode.includes(searchValue);
+    });
+  }, [formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
   const cityServiceAreas = useMemo(() => {
     const cityName = serviceAreaSearch.trim().toLowerCase();
     if (!cityName) return [];
@@ -607,6 +620,7 @@ export default function useDeliverySettings() {
     sameFeeAllDistances: formState.sameFeeAllDistances,
     saveMessage,
     selectedModes: formState.selectedModes,
+    selectedServiceAreaResults,
     retryLoad: loadDeliverySettings,
     setBaseFee: (value) => setField("baseFee", value),
     setCustomSlotDraft,

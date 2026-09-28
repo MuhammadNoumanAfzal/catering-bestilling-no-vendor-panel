@@ -12,6 +12,21 @@ export function getVendorDeliverySettings() {
   return executeProtectedGraphqlRequest(GET_VENDOR_DELIVERY_SETTINGS_QUERY, {});
 }
 
+function dedupeAreas(areas) {
+  const seen = new Set();
+
+  return areas.filter((area) => {
+    const key = area?.id || `${area?.name || ""}:${area?.postCode || ""}`;
+
+    if (!key || seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function searchAvailableAreas({ term, first = 200 }) {
   const collectedAreas = [];
   let after = null;
@@ -25,8 +40,12 @@ export async function searchAvailableAreas({ term, first = 200 }) {
     );
     const connection = result?.vendorAvailableDeliveryAreas;
 
+    if (Array.isArray(result?.validAreasSearch)) {
+      collectedAreas.push(...result.validAreasSearch);
+    }
+
     if (!connection?.edges) {
-      return Array.isArray(result?.validAreasSearch) ? result.validAreasSearch : [];
+      return dedupeAreas(collectedAreas);
     }
 
     collectedAreas.push(
@@ -42,7 +61,7 @@ export async function searchAvailableAreas({ term, first = 200 }) {
     }
   }
 
-  return collectedAreas;
+  return dedupeAreas(collectedAreas);
 }
 
 export async function updateVendorDeliverySettings(input) {

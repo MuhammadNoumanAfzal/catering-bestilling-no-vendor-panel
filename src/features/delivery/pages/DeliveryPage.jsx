@@ -52,6 +52,7 @@ export default function DeliveryPage() {
     pickupAddress,
     pickupInstructions,
     serviceAreaResults,
+    selectedServiceAreaResults,
     serviceAreaSearch,
     serviceAreas,
     saveMessage,
@@ -125,6 +126,7 @@ export default function DeliveryPage() {
             searchResults={serviceAreaResults}
             searchValue={serviceAreaSearch}
             selectedAreas={serviceAreas}
+            selectedSearchResults={selectedServiceAreaResults}
           />
 
           <DeliveryPickupSection
