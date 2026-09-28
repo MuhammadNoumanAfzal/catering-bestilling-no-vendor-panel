@@ -258,12 +258,6 @@ export default function useSettingsPageState() {
   const [settings, setSettings] = useState(defaultSettingsState);
   const [settingsOptions, setSettingsOptions] = useState(defaultSettingsOptions);
   const [applicationReview, setApplicationReview] = useState(defaultApplicationReviewState);
-  const [identityVerification, setIdentityVerification] = useState({
-    isVerified: false,
-    subject: "",
-    verifiedAt: "",
-    provider: "",
-  });
   const [complianceDocuments, setComplianceDocuments] = useState(defaultComplianceDocuments);
   const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
   const [passwordVisibility, setPasswordVisibility] = useState({
@@ -275,15 +269,6 @@ export default function useSettingsPageState() {
   const [saveMessage, setSaveMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  const markIdentityVerificationComplete = useCallback((payload = {}) => {
-    setIdentityVerification((current) => ({
-      ...current,
-      isVerified: true,
-      provider: payload.provider || current.provider || "BankID",
-      verifiedAt: payload.verifiedAt || current.verifiedAt || new Date().toISOString(),
-    }));
-  }, []);
 
   async function refreshSettingsPageState() {
     const refreshedResult = await getVendorSettingsPage();
@@ -313,12 +298,6 @@ export default function useSettingsPageState() {
     setSettings(nextSettings);
     setSettingsOptions(mappedPage.options);
     setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
-    setIdentityVerification(mappedPage.identityVerification || {
-      isVerified: false,
-      subject: "",
-      verifiedAt: "",
-      provider: "",
-    });
     setComplianceDocuments(mergeComplianceDocuments(complianceResult.documents));
     setActiveTab(nextActiveTab);
 
@@ -366,12 +345,6 @@ export default function useSettingsPageState() {
         setSettings(nextSettings);
         setSettingsOptions(mappedPage.options);
         setApplicationReview(mappedPage.applicationReview || defaultApplicationReviewState);
-    setIdentityVerification(mappedPage.identityVerification || {
-      isVerified: false,
-      subject: "",
-      verifiedAt: "",
-      provider: "",
-    });
         setComplianceDocuments(mergeComplianceDocuments(complianceResult.documents));
         setActiveTab(nextActiveTab);
       } catch (error) {
@@ -1211,9 +1184,7 @@ export default function useSettingsPageState() {
     activeTab,
     authUser,
     applicationReview,
-    identityVerification,
     complianceDocuments,
-    markIdentityVerificationComplete,
     handleAccountFieldChange,
     handleComplianceDocumentsRefresh,
     handleComplianceDocumentUpload,

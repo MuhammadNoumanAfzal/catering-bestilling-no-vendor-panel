@@ -15,16 +15,9 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
       firstName
       lastName
       email
-      identityVerified
-      signicatSubject
-      signicatVerifiedAt
-      signicatProvider
       vendor {
         id
         name
-        identityVerified
-        signicatVerifiedAt
-        signicatProvider
       }
     }
 
@@ -144,14 +137,3 @@ export const GET_VENDOR_DASHBOARD_QUERY = `
     }
   }
 `;
-
-export const START_SIGNICAT_VERIFICATION_MUTATION = `
-  mutation StartSignicatVerification($input: StartSignicatVerificationInput) {
-    startSignicatVerification(input: $input) {
-      success
-      message
-      redirectUrl
-      isMock
-    }
-  }
-`;
