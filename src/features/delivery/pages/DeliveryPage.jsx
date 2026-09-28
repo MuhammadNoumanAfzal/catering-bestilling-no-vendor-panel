@@ -51,6 +51,7 @@ export default function DeliveryPage() {
     minimumOrderNoticeHours,
     pickupAddress,
     pickupInstructions,
+    regionServiceAreas,
     serviceAreaResults,
     selectedServiceAreaResults,
     serviceAreaSearch,
@@ -123,6 +124,7 @@ export default function DeliveryPage() {
             onAddCityAreas={handleAddServiceAreas}
             onRemoveArea={handleRemoveServiceArea}
             onSearchChange={(event) => handleServiceAreaSearchChange(event.target.value)}
+            regionAreas={regionServiceAreas}
             searchResults={serviceAreaResults}
             searchValue={serviceAreaSearch}
             selectedAreas={serviceAreas}

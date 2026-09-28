@@ -466,8 +466,8 @@ export default {
     title: "Økonomi og inntekter", subtitle: "Følg inntekter, utbetalinger og økonomisk utvikling.", earningsOverview: "Inntektsoversikt", chartDescription: "Inntekter og bestillingsutvikling for valgt periode", earnings: "Inntekter", orders: "Bestillinger", noChart: "Ingen diagramdata er tilgjengelig for den valgte datoperioden.", export: "Eksporter CSV", exporting: "Eksporterer …", customRange: "Egendefinert periode", from: "Fra", to: "Til", apply: "Bruk", payoutStatus: "Utbetalingsstatus", payoutActivity: "Utbetalingsaktivitet", payoutActivityDescription: "Følg med på hva som venter, er frigitt av administrator og er betalt til bankkontoen din.", loading: "Laster …", noPayouts: "Ingen utbetalingsaktivitet ble funnet i den valgte perioden.", showing: "Viser {{start}}–{{end}} av {{total}} utbetalingsposter", payout: "Utbetaling", invoice: "Faktura", updated: "Oppdatert", vendorReceives: "Leverandøren mottar", commission: "Provisjon", status: "Status", reference: "Referanse", viewDetails: "Vis detaljer", closeDetails: "Lukk detaljer",
   },
   delivery: {
-    addAllCity: "Legg til alle i {{city}}", cityPostalCodes: "Postnumre i {{city}} ({{count}})", addAllCityHint: "Legg til alle tilgjengelige postnumre i denne byen",
-    searchAreaPlaceholder: "Søk etter område eller postnummer",
+    addAllCity: "Legg til alle i {{city}}", cityPostalCodes: "Postnumre i {{city}} ({{count}})", addAllCityHint: "Legg til alle tilgjengelige postnumre i denne byen", addAllRegion: "Legg til alle i {{region}}", regionPostalCodes: "Postnumre i {{region}} ({{count}})", addAllRegionHint: "Legg til alle samsvarende postnumre i denne regionen. De grupperes etter by nedenfor.",
+    searchAreaPlaceholder: "Søk etter by, region eller postnummer",
     postcode: "Postnummer",
     noMatchingAreas: "Ingen leveringsområder samsvarer med søket.",
     areaRequired: "Velg minst ett aktivt leveringsområde når levering er aktivert.",

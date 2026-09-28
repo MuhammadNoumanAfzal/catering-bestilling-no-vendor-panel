@@ -103,6 +103,8 @@ function normalizeServiceArea(area) {
   return {
     id: area?.id || "",
     name: normalizeString(area?.name),
+    region: normalizeString(area?.region),
+    city: normalizeString(area?.city),
     postCode: formatNorwegianPostCode(area?.postCode),
     isActive: area?.isActive !== false,
   };

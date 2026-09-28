@@ -23,6 +23,14 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
     return item.name || "";
   }
 
+  function getAreaCity(item) {
+    if (typeof item === "string") {
+      return item;
+    }
+
+    return item.city || item.region || item.name || "";
+  }
+
   function getAreaPostCode(item) {
     if (typeof item === "string") {
       return "";
@@ -40,7 +48,7 @@ export default function DeliveryTagList({ items, onRemove, disabled = false }) {
     const groups = new Map();
 
     items.forEach((item) => {
-      const cityName = getAreaName(item).trim();
+      const cityName = getAreaCity(item).trim();
       const key = cityName ? cityName.toLowerCase() : UNKNOWN_CITY_KEY;
       const existingGroup = groups.get(key);
 

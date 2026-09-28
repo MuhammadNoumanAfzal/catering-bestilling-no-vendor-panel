@@ -9,6 +9,7 @@ export default function DeliveryAreasSection({
   searchValue,
   searchResults,
   cityAreas = [],
+  regionAreas = [],
   selectedAreas = [],
   selectedSearchResults = [],
   onSearchChange,
@@ -24,7 +25,8 @@ export default function DeliveryAreasSection({
   const hasResults = searchResults.length > 0;
   const hasSelectedSearchResults = selectedSearchResults.length > 0;
   const displayedSelectedAreas = showDropdown && hasSelectedSearchResults ? selectedSearchResults : selectedAreas;
-  const cityName = cityAreas[0]?.name || "";
+  const cityName = cityAreas[0]?.city || cityAreas[0]?.name || "";
+  const regionName = regionAreas[0]?.region || "";
 
   return (
     <DeliverySectionCard
@@ -37,11 +39,19 @@ export default function DeliveryAreasSection({
         error={error}
         label={t("delivery.searchArea", { defaultValue: "Search service area" })}
         onChange={onSearchChange}
-        placeholder={i18n.t("delivery.searchAreaPlaceholder")}
+        placeholder={t("delivery.searchAreaPlaceholder", { defaultValue: "Search by city, region, or postcode" })}
         value={searchValue}
       />
 
-      {showDropdown && cityAreas.length > 0 ? (
+      {showDropdown && regionAreas.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#f0d7c6] bg-[#fff7f1] px-3 py-3">
+          <div>
+            <p className="text-[13px] font-bold text-[#241c17]">{t("delivery.regionPostalCodes", { region: regionName, count: regionAreas.length, defaultValue: `${regionName} postal codes (${regionAreas.length})` })}</p>
+            <p className="mt-0.5 text-[12px] text-[#7d6d61]">{t("delivery.addAllRegionHint", { defaultValue: "Add every matching postal code in this region. They will be grouped by city below." })}</p>
+          </div>
+          <button className="inline-flex h-9 items-center justify-center rounded-[8px] bg-[#d96e39] px-3 text-[12px] font-bold text-white transition hover:bg-[#c95f2c]" onClick={() => onAddCityAreas?.(regionAreas)} type="button">{t("delivery.addAllRegion", { region: regionName, defaultValue: `Add all ${regionName}` })}</button>
+        </div>
+      ) : showDropdown && cityAreas.length > 0 ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[#f0d7c6] bg-[#fff7f1] px-3 py-3">
           <div>
             <p className="text-[13px] font-bold text-[#241c17]">{t("delivery.cityPostalCodes", { city: cityName, count: cityAreas.length, defaultValue: `${cityName} postal codes (${cityAreas.length})` })}</p>

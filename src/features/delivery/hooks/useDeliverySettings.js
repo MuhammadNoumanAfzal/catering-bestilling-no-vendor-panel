@@ -43,6 +43,8 @@ function normalizeServiceArea(area) {
   return {
     id: area.id,
     name: area.name || "",
+    region: area.region || "",
+    city: area.city || "",
     postCode: formatNorwegianPostCode(area.postCode),
     isActive: area.isActive !== false,
   };
@@ -194,10 +196,11 @@ export default function useDeliverySettings() {
       .filter((area) => !selectedIds.has(area.id))
       .filter((area) => {
         const areaName = `${area.name || ""}`.toLowerCase();
+        const areaRegion = `${area.region || ""}`.toLowerCase();
+        const areaCity = `${area.city || ""}`.toLowerCase();
         const areaPostCode = `${area.postCode || ""}`.toLowerCase();
-        return areaName.includes(searchValue) || areaPostCode.includes(searchValue);
-      })
-      .slice(0, 10);
+        return areaName.includes(searchValue) || areaRegion.includes(searchValue) || areaCity.includes(searchValue) || areaPostCode.includes(searchValue);
+      });
   }, [availableServiceAreas, formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
 
   useEffect(() => {
@@ -261,8 +264,10 @@ export default function useDeliverySettings() {
 
     return (formState.serviceAreas || []).filter((area) => {
       const areaName = `${area.name || ""}`.toLowerCase();
+      const areaRegion = `${area.region || ""}`.toLowerCase();
+      const areaCity = `${area.city || ""}`.toLowerCase();
       const areaPostCode = `${area.postCode || ""}`.toLowerCase();
-      return areaName.includes(searchValue) || areaPostCode.includes(searchValue);
+      return areaName.includes(searchValue) || areaRegion.includes(searchValue) || areaCity.includes(searchValue) || areaPostCode.includes(searchValue);
     });
   }, [formState.selectedModes, formState.serviceAreas, loadError, serviceAreaSearch]);
   const cityServiceAreas = useMemo(() => {
@@ -270,9 +275,32 @@ export default function useDeliverySettings() {
     if (!cityName) return [];
 
     return (searchResults.length ? searchResults : localServiceAreaResults)
-      .filter((area) => `${area.name || ""}`.trim().toLowerCase() === cityName);
+      .filter((area) => `${area.city || area.name || ""}`.trim().toLowerCase() === cityName);
   }, [localServiceAreaResults, searchResults, serviceAreaSearch]);
 
+  const regionServiceAreas = useMemo(() => {
+    const regionName = serviceAreaSearch.trim().toLowerCase();
+    if (!regionName) return [];
+
+    const matchingAreas = (searchResults.length ? searchResults : localServiceAreaResults)
+      .filter((area) => `${area.region || ""}`.trim().toLowerCase().includes(regionName));
+
+    if (!matchingAreas.length) {
+      return [];
+    }
+
+    const regionCounts = matchingAreas.reduce((counts, area) => {
+      const key = `${area.region || ""}`.trim().toLowerCase();
+      if (!key) return counts;
+      return { ...counts, [key]: (counts[key] || 0) + 1 };
+    }, {});
+    const primaryRegion = Object.entries(regionCounts)
+      .sort((left, right) => right[1] - left[1])[0]?.[0];
+
+    return primaryRegion
+      ? matchingAreas.filter((area) => `${area.region || ""}`.trim().toLowerCase() === primaryRegion)
+      : matchingAreas;
+  }, [localServiceAreaResults, searchResults, serviceAreaSearch]);
 
   const currentComparable = useMemo(
     () => getComparableDeliverySettings(formState),
@@ -592,6 +620,7 @@ export default function useDeliverySettings() {
     handleOpenEditSlotModal,
     handleRemoveTimeSlot,
     handleRemoveServiceArea,
+    regionServiceAreas,
     handleSaveChanges,
     handleSaveCustomSlot,
     handleServiceAreaSearchChange,
