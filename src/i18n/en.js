@@ -260,7 +260,7 @@ export default {
     }
   },
   delivery: {
-    addAllCity: "Add all {{city}}", cityPostalCodes: "{{city}} postal codes ({{count}})", addAllCityHint: "Add every available postal code for this city",
+    addAllCity: "Add all {{city}}", cityPostalCodes: "{{city}} postal codes ({{count}})", addAllCityHint: "Add every available postal code for this city", addAllRegion: "Add all {{region}}", regionPostalCodes: "{{region}} postal codes ({{count}})", addAllRegionHint: "Add every matching postal code in this region. They will be grouped by city below.",
     selected: "{{count}} selected",
     mo: "Monday",
     tu: "Tuesday",
@@ -328,7 +328,7 @@ export default {
     "subtitle": "Configure how your orders are delivered to customers.",
     "unavailable": "Delivery settings unavailable",
     "retry": "Retry loading",
-    "searchAreaPlaceholder": "Search by area name or postcode",
+    "searchAreaPlaceholder": "Search by city, region, or postcode",
     "postcode": "Postcode",
     "noMatchingAreas": "No matching backend service areas found for this search.",
     "areaRequired": "Select at least one active service area whenever delivery is enabled.",

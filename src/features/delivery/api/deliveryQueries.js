@@ -33,12 +33,16 @@ export const GET_VENDOR_DELIVERY_SETTINGS_QUERY = `
         serviceAreas {
           id
           name
+          region
+          city
           postCode
           isActive
         }
         availableServiceAreas {
           id
           name
+          region
+          city
           postCode
           isActive
         }
@@ -55,6 +59,8 @@ export const SEARCH_AVAILABLE_AREAS_QUERY = `
         node {
           id
           name
+          region
+          city
           postCode
           isActive
         }
@@ -67,6 +73,8 @@ export const SEARCH_AVAILABLE_AREAS_QUERY = `
     validAreasSearch(term: $term, first: $first) {
       id
       name
+      region
+      city
       postCode
       isActive
     }
