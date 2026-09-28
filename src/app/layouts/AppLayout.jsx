@@ -388,9 +388,9 @@ export default function AppLayout() {
       <div className="min-h-dvh w-full overflow-x-clip bg-[#f4f1ee] lg:grid lg:grid-cols-[236px_minmax(0,1fr)] max-[960px]:block">
       <aside className="relative flex min-h-dvh w-[236px] flex-col bg-[linear-gradient(180deg,#cb6432_0%,#c55b2d_100%)] text-white max-[960px]:hidden lg:w-auto">
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <div className="mx-4 mt-4 flex h-[116px] flex-col justify-center rounded-[18px] border border-white/10 bg-white/12 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
-            <img className="block h-16 w-auto max-w-36 object-contain brightness-0 invert" src="/logo%20(2).png" alt="GoCatering" />
-            <p className="type-subpara mt-2 text-white/75">{t("layout.vendorDashboard", { defaultValue: "Vendor dashboard" })}</p>
+          <div className="mx-4 mt-3 flex h-[114px] flex-col justify-center rounded-[18px] border border-white/10 bg-white/12 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+            <div className="flex h-[72px] w-[154px] items-center justify-start overflow-hidden"><img className="block h-[150px] w-auto max-w-none object-contain brightness-0 invert" src="/logo%20(2).png" alt="GoCatering" /></div>
+            <p className="type-subpara mt-1 text-white/90">{t("layout.vendorDashboard", { defaultValue: "Vendor dashboard" })}</p>
           </div>
 
           <div className="flex-1 overflow-auto px-3 py-6 hide-scrollbar">
