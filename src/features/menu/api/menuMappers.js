@@ -115,11 +115,15 @@ export function resolveMediaUrl(media) {
     return "";
   }
 
-  if (typeof media === "string") {
-    return media;
+  const mediaUrl = typeof media === "string" ? media : media.fileUrl || media.imageUrl || "";
+  const url = normalizeString(mediaUrl).trim();
+
+  if (!url || /^(?:data:|blob:)/i.test(url)) {
+    return url;
   }
 
-  return media.fileUrl || media.imageUrl || "";
+  const apiUrl = import.meta.env.VITE_GRAPHQL_API_URL ?? import.meta.env.VITE_GRAPHQL_URL ?? "https://api.gocatering.no/graphql/";
+  return new URL(url, apiUrl).toString();
 }
 
 export function normalizeUploadedAsset(asset) {
