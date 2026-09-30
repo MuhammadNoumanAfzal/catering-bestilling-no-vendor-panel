@@ -12,6 +12,7 @@ import {
 import { mapVendorOrderDetail, normalizeBackendStatus } from "../api/orderMappers";
 import { savePendingAdjustment } from "../utils/pendingAdjustments";
 import { getVendorMenus } from "../../menu/api/menuApi";
+import { resolveMediaUrl } from "../../menu/api/menuMappers";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
 const REASON_OPTIONS = [
@@ -84,6 +85,10 @@ function formatCurrency(amount) {
   })}`;
 }
 
+function normalizeLookupKey(value) {
+  return normalizeString(value).trim().toLowerCase();
+}
+
 function normalizeString(value) {
   return value == null ? "" : String(value);
 }
@@ -124,7 +129,7 @@ function buildRemovableItems(orderDetail) {
         name: item?.productName || product?.name || item?.name || i18n.t("orders.detail.item"),
         quantity: Number(item?.quantity ?? 0) || 0,
         totalPrice: parseCurrencyValue(item?.lineTotal ?? item?.lineSubtotal ?? item?.unitPrice),
-        image: product?.coverImage?.fileUrl || "",
+        image: resolveMediaUrl(product?.coverImage || product?.image || product?.imageUrl || ""),
         description: product?.description || item?.description || addonsLabel,
         menuItems: Array.isArray(product?.menuItems)
           ? product.menuItems
@@ -143,7 +148,7 @@ function buildRemovableItems(orderDetail) {
       name: item?.title || item?.name || i18n.t("orders.detail.item"),
       quantity: Number(cart?.quantity ?? 0) || 0,
       totalPrice: parseCurrencyValue(cart?.totalPriceWithTax ?? cart?.priceWithTax),
-      image: item?.coverImage?.fileUrl || "",
+      image: resolveMediaUrl(item?.coverImage || item?.image || item?.imageUrl || ""),
       description: item?.description || "",
       menuItems: Array.isArray(item?.menuItems) ? item.menuItems : [],
     };
@@ -169,6 +174,7 @@ export default function OrderAdjustmentPage() {
   const [suggestedList, setSuggestedList] = useState([]);
   const [availableSuggestions, setAvailableSuggestions] = useState([]);
   const [vendorMenuItemSuggestions, setVendorMenuItemSuggestions] = useState([]);
+  const [vendorMenuImageLookup, setVendorMenuImageLookup] = useState({});
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [formErrors, setFormErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
@@ -250,6 +256,22 @@ export default function OrderAdjustmentPage() {
         const menus = Array.isArray(result?.vendorMenus?.edges)
           ? result.vendorMenus.edges.map((edge) => edge?.node).filter(Boolean)
           : [];
+        const imageLookup = menus.reduce((lookup, menu) => {
+          const image = resolveMediaUrl(menu.coverImage || menu.image || menu.imageUrl || "");
+
+          if (!image) {
+            return lookup;
+          }
+
+          [menu.id, menu.name, menu.title]
+            .map(normalizeLookupKey)
+            .filter(Boolean)
+            .forEach((key) => {
+              lookup[key] = image;
+            });
+
+          return lookup;
+        }, {});
         const includedDishes = menus.flatMap((menu) =>
           (Array.isArray(menu.menuItems) ? menu.menuItems : [])
             .filter((item) => item?.title || item?.name)
@@ -260,11 +282,14 @@ export default function OrderAdjustmentPage() {
               sourceMenuName: menu.title || menu.name || i18n.t("orders.adjustment.fromYourMenu"),
               sourceMenuId: menu.id,
               menuItemId: item.id,
-              image: item.coverImage?.fileUrl || item.image?.fileUrl || menu.coverImage?.fileUrl || "",
+              image: resolveMediaUrl(
+                item.coverImage || item.image || item.imageUrl || menu.coverImage || "",
+              ),
               isMenuItemSuggestion: true,
               price: 0,
             })),
         );
+        setVendorMenuImageLookup(imageLookup);
         setVendorMenuItemSuggestions(includedDishes);
       })
       .catch(() => {
@@ -295,7 +320,14 @@ export default function OrderAdjustmentPage() {
           const matchingIncludedDishes = vendorMenuItemSuggestions.filter((item) =>
             `${item.name} ${item.description} ${item.sourceMenuName}`.toLowerCase().includes(query.toLowerCase()),
           );
-          setAvailableSuggestions([...matchingIncludedDishes, ...items]);
+          const itemsWithFallbackImages = items.map((item) => ({
+            ...item,
+            image:
+              item.image ||
+              vendorMenuImageLookup[normalizeLookupKey(item.backendId || item.id)] ||
+              vendorMenuImageLookup[normalizeLookupKey(item.name)],
+          }));
+          setAvailableSuggestions([...matchingIncludedDishes, ...itemsWithFallbackImages]);
         }
       } catch {
         if (!isCancelled) {
@@ -318,7 +350,7 @@ export default function OrderAdjustmentPage() {
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [searchTerm, vendorMenuItemSuggestions]);
+  }, [searchTerm, vendorMenuImageLookup, vendorMenuItemSuggestions]);
 
   useEffect(() => {
     if (!activeReplacementKey || !pendingReplacementItem) {
@@ -979,11 +1011,11 @@ export default function OrderAdjustmentPage() {
                   {t("orders.adjustment.noAdjustedItems", { defaultValue: "No items modified or added yet. Select order items above or search suggestions to make adjustments." })}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 max-[600px]:grid-cols-1">
+                <div className="grid grid-cols-1 gap-3">
                   {modifiedItems.map((item) => (
                     <div
                       key={`removed-${item.id}`}
-                      className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-red-200 bg-[#fff5f5] p-3 transition hover:border-red-300"
+                      className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-[12px] border border-red-200 bg-[#fff5f5] p-3 transition hover:border-red-300 max-[520px]:grid-cols-[auto_minmax(0,1fr)]"
                     >
                       <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-red-200 bg-red-100 text-[12px] font-extrabold uppercase tracking-wider text-red-500"> {i18n.t("vendorMessages.removedShort")} </div>
                       <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
@@ -998,7 +1030,7 @@ export default function OrderAdjustmentPage() {
                       <button
                         type="button"
                         onClick={() => toggleItem(item.id)}
-                        className="ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border border-red-300 bg-white px-3 text-[13px] font-extrabold text-red-700 transition hover:border-red-400 hover:bg-red-50 active:scale-95"
+                        className="h-8 shrink-0 cursor-pointer rounded-[6px] border border-red-300 bg-white px-3 text-[13px] font-extrabold text-red-700 transition hover:border-red-400 hover:bg-red-50 active:scale-95 max-[520px]:col-start-2 max-[520px]:w-fit"
                       > {i18n.t("vendorMessages.restore")} </button>
                     </div>
                   ))}
@@ -1008,7 +1040,7 @@ export default function OrderAdjustmentPage() {
                     .map((item) => (
                       <div
                         key={`${item.orderItemId}-${item.removedMenuItemId}`}
-                        className="flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border border-[#ead8ca] bg-[#fffaf6] p-3"
+                        className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[12px] border border-[#ead8ca] bg-[#fffaf6] p-3"
                       >
                         <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded-[6px] border border-[#dfc2ac] bg-[#fff0e6] text-[11px] font-extrabold uppercase tracking-wider text-[#c75c2b]"> {i18n.t("vendorMessages.swap")} </div>
                         <div className="min-w-0 flex-1">
@@ -1023,7 +1055,7 @@ export default function OrderAdjustmentPage() {
                   {suggestedList.map((item) => (
                     <div
                       key={`added-${item.id}`}
-                      className={`flex min-w-0 flex-wrap items-start gap-3 rounded-[12px] border p-3 transition ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#ead8ca] bg-[#fffaf6] hover:border-[#dfc2ac]" : "border-green-200 bg-[#f5fff5] hover:border-green-300"}`}
+                      className={`grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[12px] border p-3 transition ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#ead8ca] bg-[#fffaf6] hover:border-[#dfc2ac]" : "border-green-200 bg-[#f5fff5] hover:border-green-300"}`}
                     >
                       {item.image ? (
                         <img
@@ -1042,12 +1074,12 @@ export default function OrderAdjustmentPage() {
                           </span>
                         </div>
                         {item.isMenuItemSuggestion ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{t("orders.detail.from", { defaultValue: "From" })} {item.sourceMenuName}{item.description ? ` - ${item.description}` : ""}</span> : item.description ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{item.description}</span> : null}
-                        <span className={`text-[13px] font-extrabold ${item.isCustomAlternative || item.isMenuItemSuggestion ? "text-[#a06a48]" : "text-green-600"}`}>
+                        <span className={`mt-1 text-[13px] font-extrabold ${item.isCustomAlternative || item.isMenuItemSuggestion ? "text-[#a06a48]" : "text-green-600"}`}>
                           {item.isMenuItemSuggestion ? t("orders.adjustment.includedExistingMenuPrice", { defaultValue: "Included in existing menu price" }) : item.isCustomAlternative ? t("orders.adjustment.priceToConfirm", { defaultValue: "Price to be confirmed with customer" }) : `+${formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}`}
                         </span>
                       </div>
                       {!item.isCustomAlternative && !item.isMenuItemSuggestion ? (
-                        <div className="flex items-center rounded-[7px] border border-green-300 bg-white">
+                        <div className="col-start-2 flex w-fit items-center rounded-[7px] border border-green-300 bg-white">
                           <button className="flex h-7 w-7 items-center justify-center text-green-700 disabled:opacity-40" disabled={Number(item.quantity || 1) <= 1} onClick={() => updateSuggestionQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
                           <span className="min-w-7 text-center text-[12px] font-extrabold text-green-700">{item.quantity || 1}</span>
                           <button className="flex h-7 w-7 items-center justify-center text-green-700" onClick={() => updateSuggestionQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
@@ -1056,7 +1088,7 @@ export default function OrderAdjustmentPage() {
                       <button
                         type="button"
                         onClick={() => removeSuggestion(item.id)}
-                        className={`ml-auto h-8 shrink-0 cursor-pointer rounded-[6px] border bg-white px-3 text-[13px] font-extrabold transition active:scale-95 ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#dfc2ac] text-[#a05e38] hover:bg-[#fff5ef]" : "border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50"}`}
+                        className={`col-start-2 h-8 w-fit shrink-0 cursor-pointer rounded-[6px] border bg-white px-3 text-[13px] font-extrabold transition active:scale-95 ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#dfc2ac] text-[#a05e38] hover:bg-[#fff5ef]" : "border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50"}`}
                       > {i18n.t("vendorMessages.remove")} </button>
                     </div>
                   ))}
@@ -1181,5 +1213,3 @@ export default function OrderAdjustmentPage() {
     </section>
   );
 }
-
-

@@ -9,10 +9,12 @@ import {
   GET_VENDOR_ORDERS_QUERY,
   GET_VENDOR_UPCOMING_ORDERS_QUERY,
   SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
+  SEARCH_VENDOR_ADJUSTMENT_ITEMS_BASIC_QUERY,
   REJECT_ORDER_MODIFICATION_REQUEST_MUTATION,
   UPDATE_VENDOR_ORDER_STATUS_MUTATION,
   GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY,
 } from "./orderQueries";
+import { resolveMediaUrl } from "../../menu/api/menuMappers";
 
 const PAGE_SIZE = 100;
 
@@ -294,11 +296,39 @@ export async function rejectOrderModificationRequest({ requestId, reason }) {
   );
 }
 
+function mapVendorAdjustmentItem(item) {
+  return {
+    id: item.id,
+    backendId: item.id,
+    name: item.name || item.title || "Item",
+    serves: "",
+    price: Number(item.priceWithTax ?? item.price) || 0,
+    image: resolveMediaUrl(
+      item.coverImage || item.image || item.imageUrl || item.photo || "",
+    ),
+    description: item.description || "",
+  };
+}
+
 export async function searchVendorAdjustmentItems({ search, first = 10 }) {
-  const result = await executeProtectedGraphqlRequest(
-    SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
-    { search, first },
-  );
+  const variables = { search, first };
+  let result;
+
+  try {
+    result = await executeProtectedGraphqlRequest(
+      SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY,
+      variables,
+    );
+  } catch (error) {
+    if (!isGraphqlFieldContractError(error)) {
+      throw error;
+    }
+
+    result = await executeProtectedGraphqlRequest(
+      SEARCH_VENDOR_ADJUSTMENT_ITEMS_BASIC_QUERY,
+      variables,
+    );
+  }
 
   const edges = Array.isArray(result?.vendorAdjustmentItems?.edges)
     ? result.vendorAdjustmentItems.edges
@@ -307,15 +337,7 @@ export async function searchVendorAdjustmentItems({ search, first = 10 }) {
   return edges
     .map((edge) => edge?.node)
     .filter(Boolean)
-    .map((item) => ({
-      id: item.id,
-      backendId: item.id,
-      name: item.name || item.title || "Item",
-      serves: "",
-      price: Number(item.priceWithTax ?? item.price) || 0,
-      image: item.coverImage?.fileUrl || item.photo || "",
-      description: item.description || "",
-    }));
+    .map(mapVendorAdjustmentItem);
 }
 
 export function getVendorCustomerOrderHistory({ orderId, customerId }) {

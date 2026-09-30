@@ -468,6 +468,25 @@ export const SEARCH_VENDOR_ADJUSTMENT_ITEMS_QUERY = `
           name
           description
           priceWithTax
+          coverImage {
+            fileUrl
+            fileId
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const SEARCH_VENDOR_ADJUSTMENT_ITEMS_BASIC_QUERY = `
+  query SearchVendorAdjustmentItems($search: String!, $first: Int = 10) {
+    vendorAdjustmentItems(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          description
+          priceWithTax
         }
       }
     }
@@ -524,4 +543,3 @@ export const GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY = `
     }
   }
 `;
-
