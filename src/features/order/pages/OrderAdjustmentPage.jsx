@@ -1055,41 +1055,47 @@ export default function OrderAdjustmentPage() {
                   {suggestedList.map((item) => (
                     <div
                       key={`added-${item.id}`}
-                      className={`grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-[12px] border p-3 transition ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#ead8ca] bg-[#fffaf6] hover:border-[#dfc2ac]" : "border-green-200 bg-[#f5fff5] hover:border-green-300"}`}
+                      className={`flex min-w-0 flex-col gap-3 rounded-[12px] border px-3 py-3 transition sm:flex-row sm:items-start sm:justify-between ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#ead8ca] bg-[#fffaf6] hover:border-[#dfc2ac]" : "border-green-200 bg-[#f6fff7] hover:border-green-300"}`}
                     >
-                      {item.image ? (
-                        <img
-                          alt={item.name}
-                          src={item.image}
-                          className="h-10 w-12 shrink-0 rounded-[6px] border border-green-200 object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-12 shrink-0 rounded-[6px] border border-green-200 bg-[#eef9ef]" />
-                      )}
-                      <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="break-words text-[14px] font-extrabold text-[#1c1510]">{item.name}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider ${item.isCustomAlternative || item.isMenuItemSuggestion ? "bg-[#fff0e6] text-[#c75c2b]" : "bg-green-100 text-green-700"}`}>
-                            {item.isCustomAlternative ? t("orders.adjustment.customAlternative", { defaultValue: "Custom alternative" }) : item.isMenuItemSuggestion ? t("orders.adjustment.fromAnotherMenu", { defaultValue: "From another menu" }) : t("orders.adjustment.added", { defaultValue: "Added" })}
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        {item.image ? (
+                          <img
+                            alt={item.name}
+                            src={item.image}
+                            className="h-14 w-16 shrink-0 rounded-[8px] border border-green-200 object-cover"
+                          />
+                        ) : (
+                          <div className="h-14 w-16 shrink-0 rounded-[8px] border border-green-200 bg-[#eef9ef]" />
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="break-words text-[14px] font-extrabold leading-5 text-[#1c1510]">{item.name}</span>
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${item.isCustomAlternative || item.isMenuItemSuggestion ? "bg-[#fff0e6] text-[#c75c2b]" : "bg-green-100 text-green-700"}`}>
+                              {item.isCustomAlternative ? t("orders.adjustment.customAlternative", { defaultValue: "Custom alternative" }) : item.isMenuItemSuggestion ? t("orders.adjustment.fromAnotherMenu", { defaultValue: "From another menu" }) : t("orders.adjustment.added", { defaultValue: "Added" })}
+                            </span>
+                          </div>
+                          {item.isMenuItemSuggestion ? <span className="mt-1 block text-[12px] font-semibold leading-5 text-[#817268]">{t("orders.detail.from", { defaultValue: "From" })} {item.sourceMenuName}{item.description ? ` - ${item.description}` : ""}</span> : item.description ? <span className="mt-1 block text-[12px] font-semibold leading-5 text-[#817268]">{item.description}</span> : null}
+                          <span className={`mt-1 block text-[13px] font-extrabold ${item.isCustomAlternative || item.isMenuItemSuggestion ? "text-[#a06a48]" : "text-green-600"}`}>
+                            {item.isMenuItemSuggestion ? t("orders.adjustment.includedExistingMenuPrice", { defaultValue: "Included in existing menu price" }) : item.isCustomAlternative ? t("orders.adjustment.priceToConfirm", { defaultValue: "Price to be confirmed with customer" }) : `+${formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}`}
                           </span>
                         </div>
-                        {item.isMenuItemSuggestion ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{t("orders.detail.from", { defaultValue: "From" })} {item.sourceMenuName}{item.description ? ` - ${item.description}` : ""}</span> : item.description ? <span className="mt-1 text-[11px] font-semibold leading-4 text-[#817268]">{item.description}</span> : null}
-                        <span className={`mt-1 text-[13px] font-extrabold ${item.isCustomAlternative || item.isMenuItemSuggestion ? "text-[#a06a48]" : "text-green-600"}`}>
-                          {item.isMenuItemSuggestion ? t("orders.adjustment.includedExistingMenuPrice", { defaultValue: "Included in existing menu price" }) : item.isCustomAlternative ? t("orders.adjustment.priceToConfirm", { defaultValue: "Price to be confirmed with customer" }) : `+${formatCurrency(Number(item.price || 0) * Number(item.quantity || 1))}`}
-                        </span>
                       </div>
-                      {!item.isCustomAlternative && !item.isMenuItemSuggestion ? (
-                        <div className="col-start-2 flex w-fit items-center rounded-[7px] border border-green-300 bg-white">
-                          <button className="flex h-7 w-7 items-center justify-center text-green-700 disabled:opacity-40" disabled={Number(item.quantity || 1) <= 1} onClick={() => updateSuggestionQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
-                          <span className="min-w-7 text-center text-[12px] font-extrabold text-green-700">{item.quantity || 1}</span>
-                          <button className="flex h-7 w-7 items-center justify-center text-green-700" onClick={() => updateSuggestionQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
-                        </div>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => removeSuggestion(item.id)}
-                        className={`col-start-2 h-8 w-fit shrink-0 cursor-pointer rounded-[6px] border bg-white px-3 text-[13px] font-extrabold transition active:scale-95 ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#dfc2ac] text-[#a05e38] hover:bg-[#fff5ef]" : "border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50"}`}
-                      > {i18n.t("vendorMessages.remove")} </button>
+
+                      <div className="flex shrink-0 items-center gap-2 self-start pl-0 sm:pl-3">
+                        {!item.isCustomAlternative && !item.isMenuItemSuggestion ? (
+                          <div className="flex h-8 items-center rounded-[8px] border border-green-300 bg-white shadow-[0_1px_2px_rgba(35,100,55,0.06)]">
+                            <button className="flex h-8 w-8 items-center justify-center rounded-l-[8px] text-green-700 transition hover:bg-green-50 disabled:opacity-40" disabled={Number(item.quantity || 1) <= 1} onClick={() => updateSuggestionQuantity(item.id, -1)} type="button"><Minus size={13} /></button>
+                            <span className="min-w-7 text-center text-[12px] font-extrabold text-green-700">{item.quantity || 1}</span>
+                            <button className="flex h-8 w-8 items-center justify-center rounded-r-[8px] text-green-700 transition hover:bg-green-50" onClick={() => updateSuggestionQuantity(item.id, 1)} type="button"><Plus size={13} /></button>
+                          </div>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => removeSuggestion(item.id)}
+                          className={`h-8 shrink-0 cursor-pointer rounded-[8px] border bg-white px-3 text-[13px] font-extrabold transition active:scale-95 ${item.isCustomAlternative || item.isMenuItemSuggestion ? "border-[#dfc2ac] text-[#a05e38] hover:bg-[#fff5ef]" : "border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50"}`}
+                        >{i18n.t("vendorMessages.remove")}</button>
+                      </div>
                     </div>
                   ))}
                 </div>
