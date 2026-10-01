@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Clock3, FileCheck2, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Clock3, FileCheck2, GripVertical, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
@@ -23,97 +23,128 @@ export default function CreateMenuItemsSection({
   const { t } = useTranslation();
   const hasUnsavedItem = menuItems.some((item) => !item.isSaved);
 
+  function handleMoveItem(event, itemId, direction) {
+    event.preventDefault();
+    event.stopPropagation();
+    moveMenuItem(itemId, direction);
+  }
+
+  function handleToggleItem(event, itemId) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleMenuItemExpanded(itemId);
+  }
+
+  function handleRemoveItem(event, itemId) {
+    event.preventDefault();
+    event.stopPropagation();
+    removeMenuItem(itemId);
+  }
+
   return (
     <CreateMenuSectionCard
       description={t("menu.itemsDescription", { defaultValue: "Add the dishes and drinks included in the base price." })}
       title={t("menu.menuItems", { defaultValue: "Menu Items" })}
     >
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {menuItems.map((item, index) => {
           const itemErrors = menuItemErrors[item.id] || {};
           const summaryTitle = item.title?.trim() || t("menu.menuItem", { count: index + 1, defaultValue: `Menu Item ${index + 1}` });
           const summaryDescription = item.description?.trim() || t("menu.noDescription", { defaultValue: "No description saved yet." });
+          const isFirst = index === 0;
+          const isLast = index === menuItems.length - 1;
 
           return (
             <div
               key={item.id}
-              className={`rounded-[16px] border transition ${
+              className={`rounded-[18px] border transition ${
                 item.isExpanded
                   ? "overflow-visible border-[#efc9b4] bg-[#fffdfb] shadow-[0_12px_30px_rgba(58,40,25,0.08)]"
-                  : "overflow-hidden border-[#e4dbd2] bg-white"
+                  : "overflow-hidden border-[#e7ded6] bg-white shadow-[0_8px_18px_rgba(58,40,25,0.04)]"
               }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f1e7de] px-4 py-3">
-                <button
-                  className="flex min-w-0 flex-1 items-center gap-3 bg-transparent p-0 text-left border-0 cursor-pointer"
-                  disabled={disabled}
-                  onClick={() => toggleMenuItemExpanded(item.id)}
-                  type="button"
-                >
-                  <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                      item.isSaved ? "bg-[#eef8ef] text-[#2b8a46]" : "bg-[#fff1e8] text-[#cf6e38]"
-                    }`}
-                  >
-                    {item.isSaved ? <FileCheck2 size={18} /> : <Clock3 size={18} />}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-[15px] font-extrabold text-[#211913]">
-                      {summaryTitle}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[12px] font-medium text-[#7e7065]">
-                      {summaryDescription}
-                    </span>
-                  </span>
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] ${
-                      item.isSaved
-                        ? "bg-[#edf8ef] text-[#2b8a46]"
-                        : "bg-[#fff1e8] text-[#cf6e38]"
-                    }`}
-                  >
-                    {item.isSaved ? t("menu.saved", { defaultValue: "Saved" }) : t("menu.draft", { defaultValue: "Draft" })}
-                  </span>
-                                    <div className="inline-flex overflow-hidden rounded-full border border-[#eadfd6] bg-[#fffaf7] shadow-[0_2px_8px_rgba(58,40,25,0.06)]">
-                    <button
-                      aria-label={t("menu.moveItemUp", { defaultValue: "Move item up" })}
-                      className="inline-flex h-8 w-8 items-center justify-center text-[#9a8678] transition hover:bg-[#fff1e8] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-35"
-                      disabled={disabled || index === 0}
-                      onClick={() => moveMenuItem(item.id, -1)}
-                      type="button"
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    <button
-                      aria-label={t("menu.moveItemDown", { defaultValue: "Move item down" })}
-                      className="inline-flex h-8 w-8 items-center justify-center border-l border-[#eadfd6] text-[#9a8678] transition hover:bg-[#fff1e8] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-35"
-                      disabled={disabled || index === menuItems.length - 1}
-                      onClick={() => moveMenuItem(item.id, 1)}
-                      type="button"
-                    >
-                      <ArrowDown size={14} />
-                    </button>
-                  </div><button
-                    aria-label={item.isExpanded ? t("menu.collapseItem", { defaultValue: "Collapse menu item" }) : t("menu.expandItem", { defaultValue: "Expand menu item" })}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              <div className="border-b border-[#f1e7de] px-3 py-3 sm:px-4">
+                <div className="flex items-start gap-3">
+                  <button
+                    className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 border-0 bg-transparent p-0 text-left"
                     disabled={disabled}
                     onClick={() => toggleMenuItemExpanded(item.id)}
                     type="button"
                   >
-                    {item.isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                    <span
+                      className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                        item.isSaved ? "bg-[#eef8ef] text-[#2b8a46]" : "bg-[#fff1e8] text-[#cf6e38]"
+                      }`}
+                    >
+                      {item.isSaved ? <FileCheck2 size={18} /> : <Clock3 size={18} />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="line-clamp-1 min-w-0 text-[14px] font-extrabold leading-5 text-[#211913] sm:text-[15px]">
+                          {summaryTitle}
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.08em] sm:text-[10px] ${
+                            item.isSaved
+                              ? "bg-[#edf8ef] text-[#2b8a46]"
+                              : "bg-[#fff1e8] text-[#cf6e38]"
+                          }`}
+                        >
+                          {item.isSaved ? t("menu.saved", { defaultValue: "Saved" }) : t("menu.draft", { defaultValue: "Draft" })}
+                        </span>
+                      </span>
+                      <span className="mt-0.5 block line-clamp-1 text-[11px] font-medium leading-4 text-[#7e7065] sm:text-[12px]">
+                        {summaryDescription}
+                      </span>
+                    </span>
                   </button>
-                  <button
-                    aria-label={t("menu.removeItem", { defaultValue: "Remove menu item" })}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={disabled}
-                    onClick={() => removeMenuItem(item.id)}
-                    type="button"
-                  >
-                    <X size={14} />
-                  </button>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <div className="inline-flex items-center gap-1 rounded-full border border-[#eadfd6] bg-[#fffaf7] p-1 shadow-[0_2px_8px_rgba(58,40,25,0.06)]">
+                    <span className="hidden h-8 w-8 items-center justify-center text-[#b09d90] sm:inline-flex">
+                      <GripVertical size={15} />
+                    </span>
+                    <button
+                      aria-label={t("menu.moveItemUp", { defaultValue: "Move item up" })}
+                      className="inline-flex h-9 min-w-12 items-center justify-center rounded-full text-[#7c6a5d] transition hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 sm:h-8 sm:min-w-8"
+                      disabled={disabled || isFirst}
+                      onClick={(event) => handleMoveItem(event, item.id, -1)}
+                      type="button"
+                    >
+                      <ArrowUp size={16} />
+                    </button>
+                    <button
+                      aria-label={t("menu.moveItemDown", { defaultValue: "Move item down" })}
+                      className="inline-flex h-9 min-w-12 items-center justify-center rounded-full text-[#7c6a5d] transition hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 sm:h-8 sm:min-w-8"
+                      disabled={disabled || isLast}
+                      onClick={(event) => handleMoveItem(event, item.id, 1)}
+                      type="button"
+                    >
+                      <ArrowDown size={16} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      aria-label={item.isExpanded ? t("menu.collapseItem", { defaultValue: "Collapse menu item" }) : t("menu.expandItem", { defaultValue: "Expand menu item" })}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#8a776a] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={disabled}
+                      onClick={(event) => handleToggleItem(event, item.id)}
+                      type="button"
+                    >
+                      {item.isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                    <button
+                      aria-label={t("menu.removeItem", { defaultValue: "Remove menu item" })}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#8a776a] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={disabled}
+                      onClick={(event) => handleRemoveItem(event, item.id)}
+                      type="button"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -483,7 +483,11 @@ export function useMenuEditor() {
 
       return {
         ...current,
-        menuItems: nextItems,
+        menuItems: nextItems.map((item, index) => ({
+          ...item,
+          order: index + 1,
+          isSaved: false,
+        })),
       };
     });
   }
