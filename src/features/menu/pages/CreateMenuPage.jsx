@@ -1,4 +1,4 @@
-﻿import { ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -130,6 +130,7 @@ export default function CreateMenuPage() {
             }
             menuItemErrors={menuItemErrors}
             menuItems={menuItemsForDisplay}
+            moveMenuItem={actions.moveMenuItem}
             onAddFromOtherPackage={() => actions.setField("isImportModalOpen", true)}
             removeMenuItem={actions.removeMenuItem}
             saveMenuItem={actions.saveMenuItem}

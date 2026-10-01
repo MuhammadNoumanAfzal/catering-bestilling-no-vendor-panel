@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Clock3, FileCheck2, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Clock3, FileCheck2, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
@@ -13,6 +13,7 @@ export default function CreateMenuItemsSection({
   handleItemImageSelect,
   menuItemErrors = {},
   menuItems,
+  moveMenuItem,
   onAddFromOtherPackage,
   removeMenuItem,
   saveMenuItem,
@@ -76,7 +77,26 @@ export default function CreateMenuItemsSection({
                   >
                     {item.isSaved ? t("menu.saved", { defaultValue: "Saved" }) : t("menu.draft", { defaultValue: "Draft" })}
                   </span>
-                  <button
+                                    <div className="inline-flex overflow-hidden rounded-full border border-[#eadfd6] bg-[#fffaf7] shadow-[0_2px_8px_rgba(58,40,25,0.06)]">
+                    <button
+                      aria-label={t("menu.moveItemUp", { defaultValue: "Move item up" })}
+                      className="inline-flex h-8 w-8 items-center justify-center text-[#9a8678] transition hover:bg-[#fff1e8] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-35"
+                      disabled={disabled || index === 0}
+                      onClick={() => moveMenuItem(item.id, -1)}
+                      type="button"
+                    >
+                      <ArrowUp size={14} />
+                    </button>
+                    <button
+                      aria-label={t("menu.moveItemDown", { defaultValue: "Move item down" })}
+                      className="inline-flex h-8 w-8 items-center justify-center border-l border-[#eadfd6] text-[#9a8678] transition hover:bg-[#fff1e8] hover:text-[#cf6e38] disabled:cursor-not-allowed disabled:opacity-35"
+                      disabled={disabled || index === menuItems.length - 1}
+                      onClick={() => moveMenuItem(item.id, 1)}
+                      type="button"
+                    >
+                      <ArrowDown size={14} />
+                    </button>
+                  </div><button
                     aria-label={item.isExpanded ? t("menu.collapseItem", { defaultValue: "Collapse menu item" }) : t("menu.expandItem", { defaultValue: "Expand menu item" })}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#eadfd6] bg-[#fffaf7] text-[#9a8678] shadow-[0_2px_8px_rgba(58,40,25,0.06)] transition hover:border-[#cf6e38] hover:bg-[#fff1e8] hover:text-[#cf6e38] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={disabled}

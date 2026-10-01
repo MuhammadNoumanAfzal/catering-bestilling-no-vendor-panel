@@ -463,6 +463,30 @@ export function useMenuEditor() {
     return true;
   }
 
+  function moveMenuItem(id, direction) {
+    setFormState((current) => {
+      const currentIndex = current.menuItems.findIndex((item) => item.id === id);
+
+      if (currentIndex < 0) {
+        return current;
+      }
+
+      const nextIndex = currentIndex + direction;
+
+      if (nextIndex < 0 || nextIndex >= current.menuItems.length) {
+        return current;
+      }
+
+      const nextItems = [...current.menuItems];
+      const [movedItem] = nextItems.splice(currentIndex, 1);
+      nextItems.splice(nextIndex, 0, movedItem);
+
+      return {
+        ...current,
+        menuItems: nextItems,
+      };
+    });
+  }
   function removeMenuItem(id) {
     setMenuItemErrors((current) => {
       if (!current[id]) {
@@ -845,6 +869,7 @@ export function useMenuEditor() {
       handleImportMenuItemsRequest,
       handlePublish,
       handleSaveDraft,
+      moveMenuItem,
       removeMenuItem,
       setField,
       setFormState,
