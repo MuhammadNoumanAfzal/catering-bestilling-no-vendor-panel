@@ -354,8 +354,16 @@ export function mapVendorMenuDetailToForm(menu) {
     pricingMode: menu.pricingType || "",
     basePrice: menu.priceWithTax || "",
     minimumGuests: menu.minimumGuests ? String(menu.minimumGuests) : "",
-    menuItems: safeArray(menu.menuItems).map((item, index) => ({
+    menuItems: safeArray(menu.menuItems)
+      .map((item, index) => ({ item, index }))
+      .sort((left, right) => {
+        const leftOrder = Number(left.item?.order ?? left.item?.sortOrder ?? left.index + 1);
+        const rightOrder = Number(right.item?.order ?? right.item?.sortOrder ?? right.index + 1);
+        return leftOrder - rightOrder;
+      })
+      .map(({ item, index }) => ({
       id: item.id || `menu-item-${index + 1}`,
+      order: Number(item.order ?? item.sortOrder ?? index + 1),
       title: item.title || "",
       description: item.description || "",
       allergens: safeArray(item.allergens)
