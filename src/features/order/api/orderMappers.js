@@ -33,10 +33,11 @@ function parseAmount(value) {
 
 function formatCurrency(value) {
   const amount = parseAmount(value);
-  return `kr ${amount.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  const roundedAmount = Math.round(amount);
+  const formatted = Math.abs(amount - roundedAmount) < 0.005
+    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
+    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+  return `kr ${formatted}`;
 }
 
 function getPricingBlock(node) {
