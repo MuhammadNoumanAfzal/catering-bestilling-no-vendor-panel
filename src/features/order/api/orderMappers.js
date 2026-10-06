@@ -212,11 +212,11 @@ function resolveVendorListCustomerLabel(node) {
   const looksPrivate = /^private\s+client$/i.test(customerName);
 
   if (looksCorporate) {
-    return "Corporate Client";
+    return i18n.t("orders.customerTypes.Corporate Client", { defaultValue: "Corporate Client" });
   }
 
   if (looksPrivate || !customerName) {
-    return "Private Client";
+    return i18n.t("orders.customerTypes.Private Client", { defaultValue: "Private Client" });
   }
 
   return customerName;
