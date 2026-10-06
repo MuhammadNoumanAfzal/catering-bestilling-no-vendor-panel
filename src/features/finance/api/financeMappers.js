@@ -26,21 +26,12 @@ function parseNumber(value) {
 
 function formatCurrency(value, currency = "kr") {
   const amount = parseNumber(value);
-  return `${currency} ${amount.toFixed(2)}`;
-}
-
-function formatDateLabel(dateValue) {
-  const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return normalizeString(dateValue);
-  }
-
-  return date.toLocaleDateString(i18n.language?.startsWith("nb") ? "nb-NO" : "en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  if (!Number.isFinite(amount)) return `${currency} 0`;
+  const roundedAmount = Math.round(amount);
+  const formatted = Math.abs(amount - roundedAmount) < 0.005
+    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
+    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+  return `${currency} ${formatted}`;
 }
 
 function normalizePayoutStatus(value) {

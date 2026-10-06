@@ -79,10 +79,12 @@ function parseCurrencyValue(value) {
 }
 
 function formatCurrency(amount) {
-  return `kr ${Number(amount || 0).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  const value = Number(amount || 0);
+  const roundedAmount = Math.round(value);
+  const formatted = Math.abs(value - roundedAmount) < 0.005
+    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
+    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  return `kr ${formatted}`;
 }
 
 function normalizeLookupKey(value) {

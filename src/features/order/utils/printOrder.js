@@ -13,7 +13,11 @@ function escapeHtml(value) {
 
 function money(value) {
   const amount = Number(value);
-  return Number.isFinite(amount) ? `kr ${amount.toFixed(2)}` : escapeHtml(value);
+  if (!Number.isFinite(amount)) return escapeHtml(value);
+  const roundedAmount = Math.round(amount);
+  return Math.abs(amount - roundedAmount) < 0.005
+    ? `kr ${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
+    : `kr ${new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)}`;
 }
 
 function formatServiceType(value) {

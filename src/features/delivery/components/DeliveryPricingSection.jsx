@@ -13,6 +13,10 @@ function formatCurrencyValue(value) {
 
   const amount = Number(trimmedValue);
   if (!Number.isFinite(amount) || amount < 0) return "";
+  const roundedAmount = Math.round(amount);
+  if (Math.abs(amount - roundedAmount) < 0.005) {
+    return `NOK ${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`;
+  }
   return `NOK ${amount.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
