@@ -52,6 +52,20 @@ function isTerminalStatus(status) {
   return status === "Delivered" || status === "Canceled";
 }
 
+
+function translateCustomerLabel(t, value) {
+  const normalized = `${value ?? ""}`.trim().toLowerCase();
+
+  if (normalized === "private client" || normalized === "privatkunde") {
+    return t("orders.customerTypes.Private Client", { defaultValue: "Privatkunde" });
+  }
+
+  if (normalized === "corporate client" || normalized === "bedriftskunde") {
+    return t("orders.customerTypes.Corporate Client", { defaultValue: "Bedriftskunde" });
+  }
+
+  return value;
+}
 function renderStatusBadge(status, statusTone, t) {
   const toneClass =
     statusToneClasses[statusToneByLabel[status] || statusTone] ?? statusToneClasses["is-new"];
@@ -140,7 +154,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
         <tbody>
           {rows.map((row, index) => (
             <tr
-              key={`${row.rawId || row.id}-${row.customer}-${index}`}
+              key={`${row.rawId || row.id}-${translateCustomerLabel(t, row.customer)}-${index}`}
               className={`transition duration-150 cursor-pointer border-b border-[#eee7df] last:border-b-0 hover:bg-[#fff7f2] ${
                 row.statusTone === "is-new" ? "bg-[#eef8ff]/70" : "bg-white"
               }`}
@@ -160,7 +174,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 {row.displayId || row.id}
               </td>
               <td className="px-4 py-4 text-[15px] font-bold text-[#17120e]">
-                {row.customer}
+                {translateCustomerLabel(t, row.customer)}
               </td>
               <td className="px-4 py-4 text-[15px] font-semibold text-[#5e544d]">
                 {row.event}
