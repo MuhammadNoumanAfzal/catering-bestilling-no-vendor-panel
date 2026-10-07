@@ -76,8 +76,8 @@ export default function CreateMenuPricingSection({
           <TextInput
             disabled={disabled}
             onChange={onBasePriceChange}
-            placeholder="kr 120"
-            value={basePrice}
+            placeholder="120"
+            value={`${basePrice ?? ""}`.replace(/\.0+$/, "")}
           />
           <FieldError message={fieldErrors?.basePrice} />
         </div>

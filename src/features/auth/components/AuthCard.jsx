@@ -237,7 +237,7 @@ export default function AuthCard({
           <p className="type-para mt-[14px] block text-center text-[#8b8077]">
             {footerText}{" "}
             {footerLinkLabel && footerLinkTo ? (
-              <Link className="text-[#2f69c8] no-underline hover:underline" to={footerLinkTo}>
+              <Link className="mt-1 block whitespace-nowrap text-[#2f69c8] no-underline hover:underline" to={footerLinkTo}>
                 {footerLinkLabel}
               </Link>
             ) : null}

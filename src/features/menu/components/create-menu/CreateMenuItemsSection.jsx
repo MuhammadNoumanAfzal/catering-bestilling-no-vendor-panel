@@ -76,7 +76,9 @@ export default function CreateMenuItemsSection({
                         item.isSaved ? "bg-[#eef8ef] text-[#2b8a46]" : "bg-[#fff1e8] text-[#cf6e38]"
                       }`}
                     >
-                      {item.isSaved ? <FileCheck2 size={18} /> : <Clock3 size={18} />}
+                      {item.image ? (
+                        <img alt={summaryTitle} className="h-10 w-10 rounded-[6px] object-cover" src={item.image} />
+                      ) : item.isSaved ? <FileCheck2 size={18} /> : <Clock3 size={18} />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex min-w-0 items-center gap-2">

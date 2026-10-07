@@ -77,7 +77,7 @@ function buildNewOrderRequests(rows = [], t) {
       amount: row.total || "NOK 0.00",
       statusLabel: t("dashboard.orders.new"),
       guests: t("dashboard.orders.guests", { count: Number(row.guests || 0) }),
-      timing: `${row.date || t("dashboard.orders.deliveryPending")} ${row.time ? `${t("dashboard.orders.timePrefix", { defaultValue: "at" })} ${row.time}` : ""}`.trim(),
+      timing: `${row.date || t("dashboard.orders.deliveryPending")} ${row.time ? `${t("dashboard.orders.timePrefix", { defaultValue: "at" })} ${row.time.replace(/(\d{2}:\d{2}):\d{2}/g, "$1")}` : ""}`.trim(),
       address: t("dashboard.orders.customer", { name: row.customer || t("dashboard.orders.unavailableCustomer") }),
       tone: "is-warning",
     }));

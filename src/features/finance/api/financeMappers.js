@@ -4,6 +4,17 @@ function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
+function formatDateLabel(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(i18n.language?.startsWith("nb") ? "nb-NO" : "en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
 function formatPayoutStatusLabel(value) {
   const normalized = normalizePayoutStatus(value);
 
