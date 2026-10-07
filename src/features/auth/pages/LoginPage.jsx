@@ -77,7 +77,7 @@ export default function LoginPage() {
             helperText: t("auth.login.emailHelp"), label: t("auth.emailAddress"),
             name: "identifier",
             onChange: handleFieldChange("identifier"),
-            placeholder: "vendor@example.com",
+            placeholder: "firmanavn@firma.no",
             type: "email",
             value: formState.identifier,
           },

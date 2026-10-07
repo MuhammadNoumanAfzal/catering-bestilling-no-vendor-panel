@@ -92,7 +92,9 @@ export default function AppLayout() {
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || t("layout.vendorUser", { defaultValue: "Vendor User" });
   const [businessDisplayName, setBusinessDisplayName] = useState("");
   const displayName = businessDisplayName || accountDisplayName;
-  const displayRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : t("layout.vendor", { defaultValue: "Vendor" });
+  const displayRole = !user?.role || user.role.toLowerCase() === "vendor"
+    ? t("layout.vendor", { defaultValue: "Leverandør" })
+    : `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}`;
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const prevLatestNotificationIdRef = useRef(null);

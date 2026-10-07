@@ -51,6 +51,7 @@ function buildSummaryRows(financials, order, raw) {
 }
 
 export function printVendorOrder(order) {
+  const logoUrl = new URL(`${import.meta.env.BASE_URL}blackLogo.png`, window.location.origin).href;
   const raw = order?.raw || {};
   const items = Array.isArray(raw.items) ? raw.items : [];
   const customer = order?.customer || {};
@@ -122,8 +123,9 @@ export function printVendorOrder(order) {
           .print-actions button:first-child { border-color: #d65d22; background: #d65d22; color: #fff; }
           .print-hint { max-width: 760px; margin: -6px auto 12px; color: #7f7168; font-size: 12px; text-align: right; }
           .ticket { max-width: 760px; margin: 0 auto 18px; border: 2px solid #241d18; background: #fff; }
-          .header { padding: 16px 20px; background: #241d18; color: #fff; }
-          .eyebrow { margin: 0 0 3px; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #f5c5a7; }
+          .header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 20px; background: #fff; color: #241d18; border-bottom: 1px solid #d8cbc1; }
+          .brand-logo { width: 150px; height: 60px; object-fit: contain; flex-shrink: 0; }
+          .eyebrow { margin: 0 0 3px; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #9e3f16; }
           h1 { margin: 0; font-size: 27px; line-height: 1; letter-spacing: -.03em; }
           .meta { padding: 9px 20px; background: #f7efe9; border-bottom: 1px solid #d8cbc1; color: #5f5249; font-size: 11px; }
           .content { padding: 0 20px 18px; }
@@ -168,14 +170,17 @@ export function printVendorOrder(order) {
         <p class="print-hint">${tr("preview")}</p>
         <main class="ticket">
           <header class="header">
+            <div>
             <p class="eyebrow">${tr("ticket")}</p>
             <h1>${tr("order")} ${escapeHtml(order?.displayId || order?.id)}</h1>
+            </div>
+            <img class="brand-logo" src="${escapeHtml(logoUrl)}" alt="Go Catering" />
           </header>
           <div class="meta">${tr("printed")} ${escapeHtml(new Date().toLocaleString(i18n.language === "nb" ? "nb-NO" : "en-GB"))} | ${escapeHtml(serviceType)} | ${escapeHtml(logistics.eventDate || order?.date)} ${tr("at")} ${escapeHtml(logistics.deliveryWindow || order?.time)}</div>
           <div class="content">
             <h2>${tr("fulfilment")}</h2>
             <div class="grid">
-              <section class="box"><div class="label">${tr("contact")}</div><div class="primary">${escapeHtml(customer.name)}</div>${escapeHtml(customer.phone)}<br>${escapeHtml(customer.email)}</section>
+              <section class="box"><div class="label">${tr("contact")}</div><div class="primary">${escapeHtml(customer.name)}</div>${escapeHtml(customer.phone)}</section>
               <section class="box"><div class="label">${escapeHtml(serviceType)}</div><div class="primary">${escapeHtml(logistics.eventDate || order?.date)} | ${escapeHtml(logistics.deliveryWindow || order?.time)}</div>${escapeHtml(logistics.fullAddress || logistics.deliveryAddress)}</section>
             </div>
             <h2>${tr("items")}</h2>
@@ -188,10 +193,15 @@ export function printVendorOrder(order) {
           </div>
         </main>
         <script>
-          document.getElementById("print-button")?.addEventListener("click", () => window.print());
+          async function printWhenReady() {
+            const logo = document.querySelector(".brand-logo");
+            if (logo) await logo.decode().catch(() => {});
+            window.print();
+          }
+          document.getElementById("print-button")?.addEventListener("click", printWhenReady);
           document.getElementById("close-button")?.addEventListener("click", () => window.close());
           window.addEventListener("load", () => {
-            window.setTimeout(() => window.print(), 450);
+            printWhenReady();
           });
         <\/script>
       </body>

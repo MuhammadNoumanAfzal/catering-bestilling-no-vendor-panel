@@ -235,7 +235,6 @@ export default function CustomerInfoPanel({ customer, orderId }) {
           <Field label={t("orders.detail.invoiceRef", { defaultValue: "Invoice Ref." })} value={customer.invoiceReference} />
           <Field label={t("orders.detail.postalCode", { defaultValue: "Postal Code" })} value={customer.postalCode} />
           <Field label={t("orders.detail.city", { defaultValue: "City" })} value={customer.city} />
-          <Field fullWidth label={t("orders.detail.emailAddress", { defaultValue: "Email Address" })} value={customer.email} />
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-2.5 rounded-[10px] bg-[#edf5ff] px-3 py-2.5">

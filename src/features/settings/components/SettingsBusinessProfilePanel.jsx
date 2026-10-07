@@ -306,61 +306,8 @@ export default function SettingsBusinessProfilePanel({
             />
           </SettingsSectionCard>
 
-          <SettingsSectionCard
-            description={t("settings.dangerDescription", { defaultValue: "These actions are permanent and cannot be undone." })}
-            title={t("settings.dangerZone", { defaultValue: "Danger Zone" })}
-            tone="danger"
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-[8px] border border-[#f0dfd3] bg-white px-3 py-3">
-                <div>
-                  <p className="text-[12px] font-bold text-[#201914]">{t("settings.resetAll", { defaultValue: "Reset All Settings" })}</p>
-                  <p className="mt-1 text-[11px] text-[#8a7c70]">
-                    {t("settings.resetAllDescription", { defaultValue: "Return all settings to their default values." })}
-                  </p>
-                </div>
-                <button
-                  className="cursor-pointer rounded-[6px] border border-[#d7cfc7] bg-white px-3 py-1.5 text-[10px] font-bold text-[#2b221d] disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={disabled}
-                  onClick={handleResetAllSettings}
-                  type="button"
-                >
-                  {t("settings.reset", { defaultValue: "Reset" })}
-                </button>
-              </div>
-              <div className="flex items-center justify-between gap-3 rounded-[8px] border border-[#f0dfd3] bg-white px-3 py-3">
-                <div>
-                  <p className="text-[12px] font-bold text-[#201914]">{t("settings.deactivateStore", { defaultValue: "Deactivate Store" })}</p>
-                  <p className="mt-1 text-[11px] text-[#8a7c70]">
-                    {t("settings.deactivateStoreDescription", { defaultValue: "Temporarily hide your store from customers." })}
-                  </p>
-                </div>
-                <button
-                  className="cursor-pointer rounded-[6px] border border-[#f0c8bf] bg-[#fff3ef] px-3 py-1.5 text-[10px] font-bold text-[#d96e39] disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={disabled}
-                  onClick={handleDeactivateStore}
-                  type="button"
-                >
-                  {t("settings.deactivate", { defaultValue: "Deactivate" })}
-                </button>
-              </div>
-              <div className="flex items-center justify-between gap-3 rounded-[8px] border border-[#f0dfd3] bg-white px-3 py-3">
-                <div>
-                  <p className="text-[12px] font-bold text-[#201914]">{t("settings.deleteStore", { defaultValue: "Delete Store" })}</p>
-                  <p className="mt-1 text-[11px] text-[#8a7c70]">
-                    {t("settings.deleteStoreDescription", { defaultValue: "Permanently remove your store data." })}
-                  </p>
-                </div>
-                <button
-                  className="cursor-pointer rounded-[6px] border border-[#f1c2b6] bg-[#fff1ee] px-3 py-1.5 text-[10px] font-bold text-[#d2542f] disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={disabled}
-                  onClick={handleDeleteStore}
-                  type="button"
-                >
-                  {t("settings.delete", { defaultValue: "Delete" })}
-                </button>
-              </div>
-            </div>
+          <SettingsSectionCard title={t("settings.accountManagement")}>
+            <p className="text-[13px] leading-6 text-[#201914]">{t("settings.accountManagementHelp")}</p>
           </SettingsSectionCard>
 
         </div>

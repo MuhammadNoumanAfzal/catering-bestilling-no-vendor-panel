@@ -571,8 +571,8 @@ export default function OrdersPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-7 gap-2 max-[1180px]:grid-cols-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-2">
-        {dynamicMetrics.map((metric) => (
+      <div className="grid grid-cols-4 gap-2 max-[960px]:grid-cols-2">
+        {dynamicMetrics.filter((metric) => !["Preparing", "Ready", "Out for Delivery"].includes(metric.label)).map((metric) => (
           <OrderMetricCard key={metric.label} {...metric} />
         ))}
       </div>

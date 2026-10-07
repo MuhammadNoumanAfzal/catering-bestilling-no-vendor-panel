@@ -253,10 +253,15 @@ function buildCustomerFromApi(node) {
     node?.corporateName,
     customerInfo.organization,
   );
+  const privateCustomerName = [node?.customerName, customerInfo.fullName]
+    .map((value) => `${value ?? ""}`.trim())
+    .find((value) => value && !/^(private\s*client|privatkunde)$/i.test(value));
 
   return {
     name:
-      firstNonEmpty(node?.corporateName, node?.customerName, customerInfo.fullName) ||
+      (/^corporate/i.test(`${node?.customerType ?? ""}`)
+        ? firstNonEmpty(node?.corporateName, node?.customerName, customerInfo.fullName)
+        : privateCustomerName || i18n.t("orders.customerTypes.Private Client", { defaultValue: "Privatkunde" })) ||
       "Customer unavailable",
     contactName:
       firstNonEmpty(node?.customerName, customerInfo.fullName) &&

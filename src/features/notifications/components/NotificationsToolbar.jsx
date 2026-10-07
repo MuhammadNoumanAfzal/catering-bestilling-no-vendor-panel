@@ -37,7 +37,7 @@ export default function NotificationsToolbar({
               onClick={() => onTabChange(tab)}
               type="button"
             >
-              {tab}
+              {translateNotificationText(tab)}
             </button>
           );
         })}

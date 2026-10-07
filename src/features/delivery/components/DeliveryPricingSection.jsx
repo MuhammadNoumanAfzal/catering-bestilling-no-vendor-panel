@@ -33,11 +33,11 @@ export default function DeliveryPricingSection({
   const formattedFreeDelivery = formatCurrencyValue(freeDelivery);
   const pricingNote =
     formattedBaseFee && formattedFreeDelivery
-      ? `Customer will pay ${formattedBaseFee} delivery fee on orders under ${formattedFreeDelivery}.`
+      ? t("delivery.feeBelowThreshold", { fee: formattedBaseFee, threshold: formattedFreeDelivery })
       : formattedBaseFee
-        ? `Customer will pay ${formattedBaseFee} delivery fee on standard orders.`
+        ? t("delivery.standardFee", { fee: formattedBaseFee })
         : formattedFreeDelivery
-          ? `Free delivery applies to orders from ${formattedFreeDelivery}.`
+          ? t("delivery.freeFromThreshold", { threshold: formattedFreeDelivery })
           : i18n.t("delivery.feeHelp");
 
   return (
@@ -53,8 +53,8 @@ export default function DeliveryPricingSection({
             error={errors.baseDeliveryFee}
             label={t("delivery.baseFee", { defaultValue: "Base Delivery Fee" })}
             onChange={onBaseFeeChange}
-            placeholder="150.00"
-            value={baseFee}
+            placeholder="150"
+            value={`${baseFee ?? ""}`.replace(/\.0+$/, "")}
           />
           <p className="type-subpara mt-1">{t("delivery.standardOrders", { defaultValue: "Applied to standard orders." })}</p>
         </div>
@@ -64,10 +64,9 @@ export default function DeliveryPricingSection({
             error={errors.freeDeliveryOver}
             label={`${t("delivery.freeDelivery", { defaultValue: "Free Delivery over" })} (${t("settings.optional", { defaultValue: "optional" })})`}
             onChange={onFreeDeliveryChange}
-            placeholder="5000.00"
-            value={freeDelivery}
+            placeholder="5000"
+            value={`${freeDelivery ?? ""}`.replace(/\.0+$/, "")}
           />
-          <p className="type-subpara mt-1">{t("delivery.largeOrderMode", { defaultValue: "Large order only mode" })}</p>
         </div>
       </div>
       <DeliveryInfoNote>{pricingNote}</DeliveryInfoNote>
