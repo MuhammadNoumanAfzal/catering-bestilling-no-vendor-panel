@@ -1,19 +1,15 @@
+import { formatMoney } from "../../../../utils/formatMoney.js";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import DetailPanel from "./DetailPanel";
 import OrderDetailModal from "../OrderDetailModal";
 
-const currencyFormatter = new Intl.NumberFormat("nb-NO", {
-  currency: "NOK",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-  style: "currency",
-});
+
 
 function formatAddonPrice(value, t) {
   const amount = Number(value);
-  return Number.isFinite(amount) && amount > 0 ? currencyFormatter.format(amount) : t("orders.detail.included", { defaultValue: "Included" });
+  return Number.isFinite(amount) && amount > 0 ? formatMoney(amount) : t("orders.detail.included", { defaultValue: "Included" });
 }
 
 export default function OrderItemsPanel({ orderItem, note, addOns, orderId, order }) {

@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import i18n from "../../../i18n";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,7 @@ function formatCompactNumber(value) {
 }
 
 function formatAxisLabel(value, { isCurrency }) {
-  return isCurrency ? `NOK ${formatCompactNumber(value)}` : formatCompactNumber(value);
+  return isCurrency ? formatMoney(value) : formatCompactNumber(value);
 }
 
 function formatTooltipValue(value, { isCurrency }) {
@@ -36,10 +37,7 @@ function formatTooltipValue(value, { isCurrency }) {
     return i18n.t("finance.orderCount", { count: value });
   }
 
-  return `NOK ${new Intl.NumberFormat("nb-NO", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 0,
-  }).format(value)}`;
+  return formatMoney(value);
 }
 
 export default function FinanceChartCard({ points }) {

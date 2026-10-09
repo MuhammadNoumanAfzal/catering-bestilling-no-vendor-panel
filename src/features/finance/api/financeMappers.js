@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import { translateFinanceText } from "../financeTranslations";
 import i18n from "../../../i18n";
 function normalizeString(value) {
@@ -35,15 +36,7 @@ function parseNumber(value) {
   return Number.isFinite(normalized) ? normalized : 0;
 }
 
-function formatCurrency(value, currency = "kr") {
-  const amount = parseNumber(value);
-  if (!Number.isFinite(amount)) return `${currency} 0`;
-  const roundedAmount = Math.round(amount);
-  const formatted = Math.abs(amount - roundedAmount) < 0.005
-    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
-    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
-  return `${currency} ${formatted}`;
-}
+const formatCurrency = formatMoney;
 
 function normalizePayoutStatus(value) {
   const normalized = normalizeString(value).trim().toUpperCase().replace(/[\s-]+/g, "_");
@@ -142,26 +135,22 @@ export function mapFinanceSummaryCards(data, payoutsData = null) {
   const grossCustomerPaymentsValue =
     grossCustomerPaymentsTotal > 0
       ? formatCurrency(grossCustomerPaymentsTotal, grossCustomerPaymentsCurrency)
-      : summary?.totalRevenue?.formatted ||
-        formatCurrency(summary?.totalRevenue?.amount, summary?.totalRevenue?.currency || "NOK");
+      : formatCurrency(summary?.totalRevenue);
 
   const awaitingPayoutValue =
     awaitingPayoutTotal > 0
       ? formatCurrency(awaitingPayoutTotal, awaitingPayoutCurrency)
-      : summary?.pendingPayout?.formatted ||
-        formatCurrency(summary?.pendingPayout?.amount, summary?.pendingPayout?.currency || "NOK");
+      : formatCurrency(summary?.pendingPayout);
 
   const completedPayoutsValue =
     completedPayoutTotal > 0
       ? formatCurrency(completedPayoutTotal, completedPayoutCurrency)
-      : summary?.completedPayouts?.formatted ||
-        formatCurrency(summary?.completedPayouts?.amount, summary?.completedPayouts?.currency || "NOK");
+      : formatCurrency(summary?.completedPayouts);
 
   const totalCommissionValue =
     totalCommissionAmount > 0
       ? formatCurrency(totalCommissionAmount, totalCommissionCurrency)
-      : summary?.commissionPaid?.formatted ||
-        formatCurrency(summary?.commissionPaid?.amount, summary?.commissionPaid?.currency || "NOK");
+      : formatCurrency(summary?.commissionPaid);
 
   return [
     {
@@ -368,10 +357,9 @@ export function mapPayoutTransactions(data) {
         invoiceNumber,
         eventDate: formatDateLabel(node.paidAt || node.releasedAt || node.createdAt),
         eventDateRaw: normalizeString(node.paidAt || node.releasedAt || node.createdAt),
-        netAmount: normalizeString(node.netAmount?.formatted || formatCurrency(node.netAmount?.amount, node.netAmount?.currency || "NOK")),
+        netAmount: formatCurrency(node.netAmount),
         commissionAmount: normalizeString(
-          node.commissionAmount?.formatted ||
-            formatCurrency(node.commissionAmount?.amount, node.commissionAmount?.currency || "NOK"),
+          formatCurrency(node.commissionAmount),
         ),
         paymentStatus: formatPayoutStatusLabel(lifecycleStatus),
         payoutReference: normalizeString(node.transferReference || node.payoutReference),

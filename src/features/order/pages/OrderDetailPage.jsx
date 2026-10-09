@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import i18n from "../../../i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -644,13 +645,13 @@ export default function OrderDetailPage() {
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
                   {t("orders.detail.currentTotal", { defaultValue: "Current Total" })}
                 </span>
-                kr {Number(latestAdjustment.oldTotal || 0).toFixed(2)}
+                {formatMoney(latestAdjustment.oldTotal || 0)}
               </div>
               <div className="rounded-[10px] border border-[#efe6de] bg-white p-3 text-[13px] font-semibold text-[#cf6e38]">
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#8a7a6d]">
                   {t("orders.detail.proposedTotal", { defaultValue: "Proposed Total" })}
                 </span>
-                kr {Number(latestAdjustment.newTotal || 0).toFixed(2)}
+                {formatMoney(latestAdjustment.newTotal || 0)}
               </div>
             </div>
           ) : null}

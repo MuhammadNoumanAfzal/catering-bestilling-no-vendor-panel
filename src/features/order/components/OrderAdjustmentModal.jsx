@@ -1,3 +1,4 @@
+import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
 import { AlertTriangle, ChevronRight, X, Search, Clock, Minus, Plus } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -114,13 +115,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
     setSuggestedList(prev => prev.filter(s => s.id !== itemId));
   };
 
-  // Remove currency symbols/text like $, kr, NOK, and commas
-  const parseCurrencyValue = (valStr) => {
-    if (!valStr) return 0;
-    const cleaned = valStr.replace(/[$,\s]/g, "").replace(/NOK|kr/i, "").trim();
-    const val = parseFloat(cleaned);
-    return isNaN(val) ? 0 : val;
-  };
+  const parseCurrencyValue = parseMoney;
 
   // Prices calculation
   const oldTotal = useMemo(() => {
@@ -307,7 +302,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                         <span className="text-[9px] font-bold text-[#8a7a6d]">{item.servesCount ? t("orders.detail.persons", { count: item.servesCount, defaultValue: item.serves }) : item.serves}</span>
                       </div>
                       <div className="flex items-center justify-between gap-1 mt-auto">
-                        <span className="text-[10px] font-extrabold text-[#cf6e38]">{item.priceStr}</span>
+                        <span className="text-[10px] font-extrabold text-[#cf6e38]">{formatMoney(item.priceStr)}</span>
                         <button
                           type="button"
                           onClick={() => addSuggestion(item)}
@@ -346,7 +341,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                       />
                       <div className="flex flex-col leading-[1.2] flex-1">
                         <span className="text-[10px] font-extrabold text-[#1c1510]">{item.name}</span>
-                        <span className="text-[10px] font-extrabold text-[#cf6e38]">{item.priceStr}</span>
+                        <span className="text-[10px] font-extrabold text-[#cf6e38]">{formatMoney(item.priceStr)}</span>
                       </div>
                       <button
                         type="button"
@@ -503,14 +498,14 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
                   <span className="text-[#8a7a6d] font-bold">{t("orders.adjustment.oldTotalAmount", { defaultValue: "Old Total Amount" })}</span>
                   <span className="text-[#1c1510] font-extrabold text-right">
-                    kr {oldTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatMoney(oldTotal)}
                   </span>
                 </div>
 
                 <div className="flex items-start justify-between border-t border-[#f2ece6] pt-3">
                   <span className="text-[#8a7a6d] font-bold">{t("orders.adjustment.updatedTotalAmount", { defaultValue: "Updated Total Amount" })}</span>
                   <span className="text-[#d96e39] font-black text-right text-[14px]">
-                    kr {newTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatMoney(newTotal)}
                   </span>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
 import i18n from "../../../i18n";
 import { AlertTriangle, ChevronLeft, ChevronRight, Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -69,23 +70,10 @@ function mapErrorsByField(errors) {
 }
 
 function parseCurrencyValue(value) {
-  if (typeof value === "number") {
-    return value;
-  }
-
-  const cleaned = String(value || "").replace(/[^0-9.-]/g, "");
-  const parsed = Number.parseFloat(cleaned);
-  return Number.isFinite(parsed) ? parsed : 0;
+  return parseMoney(value);
 }
 
-function formatCurrency(amount) {
-  const value = Number(amount || 0);
-  const roundedAmount = Math.round(value);
-  const formatted = Math.abs(value - roundedAmount) < 0.005
-    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
-    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-  return `kr ${formatted}`;
-}
+const formatCurrency = formatMoney;
 
 function normalizeLookupKey(value) {
   return normalizeString(value).trim().toLowerCase();

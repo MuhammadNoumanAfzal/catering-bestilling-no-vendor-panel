@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import i18n from "../../../i18n";
 import DeliveryInfoNote from "./DeliveryInfoNote";
 import DeliverySectionCard from "./DeliverySectionCard";
@@ -5,19 +6,8 @@ import DeliveryTextInput from "./DeliveryTextInput";
 import { useTranslation } from "react-i18next";
 
 function formatCurrencyValue(value) {
-  const trimmedValue = String(value ?? "").trim();
-
-  if (!trimmedValue) {
-    return "";
-  }
-
-  const amount = Number(trimmedValue);
-  if (!Number.isFinite(amount) || amount < 0) return "";
-  const roundedAmount = Math.round(amount);
-  if (Math.abs(amount - roundedAmount) < 0.005) {
-    return `NOK ${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`;
-  }
-  return `NOK ${amount.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (value == null || String(value).trim() === "" || !Number.isFinite(Number(value)) || Number(value) < 0) return "";
+  return formatMoney(value);
 }
 
 export default function DeliveryPricingSection({

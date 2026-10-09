@@ -1,4 +1,4 @@
-function normalizeString(value) {
+import { formatMoney } from "../../../utils/formatMoney.js";function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
@@ -7,23 +7,9 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(numericValue) ? numericValue : fallback;
 }
 
-function formatCurrency(value, currency = "NOK") {
-  const amount = toNumber(value);
-  const normalizedCurrency = normalizeString(currency).trim().toUpperCase();
-  const prefix = normalizedCurrency === "NOK" ? "kr" : normalizedCurrency || "kr";
-  const roundedAmount = Math.round(amount);
-  const formatted = Math.abs(amount - roundedAmount) < 0.005
-    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
-    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
-  return `${prefix} ${formatted}`;
-}
+const formatCurrency = formatMoney;
 
-function formatAxisCurrency(value, currency = "NOK") {
-  const amount = toNumber(value);
-  const normalizedCurrency = normalizeString(currency).trim().toUpperCase();
-  const prefix = normalizedCurrency === "NOK" ? "kr" : normalizedCurrency || "kr";
-  return `${prefix} ${Math.round(amount)}`;
-}
+const formatAxisCurrency = formatMoney;
 
 function formatDateLabel(dateValue, locale = "nb-NO") {
   const date = new Date(dateValue);

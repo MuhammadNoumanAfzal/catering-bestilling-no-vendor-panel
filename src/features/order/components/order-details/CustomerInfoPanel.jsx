@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../../utils/formatMoney.js";
 import i18n from "../../../../i18n";
 import { CircleAlert, UserRound, X } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
@@ -106,10 +107,7 @@ function OrderHistoryDrawer({ customer, orderId, onClose }) {
             title: item.eventName || t("orders.detail.order", { defaultValue: "Order" }),
             date: dateLabel,
             guests: t("orders.detail.guestCount", { count: item.guestCount || 0, defaultValue: `${item.guestCount || 0} guests` }),
-            amount: `kr ${calculatedGrandTotal.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`,
+            amount: formatMoney(calculatedGrandTotal),
           };
         });
 

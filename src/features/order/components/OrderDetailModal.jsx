@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import { ChevronDown, X, Calendar, Clock, MapPin, Users, AlertTriangle, Printer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -281,7 +282,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                 {orderData.name}
               </span>
               <span className="text-[15px] font-black text-[#cf6e38] shrink-0">
-                {orderData.price}
+                {formatMoney(orderData.price)}
               </span>
             </div>
 
@@ -330,10 +331,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                         </p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
                           <span>{t("orders.detail.quantity", { defaultValue: "Quantity" })}: {item.quantity || 0}</span>
-                          <span>{t("orders.detail.lineTotal", { defaultValue: "Line total" })}: kr {Number(item.price || 0).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}</span>
+                          <span>{t("orders.detail.lineTotal", { defaultValue: "Line total" })}: {formatMoney(item.price || 0)}</span>
                         </div>
                         {Object.keys(item.selectedOptions || {}).length > 0 ? (
                           <div className="mt-3 border-t border-[#efe6de] pt-2">
@@ -365,10 +363,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                                   {addon?.name || "Add-on"}
                                   {addon?.quantity ? ` x${addon.quantity}` : ""}
                                   {addon?.totalPrice || addon?.unitPrice
-                                    ? ` (kr ${Number(addon?.totalPrice || addon?.unitPrice || 0).toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })})`
+                                    ? ` (${formatMoney(addon?.totalPrice || addon?.unitPrice || 0)})`
                                     : ""}
                                 </span>
                               ))}

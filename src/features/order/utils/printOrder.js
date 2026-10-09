@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import i18n from "../../../i18n";
 
 const tr = (key) => escapeHtml(i18n.t(`orders.print.${key}`));
@@ -12,12 +13,7 @@ function escapeHtml(value) {
 }
 
 function money(value) {
-  const amount = Number(value);
-  if (!Number.isFinite(amount)) return escapeHtml(value);
-  const roundedAmount = Math.round(amount);
-  return Math.abs(amount - roundedAmount) < 0.005
-    ? `kr ${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
-    : `kr ${new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)}`;
+  return escapeHtml(formatMoney(value));
 }
 
 function formatServiceType(value) {
@@ -44,9 +40,9 @@ function buildSummaryRows(financials, order, raw) {
 
   return [
     ...detailRows.map(
-      (item) => `<tr><td>${escapeHtml(translateSummaryLabel(item?.label))}</td><td>${escapeHtml(item?.value)}</td></tr>`,
+      (item) => `<tr><td>${escapeHtml(translateSummaryLabel(item?.label))}</td><td>${money(item?.value)}</td></tr>`,
     ),
-    `<tr class="total-row"><td>${tr("totalAmount")}</td><td>${escapeHtml(totalAmount)}</td></tr>`,
+    `<tr class="total-row"><td>${tr("totalAmount")}</td><td>${money(totalAmount)}</td></tr>`,
   ].join("");
 }
 

@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../../utils/formatMoney.js";
 import { Copy, ImageIcon, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -7,19 +8,14 @@ function formatMenuCardPrice(item, t) {
   }
 
   const amount = Number(item.basePrice);
-  const formattedAmount = Number.isFinite(amount)
-    ? new Intl.NumberFormat("nb-NO", {
-        maximumFractionDigits: 2,
-        minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-      }).format(amount)
-    : item.basePrice;
+  const formattedAmount = formatMoney(amount);
   const suffix = item.pricingType === "per-person"
     ? t("menu.pricingShortLabels.perPerson", { defaultValue: "pr person" })
     : item.pricingType
       ? t(`menu.pricingLabels.${item.pricingType}`, { defaultValue: item.pricingType })
       : "";
 
-  return suffix ? `${formattedAmount},- ${suffix}` : `${formattedAmount},-`;
+  return suffix ? `${formattedAmount} ${suffix}` : formattedAmount;
 }
 
 const toneClasses = {
