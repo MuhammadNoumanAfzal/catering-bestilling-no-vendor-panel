@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 export const notificationTabs = ["All", "Unread", "Read"];
 
 export const notificationFilterOptions = [
@@ -79,19 +80,8 @@ function formatTime(value) {
   }
 }
 
-function formatMoney(amount, currency) {
-  if (amount == null || amount === "") {
-    return "";
-  }
-
-  const numericAmount = Number(amount);
-  if (Number.isNaN(numericAmount)) {
-    return currency ? `${currency} ${amount}` : String(amount);
-  }
-
-  return currency
-    ? `${currency} ${numericAmount.toLocaleString("en-US")}`
-    : numericAmount.toLocaleString("en-US");
+function formatNotificationMoney(amount) {
+  return amount == null || amount === "" ? "" : formatMoney(amount);
 }
 
 function formatDateGroupLabel(value) {
@@ -336,7 +326,7 @@ export function deriveReceiptUrl(notification) {
 
 export function deriveReceiptAmount(notification) {
   const payout = notification?.livePayload?.payout;
-  return payout ? formatMoney(payout?.amount, payout?.currency) : "";
+  return payout ? formatNotificationMoney(payout?.amount) : "";
 }
 
 export function deriveReceiptStatus(notification) {
@@ -361,7 +351,7 @@ export function deriveOrderSummary(notification) {
     orderId: order.orderNumber || notification.orderNumber || "--",
     customer: order.customerName || "--",
     status: order.status || "",
-    amount: formatMoney(order.amount, order.currency),
+    amount: formatNotificationMoney(order.amount),
     coverImageUrl: order.coverImageUrl || "",
     itemsSummary: order.itemsSummary || "",
     items: Array.isArray(order.items) ? order.items : [],

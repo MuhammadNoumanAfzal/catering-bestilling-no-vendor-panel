@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 import {
   formatChoiceLabel,
   pricingTypeLabelMap,
@@ -210,7 +211,7 @@ export function mapCategoriesToOptions(categoriesConnection) {
 }
 
 export function mapVendorAddOnNodeToCard(node) {
-  const formattedPrice = node.priceWithTax ? `kr ${node.priceWithTax}` : "";
+  const formattedPrice = node.priceWithTax ? formatMoney(node.priceWithTax) : "";
   const categoryNames = getCategoryNames(node.categories, node.category);
   const categorySummary = categoryNames.join(", ");
 
@@ -236,7 +237,7 @@ function formatMenuPrice(node) {
   }
 
   const pricingLabel = pricingTypeLabelMap[node.pricingType];
-  const basePrice = `kr ${node.priceWithTax}`;
+  const basePrice = formatMoney(node.priceWithTax);
 
   if (pricingLabel) {
     return `${basePrice} (${pricingLabel})`;

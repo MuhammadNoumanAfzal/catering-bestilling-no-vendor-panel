@@ -1,15 +1,10 @@
+import { formatMoney } from "../../../utils/formatMoney.js";
 function normalizeString(value) {
   return value == null ? "" : String(value);
 }
 
 function formatCurrencyAmount(value) {
-  const normalized = normalizeString(value).trim();
-
-  if (!normalized) {
-    return "";
-  }
-
-  return normalized.includes("kr") ? normalized : `${normalized} kr`;
+  return value == null || value === "" ? "" : formatMoney(value);
 }
 
 export function createEmptyReviewSummary() {

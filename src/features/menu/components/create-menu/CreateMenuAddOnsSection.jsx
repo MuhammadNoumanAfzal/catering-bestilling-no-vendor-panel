@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../../utils/formatMoney.js";
 import { ImageIcon, Search } from "lucide-react";
 
 import CreateMenuSectionCard from "./CreateMenuSectionCard";
@@ -59,7 +60,7 @@ export default function CreateMenuAddOnsSection({
               <span className="min-w-0 flex-1 text-[13px] font-semibold text-[#201914]">
                 {item.addOnName || item.name}
               </span>
-              <span className="text-[13px] font-bold text-[#201914]">{Number.isFinite(Number(item.price)) ? new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 2 }).format(Number(item.price)) : item.price}</span>
+              <span className="text-[13px] font-bold text-[#201914]">{formatMoney(item.price)}</span>
             </label>
           );
         })}

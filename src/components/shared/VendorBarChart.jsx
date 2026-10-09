@@ -1,3 +1,4 @@
+import { formatMoney } from "../../utils/formatMoney.js";
 import { useState } from "react";
 
 function toFiniteNumber(value) {
@@ -32,7 +33,7 @@ function buildNiceTicks(maxValue, isCurrency = true) {
 }
 
 function defaultAxisFormatter(value, { isCurrency }) {
-  return isCurrency ? `NOK ${formatCompactNumber(value)}` : formatCompactNumber(value);
+  return isCurrency ? formatMoney(value) : formatCompactNumber(value);
 }
 
 function defaultTooltipFormatter(value, { isCurrency }) {
@@ -40,10 +41,7 @@ function defaultTooltipFormatter(value, { isCurrency }) {
     return `${new Intl.NumberFormat("nb-NO").format(value)} orders`;
   }
 
-  return `NOK ${new Intl.NumberFormat("nb-NO", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 0,
-  }).format(value)}`;
+  return formatMoney(value);
 }
 
 function buildTopRoundedBarPath({ x, y, width, height, radius = 10 }) {

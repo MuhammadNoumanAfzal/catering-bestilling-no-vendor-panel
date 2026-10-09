@@ -1,8 +1,8 @@
 import VendorBarChart from "../../../components/shared/VendorBarChart";
+import { parseMoney } from "../../../utils/formatMoney.js";
 
 function extractNumericAmount(label) {
-  const numericValue = Number(String(label || "").replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(numericValue) ? numericValue : 0;
+  return parseMoney(label);
 }
 
 export default function EarningChart({

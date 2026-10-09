@@ -1,3 +1,4 @@
+import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
 import { clearPendingAdjustment, getPendingAdjustment } from "../utils/pendingAdjustments";
 import i18n from "../../../i18n";
 
@@ -22,23 +23,10 @@ function firstNonEmpty(...values) {
 }
 
 function parseAmount(value) {
-  if (typeof value === "number") {
-    return value;
-  }
-
-  const normalized = normalizeString(value).replace(/[^0-9.-]/g, "");
-  const parsed = Number.parseFloat(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
+  return parseMoney(value);
 }
 
-function formatCurrency(value) {
-  const amount = parseAmount(value);
-  const roundedAmount = Math.round(amount);
-  const formatted = Math.abs(amount - roundedAmount) < 0.005
-    ? `${new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 0 }).format(roundedAmount)}`
-    : new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
-  return `kr ${formatted}`;
-}
+const formatCurrency = formatMoney;
 
 function getPricingBlock(node) {
   return node?.pricing && typeof node.pricing === "object" ? node.pricing : {};
