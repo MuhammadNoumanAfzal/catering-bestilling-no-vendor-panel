@@ -1,6 +1,7 @@
 import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
 import { clearPendingAdjustment, getPendingAdjustment } from "../utils/pendingAdjustments";
 import i18n from "../../../i18n";
+import { getOrderFinancialAmounts } from "./orderFinancialAmounts.js";
 
 function normalizeString(value) {
   return value == null ? "" : String(value);
@@ -369,16 +370,6 @@ function normalizeOrderAddon(addon, item, index) {
   };
 }
 
-function normalizeTaxRate(value) {
-  const parsed = parseAmount(value);
-
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return 0;
-  }
-
-  return parsed > 1 ? parsed / 100 : parsed;
-}
-
 function getOrderItemsArray(order) {
   return Array.isArray(order?.items) ? order.items : [];
 }
@@ -421,39 +412,11 @@ function calculateAdjustedSubtotalFromItems(order, guestCount) {
   return adjustedSubtotal > 0 ? adjustedSubtotal : null;
 }
 
-function buildFinancialSummary(order, carts) {
+function buildFinancialSummary(order) {
   const pricing = getPricingBlock(order);
   const guestCount = resolveGuestCount(order);
-  const backendSubtotal = parseAmount(pricing.subtotal);
-  const cartGrossTotal = carts.reduce((sum, cart) => sum + parseAmount(cart?.totalPriceWithTax), 0);
-  const itemGrossTotal = Array.isArray(order?.items)
-    ? order.items.reduce((sum, item) => sum + parseAmount(item?.lineTotal), 0)
-    : 0;
-  const finalPrice = parseAmount(order?.finalPrice);
-  const deliveryFee = parseAmount(pricing.deliveryFee);
-  const tipAmount = parseAmount(pricing.tipAmount);
-  const addOnsTotal = parseAmount(pricing.addOnsTotal || order?.addOnsTotal);
-  const discountAmount = parseAmount(pricing.discountAmount);
-  const serviceFee = parseAmount(pricing.serviceFee);
-  const includedVat = parseAmount(pricing.taxAmount);
-  const taxRate = normalizeTaxRate(pricing.taxRate);
-  const backendGrandTotal = parseAmount(pricing.grandTotal);
-  const backendAmountDue = parseAmount(pricing.amountDue);
-  const payableCandidates = [
-    finalPrice,
-    backendGrandTotal,
-    backendAmountDue,
-    itemGrossTotal + addOnsTotal + deliveryFee + tipAmount + serviceFee - discountAmount,
-    cartGrossTotal + addOnsTotal + deliveryFee + tipAmount + serviceFee - discountAmount,
-    backendSubtotal + addOnsTotal + deliveryFee + tipAmount + serviceFee - discountAmount,
-  ].filter((amount) => Number.isFinite(amount) && amount > 0);
-  const grandTotal = payableCandidates.length ? Math.max(...payableCandidates) : 0;
-  const merchandiseGross = Math.max(0, grandTotal - deliveryFee - tipAmount - serviceFee + discountAmount);
-  const baseSubtotal = Math.max(0, merchandiseGross - addOnsTotal) || backendSubtotal || itemGrossTotal || cartGrossTotal;
-  const calculatedIncludedVat = taxRate > 0 && merchandiseGross > 0
-    ? merchandiseGross * (taxRate / (1 + taxRate))
-    : 0;
-  const taxAmount = calculatedIncludedVat || includedVat;
+  const { baseSubtotal, deliveryFee, tipAmount, addOnsTotal, discountAmount,
+    serviceFee, taxAmount, grandTotal } = getOrderFinancialAmounts(order, pricing);
 
   const companyAllowance = parseAmount(order?.companyAllowance);
   const customerAllowance = parseAmount(order?.customerAllowance);
