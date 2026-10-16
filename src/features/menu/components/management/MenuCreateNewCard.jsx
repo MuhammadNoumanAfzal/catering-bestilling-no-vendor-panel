@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-export default function MenuCreateNewCard({ onClick }) {
+export default function MenuCreateNewCard({ onClick, isAddOn = false }) {
   const { t } = useTranslation();
   return (
     <button
@@ -12,9 +12,9 @@ export default function MenuCreateNewCard({ onClick }) {
       <span className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#efefef] text-[#aaa29a]">
         <Plus size={22} />
       </span>
-      <strong className="text-[16px] font-extrabold text-[#4c423b]">{t("menu.addOffering", { defaultValue: "Add New Offering" })}</strong>
+      <strong className="text-[16px] font-extrabold text-[#4c423b]">{t(isAddOn ? "menu.addOnProductTitle" : "menu.addOffering")}</strong>
       <p className="mt-2 max-w-[180px] text-[14px] font-medium leading-[1.45] text-[#9b9086]">
-        {t("menu.addOfferingDescription", { defaultValue: "Create a new catering package for your clients" })}
+        {t(isAddOn ? "menu.addOnProductDescription" : "menu.addOfferingDescription")}
       </p>
     </button>
   );

@@ -340,6 +340,8 @@ export default {
     title: "Anmeldelser og vurderinger", subtitle: "Administrer og analyser kundenes tilbakemeldinger.", loading: "Laster anmeldelser …", none: "Ingen anmeldelser ble funnet for de valgte filtrene.", reply: "Svar", editReply: "Rediger svar", yourReply: "Ditt svar", replyTitle: "Svar på anmeldelse", cancel: "Avbryt", posting: "Publiserer …", postReply: "Publiser svar", replyPlaceholder: "Ditt svar (dette blir synlig for kunden) …", orderRef: "Bestillingsreferanse", orderAmount: "Bestillingsbeløp", orderType: "Bestillingstype", deliveryTime: "Leveringstid", reviewedOn: "Anmeldt", total: "Totalt antall anmeldelser", new: "Nye anmeldelser", responseRate: "Svarprosent", allTime: "Alle anmeldelser", selectedRange: "Innenfor valgt periode", basedOn: "Basert på {{count}} anmeldelser", replied: "Du har svart på {{replied}} av {{total}}", showing: "Viser {{start}}–{{end}} av {{total}} anmeldelser", clear: "Tøm filtre", lastMonth: "Siste måned", last3Months: "Siste 3 måneder", last6Months: "Siste 6 måneder", thisYear: "I år", custom: "Egendefinert dato", customDate: "Egendefinert dato", customRange: "Egendefinert periode", from: "Fra", to: "Til", apply: "Bruk",
   },
   menu: {
+    addOnProductTitle: "Legg til et nytt tilleggsprodukt",
+    addOnProductDescription: "Opprett et nytt tilleggsprodukt som kundene kan legge til bestillingen.",
     pricingLabels: { "per_person": "Per person", "fixed_package": "Fast pakkepris", "tray_based": "Per fat" },
     minimumGuestLabel: "Minimum {{count}} gjester",
     flexibleGuests: "Fleksibelt antall gjester",

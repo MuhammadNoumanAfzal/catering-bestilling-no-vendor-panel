@@ -27,6 +27,7 @@ import {
   resolveMediaUrl,
 } from "../api/menuMappers";
 import { uploadMenuImage } from "../api/menuUploadApi";
+import { hasRequiredMenuItems } from "../utils/menuSaveValidation";
 import { allergenOptions as defaultAllergenOptions } from "../menuConstants";
 import {
   createEmptyMenuItem,
@@ -579,7 +580,7 @@ export function useMenuEditor() {
     }));
   }
 
-  function validateBeforeSave() {
+  function validateBeforeSave(status) {
     if (!formState.menuTitle.trim()) {
       setFieldErrors((current) => ({
         ...current,
@@ -624,7 +625,7 @@ export function useMenuEditor() {
       return i18n.t("vendorMessages.guestsRequired");
     }
 
-    if (!formState.menuItems.some((item) => item.title.trim())) {
+    if (!hasRequiredMenuItems(formState.menuItems, status)) {
       return i18n.t("vendorMessages.menuItemRequired");
     }
 
@@ -632,8 +633,9 @@ export function useMenuEditor() {
   }
 
   async function handleSave(statusOverride) {
+    if (isSaving) return;
     setFieldErrors(emptyFieldErrors);
-    const validationMessage = validateBeforeSave();
+    const validationMessage = validateBeforeSave(statusOverride || formState.status || "draft");
 
     if (validationMessage) {
       await showVendorErrorAlert(validationMessage);
