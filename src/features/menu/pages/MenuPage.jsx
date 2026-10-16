@@ -307,6 +307,7 @@ export default function MenuPage() {
           ))}
 
           <MenuCreateNewCard
+            isAddOn={activeTab === "Add-ons"}
             onClick={activeTab === "Add-ons" ? handleCreateAddOn : openFreshCreateMenu}
           />
         </div>
