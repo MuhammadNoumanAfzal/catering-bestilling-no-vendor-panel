@@ -1,4 +1,5 @@
 import { formatMoney } from "../../../utils/formatMoney.js";
+import { independentAddOnsEnabled, isIndependentAddOn, standaloneInput } from "../utils/addOnTypes";
 import {
   formatChoiceLabel,
   pricingTypeLabelMap,
@@ -223,7 +224,7 @@ export function mapVendorAddOnNodeToCard(node) {
     meta: formatDietaryTagNames(node.dietaryTags) || "Available add-on",
     image: node.coverImage?.fileUrl || "",
     status: statusLabelMap[node.menuStatus] || formatChoiceLabel(node.menuStatus || "active"),
-    badge: categoryNames[0] || "Add-on",
+    badge: isIndependentAddOn(node) ? "Frittst\u00e5ende produkt" : categoryNames[0] || "Add-on",
     tone: node.menuStatus || "active",
     isAddOn: true,
     isApiManaged: true,
@@ -288,6 +289,11 @@ export function mapVendorAddOnDetailToForm(addOn) {
 
   return {
     id: addOn.id,
+    addOnType: isIndependentAddOn(addOn) ? "INDEPENDENT" : "DEPENDENT",
+    pricingType: isIndependentAddOn(addOn) ? "per-person" : addOn.pricingType || "fixed",
+    minimumGuests: String(addOn.minimumGuests || 1),
+    minimumQuantity: String(addOn.minimumQuantity || 1),
+    allergens: safeArray(addOn.allergens).map((item) => item.id).filter(Boolean),
     addOnName: addOn.name || "",
     description: addOn.description || "",
     price: addOn.priceWithTax ? String(addOn.priceWithTax) : "",
@@ -459,6 +465,9 @@ export function buildSaveVendorMenuVariables(formState, statusOverride, options 
 }
 
 export function buildSaveVendorAddOnVariables(formState) {
+  if (isIndependentAddOn(formState) && !independentAddOnsEnabled) {
+    throw new Error("Independent add-ons require the backend update before they can be saved.");
+  }
   const selectedStatus = formState.availableImmediately ? "active" : formState.status || "draft";
   const attachments = formState.image?.fileUrl
     ? [
@@ -473,6 +482,7 @@ export function buildSaveVendorAddOnVariables(formState) {
   return {
     input: {
       ...(formState.id ? { id: formState.id } : {}),
+      ...(independentAddOnsEnabled ? standaloneInput(formState) : {}),
       name: formState.addOnName.trim(),
       description: formState.description?.trim() || "",
       categories: [],

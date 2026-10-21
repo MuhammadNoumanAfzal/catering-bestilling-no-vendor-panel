@@ -290,6 +290,8 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
         id
         productId
         productName
+        personCount
+        addOnType
         pricingType
         unitPrice
         quantity
@@ -529,6 +531,9 @@ export const GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY = `
             items {
               id
               productName
+              personCount
+              addOnType
+              pricingType
               quantity
               selectedAddons {
                 name

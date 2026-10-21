@@ -192,7 +192,7 @@ export function useMenuEditor() {
         const nextPricingModes = mapChoiceOptions(bootstrapResult.pricingTypeChoices);
         const nextAddOns = (bootstrapResult.vendorAddOns?.edges || [])
           .map((edge) => edge?.node)
-          .filter(Boolean)
+          .filter((node) => node && String(node.addOnType || "DEPENDENT").toUpperCase() !== "INDEPENDENT")
           .map(toAddOnDisplay);
 
         setCategoryOptions(nextCategoryOptions);
@@ -644,7 +644,10 @@ export function useMenuEditor() {
 
     try {
       setIsSaving(true);
-      const variables = buildSaveVendorMenuVariables(formState, statusOverride);
+      const variables = buildSaveVendorMenuVariables({
+        ...formState,
+        selectedAddOnIds: formState.selectedAddOnIds.filter((id) => availableAddOns.some((item) => item.id === id)),
+      }, statusOverride);
       const result = await saveVendorMenu(variables);
       setFieldErrors(emptyFieldErrors);
       clearStoredMenuDraft(mode, menuId);

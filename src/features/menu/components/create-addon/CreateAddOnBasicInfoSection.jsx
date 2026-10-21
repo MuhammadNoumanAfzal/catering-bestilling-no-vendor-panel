@@ -1,4 +1,4 @@
-import CreateMenuSectionCard from "../create-menu/CreateMenuSectionCard";
+import { Image, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Label,
@@ -30,15 +30,14 @@ export default function CreateAddOnBasicInfoSection({
   onMealTypesChange,
   onPriceChange,
   price,
+  isStandalone = false,
 }) {
   const { t } = useTranslation();
 
   return (
-    <div className="grid grid-cols-[minmax(0,1.32fr)_minmax(240px,0.78fr)] gap-4 max-[980px]:grid-cols-1">
-      <CreateMenuSectionCard
-        description={t("menu.addOnDetailsDescription", { defaultValue: "Create a new extra item for your customers to customize their meals." })}
-        title={t("menu.addOnDetails", { defaultValue: "Add-on Details" })}
-      >
+    <div className="grid gap-7 border-b border-[#e5e7eb] py-6 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="min-w-0">
+        <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-[#202a34]"><Package size={18} className="text-[#7b8793]" />{t("menu.addOnDetails", { defaultValue: "Add-on Details" })}</h2>
         <div className="grid gap-4">
           <div>
             <Label>{t("menu.addOnName", { defaultValue: "Add-on Name" })}</Label>
@@ -63,12 +62,13 @@ export default function CreateAddOnBasicInfoSection({
 
           <div className="grid grid-cols-2 gap-4 max-[680px]:grid-cols-1">
             <div>
-              <Label>{t("menu.price", { defaultValue: "Price" })}</Label>
+              <Label>{t("menu.price", { defaultValue: "Price" })} <span className="ml-1 text-xs font-normal text-[#7b8793]">{isStandalone ? "NOK / gjest" : "NOK"}</span></Label>
               <TextInput
                 disabled={disabled}
                 onChange={onPriceChange}
                 placeholder="0.00"
                 type="number"
+                min="0"
                 value={price}
               />
               <FieldError message={fieldErrors?.price} />
@@ -87,16 +87,19 @@ export default function CreateAddOnBasicInfoSection({
             </div>
           </div>
         </div>
-      </CreateMenuSectionCard>
+      </section>
 
-      <CreateMenuSectionCard description={t("menu.uploadFormat", { defaultValue: "PNG, JPG or WEBP up to 5MB." })} title={t("menu.productImage", { defaultValue: "Product Image" })}>
+      <section className="min-w-0 lg:border-l lg:border-[#edf0f2] lg:pl-7">
+        <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-[#202a34]"><Image size={18} className="text-[#7b8793]" />{t("menu.productImage", { defaultValue: "Product Image" })}</h2>
+        <div className="[&>label]:aspect-[4/3] [&>label]:h-auto [&>label]:border-[#dce1e6] [&>label]:bg-[#f7f9fa] [&>label]:transition-colors [&>label]:hover:border-[#23745d] [&>label]:hover:bg-[#f1f7f4]">
         <UploadBox
           disabled={disabled}
           image={image}
           label={t("menu.upload", { defaultValue: "Click or drag to upload" })}
           onFileSelect={onImageSelect}
         />
-      </CreateMenuSectionCard>
+        </div>
+      </section>
     </div>
   );
 }

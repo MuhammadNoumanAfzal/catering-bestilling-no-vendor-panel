@@ -115,6 +115,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
               item?.coverImage?.fileUrl ||
               "",
             quantity: Number(item?.quantity ?? 0) || 0,
+            personCount: item?.addOnType === "INDEPENDENT" ? Number(item.personCount) || 0 : 0,
             price: item?.lineTotal ?? item?.price ?? 0,
             lineSubtotal: item?.lineSubtotal ?? 0,
             lineTax: item?.lineTax ?? 0,
@@ -331,6 +332,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
                         </p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.06em] text-[#9c8f82]">
                           <span>{t("orders.detail.quantity", { defaultValue: "Quantity" })}: {item.quantity || 0}</span>
+                          {item.personCount > 0 && <span>{t("orders.detail.lineGuests", { count: item.personCount, defaultValue: "{{count}} guests" })}</span>}
                           <span>{t("orders.detail.lineTotal", { defaultValue: "Line total" })}: {formatMoney(item.price || 0)}</span>
                         </div>
                         {Object.keys(item.selectedOptions || {}).length > 0 ? (

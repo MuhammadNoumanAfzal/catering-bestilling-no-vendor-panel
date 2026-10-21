@@ -1,3 +1,6 @@
+import { Plus, Save, LoaderCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 export default function CreateAddOnActionsBar({
   onCancel,
   onPrimaryAction,
@@ -5,37 +8,40 @@ export default function CreateAddOnActionsBar({
   primaryLabel = "",
   isEditMode,
   saveLabel = "",
+  disabled = false,
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="sticky bottom-0 z-20 mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-[#e5e7eb] bg-white/95 py-4 backdrop-blur-sm">
       {!isEditMode && primaryLabel ? (
         <button
-          className="min-h-[40px] flex-1 cursor-pointer rounded-[10px] border border-[#d7cec4] bg-white px-5 text-[14px] font-bold text-[#4c4038] transition hover:border-[#cf6e38] hover:text-[#cf6e38]"
+          className="inline-flex min-h-10 items-center gap-2 rounded-md px-2 text-[13px] font-medium text-[#596672] transition hover:bg-[#f1f5f3] hover:text-[#17634c] disabled:opacity-50"
           onClick={onPrimaryAction}
+          disabled={disabled}
           type="button"
         >
-          {primaryLabel}
+          <Plus size={16} />{primaryLabel.replace(/^\+\s*/, "")}
         </button>
       ) : null}
 
-      <div className={`flex items-center gap-3 ${isEditMode ? "w-full justify-end" : ""}`}>
+      <div className={`ml-auto flex flex-wrap items-center justify-end gap-2 ${isEditMode ? "w-full" : ""}`}>
         <button
-          className="h-[42px] min-w-[94px] cursor-pointer rounded-[10px] border border-[#1d1713] bg-white px-4 text-[14px] font-bold text-[#1d1713]"
+          className="min-h-10 rounded-md border border-[#dce1e6] bg-white px-4 py-2 text-[13px] font-medium text-[#596672] transition hover:bg-[#f6f8f9] disabled:opacity-50"
           onClick={onCancel}
+          disabled={disabled}
           type="button"
         >
           {t("menu.cancel", { defaultValue: "Cancel" })}
         </button>
         <button
-          className="h-[42px] min-w-[122px] cursor-pointer rounded-[10px] bg-[#cf6e38] px-4 text-[14px] font-bold text-white"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#c95e2b] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#ad4d22] disabled:cursor-wait disabled:opacity-60"
           onClick={onSave}
+          disabled={disabled}
           type="button"
         >
-          {saveLabel || (isEditMode ? t("menu.saveChanges", { defaultValue: "Save Changes" }) : t("menu.saveAddOn", { defaultValue: "Save Add-on" }))}
+          {disabled ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}{saveLabel || (isEditMode ? t("menu.saveChanges", { defaultValue: "Save Changes" }) : t("menu.saveAddOn", { defaultValue: "Save Add-on" }))}
         </button>
       </div>
     </div>
   );
 }
-import { useTranslation } from "react-i18next";

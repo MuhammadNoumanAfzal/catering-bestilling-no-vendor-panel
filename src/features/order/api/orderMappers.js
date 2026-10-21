@@ -284,7 +284,9 @@ function buildOrderItems(items = [], carts = []) {
       const itemTitle = firstNonEmpty(item.productName, item.name);
       if (itemTitle) {
         const quantity = toNumber(item?.quantity, 0);
-        includedItems.push(`${itemTitle}${quantity ? ` (x${quantity})` : ""}`);
+        const lineGuests = item.addOnType === "INDEPENDENT" && item.personCount
+          ? ` - ${i18n.t("orders.detail.lineGuests", { count: item.personCount, defaultValue: "{{count}} guests" })}` : "";
+        includedItems.push(`${itemTitle}${quantity ? ` (x${quantity})` : ""}${lineGuests}`);
       }
     });
   } else {
