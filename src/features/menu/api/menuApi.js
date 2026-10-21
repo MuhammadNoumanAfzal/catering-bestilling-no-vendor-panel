@@ -31,7 +31,9 @@ function unwrapSuccessfulResult(result, key, fallbackMessage) {
     : null;
 
   if (!payload?.success) {
-    throw new Error(firstValidationError?.message || payload?.message || fallbackMessage);
+    const error = new Error(firstValidationError?.message || payload?.message || fallbackMessage);
+    error.errors = payload?.errors || [];
+    throw error;
   }
 
   return payload;

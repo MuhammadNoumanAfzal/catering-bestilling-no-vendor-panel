@@ -1,3 +1,5 @@
+import { addOnFields } from "../utils/addOnTypes";
+
 export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
   query GetVendorMenuFormBootstrap {
     productTypeChoices
@@ -39,6 +41,7 @@ export const GET_VENDOR_MENU_FORM_BOOTSTRAP_QUERY = `
       edges {
         node {
           id
+          ${addOnFields}
           name
           priceWithTax
           menuStatus
@@ -371,6 +374,7 @@ export const DELETE_VENDOR_MENU_MUTATION = `
 
 export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
   query GetVendorAddOnFormBootstrap {
+    allergens { id name slug }
     categories {
       edges {
         node {
@@ -403,6 +407,7 @@ export const GET_VENDOR_ADD_ONS_QUERY = `
       edges {
         node {
           id
+          ${addOnFields}
           name
           description
           priceWithTax
@@ -448,6 +453,7 @@ export const GET_VENDOR_ADD_ONS_QUERY_LEGACY = `
       edges {
         node {
           id
+          ${addOnFields}
           name
           description
           priceWithTax
@@ -491,6 +497,7 @@ export const GET_VENDOR_ADD_ON_DETAIL_QUERY = `
   query GetVendorAddOnDetail($id: ID!) {
     vendorAddOn(id: $id) {
       id
+      ${addOnFields}
       name
       description
       priceWithTax
@@ -532,6 +539,7 @@ export const GET_VENDOR_ADD_ON_DETAIL_QUERY_LEGACY = `
   query GetVendorAddOnDetail($id: ID!) {
     vendorAddOn(id: $id) {
       id
+      ${addOnFields}
       name
       description
       priceWithTax
@@ -580,6 +588,7 @@ export const SAVE_VENDOR_ADD_ON_MUTATION = `
       }
       instance {
         id
+        ${addOnFields}
         name
         description
         priceWithTax
@@ -633,6 +642,7 @@ export const SAVE_VENDOR_ADD_ON_MUTATION_LEGACY = `
       }
       instance {
         id
+        ${addOnFields}
         name
         description
         priceWithTax

@@ -19,6 +19,7 @@ import {
 } from "../api/menuMappers";
 import { uploadMenuImage } from "../api/menuUploadApi";
 import { getInitialAddOnState } from "../utils/addOnEditorUtils";
+import { validateStandaloneFields } from "../utils/addOnTypes";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
@@ -65,6 +66,7 @@ export function useAddOnEditor() {
   const [formState, setFormState] = useState(getInitialAddOnState);
   const [mealTypeOptions, setMealTypeOptions] = useState([]);
   const [dietaryOptions, setDietaryOptions] = useState([]);
+  const [allergenOptions, setAllergenOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +90,7 @@ export function useAddOnEditor() {
         const nextDietaryOptions = mapDietaryTagsToOptions(bootstrapResult.dietaryTags);
         setMealTypeOptions(nextMealTypeOptions);
         setDietaryOptions(nextDietaryOptions);
+        setAllergenOptions((bootstrapResult.allergens || []).map((item) => ({ value: item.id, label: item.name })));
 
         if (detailResult?.vendorAddOn) {
           const mappedDetail = mapVendorAddOnDetailToForm(detailResult.vendorAddOn);
@@ -250,6 +253,12 @@ export function useAddOnEditor() {
   }
 
   async function saveCurrentAddOn({ navigateAfterSave }) {
+    if (isSaving) return;
+    const standaloneError = validateStandaloneFields(formState);
+    if (standaloneError) {
+      await showVendorErrorAlert(standaloneError);
+      return;
+    }
     setFieldErrors(emptyFieldErrors);
     const isValid = await validateAddOn();
 
@@ -311,6 +320,7 @@ export function useAddOnEditor() {
     isLoading,
     isSaving,
     dietaryOptions,
+    allergenOptions,
     mealTypeOptions,
     actions: {
       handleAddAnother,
