@@ -4,7 +4,7 @@ import {
   Truck, 
   BadgeCheck, 
   Play, 
-  // Sliders,
+  Sliders,
   AlertTriangle 
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -57,7 +57,7 @@ export default function ConfirmedLifecyclePanel({
   onActionClick,
   onOrderAdjustmentClick,
   currentStatus,
-  // onStatusSelect,
+  onStatusSelect,
 }) {
   const { t } = useTranslation();
   const isCanceled = currentStatus === "Canceled" || currentStatus === "Reject";
@@ -111,13 +111,13 @@ export default function ConfirmedLifecyclePanel({
           </button>
         ) : null}
 
-        {/* Manual dropdown overrides */}
-        {/* onStatusSelect && (
+        {/* Order status updates */}
+        {onStatusSelect && (
           <div className="mt-4 pt-3.5 border-t border-[#e6ddd4] flex flex-col gap-1.5 text-left">
             <div className="flex items-center gap-1 text-[#8f7f73]">
               <Sliders size={11} />
               <label className="text-[10px] font-bold uppercase tracking-wider">
-                {t("orders.detail.manualStatusOverride", { defaultValue: "Manual Status Override" })}
+                {t("orders.detail.manualStatusOverride", { defaultValue: "Update Order Status" })}
               </label>
             </div>
             <div className="relative">
@@ -135,7 +135,7 @@ export default function ConfirmedLifecyclePanel({
               </select>
             </div>
           </div>
-        ) */}
+        )}
       </div>
     </DetailPanel>
   );
