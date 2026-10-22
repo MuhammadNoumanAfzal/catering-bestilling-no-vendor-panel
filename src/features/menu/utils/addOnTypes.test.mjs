@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { standaloneInput, validateStandaloneFields } from "./addOnTypes.js";
+import { independentAddOnsEnabled, standaloneInput, validateStandaloneFields } from "./addOnTypes.js";
+
+test("standalone products are enabled when a build omits the rollout flag", () => {
+  assert.equal(independentAddOnsEnabled, true);
+});
 
 test("dependent add-ons retain the existing menu-only input", () => {
   assert.deepEqual(standaloneInput({ addOnType: "DEPENDENT" }), { addOnType: "DEPENDENT" });

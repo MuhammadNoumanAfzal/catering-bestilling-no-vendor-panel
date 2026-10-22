@@ -89,7 +89,7 @@ export default function CreateAddOnPage() {
         onSave={actions.handleSave}
         isEditMode={isEditMode}
         primaryLabel={t("menu.addAnother", { defaultValue: "+ Add Another Item" })}
-        saveLabel={isEditMode ? t("menu.saveChanges", { defaultValue: "Save Changes" }) : isDuplicateMode ? t("menu.saveCopy", { defaultValue: "Save Copy" }) : t("menu.saveAddOn", { defaultValue: "Save Add-on" })}
+        saveLabel={t("menu.save", { defaultValue: "Save" })}
       />
     </section>
   );
