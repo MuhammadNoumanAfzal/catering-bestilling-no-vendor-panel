@@ -1,6 +1,4 @@
 import { 
-  Check, 
-  CircleCheckBig, 
   CookingPot, 
   PackageCheck, 
   Truck, 
@@ -12,14 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 
-const STAGES = [
-  { id: "New", labelKey: "orders.detail.stageNew", defaultLabel: "New Order", descKey: "orders.detail.stageIncoming", defaultDesc: "Incoming request" },
-  { id: "Accepted", labelKey: "orders.detail.stageConfirmed", defaultLabel: "Confirmed", descKey: "orders.detail.stageScheduled", defaultDesc: "Scheduled for production" },
-  { id: "Preparing", labelKey: "orders.preparing", defaultLabel: "Preparing", descKey: "orders.detail.stageKitchen", defaultDesc: "Kitchen staff working" },
-  { id: "Ready", labelKey: "orders.detail.stageFoodReady", defaultLabel: "Food Ready", descKey: "orders.detail.stagePacked", defaultDesc: "Packed & awaiting dispatch" },
-  { id: "Out for delivery", labelKey: "orders.detail.stageTransit", defaultLabel: "In Transit", descKey: "orders.detail.stageDriver", defaultDesc: "Driver on the way" },
-  { id: "Delivered", labelKey: "orders.delivered", defaultLabel: "Delivered", descKey: "orders.detail.stageArrived", defaultDesc: "Arrived at customer" },
-];
+
 
 function getStageIndex(status) {
   if (!status) return -1;
@@ -69,7 +60,6 @@ export default function ConfirmedLifecyclePanel({
   onStatusSelect,
 }) {
   const { t } = useTranslation();
-  const activeIndex = getStageIndex(currentStatus);
   const isCanceled = currentStatus === "Canceled" || currentStatus === "Reject";
   const canAdjustOrder = !isCanceled && getStageIndex(currentStatus) < getStageIndex("Delivered");
 
@@ -84,69 +74,7 @@ export default function ConfirmedLifecyclePanel({
             {t("orders.detail.orderCanceledHelp", { defaultValue: "This order has been rejected or canceled." })}
           </p>
         </div>
-      ) : (
-        /* Stepper progress indicator */
-        <div className="relative mb-5 flex flex-col gap-4 pl-3.5 mt-2">
-          {/* Vertical progress track */}
-          <div className="absolute left-[20px] top-[8px] bottom-[8px] w-0.5 bg-[#e6ddd4]" aria-hidden="true" />
-          
-          {/* Highlighted track */}
-          {activeIndex >= 0 && (
-            <div 
-              className="absolute left-[20px] top-[8px] w-0.5 bg-[#cf6e38] transition-all duration-300" 
-              style={{
-                height: `${(activeIndex / (STAGES.length - 1)) * 90}%`
-              }}
-              aria-hidden="true"
-            />
-          )}
-
-          {STAGES.map((stage, idx) => {
-            const isCompleted = activeIndex > idx;
-            const isActive = activeIndex === idx;
-
-            let dotWidget = null;
-            if (isCompleted) {
-              dotWidget = (
-                <span className="flex h-[15px] w-[15px] items-center justify-center rounded-full bg-[#2ca24f] text-white">
-                  <Check size={9} strokeWidth={4} />
-                </span>
-              );
-            } else if (isActive) {
-              dotWidget = (
-                <span className="relative flex h-[15px] w-[15px]">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#cf6e38] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-[15px] w-[15px] bg-[#cf6e38]"></span>
-                </span>
-              );
-            } else {
-              dotWidget = <span className="h-2.5 w-2.5 rounded-full bg-[#d8cec4] border border-[#c7bbb0]" />;
-            }
-
-            return (
-              <div key={stage.id} className="relative flex items-center gap-3.5">
-                {/* Step indicator aligned container */}
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center z-[1] bg-white">
-                  {dotWidget}
-                </div>
-
-                <div className="flex flex-col items-start leading-[1.2]">
-                  <span className={`text-[12px] font-extrabold ${
-                    isActive ? "text-[#cf6e38]" : isCompleted ? "text-[#4c423d]" : "text-[#8f7f73]"
-                  }`}>
-                    {t(stage.labelKey, { defaultValue: stage.defaultLabel })}
-                  </span>
-                  {isActive && (
-                    <span className="text-[10px] text-[#8f7f73] font-semibold mt-0.5">
-                      {t(stage.descKey, { defaultValue: stage.defaultDesc })}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      ) : null}
 
       {/* Action CTA Buttons */}
       <div className="flex flex-col gap-2">
