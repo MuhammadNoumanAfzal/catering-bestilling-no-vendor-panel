@@ -388,6 +388,8 @@ export default {
     "fixLoad": "Fix the loading issue before editing or saving."
   },
   menu: {
+    independentProduct: "Standalone product",
+    independentProductsCategory: "Independent Products",
     addOnProductTitle: "Add a new add-on product",
     addOnProductDescription: "Create an add-on product customers can add to their order.",
     statusUpdated: "{{type}} status set to {{status}}.",

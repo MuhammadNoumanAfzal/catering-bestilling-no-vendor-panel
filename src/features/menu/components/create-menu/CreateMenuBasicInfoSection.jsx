@@ -150,7 +150,11 @@ export default function CreateMenuBasicInfoSection({
             <SelectInput
               disabled={disabled}
               onChange={onCategoryChange}
-              options={categoryOptions}
+              options={categoryOptions.map((option) => ({
+                ...option,
+                label: /^independent products?$/i.test(String(option.label).trim())
+                  ? t("menu.independentProductsCategory") : option.label,
+              }))}
               placeholder={t("menu.selectCategory", { defaultValue: "Select category" })}
               value={category}
             />
