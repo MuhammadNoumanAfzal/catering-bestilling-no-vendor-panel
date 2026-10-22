@@ -50,7 +50,7 @@ export function printVendorOrder(order) {
   const logoUrl = new URL(`${import.meta.env.BASE_URL}blackLogo.png`, window.location.origin).href;
   const raw = order?.raw || {};
   const items = Array.isArray(raw.items) ? raw.items : [];
-  const customer = order?.customer || {};
+  const customer = order?.customer?.detailsVisible ? order.customer : {};
   const logistics = order?.logistics || {};
   const serviceType = formatServiceType(logistics.serviceType);
 

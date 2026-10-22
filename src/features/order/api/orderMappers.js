@@ -1,4 +1,5 @@
 import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
+import { canShowCustomerContact, redactUnacceptedContact } from "../utils/customerVisibility.js";
 import { clearPendingAdjustment, getPendingAdjustment } from "../utils/pendingAdjustments";
 import i18n from "../../../i18n";
 import { getOrderFinancialAmounts } from "./orderFinancialAmounts.js";
@@ -185,6 +186,9 @@ function isMeaningfulOrganization(value) {
 }
 
 function resolveVendorListCustomerLabel(node) {
+  if (!canShowCustomerContact(node)) {
+    return i18n.t(/^corporate/i.test(node?.customerType || "") ? "orders.customerTypes.Corporate Client" : "orders.customerTypes.Private Client");
+  }
   const organization = firstNonEmpty(node?.customerInfo?.organization);
 
   if (isMeaningfulOrganization(organization)) {
@@ -233,10 +237,10 @@ function formatCustomerTypeLabel(value) {
 }
 
 function buildCustomerFromApi(node) {
+  const detailsVisible = canShowCustomerContact(node);
+  node = redactUnacceptedContact(node);
   const customerInfo = node?.customerInfo || {};
   const address = buildAddressFromNode(node);
-  const detailsVisible =
-    Boolean(node?.customerDetailsVisible) || resolveOrderStatus(node) !== "New";
   const customerType = formatCustomerTypeLabel(node?.customerType);
   const organization = firstNonEmpty(
     node?.corporateName,
@@ -247,7 +251,7 @@ function buildCustomerFromApi(node) {
     .find((value) => value && !/^(private\s*client|privatkunde)$/i.test(value));
 
   return {
-    name:
+    name: !detailsVisible ? "" :
       (/^corporate/i.test(`${node?.customerType ?? ""}`)
         ? firstNonEmpty(node?.corporateName, node?.customerName, customerInfo.fullName)
         : privateCustomerName || i18n.t("orders.customerTypes.Private Client", { defaultValue: "Privatkunde" })) ||
@@ -991,7 +995,7 @@ export function mapVendorOrderDetail(data, orderId) {
       instructions: node.tableware.instructions || "",
     } : null,
     raw: {
-      ...node,
+      ...redactUnacceptedContact(node),
       orderCarts: carts,
     },
   };
