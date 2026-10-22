@@ -39,7 +39,7 @@ export default function CreateAddOnActionsBar({
           disabled={disabled}
           type="button"
         >
-          {disabled ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}{saveLabel || (isEditMode ? t("menu.saveChanges", { defaultValue: "Save Changes" }) : t("menu.saveAddOn", { defaultValue: "Save Add-on" }))}
+          {disabled ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}{saveLabel || t("menu.save", { defaultValue: "Save" })}
         </button>
       </div>
     </div>

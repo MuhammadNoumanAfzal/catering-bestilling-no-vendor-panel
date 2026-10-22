@@ -1,6 +1,6 @@
 import { formatMoney } from "../../../../utils/formatMoney.js";
 import i18n from "../../../../i18n";
-import { CircleAlert, UserRound, X } from "lucide-react";
+import { CircleAlert, Mail, Phone, UserRound, X } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 import { getVendorCustomerOrderHistory } from "../../api/orderApi";
 
-function Field({ label, value, fullWidth = false }) {
+function Field({ label, value, fullWidth = false, href, wrap = false }) {
   const displayValue = `${value ?? ""}`.trim();
 
   if (!displayValue || displayValue === "-") {
@@ -20,11 +20,11 @@ function Field({ label, value, fullWidth = false }) {
       <span className="text-[14px] text-[#8a7a6d]">{label}</span>
       <strong
         className={`text-[13px] font-extrabold text-[#17120e] ${
-          fullWidth ? "break-all leading-[1.35]" : "truncate"
+          fullWidth || wrap ? "break-all leading-[1.35]" : "truncate"
         }`}
         title={displayValue}
       >
-        {displayValue}
+        {href ? <a href={href} className="text-[#24644f] underline-offset-2 hover:underline focus-visible:underline">{displayValue}</a> : displayValue}
       </strong>
     </div>
   );
@@ -234,6 +234,21 @@ export default function CustomerInfoPanel({ customer, orderId }) {
           <Field label={t("orders.detail.postalCode", { defaultValue: "Postal Code" })} value={customer.postalCode} />
           <Field label={t("orders.detail.city", { defaultValue: "City" })} value={customer.city} />
         </div>
+
+        {customer.detailsVisible && <div className="mt-3 grid grid-cols-1 gap-4 border-t border-[#eee7e0] pt-3 sm:grid-cols-2">
+          <Field
+            label={<span className="inline-flex items-center gap-1.5"><Mail size={14} />{t("orders.detail.email", { defaultValue: "Email" })}</span>}
+            value={customer.email && customer.email !== "-" ? customer.email : t("orders.detail.notProvided", { defaultValue: "Not provided" })}
+            href={customer.email && customer.email !== "-" ? `mailto:${customer.email.trim()}` : undefined}
+            wrap
+          />
+          <Field
+            label={<span className="inline-flex items-center gap-1.5"><Phone size={14} />{t("orders.detail.phone", { defaultValue: "Phone" })}</span>}
+            value={customer.phone && customer.phone !== "-" ? customer.phone : t("orders.detail.notProvided", { defaultValue: "Not provided" })}
+            href={customer.phone && customer.phone !== "-" ? `tel:${customer.phone.replace(/[^\d+]/g, "")}` : undefined}
+            wrap
+          />
+        </div>}
 
         <div className="mt-3 flex items-center justify-between gap-2.5 rounded-[10px] bg-[#edf5ff] px-3 py-2.5">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#4f5f73]">
