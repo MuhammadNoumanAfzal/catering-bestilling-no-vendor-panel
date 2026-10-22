@@ -1,3 +1,4 @@
+import { canShowCustomerContact } from "../../order/utils/customerVisibility.js";
 import { formatMoney } from "../../../utils/formatMoney.js";
 export const notificationTabs = ["All", "Unread", "Read"];
 
@@ -349,7 +350,7 @@ export function deriveOrderSummary(notification) {
 
   return {
     orderId: order.orderNumber || notification.orderNumber || "--",
-    customer: order.customerName || "--",
+    customer: canShowCustomerContact(order) ? order.customerName || "--" : "--",
     status: order.status || "",
     amount: formatNotificationMoney(order.amount),
     coverImageUrl: order.coverImageUrl || "",

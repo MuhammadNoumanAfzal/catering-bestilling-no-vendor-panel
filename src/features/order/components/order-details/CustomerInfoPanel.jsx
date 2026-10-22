@@ -225,9 +225,9 @@ export default function CustomerInfoPanel({ customer, orderId }) {
     <>
       <DetailPanel title={t("orders.detail.customerContact", { defaultValue: "Customer & Contact" })} titleIcon={UserRound}>
         <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-5">
-          <Field label={isCorporate ? t("orders.detail.company", { defaultValue: "Company" }) : t("orders.detail.name", { defaultValue: "Name" })} value={customer.name} />
-          {hasOrganization ? <Field label={t("orders.detail.organization", { defaultValue: "Organization" })} value={organization} /> : null}
-          {isCorporate ? <Field label={t("orders.detail.contact", { defaultValue: "Contact" })} value={customer.contactName} /> : null}
+          {customer.detailsVisible && <Field label={isCorporate ? t("orders.detail.company", { defaultValue: "Company" }) : t("orders.detail.name", { defaultValue: "Name" })} value={customer.name} />}
+          {customer.detailsVisible && hasOrganization ? <Field label={t("orders.detail.organization", { defaultValue: "Organization" })} value={organization} /> : null}
+          {customer.detailsVisible && isCorporate ? <Field label={t("orders.detail.contact", { defaultValue: "Contact" })} value={customer.contactName} /> : null}
           <Field label={t("orders.detail.type", { defaultValue: "Type" })} value={t(`orders.customerTypes.${customer.customerType}`, { defaultValue: customer.customerType })} />
           <Field label={t("orders.detail.orgNo", { defaultValue: "Org No." })} value={customer.organizationNumber} />
           <Field label={t("orders.detail.invoiceRef", { defaultValue: "Invoice Ref." })} value={customer.invoiceReference} />
@@ -256,8 +256,9 @@ export default function CustomerInfoPanel({ customer, orderId }) {
             {t(customer.detailsVisible ? "orders.contactHistory" : "orders.contactHidden")}
           </span>
           <button
+            disabled={!customer.detailsVisible}
             className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-bold text-[#3e72d7]"
-            onClick={() => setIsHistoryOpen(true)}
+            onClick={() => customer.detailsVisible && setIsHistoryOpen(true)}
             type="button"
           >
             {t("orders.detail.viewOrderHistory", { defaultValue: "View Order history" })}
@@ -266,7 +267,7 @@ export default function CustomerInfoPanel({ customer, orderId }) {
       </DetailPanel>
 
       <AnimatePresence>
-        {isHistoryOpen ? (
+        {isHistoryOpen && customer.detailsVisible ? (
           <OrderHistoryDrawer
             customer={customer}
             orderId={orderId}

@@ -1,3 +1,4 @@
+import { canShowCustomerContact } from "../../features/order/utils/customerVisibility.js";
 import {
   Bell,
   ChevronDown,
@@ -320,7 +321,7 @@ export default function AppLayout() {
           .map((order) => ({
             id: `order-${order.id}`,
             label: order.invoiceNumber || order.orderNumber || `${t("layout.search.order", { defaultValue: "Order" })} ${order.id}`,
-            description: [t("layout.search.order", { defaultValue: "Order" }), order.customerName, order.eventName].filter(Boolean).join(" - "),
+            description: [t("layout.search.order", { defaultValue: "Order" }), canShowCustomerContact(order) ? order.customerName : "", order.eventName].filter(Boolean).join(" - "),
             to: `/orders/${encodeURIComponent(order.id)}`,
           }));
         const menuResults = (menusResponse?.vendorMenus?.edges || [])

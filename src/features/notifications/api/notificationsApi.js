@@ -1,3 +1,4 @@
+import { canShowCustomerContact } from "../../order/utils/customerVisibility.js";
 import { translateNotificationText } from "../notificationTranslations";
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import { getVendorOrdersPage } from "../../order/api/orderApi";
@@ -112,7 +113,7 @@ function isNewOrder(order) {
 }
 
 function buildSyntheticOrderNotificationNode(order, notificationState) {
-  const customerName = String(order?.customerName || "").trim();
+  const customerName = canShowCustomerContact(order) ? String(order?.customerName || "").trim() : "";
   const orderNumber = String(order?.orderNumber || order?.invoiceNumber || order?.id || "").trim();
   const eventName = String(order?.eventName || "").trim();
   const amount = Number(order?.pricing?.grandTotal ?? 0);

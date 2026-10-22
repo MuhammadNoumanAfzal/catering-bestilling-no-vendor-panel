@@ -147,7 +147,7 @@ export default function OrderDetailModal({ orderId, onClose, order, orderDetail 
     return {
       status: detailSource.status || order?.status || t("orders.new", { defaultValue: "New" }),
       statusTone: detailSource.statusTone || order?.statusTone || "is-new",
-      customer: detailSource.customer?.name || t("orders.customerUnavailable", { defaultValue: "Customer unavailable" }),
+      customer: (detailSource.customer?.detailsVisible && detailSource.customer?.name) || t("orders.customerUnavailable", { defaultValue: "Customer unavailable" }),
       id: detailSource.id || (orderId?.startsWith?.("#") ? orderId : `#${orderId}`),
       price:
         detailSource.orderItem?.modalDetails?.price ||
