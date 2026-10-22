@@ -1,4 +1,19 @@
 export default {
+  addOnErrors: {
+    minimumGuests: "Minimum guests must be a positive whole number.",
+    guestMinimum: "The order must meet the product's minimum guest count.",
+    quantityMinimum: "The quantity must meet the product's minimum requirement.",
+    disabled: "Standalone products are not available in this version yet.",
+    name: "Enter an add-on name.",
+    price: "Enter a valid price of zero or more.",
+    allergens: "Check the selected allergens and try again.",
+    attached: "This product is attached to a menu. Unlink it before changing its type.",
+    network: "Could not connect to the server. Check your internet connection and try again.",
+    session: "Sign in again to continue.",
+    load: "Unable to load the add-on. Please try again.",
+    upload: "Unable to upload the image. Please try again.",
+    save: "Unable to save the add-on. Check the details and try again.",
+  },
   notifications: {
     total: "{{count}} total",
     unread: "{{count}} unread",
