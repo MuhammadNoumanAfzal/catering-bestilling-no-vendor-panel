@@ -8,7 +8,7 @@ export function validateStandaloneFields(form) {
   if (!isIndependentAddOn(form)) return "";
   for (const key of ["minimumGuests"]) {
     if (!Number.isInteger(Number(form[key])) || Number(form[key]) < 1) {
-      return "Minimum guests must be a positive whole number.";
+      return "addOnErrors.minimumGuests";
     }
   }
   return "";

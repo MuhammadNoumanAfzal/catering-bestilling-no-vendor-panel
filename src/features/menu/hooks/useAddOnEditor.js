@@ -20,6 +20,7 @@ import {
 import { uploadMenuImage } from "../api/menuUploadApi";
 import { getInitialAddOnState } from "../utils/addOnEditorUtils";
 import { validateStandaloneFields } from "../utils/addOnTypes";
+import { localizeAddOnError } from "../utils/addOnErrors.js";
 import {
   showVendorErrorAlert,
   showVendorSuccessToast,
@@ -46,9 +47,10 @@ function mapAddOnMutationErrors(errors = []) {
       return accumulator;
     }
 
+    const message = localizeAddOnError(item, i18n.t.bind(i18n), i18n.resolvedLanguage || i18n.language);
     accumulator[targetField] = accumulator[targetField]
-      ? `${accumulator[targetField]} ${item.message}`
-      : item.message;
+      ? `${accumulator[targetField]} ${message}`
+      : message;
 
     return accumulator;
   }, {});
@@ -116,7 +118,7 @@ export function useAddOnEditor() {
       } catch (error) {
         if (!isCancelled) {
           await showVendorErrorAlert(
-            error.message || t("menu.unableLoad", { defaultValue: "Unable to load the add-on editor right now." }),
+            localizeAddOnError(error, t, i18n.resolvedLanguage || i18n.language, "load"),
             t("menu.dataUnavailable", { defaultValue: "Add-on data unavailable" }),
           );
           navigate("/menu", { replace: true });
@@ -175,7 +177,7 @@ export function useAddOnEditor() {
       setField("image", uploadedAsset);
       await showVendorSuccessToast(i18n.t("vendorMessages.productImageUploaded"));
     } catch (error) {
-      await showVendorErrorAlert(error.message || t("menu.unableUpload", { defaultValue: "Unable to process the selected image." }));
+      await showVendorErrorAlert(localizeAddOnError(error, t, i18n.resolvedLanguage || i18n.language, "upload"));
     }
   }
 
@@ -256,7 +258,7 @@ export function useAddOnEditor() {
     if (isSaving) return;
     const standaloneError = validateStandaloneFields(formState);
     if (standaloneError) {
-      await showVendorErrorAlert(standaloneError);
+      await showVendorErrorAlert(t(standaloneError));
       return;
     }
     setFieldErrors(emptyFieldErrors);
@@ -293,7 +295,7 @@ export function useAddOnEditor() {
         ...current,
         ...mapAddOnMutationErrors(error?.errors),
       }));
-      await showVendorErrorAlert(error.message || t("menu.unableSave", { defaultValue: "Unable to save the add-on right now." }));
+      await showVendorErrorAlert(localizeAddOnError(error, t, i18n.resolvedLanguage || i18n.language));
     } finally {
       setIsSaving(false);
     }

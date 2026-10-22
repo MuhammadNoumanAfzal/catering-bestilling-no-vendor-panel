@@ -1,4 +1,19 @@
 export default {
+  addOnErrors: {
+    minimumGuests: "Minimum antall gjester må være et positivt heltall.",
+    guestMinimum: "Bestillingen må oppfylle produktets minimum antall gjester.",
+    quantityMinimum: "Antallet må oppfylle produktets minimumskrav.",
+    disabled: "Frittstående produkter er ikke tilgjengelige i denne versjonen ennå.",
+    name: "Skriv inn et navn på tilleggsproduktet.",
+    price: "Oppgi en gyldig pris som er null eller høyere.",
+    allergens: "Kontroller de valgte allergenene og prøv igjen.",
+    attached: "Produktet er knyttet til en meny. Fjern tilknytningen før du endrer produkttype.",
+    network: "Kunne ikke koble til serveren. Kontroller internettforbindelsen og prøv igjen.",
+    session: "Logg inn på nytt for å fortsette.",
+    load: "Kunne ikke laste tilleggsproduktet. Prøv igjen.",
+    upload: "Kunne ikke laste opp bildet. Prøv igjen.",
+    save: "Kunne ikke lagre tilleggsproduktet. Kontroller opplysningene og prøv igjen.",
+  },
   vendorMessages: {
     "imageType": "Last opp et bilde i PNG-, JPG- eller WEBP-format.",
     "image5MB": "Last opp et bilde under 5 MB.",
