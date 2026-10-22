@@ -2,20 +2,12 @@ import {
   Check, 
   X, 
   AlertCircle, 
-  HelpCircle,
   Play
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import DetailPanel from "./DetailPanel";
 
-const STAGES = [
-  { id: "New", labelKey: "orders.detail.stageNew", defaultLabel: "New Order", descKey: "orders.detail.stageIncoming", defaultDesc: "Incoming request" },
-  { id: "Accepted", labelKey: "orders.detail.stageConfirmed", defaultLabel: "Confirmed", descKey: "orders.detail.stageScheduled", defaultDesc: "Scheduled for production" },
-  { id: "Preparing", labelKey: "orders.preparing", defaultLabel: "Preparing", descKey: "orders.detail.stageKitchen", defaultDesc: "Kitchen staff working" },
-  { id: "Ready", labelKey: "orders.detail.stageFoodReady", defaultLabel: "Food Ready", descKey: "orders.detail.stagePacked", defaultDesc: "Packed & awaiting dispatch" },
-  { id: "Out for delivery", labelKey: "orders.detail.stageTransit", defaultLabel: "In Transit", descKey: "orders.detail.stageDriver", defaultDesc: "Driver on the way" },
-  { id: "Delivered", labelKey: "orders.delivered", defaultLabel: "Delivered", descKey: "orders.detail.stageArrived", defaultDesc: "Arrived at customer" },
-];
+
 
 export default function LifecyclePanel({ 
   actions, 
@@ -36,48 +28,6 @@ export default function LifecyclePanel({
         <p className="m-0 text-[11px] font-semibold leading-[1.45] text-[#5e6d7a]">
           {t("orders.detail.reviewRequestedHelp", { defaultValue: "Please review the order details and choose whether to accept the scheduled delivery date." })}
         </p>
-      </div>
-
-      {/* Stepper with Step 1 highlighted */}
-      <div className="relative mb-5 flex flex-col gap-4 pl-3.5 mt-2">
-        <div className="absolute left-[20px] top-[8px] bottom-[8px] w-0.5 bg-[#e6ddd4]" aria-hidden="true" />
-
-        {STAGES.map((stage, idx) => {
-          const isActive = idx === 0;
-
-          let dotWidget = null;
-          if (isActive) {
-            dotWidget = (
-              <span className="relative flex h-[15px] w-[15px]">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1d70a2] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-[15px] w-[15px] bg-[#1d70a2]"></span>
-              </span>
-            );
-          } else {
-            dotWidget = <span className="h-2.5 w-2.5 rounded-full bg-[#d8cec4] border border-[#c7bbb0]" />;
-          }
-
-          return (
-            <div key={stage.id} className="relative flex items-center gap-3.5">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center z-[1] bg-white">
-                {dotWidget}
-              </div>
-
-              <div className="flex flex-col items-start leading-[1.2]">
-                <span className={`text-[12px] font-extrabold ${
-                  isActive ? "text-[#1d70a2]" : "text-[#8f7f73]"
-                }`}>
-                  {t(stage.labelKey, { defaultValue: stage.defaultLabel })}
-                </span>
-                {isActive && (
-                  <span className="text-[10px] text-[#8f7f73] font-semibold mt-0.5">
-                    {t(stage.descKey, { defaultValue: stage.defaultDesc })}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
       </div>
 
       {/* Action CTA Buttons */}
