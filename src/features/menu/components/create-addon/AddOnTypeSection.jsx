@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Layers2, Package, UsersRound, Wheat } from "lucide-react";
 
 export default function AddOnTypeSection({ form, onChange, disabled, allergenOptions }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const no = i18n.language?.startsWith("no") || i18n.language?.startsWith("nb");
   const text = (english, norwegian) => no ? norwegian : english;
   return (
@@ -11,7 +11,7 @@ export default function AddOnTypeSection({ form, onChange, disabled, allergenOpt
         <fieldset disabled={disabled} className="min-w-0">
           <legend className="mb-2.5 text-[13px] font-semibold text-[#525b65]">{text("Add-on type", "Type tilleggsprodukt")}</legend>
           <div className="inline-flex max-w-full flex-wrap gap-1 rounded-lg bg-[#f1f3f5] p-1">
-            {[["DEPENDENT", text("Menu add-on", "Menytillegg"), Layers2], ["INDEPENDENT", text("Standalone product", "Frittst\u00e5ende produkt"), Package]].map(([value, label, Icon]) => (
+            {[["DEPENDENT", text("Menu add-on", "Menytillegg"), Layers2], ["INDEPENDENT", t("menu.independentProduct"), Package]].map(([value, label, Icon]) => (
               <label key={value} className={`relative flex min-h-10 cursor-pointer items-center gap-2 rounded-md px-3 text-[13px] font-medium transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#23745d] ${form.addOnType === value ? "bg-white text-[#17634c] shadow-sm" : "text-[#66717d] hover:text-[#202a34]"} ${disabled ? "pointer-events-none opacity-60" : ""}`}>
                 <input className="sr-only" type="radio" name="addOnType" value={value} checked={form.addOnType === value} onChange={() => onChange("addOnType", value)} />
                 <Icon size={16} aria-hidden="true" />{label}
