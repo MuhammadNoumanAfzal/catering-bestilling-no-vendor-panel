@@ -4,7 +4,7 @@ import {
   Truck, 
   BadgeCheck, 
   Play, 
-  Sliders, 
+  // Sliders,
   AlertTriangle 
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -57,7 +57,7 @@ export default function ConfirmedLifecyclePanel({
   onActionClick,
   onOrderAdjustmentClick,
   currentStatus,
-  onStatusSelect,
+  // onStatusSelect,
 }) {
   const { t } = useTranslation();
   const isCanceled = currentStatus === "Canceled" || currentStatus === "Reject";
@@ -79,6 +79,8 @@ export default function ConfirmedLifecyclePanel({
       {/* Action CTA Buttons */}
       <div className="flex flex-col gap-2">
         {!isCanceled && actions.map((action) => {
+          // Preparing is temporarily hidden from vendor order actions.
+          if (/prepar/i.test(action.label)) return null;
           const Icon = getActionIcon(action.label);
           const isPrimary = action.primary;
           
@@ -110,7 +112,7 @@ export default function ConfirmedLifecyclePanel({
         ) : null}
 
         {/* Manual dropdown overrides */}
-        {onStatusSelect && (
+        {/* onStatusSelect && (
           <div className="mt-4 pt-3.5 border-t border-[#e6ddd4] flex flex-col gap-1.5 text-left">
             <div className="flex items-center gap-1 text-[#8f7f73]">
               <Sliders size={11} />
@@ -133,7 +135,7 @@ export default function ConfirmedLifecyclePanel({
               </select>
             </div>
           </div>
-        )}
+        ) */}
       </div>
     </DetailPanel>
   );
