@@ -362,7 +362,7 @@ export default function OrderDetailPage() {
     : [];
   const pendingCustomerRequest =
     modificationRequests.find(
-      (request) => `${request?.status ?? ""}`.trim().toUpperCase() === "PENDING",
+      (request) => ["PENDING", "PENDING_VENDOR_APPROVAL"].includes(`${request?.status ?? ""}`.trim().toUpperCase()),
     ) || null;
   const requestComparisons = buildRequestFieldComparisons(pendingCustomerRequest);
   const latestAdjustment = Array.isArray(orderDetail.adjustments) ? orderDetail.adjustments[0] : null;

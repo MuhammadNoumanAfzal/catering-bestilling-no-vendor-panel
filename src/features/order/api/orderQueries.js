@@ -144,6 +144,7 @@ export const GET_VENDOR_UPCOMING_ORDERS_QUERY = `
             grandTotal
           }
           finalPrice
+          invoiceRevision
         }
       }
       pageInfo {
@@ -217,6 +218,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       eventTime
       personCount
       finalPrice
+      invoiceRevision
       customerName
       eventName
       deliveryAddress
@@ -348,6 +350,7 @@ export const GET_VENDOR_ORDER_MODIFICATION_REQUESTS_QUERY = `
       oldTotal
       newTotal
       priceDelta
+      appliedInvoiceRevision
       requiresAdditionalPayment
       refundableAmount
       currentSnapshot {
@@ -401,12 +404,14 @@ export const APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION = `
         eventDate
         eventTime
         personCount
-        grandTotal
+        finalPrice
+        invoiceRevision
       }
       request {
         id
         status
         resolvedOn
+        appliedInvoiceRevision
       }
     }
   }
@@ -520,6 +525,7 @@ export const GET_VENDOR_CUSTOMER_ORDER_HISTORY_QUERY = `
       placedAt
       guestCount
       finalPrice
+      invoiceRevision
       eventName
       pricing {
         grandTotal
