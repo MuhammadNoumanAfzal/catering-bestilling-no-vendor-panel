@@ -22,6 +22,7 @@ import {
   normalizeBackendStatus,
 } from "../api/orderMappers";
 import { clearPendingAdjustment } from "../utils/pendingAdjustments";
+import { sortOrderRows } from "../utils/orderSorting.js";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 import {
   confirmOrderStatusAction,
@@ -344,9 +345,7 @@ export default function OrdersPage() {
         )
       : baseRows;
 
-    return [...searchedRows].sort((firstRow, secondRow) =>
-      parseOrderDateTime(secondRow).getTime() - parseOrderDateTime(firstRow).getTime(),
-    );
+    return sortOrderRows(searchedRows, isLiveUpcomingView ? "Upcoming" : activeTab);
   }, [activeTab, dateFilteredRows, isLiveUpcomingView, searchParams]);
 
   const dynamicMetrics = useMemo(() => {

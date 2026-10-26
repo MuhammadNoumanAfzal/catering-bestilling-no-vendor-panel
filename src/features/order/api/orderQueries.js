@@ -42,18 +42,22 @@ export const GET_VENDOR_ORDERS_QUERY = `
           pendingVendorAdjustment {
             id
             status
+            createdOn
           }
           latestVendorAdjustment {
             id
             status
+            createdOn
           }
           pendingModificationRequest {
             id
             status
+            createdOn
           }
           latestModificationRequest {
             id
             status
+            createdOn
             resolvedOn
           }
           createdOn
@@ -102,18 +106,22 @@ export const GET_VENDOR_UPCOMING_ORDERS_QUERY = `
           pendingVendorAdjustment {
             id
             status
+            createdOn
           }
           latestVendorAdjustment {
             id
             status
+            createdOn
           }
           pendingModificationRequest {
             id
             status
+            createdOn
           }
           latestModificationRequest {
             id
             status
+            createdOn
             resolvedOn
           }
           createdOn
@@ -169,6 +177,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       pendingVendorAdjustment {
         id
         status
+        createdOn
         vendorNote
         reason
         proposedEventDate
@@ -185,6 +194,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       latestVendorAdjustment {
         id
         status
+        createdOn
         vendorNote
         reason
         proposedEventDate
@@ -206,10 +216,12 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       pendingModificationRequest {
         id
         status
+        createdOn
       }
       latestModificationRequest {
         id
         status
+        createdOn
         resolvedOn
       }
       email
@@ -237,6 +249,7 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
       pendingModificationRequest {
         id
         status
+        createdOn
         reason
         vendorNote
         oldTotal
