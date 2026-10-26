@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-export default function MenuManagementHeader({ onCreateAddOn, onCreateMenu }) {
+export default function MenuManagementHeader({ onCreateAddOn, onCreateMenu, onCreateSingleProduct }) {
   const { t } = useTranslation();
   return (
     <header className="mb-5 flex items-start justify-between gap-4 max-[720px]:flex-col">
@@ -11,7 +11,14 @@ export default function MenuManagementHeader({ onCreateAddOn, onCreateMenu }) {
         </p>
       </div>
 
-      <div className="flex items-center gap-2 max-[720px]:w-full max-[720px]:flex-col max-[720px]:items-stretch">
+      <div className="flex flex-wrap items-center gap-2 max-[720px]:w-full max-[720px]:flex-col max-[720px]:items-stretch">
+        <button
+          className="min-h-10 cursor-pointer rounded-lg border border-[#e1c9bd] bg-white px-4 py-2 text-sm font-bold text-[#d96e39]"
+          onClick={onCreateSingleProduct}
+          type="button"
+        >
+          {t("menu.createSingleProduct")}
+        </button>
         <button
           className="h-[40px] cursor-pointer rounded-[8px] border border-[#e1c9bd] bg-white px-4 text-[14px] font-bold text-[#d96e39]"
           onClick={onCreateAddOn}

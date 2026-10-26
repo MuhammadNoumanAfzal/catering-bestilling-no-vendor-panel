@@ -42,12 +42,14 @@ export default function CreateAddOnPage() {
           {t("menu.backToManagement", { defaultValue: "Menu management" })}
         </button>
         <h1 className="m-0 text-[26px] font-semibold leading-tight text-[#202a34]">
-          {isEditMode ? t("menu.editAddOnTitle", { defaultValue: "Edit Add-on" }) : isDuplicateMode ? t("menu.duplicateAddOnTitle", { defaultValue: "Duplicate Add-on" }) : t("menu.addOnTitle", { defaultValue: "Add New Add-on" })}
+          {formState.addOnType === "INDEPENDENT"
+            ? t(isEditMode ? "menu.editSingleProduct" : isDuplicateMode ? "menu.duplicateSingleProduct" : "menu.createSingleProduct")
+            : isEditMode ? t("menu.editAddOnTitle") : isDuplicateMode ? t("menu.duplicateAddOnTitle") : t("menu.addOnTitle")}
         </h1>
       </header>
 
       <div className="[&_input:not([type=checkbox]):not([type=radio])]:border-[#dce1e6] [&_textarea]:border-[#dce1e6] [&_textarea]:bg-white">
-        <AddOnTypeSection form={formState} onChange={actions.setField} disabled={isSaving} allergenOptions={allergenOptions} />
+        <AddOnTypeSection hideType form={formState} onChange={actions.setField} disabled={isSaving} allergenOptions={allergenOptions} />
         <CreateAddOnBasicInfoSection
           isStandalone={formState.addOnType === "INDEPENDENT"}
           addOnName={formState.addOnName}

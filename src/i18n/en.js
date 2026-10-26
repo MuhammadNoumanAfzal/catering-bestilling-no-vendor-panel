@@ -388,6 +388,12 @@ export default {
     "fixLoad": "Fix the loading issue before editing or saving."
   },
   menu: {
+    menus: "Menus",
+    singleProducts: "Single Products",
+    createSingleProduct: "Create Single Product",
+    editSingleProduct: "Edit Single Product",
+    duplicateSingleProduct: "Duplicate Single Product",
+    statusGroup: "{{status}} · {{type}}",
     independentProduct: "Standalone product",
     independentProductsCategory: "Independent Products",
     addOnProductTitle: "Add a new add-on product",

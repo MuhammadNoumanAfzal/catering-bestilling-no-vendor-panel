@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Layers2, Package, UsersRound, Wheat } from "lucide-react";
 
-export default function AddOnTypeSection({ form, onChange, disabled, allergenOptions }) {
+export default function AddOnTypeSection({ form, onChange, disabled, allergenOptions, hideType = false }) {
   const { t, i18n } = useTranslation();
   const no = i18n.language?.startsWith("no") || i18n.language?.startsWith("nb");
   const text = (english, norwegian) => no ? norwegian : english;
   return (
     <div className="border-y border-[#e5e7eb] py-5">
       <div className="flex flex-wrap items-end justify-between gap-5">
-        <fieldset disabled={disabled} className="min-w-0">
+        {!hideType && <fieldset disabled={disabled} className="min-w-0">
           <legend className="mb-2.5 text-[13px] font-semibold text-[#525b65]">{text("Add-on type", "Type tilleggsprodukt")}</legend>
           <div className="inline-flex max-w-full flex-wrap gap-1 rounded-lg bg-[#f1f3f5] p-1">
             {[["DEPENDENT", text("Menu add-on", "Menytillegg"), Layers2], ["INDEPENDENT", t("menu.independentProduct"), Package]].map(([value, label, Icon]) => (
@@ -18,7 +18,7 @@ export default function AddOnTypeSection({ form, onChange, disabled, allergenOpt
               </label>
             ))}
           </div>
-        </fieldset>
+        </fieldset>}
         {form.addOnType === "INDEPENDENT" && <label className="w-full text-[13px] font-semibold text-[#525b65] sm:w-48">
           <span className="mb-2.5 flex items-center gap-2"><UsersRound size={15} />{text("Minimum guests", "Minimum antall gjester")}</span>
           <input disabled={disabled} className="h-11 w-full rounded-md border border-[#dce1e6] bg-white px-3 text-sm font-medium text-[#202a34] outline-none focus:border-[#23745d] focus:ring-2 focus:ring-[#23745d]/10 disabled:opacity-50" type="number" min="1" step="1" value={form.minimumGuests} onChange={(event) => onChange("minimumGuests", event.target.value)} />

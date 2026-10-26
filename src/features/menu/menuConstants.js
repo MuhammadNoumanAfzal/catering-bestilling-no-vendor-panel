@@ -1,4 +1,4 @@
-export const menuManagementTabs = ["All", "Active", "Draft", "Paused", "Add-ons"];
+export const menuManagementTabs = ["All", "Active", "Draft", "Paused", "Add-ons", "Single Products"];
 
 export const menuSortOptions = ["Latest", "Oldest", "Highest Price", "Lowest Price"];
 

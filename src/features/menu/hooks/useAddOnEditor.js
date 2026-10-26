@@ -62,10 +62,11 @@ export function useAddOnEditor() {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") || "create";
   const editId = searchParams.get("id");
+  const initialType = searchParams.get("type") === "INDEPENDENT" ? "INDEPENDENT" : "DEPENDENT";
   const isEditMode = mode === "edit";
   const isDuplicateMode = mode === "duplicate";
 
-  const [formState, setFormState] = useState(getInitialAddOnState);
+  const [formState, setFormState] = useState(() => ({ ...getInitialAddOnState(), addOnType: initialType }));
   const [mealTypeOptions, setMealTypeOptions] = useState([]);
   const [dietaryOptions, setDietaryOptions] = useState([]);
   const [allergenOptions, setAllergenOptions] = useState([]);
@@ -113,6 +114,7 @@ export function useAddOnEditor() {
         }
         setFormState((current) => ({
           ...current,
+          addOnType: initialType,
           categories: [],
         }));
       } catch (error) {
@@ -135,7 +137,7 @@ export function useAddOnEditor() {
     return () => {
       isCancelled = true;
     };
-  }, [editId, isDuplicateMode, navigate, t]);
+  }, [editId, isDuplicateMode, navigate, t, initialType]);
 
   function setField(field, value) {
     setFieldErrors((current) => ({
@@ -149,7 +151,7 @@ export function useAddOnEditor() {
   }
   function resetForm() {
     setFieldErrors(emptyFieldErrors);
-    setFormState(getInitialAddOnState());
+    setFormState({ ...getInitialAddOnState(), addOnType: formState.addOnType });
   }
 
   function toggleDietaryTag(tag) {

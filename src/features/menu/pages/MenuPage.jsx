@@ -1,10 +1,11 @@
 import i18n from "../../../i18n";
+import { Plus } from "lucide-react";
+import { getMenuGroups } from "../utils/menuManagementGroups.js";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import VendorPageLoadingState from "../../../components/shared/VendorPageLoadingState";
 
-import MenuCreateNewCard from "../components/management/MenuCreateNewCard";
 import MenuManagementHeader from "../components/management/MenuManagementHeader";
 import MenuManagementToolbar from "../components/management/MenuManagementToolbar";
 import MenuOfferingCard from "../components/management/MenuOfferingCard";
@@ -29,10 +30,6 @@ import {
   showVendorErrorAlert,
   showVendorSuccessToast,
 } from "../../../utils/vendorAlerts";
-
-function normalizeStatus(value) {
-  return String(value || "").toLowerCase();
-}
 
 function parseMenuPrice(value) {
   return Number(String(value || "").replace(/[^0-9.]/g, "")) || 0;
@@ -97,12 +94,7 @@ export default function MenuPage() {
   }, [t]);
 
   const filteredItems = useMemo(() => {
-    const baseItems =
-      activeTab === "All"
-        ? menuCards
-        : activeTab === "Add-ons"
-          ? addOnCards
-          : menuCards.filter((item) => normalizeStatus(item.status) === normalizeStatus(activeTab));
+    const baseItems = getMenuGroups(activeTab, menuCards, addOnCards).flatMap((group) => group.items);
 
     const searchQuery = searchParams.get("search")?.toLowerCase().trim() || "";
     const searchedItems = searchQuery
@@ -148,7 +140,11 @@ export default function MenuPage() {
   }
 
   function handleCreateAddOn() {
-    navigate("/menu/add-ons/create");
+    navigate("/menu/add-ons/create?type=DEPENDENT");
+  }
+
+  function handleCreateSingleProduct() {
+    navigate("/menu/add-ons/create?type=INDEPENDENT");
   }
 
   function handleView(item) {
@@ -280,6 +276,7 @@ export default function MenuPage() {
   return (
     <section className="flex min-h-[calc(100vh-124px)] flex-col">
       <MenuManagementHeader
+        onCreateSingleProduct={handleCreateSingleProduct}
         onCreateAddOn={handleCreateAddOn}
         onCreateMenu={openFreshCreateMenu}
       />
@@ -289,14 +286,21 @@ export default function MenuPage() {
         onSortChange={setSortBy}
         onTabChange={setActiveTab}
         sortOptions={menuSortOptions.map((value) => ({ value, label: t(`menu.${{ Latest: "latest", Oldest: "oldest", "Highest Price": "highestPrice", "Lowest Price": "lowestPrice" }[value]}`, { defaultValue: value }) }))}
-        tabs={menuManagementTabs.map((value) => ({ value, label: t(`menu.${{ All: "all", Active: "active", Draft: "draft", Paused: "paused", "Add-ons": "addOns" }[value]}`, { defaultValue: value }) }))}
+        tabs={menuManagementTabs.map((value) => ({ value, label: t(`menu.${{ All: "all", Active: "active", Draft: "draft", Paused: "paused", "Add-ons": "addOns", "Single Products": "singleProducts" }[value]}`, { defaultValue: value }) }))}
         valueSort={sortBy}
       />
 
-        <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
-          {filteredItems.map((item) => (
+      {getMenuGroups(activeTab, menuCards, addOnCards).map((group) => (
+        <section key={group.type} className="mb-6 min-w-0">
+          <h2 className="mb-3 text-lg font-semibold">
+            {["Active", "Draft", "Paused"].includes(activeTab)
+              ? t("menu.statusGroup", { status: t(`menu.${activeTab.toLowerCase()}`), type: t(`menu.${group.type}`) })
+              : t(`menu.${group.type}`)}
+          </h2>
+          <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
+          {filteredItems.filter((item) => group.items.includes(item)).map((item) => (
             <MenuOfferingCard
-              key={item.id}
+              key={`${group.type}-${item.id}`}
               item={item}
               onDelete={handleDelete}
               onEdit={handleEdit}
@@ -306,11 +310,15 @@ export default function MenuPage() {
             />
           ))}
 
-          <MenuCreateNewCard
-            isAddOn={activeTab === "Add-ons"}
-            onClick={activeTab === "Add-ons" ? handleCreateAddOn : openFreshCreateMenu}
-          />
+          <button type="button"
+            className="min-h-32 rounded-lg border border-dashed border-[#d6ccc4] bg-white p-5 text-sm font-semibold text-[#a34e26] hover:bg-[#faf7f4]"
+            onClick={group.type === "singleProducts" ? handleCreateSingleProduct : group.type === "addOns" ? handleCreateAddOn : openFreshCreateMenu}>
+            <Plus size={20} aria-hidden="true" className="mx-auto mb-2" />
+            {t(group.type === "singleProducts" ? "menu.createSingleProduct" : group.type === "addOns" ? "menu.createAddOns" : "menu.createMenu")}
+          </button>
         </div>
+        </section>
+      ))}
     </section>
   );
 }
