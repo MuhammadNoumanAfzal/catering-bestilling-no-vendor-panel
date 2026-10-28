@@ -45,7 +45,7 @@ export function showVendorSuccessToast(title) {
       toast: true,
       position: "top-end",
       icon: "success",
-      title,
+      titleText: title,
       showConfirmButton: false,
       timer: 2200,
       timerProgressBar: true,
@@ -88,7 +88,7 @@ export function showVendorErrorAlert(message, title = i18n.t("vendorMessages.wro
   return Swal.fire(
     withBaseOptions({
       icon: "error",
-      title,
+      titleText: title,
       text: localizeVendorMessage(message),
       confirmButtonText: i18n.t("vendorMessages.retry"),
     }),
@@ -106,7 +106,7 @@ export function confirmVendorAction({
   return Swal.fire(
     withBaseOptions({
       icon,
-      title,
+      titleText: title,
       text,
       showCancelButton: true,
       confirmButtonText,
@@ -227,7 +227,7 @@ export function showSupportTicketSubmitted({
   return Swal.fire(
     withBaseOptions({
       icon: "success",
-      title,
+      titleText: title,
       text,
       confirmButtonText,
     }),

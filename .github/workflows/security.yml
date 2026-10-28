@@ -1,0 +1,27 @@
+name: Security checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Check source and dependency manifests before installing
+        run: node scripts/security-check.mjs
+      - name: Test untrusted notification destinations
+        run: npm run test:security
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Check known dependency advisories
+        run: npm audit --ignore-scripts --audit-level=high
+      - name: Build
+        run: npm run build

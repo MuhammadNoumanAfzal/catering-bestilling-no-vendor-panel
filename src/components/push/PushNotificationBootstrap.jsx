@@ -1,3 +1,4 @@
+import { safeInternalPath } from "../../utils/safeInternalPath.js";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { executeProtectedGraphqlRequest } from "../../app/api/protectedGraphqlClient";
@@ -24,22 +25,8 @@ function getPushLink(payload) {
 }
 
 function openPushLink(link, navigate) {
-  if (!link) {
-    return;
-  }
-
-  try {
-    const target = new URL(link, window.location.origin);
-
-    if (target.origin === window.location.origin) {
-      navigate(`${target.pathname}${target.search}${target.hash}`);
-      return;
-    }
-
-    window.location.assign(target.href);
-  } catch {
-    navigate(link);
-  }
+  const target = safeInternalPath(link, window.location.origin);
+  if (target) navigate(target);
 }
 
 function showForegroundBrowserNotification(title, body, link, navigate) {
@@ -58,7 +45,9 @@ function showForegroundBrowserNotification(title, body, link, navigate) {
       openPushLink(link, navigate);
       notification.close();
     };
-  } catch {}
+  } catch {
+    // Notifications are optional and must not interrupt the application.
+  }
 }
 
 export default function PushNotificationBootstrap() {
@@ -114,7 +103,9 @@ export default function PushNotificationBootstrap() {
         }
 
         window.localStorage.setItem(storageKey, token);
-      } catch {}
+      } catch {
+        // Notifications are optional and must not interrupt the application.
+      }
     }
 
     void enablePush();
