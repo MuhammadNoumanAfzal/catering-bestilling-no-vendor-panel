@@ -275,6 +275,20 @@ export default {
     }
   },
   delivery: {
+    close: "Close",
+    nextPage: "Next page",
+    pageOf: "Page {{current}} of {{total}}",
+    previousPage: "Previous page",
+    selectedAreasRange: "Showing {{start}}–{{end}} of {{total}}",
+    otherAreas: "Other",
+    addSlotAllDays: "Add slot for all days",
+    addSlotByDay: "Add slot by day",
+    noSlotsForDay: "No delivery slots for this day.",
+    removeSlot: "Remove slot",
+    editSlot: "Edit slot",
+    matchingAreasAlreadySelected: "All matching service areas are already selected below.",
+    updateSlot: "Update slot",
+    editDeliverySlot: "Edit delivery slot",
     addAllCity: "Add all {{city}}", cityPostalCodes: "{{city}} postal codes ({{count}})", addAllCityHint: "Add every available postal code for this city", addAllRegion: "Add all {{region}}", regionPostalCodes: "{{region}} postal codes ({{count}})", addAllRegionHint: "Add every matching postal code in this region. They will be grouped by city below.",
     selected: "{{count}} selected",
     mo: "Monday",
@@ -558,6 +572,10 @@ export default {
     "applyThisOrder": "Apply \"{{action}}\" to this order?"
   },
   vendorMessages: {
+    staySignedIn: "Stay signed in",
+    logoutConfirm: "Log out",
+    logoutText: "You will be signed out of your current session.",
+    logoutTitle: "Log out now?",
     "imageType": "Please upload a PNG, JPG, or WEBP image.",
     "image5MB": "Please upload an image under 5MB.",
     "image5MB": "Please upload an image under 5MB.",

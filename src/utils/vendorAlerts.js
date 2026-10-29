@@ -119,10 +119,10 @@ export function confirmVendorAction({
 
 export function confirmVendorLogout() {
   return confirmVendorAction({
-    title: "Log out now?",
-    text: "You will be signed out of your current session.",
-    confirmButtonText: "Log out",
-    cancelButtonText: "Stay signed in",
+    title: i18n.t("vendorMessages.logoutTitle"),
+    text: i18n.t("vendorMessages.logoutText"),
+    confirmButtonText: i18n.t("vendorMessages.logoutConfirm"),
+    cancelButtonText: i18n.t("vendorMessages.staySignedIn"),
   });
 }
 

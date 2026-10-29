@@ -133,7 +133,7 @@ export default function AuthCard({
 
   return (
     <div
-      className={`w-full rounded-[14px] border border-[#e9dfd6] bg-white/95 shadow-[0_18px_44px_rgba(61,44,30,0.12)] ${maxWidthClassName}`}
+      className={`w-full rounded-[14px] border border-[#e9dfd6] bg-white shadow-[0_18px_44px_rgba(61,44,30,0.12)] ${maxWidthClassName}`}
     >
       <form className={`px-[22px] pb-5 pt-6 ${formClassName}`.trim()} onSubmit={handleSubmit}>
         <h1 className="type-h3 m-0 text-center text-[#16110d]">{title}</h1>
