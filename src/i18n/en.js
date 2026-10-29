@@ -693,6 +693,14 @@ export default {
   },
   layout: { vendorDashboard: "Vendor dashboard", vendor: "Vendor", vendorUser: "Vendor User", settings: "Settings", logout: "Logout", primaryNavigation: "Primary navigation", mobileNavigation: "Mobile navigation", nav: { dashboard: "Dashboard", orders: "Orders", menu: "Menu", delivery: "Delivery", finance: "Finance", reviews: "Reviews", notifications: "Notifications", support: "Support", settings: "Settings" }, search: { desktopPlaceholder: "Search orders, menu items, or customers...", mobilePlaceholder: "Search order, menu item or customer", clear: "Clear search", loading: "Searching your orders and menu...", empty: "No matching orders or menu items found.", order: "Order", menu: "Menu", menuItem: "Menu item" }, notifications: { new: "New Notification", received: "You have received a new update." } },
   settings: {
+    commission: {
+      title: "Platform commission", description: "Commission information for your vendor account.",
+      managedByAdmin: "Managed by Go Catering", global: "Global platform rate", applied: "Applied vendor rate",
+      unavailable: "Not available", loading: "Loading...", refresh: "Refresh rates",
+      help: "The global default and your applied rate may differ when a vendor-specific rule applies. Contact support if the global rate is not available. Existing orders retain their recorded commission.",
+      error: "Commission information could not be loaded. Please try again.",
+    },
+
     applicationStatus: {
       applicationUpdate: "Application update", badges: { PENDING_APPROVAL: "Pending approval", REVIEWING: "Under review", CHANGES_REQUESTED: "Changes requested", REJECTED: "Rejected" },
       pending: { title: "Your application is waiting for approval", description: "You can continue completing your business details while the application is pending. A complete profile with the correct address, delivery timing, bank details, images, and menu helps the approval process move faster.", checklist: { profile: "Fill out business and account information, including address, phone number, tax number, and description.", brandAssets: "Upload a clear profile image or logo and banner image.", delivery: "Make sure delivery timing is correct on the Delivery page.", menu: "Check your Menu page and add complete menu items so the store is ready to go live.", payout: "Save bank payout details so finance information is ready for review." } },

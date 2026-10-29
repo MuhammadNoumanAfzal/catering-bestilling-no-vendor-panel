@@ -1,3 +1,4 @@
+import SettingsCommissionCard from "./SettingsCommissionCard";
 import LanguageSettingsCard from "./LanguageSettingsCard";
 import SettingsSpecialClosuresSection from "./SettingsSpecialClosuresSection";
 import SettingsSectionCard from "./SettingsSectionCard";
@@ -248,6 +249,8 @@ export default function SettingsBusinessProfilePanel({
               <button className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#d96e39] px-4 text-[12px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={disabled || isSaving || !hasUnsavedChanges} onClick={handleSave} type="button">{isSaving ? t("settings.saving", { defaultValue: "Saving..." }) : t("settings.saveBankDetails", { defaultValue: "Save Bank Details" })}</button>
             </div>
           </SettingsSectionCard>
+
+          <SettingsCommissionCard />
 
           <div id="special-closures-section">
             <SettingsSpecialClosuresSection

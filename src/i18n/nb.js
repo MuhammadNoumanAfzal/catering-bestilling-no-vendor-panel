@@ -217,6 +217,14 @@ export default {
   },
   layout: { vendorDashboard: "Leverandørpanel", vendor: "Leverandør", vendorUser: "Leverandørbruker", settings: "Innstillinger", logout: "Logg ut", primaryNavigation: "Hovednavigasjon", mobileNavigation: "Mobilnavigasjon", nav: { dashboard: "Oversikt", orders: "Bestillinger", menu: "Meny", delivery: "Levering", finance: "Økonomi", reviews: "Anmeldelser", notifications: "Varsler", support: "Support", settings: "Innstillinger" }, search: { desktopPlaceholder: "Søk i bestillinger, menyer eller kunder...", mobilePlaceholder: "Søk i bestilling, meny eller kunde", clear: "Tøm søk", loading: "Søker i bestillinger og menyer...", empty: "Ingen treff i bestillinger eller menyer.", order: "Bestilling", menu: "Meny", menuItem: "Menyelement" }, notifications: { new: "Nytt varsel", received: "Du har mottatt en ny oppdatering." } },
   settings: {
+    commission: {
+      title: "Plattformprovisjon", description: "Provisjonsinformasjon for leverandørkontoen din.",
+      managedByAdmin: "Administreres av Go Catering", global: "Global provisjonssats", applied: "Gjeldende leverandørsats",
+      unavailable: "Ikke tilgjengelig", loading: "Laster...", refresh: "Oppdater satser",
+      help: "Den globale standardsatsen og din gjeldende sats kan være forskjellige når en egen leverandørregel gjelder. Kontakt brukerstøtte hvis den globale satsen ikke er tilgjengelig. Eksisterende bestillinger beholder den registrerte provisjonen.",
+      error: "Kunne ikke laste provisjonsinformasjonen. Prøv igjen.",
+    },
+
     applicationStatus: {
       applicationUpdate: "Søknadsoppdatering", badges: { PENDING_APPROVAL: "Venter på godkjenning", REVIEWING: "Under vurdering", CHANGES_REQUESTED: "Endringer forespurt", REJECTED: "Avvist" },
       pending: { title: "Søknaden din venter på godkjenning", description: "Du kan fortsette å fylle ut virksomhetsopplysningene mens søknaden venter. En komplett profil med riktig adresse, leveringstider, bankopplysninger, bilder og meny gjør godkjenningsprosessen raskere.", checklist: { profile: "Fyll ut virksomhets- og kontoopplysninger, inkludert adresse, telefonnummer, organisasjonsnummer og beskrivelse.", brandAssets: "Last opp et tydelig profilbilde eller en logo, samt et bannerbilde.", delivery: "Kontroller at leveringstidene er riktige på Levering-siden.", menu: "Kontroller Meny-siden og legg til komplette menyelementer slik at butikken er klar for lansering.", payout: "Lagre utbetalingsopplysningene slik at økonomiopplysningene er klare for vurdering." } },
