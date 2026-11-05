@@ -470,3 +470,9 @@ textarea {
 }
 
 
+
+/* Keep the app visibility toggle as the only reveal control in Edge. */
+input[data-custom-password-toggle="true"]::-ms-reveal,
+input[data-custom-password-toggle="true"]::-ms-clear {
+  display: none;
+}

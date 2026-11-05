@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { isCustomerPaymentCleared } from "./paymentStatus.js";
+test("green paid badge requires a persisted PAID customer payment status",()=>{
+ assert.equal(isCustomerPaymentCleared({customerPaymentStatus:"PAID"}),true);
+ for(const status of ["PENDING","PARTIALLY_PAID","REJECTED","UNPAID",null])assert.equal(isCustomerPaymentCleared({customerPaymentStatus:status}),false);
+});
+test("order delivery and vendor payout do not imply customer payment clearance",()=>{
+ assert.equal(isCustomerPaymentCleared({status:"COMPLETED",payoutStatus:"PAID",paidAmount:"100"}),false);
+});

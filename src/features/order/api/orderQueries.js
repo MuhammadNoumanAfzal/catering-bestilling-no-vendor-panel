@@ -36,6 +36,14 @@ export const GET_VENDOR_ORDERS_QUERY = `
         node {
           id
           invoiceNumber
+
+          customerPaymentStatus
+
+          paidAmount
+
+          paymentReceivedAt
+
+          paymentMethod
           orderNumber
           status
           hasPendingVendorAdjustment
@@ -100,6 +108,14 @@ export const GET_VENDOR_UPCOMING_ORDERS_QUERY = `
         node {
           id
           invoiceNumber
+
+          customerPaymentStatus
+
+          paidAmount
+
+          paymentReceivedAt
+
+          paymentMethod
           orderNumber
           status
           hasPendingVendorAdjustment
@@ -171,6 +187,14 @@ export const GET_VENDOR_ORDER_DETAIL_QUERY = `
     vendorOrder(id: $orderId) {
       id
       invoiceNumber
+
+      customerPaymentStatus
+
+      paidAmount
+
+      paymentReceivedAt
+
+      paymentMethod
       orderNumber
       status
       hasPendingVendorAdjustment
@@ -515,12 +539,14 @@ export const SEARCH_VENDOR_ADJUSTMENT_ITEMS_BASIC_QUERY = `
 
 export const UPDATE_VENDOR_ORDER_STATUS_MUTATION = `
   mutation UpdateOrderStatus($id: ID!, $status: String!, $note: String) {
-    orderStatusUpdate(id: $id, status: $status, note: $note) {
+    updateVendorOrderStatus(id: $id, status: $status, note: $note) {
       success
       message
-      instance {
+      order {
         id
         status
+        fulfillmentStatus
+        acceptedAt
       }
     }
   }

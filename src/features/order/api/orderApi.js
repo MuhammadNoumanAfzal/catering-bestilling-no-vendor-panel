@@ -1,3 +1,4 @@
+import { persistVendorOrderStatus } from "../utils/orderLifecycle.js";
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
   APPROVE_ORDER_MODIFICATION_REQUEST_MUTATION,
@@ -241,17 +242,11 @@ export async function getVendorOrderModificationRequests(orderId) {
     : [];
 }
 
-export async function updateVendorOrderStatus({ id, status, note }) {
-  const result = await executeProtectedGraphqlRequest(
-    UPDATE_VENDOR_ORDER_STATUS_MUTATION,
-    { id, status, note },
-  );
-
-  return unwrapMutationResult(
-    result,
-    "orderStatusUpdate",
-    "Unable to update the order status.",
-  );
+export async function updateVendorOrderStatus(input) {
+  return persistVendorOrderStatus(async ({ id, status, note }) => {
+    const result = await executeProtectedGraphqlRequest(UPDATE_VENDOR_ORDER_STATUS_MUTATION, { id, status, note });
+    return unwrapMutationResult(result, "updateVendorOrderStatus", "Unable to update the order status.");
+  }, input);
 }
 
 export async function createVendorOrderAdjustment(input) {

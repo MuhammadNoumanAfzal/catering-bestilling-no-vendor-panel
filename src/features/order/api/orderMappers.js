@@ -1,3 +1,5 @@
+import { customerPaymentStatus } from "../utils/paymentStatus.js";
+import { vendorNextStage } from "../utils/orderLifecycle.js";
 import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
 import { canShowCustomerContact, redactUnacceptedContact } from "../utils/customerVisibility.js";
 import { clearPendingAdjustment, getPendingAdjustment } from "../utils/pendingAdjustments";
@@ -609,13 +611,13 @@ export function getDefaultActionsForStatus(status) {
     ];
   }
   if (status === "Accepted" || status === "Modified") {
-    return [createAction("Start preparing", { tone: "is-primary", hasDropdown: true, primary: true })];
+    return [createAction("Ready", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
   if (status === "Preparing") {
     return [createAction("Ready", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
   if (status === "Ready") {
-    return [createAction("Out for delivery", { tone: "is-primary", hasDropdown: true, primary: true })];
+    return [createAction("Delivered", { tone: "is-primary", hasDropdown: true, primary: true })];
   }
   if (status === "Out for delivery") {
     return [createAction("Delivered", { tone: "is-primary", hasDropdown: true, primary: true })];
@@ -625,6 +627,12 @@ export function getDefaultActionsForStatus(status) {
 }
 
 export function mapAvailableActionsToUi(availableActions, status) {
+  const nextStage = vendorNextStage(status);
+  if (nextStage) {
+    const permitted = Array.isArray(availableActions) ? availableActions : [];
+    const extraActions = permitted.filter(value => /request.?change|adjust|reject|cancel/i.test(String(value)));
+    return [createAction(nextStage, { tone: "is-primary", primary: true }), ...extraActions.map(value => createAction(/request.?change|adjust/i.test(String(value)) ? "Request Changes" : "Reject", { tone: "is-muted", requestAdjustment: /request.?change|adjust/i.test(String(value)) }))];
+  }
   if (!Array.isArray(availableActions) || availableActions.length === 0) {
     return getDefaultActionsForStatus(status);
   }
@@ -724,6 +732,10 @@ export function mapVendorOrderNode(node) {
 
   return {
     rawId: normalizeString(node?.id),
+    customerPaymentStatus: customerPaymentStatus(node),
+    paidAmount: node?.paidAmount ?? null,
+    paymentReceivedAt: node?.paymentReceivedAt || "",
+    paymentMethod: node?.paymentMethod || "",
     displayId,
     version: toNumber(node?.version, 0),
     id: normalizeString(node?.id),
@@ -958,6 +970,10 @@ export function mapVendorOrderDetail(data, orderId) {
 
   return {
     rawId: normalizeString(node?.id),
+    customerPaymentStatus: customerPaymentStatus(node),
+    paidAmount: node?.paidAmount ?? null,
+    paymentReceivedAt: node?.paymentReceivedAt || "",
+    paymentMethod: node?.paymentMethod || "",
     displayId,
     version: toNumber(node?.version, 0),
     id: normalizeString(node?.id || orderId),

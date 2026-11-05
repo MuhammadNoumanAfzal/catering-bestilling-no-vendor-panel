@@ -38,12 +38,14 @@ function Field({
           } ${className || ""}`}
           {...inputProps}
           type={resolvedInputType}
+          data-custom-password-toggle={isPasswordField ? "true" : undefined}
         />
         {isPasswordField ? (
           <button
             type="button"
             onClick={() => setIsPasswordVisible((current) => !current)}
             className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-[#8e8176] transition hover:text-[#cf6e38]"
+            aria-pressed={isPasswordVisible}
             aria-label={isPasswordVisible ? t("auth.hidePassword") : t("auth.showPassword")}
           >
             {isPasswordVisible ? (

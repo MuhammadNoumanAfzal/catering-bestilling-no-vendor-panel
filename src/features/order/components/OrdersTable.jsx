@@ -1,3 +1,4 @@
+import OrderPaymentBadge from "./OrderPaymentBadge.jsx";
 import { ChevronDown, Eye, Users, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -194,6 +195,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
               <td className="px-4 py-4">
                 <div className="flex flex-wrap items-center gap-1.5">
                   {renderStatusBadge(row.status, row.statusTone, t)}
+                  <OrderPaymentBadge order={row} />
                   {row.hasPendingVendorAdjustment ? (
                     <span className="inline-flex min-h-[24px] items-center rounded-full border border-[#fed0b3] bg-[#fff2e8] px-2.5 py-0.5 text-[11px] font-extrabold leading-none text-[#c95f2a]">
                       {t("orders.modificationPending", { defaultValue: "Modification request pending" })}

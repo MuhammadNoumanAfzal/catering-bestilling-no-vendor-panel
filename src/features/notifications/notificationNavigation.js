@@ -1,10 +1,10 @@
 export function resolveVendorNotificationTarget(notification) {
   const type = String(notification?.rawType || notification?.type || "").toUpperCase();
-  if (/PAYOUT|PAYMENT|SETTLEMENT|INVOICE|COMMISSION/.test(type)) return "/finance";
+  if (/PAYOUT|PAYMENT|SETTLEMENT|INVOICE|COMMISSION/.test(type) || ["PAYOUT","INVOICE","SETTLEMENT"].includes(notification?.entity?.entityType)) return "/finance";
   if (/SUPPORT|TICKET/.test(type)) return "/support/responses";
   if (/REVIEW|RATING/.test(type)) return "/reviews";
-  if (/ORDER/.test(type)) {
-    const id = notification?.orderId || notification?.livePayload?.order?.id;
+  if (/ORDER/.test(type) || notification?.entity?.entityType === "ORDER") {
+    const id = notification?.orderId || notification?.entity?.entityId || notification?.livePayload?.order?.id;
     return id ? "/orders/" + encodeURIComponent(id) : "/orders";
   }
   if (/MENU|PRODUCT|ADD_ON/.test(type)) return "/menu";

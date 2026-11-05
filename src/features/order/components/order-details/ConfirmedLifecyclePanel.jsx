@@ -4,7 +4,6 @@ import {
   Truck, 
   BadgeCheck, 
   Play, 
-  Sliders,
   AlertTriangle 
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -57,7 +56,6 @@ export default function ConfirmedLifecyclePanel({
   onActionClick,
   onOrderAdjustmentClick,
   currentStatus,
-  onStatusSelect,
 }) {
   const { t } = useTranslation();
   const isCanceled = currentStatus === "Canceled" || currentStatus === "Reject";
@@ -79,8 +77,6 @@ export default function ConfirmedLifecyclePanel({
       {/* Action CTA Buttons */}
       <div className="flex flex-col gap-2">
         {!isCanceled && actions.map((action) => {
-          // Preparing is temporarily hidden from vendor order actions.
-          if (/prepar/i.test(action.label)) return null;
           const Icon = getActionIcon(action.label);
           const isPrimary = action.primary;
           
@@ -111,31 +107,7 @@ export default function ConfirmedLifecyclePanel({
           </button>
         ) : null}
 
-        {/* Order status updates */}
-        {onStatusSelect && (
-          <div className="mt-4 pt-3.5 border-t border-[#e6ddd4] flex flex-col gap-1.5 text-left">
-            <div className="flex items-center gap-1 text-[#8f7f73]">
-              <Sliders size={11} />
-              <label className="text-[10px] font-bold uppercase tracking-wider">
-                {t("orders.detail.manualStatusOverride", { defaultValue: "Update Order Status" })}
-              </label>
-            </div>
-            <div className="relative">
-              <select
-                className="w-full min-h-[34px] rounded-lg border border-[#d8cec4] bg-white px-2.5 py-1.5 text-[12px] font-semibold text-[#2b231e] outline-none shadow-[0_1px_3px_rgba(38,23,14,0.02)] transition duration-150 focus:border-[#cf6e38] focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)] cursor-pointer"
-                value={currentStatus || ""}
-                onChange={(e) => onStatusSelect(e.target.value)}
-              >
-                <option value="Accepted">{t("orders.accepted", { defaultValue: "Accepted" })}</option>
-                <option value="Preparing">{t("orders.preparing", { defaultValue: "Preparing" })}</option>
-                <option value="Ready">{t("orders.ready", { defaultValue: "Ready" })}</option>
-                <option value="Out for delivery">{t("orders.outForDelivery", { defaultValue: "Out for Delivery" })}</option>
-                <option value="Delivered">{t("orders.delivered", { defaultValue: "Delivered" })}</option>
-                <option value="Canceled">{t("orders.detail.canceledReject", { defaultValue: "Canceled (Reject)" })}</option>
-              </select>
-            </div>
-          </div>
-        )}
+
       </div>
     </DetailPanel>
   );

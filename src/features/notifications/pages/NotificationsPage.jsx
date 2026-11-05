@@ -15,6 +15,8 @@ export default function NotificationsPage() {
     customRange,
     filterLabel,
     handleCloseModal,
+    handleArchive,
+    archivingId,
     handleCustomRangeChange,
     handleLoadMore,
     handleMarkAllRead,
@@ -101,6 +103,8 @@ export default function NotificationsPage() {
             return (
               <NotificationSection
                 key={section.id}
+                onArchive={handleArchive}
+                archivingId={archivingId}
                 items={section.items}
                 label={section.label}
                 onOpen={handleOpenNotification}

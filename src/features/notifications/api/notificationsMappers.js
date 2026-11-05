@@ -1,6 +1,6 @@
 import { canShowCustomerContact } from "../../order/utils/customerVisibility.js";
 import { formatMoney } from "../../../utils/formatMoney.js";
-export const notificationTabs = ["All", "Unread", "Read"];
+export const notificationTabs = ["All", "Unread", "Read", "Archived"];
 
 export const notificationFilterOptions = [
   "All",
@@ -218,6 +218,8 @@ export function mapNotificationNode(node) {
   return {
     id: node.id,
     rawType,
+    entity: node.entity || null,
+    isArchived: Boolean(node.isArchived),
     type,
     title: node.title || "Notification",
     message: messageParts.filter(Boolean).join(" "),
@@ -256,8 +258,8 @@ export function mapNotificationsConnection(connection) {
     totalCount: connection?.totalCount || 0,
     unreadCount: connection?.unreadCount || 0,
     pageInfo: {
-      hasNextPage: false,
-      endCursor: null,
+      hasNextPage: Boolean(connection?.pageInfo?.hasNextPage),
+      endCursor: connection?.pageInfo?.endCursor || null,
     },
   };
 }
@@ -283,6 +285,7 @@ export function groupNotificationsByLabel(items) {
 export function mapTabToStatus(tab) {
   if (tab === "Unread") return "UNREAD";
   if (tab === "Read") return "READ";
+  if (tab === "Archived") return "ARCHIVED";
   return null;
 }
 
@@ -290,6 +293,8 @@ export function mapFilterToQueryVariables(selectedFilter, customRange) {
   if (selectedFilter === "Custom Date") {
     return {
       datePreset: "CUSTOM",
+      dateFrom: customRange.from,
+      dateTo: customRange.to,
     };
   }
 
@@ -308,9 +313,15 @@ export function mapFilterToQueryVariables(selectedFilter, customRange) {
     "Last Month": "LAST_MONTH",
   };
 
-  return {
-    datePreset: presetMap[selectedFilter] || null,
-  };
+  const now = new Date(); const start = new Date(now); const end = new Date(now);
+  start.setHours(0,0,0,0); end.setHours(23,59,59,999);
+  if (selectedFilter === "Yesterday") { start.setDate(start.getDate()-1);end.setDate(end.getDate()-1); }
+  if (selectedFilter === "Last 7 Days") start.setDate(start.getDate()-6);
+  if (selectedFilter === "Last 30 Days") start.setDate(start.getDate()-29);
+  if (selectedFilter === "This Month") start.setDate(1);
+  if (selectedFilter === "Last Month") { start.setMonth(start.getMonth()-1,1);end.setDate(0); }
+  const day = date => [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+  return { datePreset: presetMap[selectedFilter] || null, dateFrom: day(start), dateTo: day(end) };
 }
 
 export function buildFilterLabel(selectedFilter, customRange) {

@@ -1,3 +1,4 @@
+import { mergeSupportReply } from "../../../utils/supportReply.js";
 ﻿import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ExternalLink, Image as ImageIcon, Paperclip } from "lucide-react";
@@ -276,10 +277,11 @@ export default function SupportResponsesPage() {
       setIsSendingReply(true);
       const result = await replyToOwnSupportTicket(selectedTicketId, message, []);
       setSelectedTicket((current) =>
-        current
+        current && String(current.id) === String(selectedTicketId)
           ? {
               ...current,
-              conversation: [...current.conversation, result.reply],
+              status: result.ticket?.status || current.status,
+              conversation: mergeSupportReply(current.conversation, result.reply),
               updatedAt: result.reply.createdAt,
               updatedAtLabel: result.reply.createdAtLabel,
             }
@@ -290,6 +292,7 @@ export default function SupportResponsesPage() {
           ticket.id === selectedTicketId
             ? {
                 ...ticket,
+                status: result.ticket?.status || ticket.status,
                 lastMessageAt: result.reply.createdAt,
                 lastMessageAtLabel: result.reply.createdAtLabel,
                 updatedAt: result.reply.createdAt,
@@ -484,6 +487,9 @@ export default function SupportResponsesPage() {
                     <label className="mb-2 block text-[13px] font-bold text-[#2a211b]">
                       {t("support.reply", { defaultValue: "Reply to support" })}
                     </label>
+                    {String(selectedTicket.status || "").toUpperCase() === "CLOSED" ? (
+                      <p role="note" className="mb-3 rounded-lg border border-[#efd8c7] bg-[#fff7ef] px-3 py-2 text-[13px] text-[#79503a]">{t("support.closedReplyNotice")}</p>
+                    ) : null}
                     <textarea
                       className="min-h-[120px] w-full resize-none rounded-[12px] border border-[#ddd3ca] bg-[#fbf8f5] px-4 py-3 text-[14px] text-[#241913] outline-none transition placeholder:text-[#ab9d91] focus:border-[#cf6e38] focus:bg-white focus:shadow-[0_0_0_3px_rgba(207,110,56,0.1)]"
                       onChange={(event) => setDraftReply(event.target.value)}

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getVendorNotifications,
+  archiveVendorNotification,
+  unarchiveVendorNotification,
   markVendorNotificationAsRead,
   markAllVendorNotificationsAsRead,
 } from "../api/notificationsApi";
@@ -27,6 +29,8 @@ const POLL_INTERVAL_MS = 30000;
 export default function useNotificationsPageState() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
+  const [feedRevision, setFeedRevision] = useState(0);
+  const [archivingId, setArchivingId] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [customRange, setCustomRange] = useState(createDefaultCustomRange);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -103,7 +107,7 @@ export default function useNotificationsPageState() {
       window.removeEventListener("focus", handleVisibilityChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [activeTab, filterVariables]);
+  }, [activeTab, filterVariables, feedRevision]);
 
   const sections = useMemo(
     () => groupNotificationsByLabel(notifications),
@@ -142,54 +146,30 @@ export default function useNotificationsPageState() {
   }
 
   async function handleOpenNotification(notification) {
+    let next = notification;
     if (!notification.isRead) {
-      setNotifications((current) =>
-        activeTab === "Unread"
-          ? current.filter((item) => item.id !== notification.id)
-          : current.map((item) =>
-              item.id === notification.id
-                ? { ...item, isRead: true, highlighted: false }
-                : item,
-            ),
-      );
-      setUnreadCount((current) => Math.max(0, current - 1));
+      try {
+        await markVendorNotificationAsRead(notification.id);
+        next = {...notification,isRead:true,highlighted:false};
+        setNotifications(current => activeTab === "Unread" ? current.filter(item => item.id !== notification.id) : current.map(item => item.id === notification.id ? next : item));
+        setUnreadCount(current => Math.max(0,current-1));
+        window.dispatchEvent(new Event("vendor-notifications-updated"));
+      } catch { /* Navigation may continue without falsely changing read state. */ }
     }
+    const target=resolveVendorNotificationTarget(next);
+    if(target) { navigate(target); return; }
+    setSelectedNotification(next);
+  }
 
+  async function handleArchive(notification) {
+    if (archivingId) return;
+    setArchivingId(notification.id);
     try {
-      if (!notification.isRead) {
-        const markReadResult = await markVendorNotificationAsRead(notification.id).catch(() => null);
-
-        if (markReadResult?.notification) {
-          const nextIsRead = Boolean(markReadResult.notification.isRead);
-
-          setNotifications((current) =>
-            current.map((item) =>
-              item.id === notification.id
-                ? { ...item, isRead: nextIsRead, highlighted: !nextIsRead }
-                : item,
-            ),
-          );
-        }
-
-        if (typeof markReadResult?.unreadCount === "number") {
-          setUnreadCount(markReadResult.unreadCount);
-        }
-      }
-    } catch {
-      // Opening the notification should continue even if mark-as-read fails.
-    }
-
-    const target = resolveVendorNotificationTarget(notification);
-    if (target) {
-      navigate(target);
-      return;
-    }
-
-    setSelectedNotification({
-      ...notification,
-      isRead: true,
-      highlighted: false,
-    });
+      await (notification.isArchived ? unarchiveVendorNotification(notification.id) : archiveVendorNotification(notification.id));
+      setFeedRevision(value=>value+1);
+      window.dispatchEvent(new Event("vendor-notifications-updated"));
+    } catch (error) { await showVendorErrorAlert(error.message); }
+    finally { setArchivingId(""); }
   }
 
   function handleCloseModal() {
@@ -211,6 +191,7 @@ export default function useNotificationsPageState() {
           : current.map((notification) => ({ ...notification, isRead: true })),
       );
       setUnreadCount(result.unreadCount ?? 0);
+      window.dispatchEvent(new Event("vendor-notifications-updated"));
       await showVendorSuccessToast(translateNotificationText("All notifications marked as read."));
     } catch (error) {
       await showVendorErrorAlert(
@@ -254,6 +235,8 @@ export default function useNotificationsPageState() {
     customRange,
     filterLabel,
     handleCloseModal,
+    handleArchive,
+    archivingId,
     handleCustomRangeChange,
     handleLoadMore,
     handleMarkAllRead,

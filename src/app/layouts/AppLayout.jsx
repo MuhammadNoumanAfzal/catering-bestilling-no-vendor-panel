@@ -206,9 +206,7 @@ export default function AppLayout() {
           prevLatestNotificationIdRef.current = latestNotificationId;
         }
       } catch {
-        if (!isCancelled) {
-          setUnreadNotificationsCount(0);
-        }
+        // Keep the last verified server count during temporary failures.
       }
     }
 
@@ -227,12 +225,14 @@ export default function AppLayout() {
     }
 
     window.addEventListener("focus", handleRefreshCounts);
+    window.addEventListener("vendor-notifications-updated", handleRefreshCounts);
     document.addEventListener("visibilitychange", handleRefreshCounts);
 
     return () => {
       isCancelled = true;
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleRefreshCounts);
+      window.removeEventListener("vendor-notifications-updated", handleRefreshCounts);
       document.removeEventListener("visibilitychange", handleRefreshCounts);
     };
   }, [navigate, t]);
@@ -426,7 +426,7 @@ export default function AppLayout() {
                           active ? "bg-[#c75f2e] text-white" : "bg-white/18 text-white",
                         ].join(" ")}
                       >
-                        {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                        {unreadNotificationsCount}
                       </span>
                     ) : null}
                   </NavLink>
@@ -505,7 +505,7 @@ export default function AppLayout() {
               <Bell size={16} />
               {unreadNotificationsCount > 0 ? (
                 <span className="absolute right-1.5 top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[#cf6e38] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  {unreadNotificationsCount}
                 </span>
               ) : null}
             </button>
@@ -578,7 +578,7 @@ export default function AppLayout() {
                     <Bell size={16} />
                     {unreadNotificationsCount > 0 ? (
                       <span className="absolute right-1.5 top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[#cf6e38] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                        {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                        {unreadNotificationsCount}
                       </span>
                     ) : null}
                   </button>
@@ -700,7 +700,7 @@ export default function AppLayout() {
               <Icon size={16} />
               {labelKey === "layout.nav.notifications" && unreadNotificationsCount > 0 && (
                 <span className="absolute -right-2.5 -top-1.5 inline-flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-[#d86c3d] text-[8px] font-bold text-white px-0.5 leading-[14px] border border-white">
-                  {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                  {unreadNotificationsCount}
                 </span>
               )}
             </div>

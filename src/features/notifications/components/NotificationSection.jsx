@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { translateNotificationText } from "../notificationTranslations";
 import NotificationItem from "./NotificationItem";
 
-export default function NotificationSection({ label, items, onOpen, startIndex = 0 }) {
+export default function NotificationSection({ label, items, onOpen, onArchive, archivingId, startIndex = 0 }) {
+  const { t } = useTranslation();
   return (
     <section className="rounded-[20px] border border-[#ebe1d8] bg-[linear-gradient(180deg,#fffdfa_0%,#ffffff_100%)] p-4 shadow-[0_10px_24px_rgba(44,29,19,0.04)]">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -13,12 +15,14 @@ export default function NotificationSection({ label, items, onOpen, startIndex =
 
       <div className="flex flex-col gap-3">
         {items.map((notification, index) => (
+          <div key={notification.id}>
           <NotificationItem
-            key={notification.id}
             notification={notification}
             onOpen={onOpen}
             sequenceNumber={startIndex + index + 1}
           />
+          <div className="mt-1 flex justify-end"><button type="button" disabled={Boolean(archivingId)} onClick={() => onArchive(notification)} className="rounded-full border border-[#eadfd6] px-3 py-1 text-xs text-[#75675c] disabled:opacity-50">{t(notification.isArchived ? "notifications.restoreAction" : "notifications.archiveAction")}</button></div>
+          </div>
         ))}
       </div>
     </section>

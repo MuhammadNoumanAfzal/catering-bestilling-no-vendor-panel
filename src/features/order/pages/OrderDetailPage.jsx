@@ -796,7 +796,7 @@ export default function OrderDetailPage() {
               }
             />
           )}
-          <FinancialSummaryPanel summary={orderDetail.financialSummary} />
+          <FinancialSummaryPanel summary={orderDetail.financialSummary} order={orderDetail} />
         </aside>
       </div>
     </section>

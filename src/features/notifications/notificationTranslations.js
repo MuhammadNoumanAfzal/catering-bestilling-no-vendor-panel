@@ -4,6 +4,7 @@ const messageKeys = {
   "all": "all",
   "unread": "unread",
   "read": "read",
+  "archived": "archived",
   "today": "today",
   "yesterday": "yesterday",
   "older": "older",
