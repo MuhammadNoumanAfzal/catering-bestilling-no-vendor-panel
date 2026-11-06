@@ -1,6 +1,6 @@
 export const VENDOR_RATE_QUERY = `
   query VendorSettingsCommission {
-    me { vendor { effectiveCommissionPercentage } }
+    me { vendor { effectiveCommissionPercentage commissionOverrides { rate isActive effectiveFrom effectiveTo } } }
   }
 `;
 
@@ -26,9 +26,19 @@ export function createVendorCommissionReader({ readVendor, readGlobal }) {
     if (vendor.status === "rejected") throw vendor.reason;
     return {
       effectiveRate: normalizeCommissionRate(vendor.value?.me?.vendor?.effectiveCommissionPercentage),
+      hasVendorOverride: hasAppliedVendorCommission(vendor.value?.me?.vendor),
       globalRate: global.status === "fulfilled"
         ? normalizeCommissionRate(global.value?.adminCommissionSettings?.globalCommission?.rate)
         : null,
     };
   };
+}
+export function hasAppliedVendorCommission(vendor, now = Date.now()) {
+ const rate = normalizeCommissionRate(vendor?.effectiveCommissionPercentage);
+ return rate !== null && Array.isArray(vendor?.commissionOverrides) && vendor.commissionOverrides.some(rule => {
+  if (rule.isActive !== true || normalizeCommissionRate(rule.rate) !== rate) return false;
+  const start = rule.effectiveFrom ? Date.parse(rule.effectiveFrom) : -Infinity;
+  const end = rule.effectiveTo ? Date.parse(rule.effectiveTo) : Infinity;
+  return start <= now && now <= end;
+ });
 }
