@@ -1,9 +1,9 @@
+import MenuDescriptionEditor from "../../../../components/shared/MenuDescriptionEditor";
 import { Image, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Label,
   MultiSelectInput,
-  TextArea,
   TextInput,
   UploadBox,
 } from "../create-menu/CreateMenuFields";
@@ -52,7 +52,7 @@ export default function CreateAddOnBasicInfoSection({
 
           <div>
             <Label>{t("menu.description", { defaultValue: "Description" })}</Label>
-            <TextArea
+            <MenuDescriptionEditor
               disabled={disabled}
               onChange={onDescriptionChange}
               placeholder={t("menu.addOnDescriptionPlaceholder", { defaultValue: "Describe this add-on and how it complements your menus..." })}

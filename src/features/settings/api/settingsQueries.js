@@ -129,6 +129,7 @@ export const GET_VENDOR_SETTINGS_PAGE_QUERY = `
     myVendorPayoutProfile {
       id
       payoutMethod
+      dinteroAccountId
       bankDetailsVerified
       verificationStatus
       verificationNote
@@ -200,6 +201,7 @@ export const UPSERT_VENDOR_PAYOUT_PROFILE_MUTATION = `
       payoutProfile {
         id
         payoutMethod
+        dinteroAccountId
         bankDetailsVerified
         verificationStatus
         verificationNote

@@ -35,5 +35,22 @@ for (const dir of ["src", "public"]) walk(dir);
 for (const file of fs.readdirSync(".")) {
   if (/\.(?:[cm]?js|html)$/i.test(file) && fs.statSync(file).isFile()) scan(file);
 }
+
+// Block the bootstrap, disguised-font and editor autorun paths seen in the remote incident.
+if (fs.existsSync("init")) errors.push("Unexpected root bootstrap file: init");
+if (fs.existsSync("public/fonts/fa-solid-700.otf")) errors.push("Known malicious disguised font path requires removal");
+function inspectEditor(dir) {
+ for (const item of fs.readdirSync(dir, {withFileTypes:true})) {
+  const file=path.join(dir,item.name);
+  if(item.isSymbolicLink()) {errors.push("Review editor symlink: "+file);continue;}
+  if(item.isDirectory()) {inspectEditor(file);continue;}
+  if(/\.(?:json|[cm]?js|sh|cmd|ps1)$/i.test(item.name)) {
+   const content=fs.readFileSync(file,"utf8");
+   if(/(?:runOn["']?\s*:\s*["']folderOpen|node\s+[^\r\n]*\.(?:otf|woff2?|ttf)|node:child_process|eth_getBlockByNumber|global\.i\s*=)/.test(content)) errors.push("Unsafe editor auto-execution: "+file);
+  }
+ }
+}
+if(fs.existsSync(".vscode")) inspectEditor(".vscode");
+
 if (errors.length) { console.error(errors.join("\n")); process.exitCode = 1; }
 else console.log("Security checks passed: scripts, locked dependencies, sources, integrity and known loader patterns.");

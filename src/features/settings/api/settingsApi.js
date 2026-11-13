@@ -1,3 +1,4 @@
+import {dinteroPayoutFields} from "./payoutDestination.js";
 import { executeProtectedGraphqlRequest } from "../../../app/api/protectedGraphqlClient";
 import {
   CHANGE_VENDOR_PASSWORD_MUTATION,
@@ -142,6 +143,7 @@ export async function updateVendorRegionalPreferences(input) {
 }
 
 export async function upsertVendorPayoutProfile(input) {
+  dinteroPayoutFields(input);
   const result = await executeProtectedGraphqlRequest(
     UPSERT_VENDOR_PAYOUT_PROFILE_MUTATION,
     { input },

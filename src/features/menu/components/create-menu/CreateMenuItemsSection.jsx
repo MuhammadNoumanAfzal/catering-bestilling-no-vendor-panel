@@ -1,3 +1,5 @@
+import MenuDescriptionEditor from "../../../../components/shared/MenuDescriptionEditor";
+import {descriptionText} from "../../../../components/shared/descriptionFormatting.js";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Clock3, FileCheck2, GripVertical, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -96,7 +98,7 @@ export default function CreateMenuItemsSection({
                         </span>
                       </span>
                       <span className="mt-0.5 block line-clamp-1 text-[11px] font-medium leading-4 text-[#7e7065] sm:text-[12px]">
-                        {summaryDescription}
+                        {descriptionText(summaryDescription)}
                       </span>
                     </span>
                   </button>
@@ -178,7 +180,7 @@ export default function CreateMenuItemsSection({
 
                     <div className="mt-3">
                       <Label>{t("menu.description", { defaultValue: "Description" })}</Label>
-                      <textarea
+                      <MenuDescriptionEditor
                         disabled={disabled}
                         onChange={(event) =>
                           updateMenuItem(item.id, "description", event.target.value)

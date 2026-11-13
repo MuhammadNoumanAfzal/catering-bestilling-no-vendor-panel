@@ -297,7 +297,7 @@ export default function MenuPage() {
               ? t("menu.statusGroup", { status: t(`menu.${activeTab.toLowerCase()}`), type: t(`menu.${group.type}`) })
               : t(`menu.${group.type}`)}
           </h2>
-          <div className="grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
+          <div className="grid grid-cols-3 items-stretch gap-5 max-[1120px]:grid-cols-2 max-[720px]:grid-cols-1">
           {filteredItems.filter((item) => group.items.includes(item)).map((item) => (
             <MenuOfferingCard
               key={`${group.type}-${item.id}`}
@@ -310,13 +310,13 @@ export default function MenuPage() {
             />
           ))}
 
+          </div>
           <button type="button"
-            className="min-h-32 rounded-lg border border-dashed border-[#d6ccc4] bg-white p-5 text-sm font-semibold text-[#a34e26] hover:bg-[#faf7f4]"
+            className="mt-4 flex min-h-16 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#d6ccc4] bg-white p-5 text-sm font-semibold text-[#a34e26] hover:bg-[#faf7f4]"
             onClick={group.type === "singleProducts" ? handleCreateSingleProduct : group.type === "addOns" ? handleCreateAddOn : openFreshCreateMenu}>
-            <Plus size={20} aria-hidden="true" className="mx-auto mb-2" />
+            <Plus size={20} aria-hidden="true" className="shrink-0" />
             {t(group.type === "singleProducts" ? "menu.createSingleProduct" : group.type === "addOns" ? "menu.createAddOns" : "menu.createMenu")}
           </button>
-        </div>
         </section>
       ))}
     </section>

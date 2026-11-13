@@ -13,7 +13,7 @@ export default function FinancialSummaryPanel({ summary, order }) {
   const { t } = useTranslation();
   return (
     <DetailPanel title={t("orders.detail.financialSummary", { defaultValue: "Financial Summary" })}>
-      {order?.customerPaymentStatus ? <div className="mb-3 flex items-center justify-between gap-3 text-sm"><span>{t("orders.customerPayment", { defaultValue: "Customer payment" })}</span><OrderPaymentBadge order={order} />{order.customerPaymentStatus !== "PAID" ? <span>{t("orders.paymentPending", { defaultValue: "Not cleared" })}</span> : null}</div> : null}
+      {order?.customerPaymentStatus ? <div className="mb-3 flex items-center justify-between gap-3 text-sm"><span>{t("orders.customerPayment", { defaultValue: "Customer payment" })}</span><OrderPaymentBadge order={order} />{!["PAID", "AUTHORIZED"].includes(order.customerPaymentStatus) ? <span>{t("orders.paymentPending", { defaultValue: "Not cleared" })}</span> : null}</div> : null}
       <div className="flex flex-col gap-[10px]">
         {summary.map((item, index) => (
           <div

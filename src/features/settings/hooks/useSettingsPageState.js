@@ -829,6 +829,7 @@ export default function useSettingsPageState() {
             ...nextSettings.payoutProfile,
             payoutMethod:
               result.payoutProfile?.payoutMethod || nextSettings.payoutProfile.payoutMethod,
+            dinteroAccountId: result.payoutProfile?.dinteroAccountId ?? nextSettings.payoutProfile.dinteroAccountId,
             bankDetailsVerified: Boolean(result.payoutProfile?.bankDetailsVerified),
             verificationStatus:
               result.payoutProfile?.verificationStatus || nextSettings.payoutProfile.verificationStatus,

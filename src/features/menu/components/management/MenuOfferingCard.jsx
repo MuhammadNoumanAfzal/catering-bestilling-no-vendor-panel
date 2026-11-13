@@ -1,7 +1,7 @@
-import { formatMoney } from "../../../../utils/formatMoney.js";
-import { Copy, ImageIcon, Pencil, Trash2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
-
+import {descriptionText} from "../../../../components/shared/descriptionFormatting.js";
+import {formatMoney} from "../../../../utils/formatMoney.js";
+import {Copy,ImageIcon,Pencil,Trash2,ArrowUpRight} from "lucide-react";
+import {useTranslation} from "react-i18next";
 function formatMenuCardPrice(item, t) {
   if (!item.rawMenu || !item.basePrice) {
     return item.price;
@@ -18,128 +18,34 @@ function formatMenuCardPrice(item, t) {
   return suffix ? `${formattedAmount} ${suffix}` : formattedAmount;
 }
 
-const toneClasses = {
-  active: "bg-[#2fca52] text-white",
-  paused: "bg-[#ffd86f] text-[#8a6200]",
-  draft: "bg-[#dbe7ff] text-[#6d84d6]",
-};
 
-export default function MenuOfferingCard({
-  actionsDisabled = false,
-  item,
-  onDelete,
-  onEdit,
-  onView,
-  onDuplicate,
-  onToggleStatus,
-}) {
-  const { t } = useTranslation();
-  const isActive = item.status === "Active";
-
-  return (
-    <article className="overflow-hidden rounded-[14px] border border-[#ddd4cb] bg-white shadow-[0_2px_10px_rgba(43,30,20,0.03)]">
-      <div className="relative h-[126px] bg-[#f4f1ee]">
-        {item.image ? (
-          <img alt={item.title} className="h-full w-full object-cover" src={item.image} />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#9b8f86]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-              <ImageIcon size={20} />
-            </span>
-            <span className="text-[12px] font-bold">
-              {t("menu.noImage", { defaultValue: "No image" })}
-            </span>
-          </div>
-        )}
-        <span
-          className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[12px] font-bold ${
-            isActive
-              ? "bg-white text-[#2a211b]"
-              : item.status === "Paused" || item.status === "Pause"
-                ? "bg-[#ffa800] text-white"
-                : "bg-white text-[#2a211b]"
-          }`}
-        >
-          {item.status === "Paused" ? t("menu.paused", { defaultValue: "Paused" }) : item.status === "Active" ? t("menu.active", { defaultValue: "Active" }) : item.status === "Draft" ? t("menu.draft", { defaultValue: "Draft" }) : item.status}
-        </span>
-        <span className="absolute right-2 top-2 rounded-full bg-white px-2.5 py-1 text-[12px] font-bold text-[#2a211b]">
-          {item.badge === "Menu" ? t("menu.menuLabel") : item.badge === "Add-on" ? t("menu.addonLabel") : item.badge}
-        </span>
-      </div>
-
-      <div className="p-3.5">
-        <h3 className="m-0 type-h4 text-[#17120e]">{item.title}</h3>
-        <p className="mt-2 min-h-[56px] text-[14px] font-medium leading-[1.5] text-[#7d7064]">
-          {item.description === "No description provided." ? t("menu.noDescriptionProvided") : item.description === "Optional add-on" ? t("menu.optionalAddon") : item.description}
-        </p>
-
-        <div className="mt-3 flex items-end justify-between gap-3">
-          <div>
-            <strong className="block text-[21px] font-extrabold text-[#17120e]">
-              {formatMenuCardPrice(item, t)}
-            </strong>
-            <span className="mt-1 block text-[13px] font-medium text-[#9a8f86]">
-              {item.rawMenu ? (item.minimumGuests ? t("menu.minimumGuestLabel", { count: Number(item.minimumGuests) }) : t("menu.flexibleGuests")) : item.meta === "Available add-on" ? t("menu.availableAddon") : item.meta}
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-3.5 flex items-center justify-between border-t border-[#eee6df] pt-3">
-          <div className="flex items-center gap-5">
-            <button
-              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] transition hover:text-[#17120e] active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={actionsDisabled}
-              onClick={() => onEdit(item)}
-              type="button"
-            >
-              <Pencil size={18} />
-              <span className="text-[11px] font-bold">{t("menu.edit", { defaultValue: "Edit" })}</span>
-            </button>
-
-            <button
-              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] transition hover:text-[#17120e] active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={actionsDisabled}
-              onClick={() => onDuplicate(item)}
-              type="button"
-            >
-              <Copy size={18} />
-              <span className="text-[11px] font-bold">{t("menu.duplicate", { defaultValue: "Duplicate" })}</span>
-            </button>
-
-            <button
-              className="flex flex-col items-center gap-1 cursor-pointer text-[#8d8075] transition hover:text-[#ff2918] active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
-              disabled={actionsDisabled}
-              onClick={() => onDelete(item)}
-              type="button"
-            >
-              <Trash2 size={18} />
-              <span className="text-[11px] font-bold">{t("menu.delete", { defaultValue: "Delete" })}</span>
-            </button>
-          </div>
-
-          <button
-            onClick={() => onToggleStatus(item)}
-            type="button"
-            disabled={actionsDisabled}
-            className={`relative flex items-center h-[28px] w-[76px] rounded-full transition-colors duration-200 focus:outline-none ${
-              isActive ? "bg-[#00c82a]" : "bg-[#ffa800]"
-            } ${actionsDisabled ? "cursor-not-allowed opacity-45" : ""}`}
-          >
-            <span
-              className={`absolute top-[2px] h-[24px] w-[24px] rounded-full bg-white transition-all duration-200 shadow-sm ${
-                isActive ? "left-[50px]" : "left-[2px]"
-              }`}
-            />
-            <span
-              className={`w-full text-[11px] font-bold text-white select-none transition-all duration-200 ${
-                isActive ? "text-left pl-3.5" : "text-right pr-3.5"
-              }`}
-            >
-              {isActive ? t("menu.active", { defaultValue: "Active" }) : t("menu.pause", { defaultValue: "Pause" })}
-            </span>
-          </button>
-        </div>
-      </div>
-    </article>
-  );
+export default function MenuOfferingCard({actionsDisabled=false,item,onDelete,onEdit,onView,onDuplicate,onToggleStatus}) {
+ const {t}=useTranslation();
+ const isActive=item.status==="Active";
+ const statusLabel=item.status==="Paused"?t("menu.paused"):item.status==="Active"?t("menu.active"):item.status==="Draft"?t("menu.draft"):item.status;
+ const description=descriptionText(item.description==="No description provided."?t("menu.noDescriptionProvided"):item.description==="Optional add-on"?t("menu.optionalAddon"):item.description);
+ const open=()=>item.isAddOn?onEdit(item):onView(item);
+ return <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#e7ddd5] bg-white shadow-sm transition-shadow hover:shadow-md">
+  <button type="button" onClick={open} className="relative block h-40 w-full shrink-0 overflow-hidden bg-[#f4efea] text-left focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#c96432]" aria-label={item.title}>
+   {item.image?<img alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" src={item.image}/>:<div className="flex h-full items-center justify-center text-[#b3a69a]"><ImageIcon size={32}/></div>}
+   <span className={"absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm "+(isActive?"bg-[#eff9f0] text-[#2c7040]":item.status==="Draft"?"bg-[#eff2fc] text-[#5d68a2]":"bg-[#fff4da] text-[#946c19]")}><span className={"h-1.5 w-1.5 rounded-full "+(isActive?"bg-[#39854b]":item.status==="Draft"?"bg-[#7d8ac0]":"bg-[#c59432]")}/>{statusLabel}</span>
+   <span className="absolute right-3 top-3 max-w-[55%] truncate rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-[#68574a]">{item.badge==="Menu"?t("menu.menuLabel"):item.badge==="Add-on"?t("menu.addonLabel"):item.badge}</span>
+  </button>
+  <div className="flex flex-1 flex-col p-4">
+   <button type="button" onClick={open} className="flex items-start justify-between gap-2 text-left text-[#282019] hover:text-[#b45c30] focus-visible:outline-2 focus-visible:outline-[#c96432]"><h3 className="line-clamp-2 min-h-12 text-base font-bold leading-6">{item.title}</h3><ArrowUpRight size={16} aria-hidden="true" className="mt-1 shrink-0 text-[#ac9a8a]"/></button>
+   <p className="mt-2 line-clamp-3 h-[60px] text-[13px] leading-5 text-[#837365]">{description}</p>
+   <div className="mt-auto pt-4">
+    <strong className="block text-[19px] font-bold leading-7 tracking-tight text-[#2e231b]">{formatMenuCardPrice(item,t)}</strong>
+    <span className="mt-0.5 block text-xs leading-5 text-[#9b8b7d]">{item.rawMenu?(item.minimumGuests?t("menu.minimumGuestLabel",{count:Number(item.minimumGuests)}):t("menu.flexibleGuests")):item.meta==="Available add-on"?t("menu.availableAddon"):item.meta}</span>
+   </div>
+   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0e8e1] pt-3">
+    <div className="flex items-center gap-1">
+     {[[Pencil,"edit",onEdit],[Copy,"duplicate",onDuplicate],[Trash2,"delete",onDelete]].map(([Icon,key,handler])=><button key={key} type="button" disabled={actionsDisabled} title={t("menu."+key)} aria-label={t("menu."+key)+": "+item.title} onClick={()=>handler(item)} className={"inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#927d6c] transition focus-visible:outline-2 focus-visible:outline-[#c96432] disabled:opacity-40 "+(key==="delete"?"hover:bg-red-50 hover:text-red-600":"hover:bg-[#faf1e9] hover:text-[#b45c30]")}><Icon size={16}/></button>)}
+    </div>
+    <button type="button" role="switch" aria-checked={isActive} aria-label={t("menu.active")+": "+item.title} disabled={actionsDisabled} onClick={()=>onToggleStatus(item)} className="inline-flex items-center gap-2 rounded-lg py-1.5 pl-2 text-xs font-medium text-[#847363] focus-visible:outline-2 focus-visible:outline-[#c96432] disabled:opacity-40">
+     <span>{statusLabel}</span><span className={"flex h-[22px] w-10 items-center rounded-full p-[3px] transition-colors "+(isActive?"bg-[#529565]":"bg-[#c9b9a9]")}><span className={"h-4 w-4 rounded-full bg-white shadow-sm transition-transform "+(isActive?"translate-x-[18px]":"translate-x-0")}/></span>
+    </button>
+   </div>
+  </div>
+ </article>;
 }

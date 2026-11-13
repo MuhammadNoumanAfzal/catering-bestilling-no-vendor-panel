@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 export default function MenuManagementHeader({ onCreateAddOn, onCreateMenu, onCreateSingleProduct }) {
   const { t } = useTranslation();
   return (
-    <header className="mb-5 flex items-start justify-between gap-4 max-[720px]:flex-col">
+    <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="type-h2 m-0 text-[#15110f]">{t("menu.management", { defaultValue: "Menu Management" })}</h1>
-        <p className="mt-1 text-[16px] font-medium text-[#746a62]">
+        <h1 className="m-0 text-[26px] font-bold leading-tight tracking-tight sm:text-[30px] text-[#15110f]">{t("menu.management", { defaultValue: "Menu Management" })}</h1>
+        <p className="mt-1.5 text-sm text-[#746a62]">
           {t("menu.managementDescription", { defaultValue: "Manage your catering packages and seasonal offerings." })}
         </p>
       </div>

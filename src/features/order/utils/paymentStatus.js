@@ -4,3 +4,5 @@ export function customerPaymentStatus(order) {
 export function isCustomerPaymentCleared(order) {
   return customerPaymentStatus(order) === "PAID";
 }
+
+export function isCustomerPaymentReserved(order) { return customerPaymentStatus(order) === "AUTHORIZED"; }

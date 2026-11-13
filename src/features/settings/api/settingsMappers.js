@@ -75,6 +75,7 @@ export const defaultSettingsState = {
   },
   payoutProfile: {
     payoutMethod: "BANK_TRANSFER",
+    dinteroAccountId: "",
     bankDetailsVerified: false,
     verificationStatus: "",
     verificationNote: "",
@@ -464,6 +465,7 @@ export function mapVendorSettingsPage(result, options = {}) {
       },
       payoutProfile: {
         payoutMethod: normalizeString(result?.myVendorPayoutProfile?.payoutMethod || "BANK_TRANSFER"),
+        dinteroAccountId: normalizeString(result?.myVendorPayoutProfile?.dinteroAccountId),
         bankDetailsVerified: Boolean(result?.myVendorPayoutProfile?.bankDetailsVerified),
         verificationStatus: normalizeString(result?.myVendorPayoutProfile?.verificationStatus),
         verificationNote: normalizeString(result?.myVendorPayoutProfile?.verificationNote),
@@ -583,6 +585,7 @@ export function buildRegionalPreferencesInput(settings) {
 export function buildPayoutProfileInput(settings) {
   return {
     payoutMethod: normalizeString(settings.payoutProfile?.payoutMethod || "BANK_TRANSFER"),
+    dinteroAccountId: normalizeString(settings.payoutProfile?.dinteroAccountId).trim(),
     accountHolderName: normalizeString(settings.payoutProfile?.accountHolderName).trim(),
     bankName: normalizeString(settings.payoutProfile?.bankName).trim(),
     accountNumber: normalizeString(settings.payoutProfile?.accountNumber).trim(),

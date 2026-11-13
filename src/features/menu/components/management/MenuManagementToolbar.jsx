@@ -11,15 +11,16 @@ export default function MenuManagementToolbar({
   return (
     <div className="mb-4 rounded-[12px] border border-[#ddd4cb] bg-white px-4 py-3">
       <div className="flex items-center justify-between gap-3 max-[920px]:flex-col max-[920px]:items-start">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex max-w-full items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
           {tabs.map((tab) => (
             <button
               key={tab.value}
-              className={`cursor-pointer rounded-[8px] px-3 py-[7px] text-[14px] font-bold transition ${
+              className={`shrink-0 cursor-pointer rounded-[8px] px-3 py-[7px] text-[14px] font-bold transition ${
                 activeTab === tab.value
                   ? "bg-[#d96e39] text-white"
-                  : "text-[#2a211b]"
+                  : "text-[#7c6a5b] hover:bg-[#faf4ef]"
               }`}
+              aria-pressed={activeTab === tab.value}
               onClick={() => onTabChange(tab.value)}
               type="button"
             >
