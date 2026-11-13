@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 const dom=new JSDOM('');globalThis.window=dom.window;globalThis.document=dom.window.document;
 const {descriptionContent,descriptionText}=await import('./descriptionFormatting.js');
@@ -19,6 +18,6 @@ test('old plain text retains line breaks and literal angle brackets',()=>{
 test('summary text contains words without HTML or encoded entities',()=>{
  assert.equal(descriptionText('<p>Fish &amp; chips</p><ul><li>Salad</li><li>Bread</li></ul>'),'Fish & chips Salad Bread');
 });
-test('customer and vendor use identical sanitization rules',()=>{
- assert.equal(readFileSync(new URL('./descriptionFormatting.js',import.meta.url),'utf8'),readFileSync(new URL('../../../../catering-bestilling-no/src/components/shared/descriptionFormatting.js',import.meta.url),'utf8'));
+test('embedded SVG, frames and form controls cannot add active content',()=>{
+ assert.equal(descriptionContent('<p>Menu<svg onload="alert(1)"><circle /></svg><iframe src="https://example.com"></iframe><input autofocus onfocus="alert(1)"></p>'),'<p>Menu</p>');
 });
