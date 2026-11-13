@@ -5,6 +5,17 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      react-family:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      i18n-family:
+        patterns:
+          - "i18next"
+          - "react-i18next"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
