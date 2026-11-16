@@ -1,0 +1,274 @@
+INTEGRATION UPDATE - 16 November 2026
+Backend team supplied the implementation guide. All 11 operation documents validated
+against public production schema on 16 November 2026 without errors. Existing names
+and payloads retained. Vendor/admin LOCAL .env.local flags enabled; production build
+settings are not changed remotely. Historical proposed/disabled statements below
+record the original handoff, not the current local flag state.
+Added expiry countdown, error-code-specific messages and invalid-code highlighting.
+Admin supports /admin/agreements and existing /contracts routes.
+Still unverified: authenticated signing, OTP delivery, PDF generation/integrity,
+company authority checks, activation enforcement and existing-vendor rollout.
+No production mutations or private account queries were performed.
+Do not infer working emails/PDFs or completed legal review from schema validation.
+
+VENDOR AGREEMENT - IMPLEMENTATION CONTRACT AND BACKEND HANDOFF
+Prepared: 15 November 2026. UI language: English, matching client mockups.
+
+DELIVERY STATUS
+Vendor/admin frontend routes and guarded interactions have been implemented locally.
+They use PROPOSED GraphQL operations behind VITE_VENDOR_AGREEMENTS_ENABLED=true.
+The default is disabled. Do not enable until the backend implements/validates this contract.
+No sample vendors, sample contract, fake signatures, OTPs, localStorage approval, automatic emails or browser-generated legal PDFs are used.
+No backend code or production contract was supplied. Full flow is NOT live or end-to-end verified.
+Customer frontend needs no new signing page. Public listing/order eligibility enforcement belongs to backend.
+
+FILES TO IMPLEMENT AGAINST
+1. VENDOR_AGREEMENT_PROPOSED_SCHEMA.graphql - complete proposed SDL additions.
+2. VENDOR_AGREEMENT_OPERATIONS.graphql - exact query/mutation documents emitted by frontend.
+3. src/features/agreements/agreementApi.js in vendor and admin - adapters, same operation selection/fields.
+If backend naming differs, return the actual SDL/documents, update BOTH adapters and validate them.
+Do not claim any proposed name already exists in the deployed API.
+
+EXISTING SCHEMA VERIFIED READ-ONLY (PUBLIC INTROSPECTION)
+Endpoint: https://api.gocatering.no/graphql/
+Query.agreements(offset,before,after,first,last,typeOf:String): AgreementTypeConnection
+Query.agreement(typeOf:String): AgreementType
+AgreementType: id, createdOn, updatedOn, data:String!, typeOf:String!.
+Mutation.agreementMutation(input:AgreementMutationInput!): AgreementMutationPayload
+Input: data:String, typeOf:String!, objectId:Int, id:ID, clientMutationId:String.
+Payload: agreement, errors, success, message, clientMutationId.
+Mutation.acceptAgreementMutation(action:String!): {success,message}.
+The supported action/typeOf values and resolver permission semantics were not established.
+These generic fields do NOT expose vendor-specific status, OTP verification, document integrity or admin decisions.
+They must not be called to fabricate a signed vendor contract or bypass new eligibility checks.
+No production mutations or private record queries were performed during inspection.
+
+EXISTING QUERY DOCUMENT (read-only, supply actual typeOf value separately)
+query ExistingAgreement($typeOf: String) {
+  agreement(typeOf: $typeOf) { id createdOn updatedOn typeOf data }
+}
+
+FLOW ASSESSMENT / REQUIRED CORRECTIONS
+- The nine-step business flow is reasonable, subject to reviewed real contract text and chosen signature assurance level.
+- OTP proves access to a mailbox, not legal identity, employment or authority to bind a company.
+- Typed/drawn signature plus OTP must not be labelled qualified/advanced signature or BankID verification.
+- Admin must check authority separately; a public registry name match is insufficient on its own.
+- A password-protected/read-only PDF is not immutable evidence. Preserve original bytes and trusted hashes, write-once/versioned objects and a tamper-evident signing record.
+- Do not modify a previously signed PDF to insert an approval stamp. Retain ORIGINAL and VENDOR_SIGNED; generate a separate FINAL artifact referencing the vendor-signed hash and admin acceptance event. Cryptographic signing/sealing, if used, needs a properly configured provider/certificate workflow.
+- Signing is not activation. canGoLive must combine active agreement AND all existing onboarding/compliance/menu/store eligibility requirements.
+- Real production contract PDF and legally approved clauses, intended assurance level and authorised GoCatering approver policy are still needed. Mockup clauses/names/dates must not become the live agreement.
+
+STATE MACHINE AND PERSISTENCE
+PENDING_SIGNATURE -> PENDING_APPROVAL -> ACTIVE or REJECTED.
+REJECTED -> explicit admin reissue -> NEW PENDING_SIGNATURE attempt (new ID); old attempt immutable.
+SUPERSEDED and REVOKED are terminal non-signable/non-activatable states.
+New template versions affect future issuance only; no silent replacement of accepted contracts.
+If re-consent/migration is required, define a separately audited issuance policy and impact on existing live stores first.
+Model template/version + vendor-specific signing attempt + immutable document objects + audit events + OTP challenge + admin decision + notification outbox.
+Persist vendor/company legal name/org number and signer verified email snapshots for the attempt.
+Persist canonical ORIGINAL PDF bytes before sending the invitation, SHA-256 and canonical readable sections that match those bytes.
+A generic uploaded template may need a server-generated vendor party/addendum page; the final per-vendor ORIGINAL must be frozen and visible before OTP request.
+revision is an opaque concurrency token. Every change to decision eligibility increments it.
+All transitions validate role, tenant ownership, current state, revision and document hash atomically.
+No client-supplied timestamps, email addresses, vendor IDs or company details become authoritative signing evidence.
+canSign must be false unless the assigned email/current vendor, required version and state are valid.
+canGoLive must fail closed for missing/unknown agreement state and unavailable checks.
+
+REGISTRATION / INVITATION
+Extend the EXISTING successful vendor registration transaction/service, not a speculative new browser registration mutation.
+Create a PENDING_SIGNATURE attempt against the current published template, using the real vendor snapshot.
+After commit, durable outbox queues invitation with secure vendor-origin /agreement link and ORIGINAL PDF attachment.
+Use authenticated dashboard links; no account action on email-link GET. If magic links are introduced, use scoped, expiring, one-use tokens and strip them before loading third-party content. A link alone must not authorize signing/approval.
+Signed-in vendors are redirected back to /agreement after login via existing ProtectedRoute state.
+Current /agreement/sign redirects to /agreement, where signing is an explicit action.
+Define verified-email handling if the authorised signer differs from the registered vendor contact; no arbitrary email entry in this UI.
+Existing vendors need an explicit backfill/rollout policy before enforcement, so they are not silently broken or auto-approved.
+
+QUERIES (FULL DOCUMENTS IN OPERATIONS FILE)
+VendorAgreement: authenticated current vendor only, no vendorId argument.
+AdminVendorAgreements(search,status,page,pageSize): admin contracts permission; page >=1, pageSize <=100; stable newest-first ordering with tie-break ID; return all assigned attempts or latest-per-vendor consistently and document semantics.
+Frontend expects latest attempt per vendor, including existing vendors after approved backfill. Historical attempts stay accessible by admin detail ID.
+Counts cover latest attempts across ALL vendors, independent of search/status/page. totalCount/pageCount reflect current filters.
+AdminVendorAgreement(id): admin-only full current record and checks. Review must re-run/verify checks server-side, never trust UI booleans.
+bodySections are plain text; server sanitizes/extracts canonical PDF content, preserving all clauses/tables as readable paragraphs. No HTML/script in client rendering.
+Expose PDF/email generation/delivery stages and failures through persisted events; frontend does not assume email delivery from a successful signature mutation.
+
+MUTATIONS / EXACT VARIABLES
+RequestVendorAgreementCode:
+ {input:{agreementId,revision,documentSha256}}
+ Vendor owns attempt; state PENDING_SIGNATURE. Send to persisted verified signer email only.
+ Return {challengeId,maskedEmail,expiresAt,resendAvailableAt}; never return the code.
+ Recommended 6 numeric digits, 10-minute expiry, minimum 60-second resend cooldown, maximum 5 wrong attempts; implement per-account/IP abuse controls. Confirm chosen production limits.
+ Store OTP hash/secret verification representation, never plaintext logs. New challenge invalidates previous. Bind challenge to vendor/account/attempt/revision/hash and consume atomically with successful signature.
+ Frontend timer is convenience only; backend clock/rate limits are authoritative.
+
+SignVendorAgreement:
+ {input:{agreementId,revision,documentSha256,challengeId,code,fullName,role,signature:{kind:TYPED|DRAWN,value},acceptedTerms:true,confirmedAuthority:true,idempotencyKey}}
+ Typed <=160 chars; fullName <=160, role <=120. Reject whitespace/empty inputs and non-true checkboxes.
+ DRAWN must be a bounded decoded PNG (not SVG/HTML), validate pixels/dimensions, decode/re-encode server-side; enforce e.g. 1 MB binary maximum.
+ Recompute/validate ORIGINAL hash from trusted storage, verify current version and revision, validate/consume OTP once, append immutable consent/signature event, create PENDING_APPROVAL atomically.
+ Retain exact accepted checkbox wording/version, name/role/email, UTC timestamp and a privacy-minimised signing record (IP/user agent only if needed and documented).
+ Generate VENDOR_SIGNED PDF + signature page + evidence page asynchronously with durable retries. Admin checks/approval remain blocked until generation and integrity verification succeed.
+ Same idempotency key+same payload replays same outcome, even if code already consumed; different payload for same key fails. Do not log OTP or raw signature data in generic application/access logs.
+ Browser never decides approved status, OTP verification, signed date, email success or actual PDF fingerprint.
+
+VendorAgreementDocumentAccess:
+ {input:{agreementId,kind:ORIGINAL|VENDOR_SIGNED|FINAL}}
+ Owner vendor or authorised admin only; enforce artifact/state availability on every request.
+ Return short-lived HTTPS URL (e.g. 5 minutes), expiry and that artifact's full SHA-256.
+ Private storage, unguessable object keys, no public signature URLs, Cache-Control private/no-store, safe Content-Disposition filename. Storage endpoints restricted to configured trusted origins server-side.
+ ORIGINAL must be viewable before signing; VENDOR_SIGNED download includes signature and audit pages; FINAL only after acceptance/finalization.
+ Never overwrite signed bytes; no raw signature image URL exposed in list queries.
+
+ReviewVendorAgreement:
+ {input:{agreementId,revision,decision:APPROVE|REJECT,confirmedSigningAuthority,reason,idempotencyKey}}
+ Require contract-review admin permission and PENDING_APPROVAL; lock current record to handle races.
+ APPROVE: authority confirmation true AND server revalidates companyFound/companyNameMatches/emailVerified/documentIntegrityValid. Unknown checks must block approval.
+ Store reviewer ID, decision timestamp, authority evidence/reference (extend schema/UI if required), exact accepted document hash and revision.
+ REJECT: nonempty reason <=2000, notify vendor; do not delete signature/audit evidence or auto-activate.
+ Approve/reject cannot both win. Replay idempotent decisions safely; stale revision returns CONFLICT.
+ Approval creates separate FINAL object preserving signed input and server acceptance record; only expose ACTIVE when required finalization succeeds, or keep canGoLive false until completed.
+ Same transaction/outbox triggers vendor acceptance email with FINAL attachment; no browser email send.
+
+ReissueVendorAgreement:
+ {input:{agreementId,revision,idempotencyKey}}
+ Authorised admin only; REJECTED current attempt. Creates NEW PENDING_SIGNATURE ID using reviewed current template/company/signer snapshot, keeps old rejected record, queues new invitation. No destructive state reset.
+ Frontend redirects admin to new ID. Do not silently change signer email; use verified company account workflow.
+
+SendVendorAgreementReminder:
+ {input:{allPending:true,idempotencyKey}}
+ Admin permission; intentionally all PENDING_SIGNATURE vendors across filters, as explicitly labelled in UI.
+ Never remind ACTIVE/PENDING_APPROVAL/REJECTED/revoked attempts. Per-vendor cooldown, delivery deduplication and outbox; return queuedCount, not falsely 'delivered'.
+
+PublishVendorAgreementTemplate:
+ {input:{version,title,pdfBase64,fileName,confirmedLegalReview:true,idempotencyKey}}
+ Admin template-management permission (may be narrower than review).
+ PDF <=10 MB (base64 request limit must accommodate ~14 MB plus GraphQL envelope). Apply request size/rate limits.
+ Scan upload, validate real PDF, reject embedded scripts/attachments/active content and password-encrypted/unsupported input; normalise only BEFORE assigning immutable canonical bytes/hash.
+ Extract trustworthy readable text/sections matching the PDF; reject scanned/unreadable PDFs until reviewed accessible transcription exists. Client magic-byte check is not sufficient.
+ Version unique and immutable. Server-generated safe filename/private storage. Template and text must be fully ready before publication; never publish sample material. UI requires explicit legal-review confirmation.
+ New version does not revoke or reassign prior agreements. Future registration/reissue uses current published version.
+
+ActivateVendorStore:
+ {input:{agreementId,revision,idempotencyKey}}
+ Current vendor only. Server checks ACTIVE accepted agreement for that vendor, ready final document, all current compliance/application/payment/catalogue requirements and any suspension.
+ Idempotent transactional store activation; return fresh agreement and canGoLive eligibility. canGoLive means permission, not 'already live'.
+ Audit every other activation/admin override/menu publication/customer listing/order creation path and enforce the SAME requirement. Frontend disabled buttons cannot protect direct API calls.
+ Do not disable ability to configure draft profile/menu while pending. Existing orders must still be serviceable according to an explicit business rollout policy.
+
+AUTH / ERRORS / TRANSACTIONS
+Reuse current JWT protected client; no keys/secrets added to frontend. Vendor reads/mutations must reject cross-vendor IDs.
+Admin list/detail/documents require dedicated permissions; template publish/reminder/decisions logged separately. No arbitrary 'role=admin' client fields.
+Return GraphQL errors (not success:false hidden inside uninspected payloads) with safe user-facing message and extensions.code such as AGREEMENT_CONFLICT, OTP_EXPIRED, OTP_INVALID, RATE_LIMITED, DOCUMENT_NOT_READY, AUTHORITY_REQUIRED, AGREEMENT_REQUIRED.
+Frontend currently displays the safe message; it never changes local agreement status optimistically. Stale state requires refresh; expired/resend code handled visibly.
+Do not use 'token'/'authorization' in non-auth error messages unnecessarily: the existing shared authClient classifies some such messages as session-expired.
+Use server UTC timestamps (UI formats Europe/Oslo). Mandatory events have stable IDs, meaningful English labels and timestamps.
+Use a transactional outbox for all emails/PDF jobs with stable deduplication keys; commit success must not depend on synchronous email delivery. Record queued/delivered/failed separately. Admin operations must remain replay-safe after network loss.
+
+PDF / RECORD RETENTION / PRIVACY
+ORIGINAL -> VENDOR_SIGNED (signature+evidence pages) -> FINAL (separate acceptance artifact).
+Each has its own hash, immutable object ID, link to prior hash and protected trusted record.
+A hash printed inside an editable PDF alone is not trusted tamper evidence. Keep signed/audited reference outside that PDF and use verifiable signing/sealing if assurance requirements call for it.
+Do not claim both-parties cryptographic signatures merely because an admin stamp was rendered.
+Restrict evidence access to owner/admin, encrypt storage, define retention/legal basis and subject-access/deletion handling. IP/device details are personal data; collect only necessary data and document retention.
+Email originals/signed/final copies per client's requested steps using the persisted verified recipient and protected provider; record delivery without exposing OTP or contract contents in logs.
+
+REQUIRED ACCEPTANCE TESTS BEFORE FLAG ENABLEMENT
+- Registration creates exactly one attempt/invitation under duplicate callbacks; email retry doesn't duplicate signing attempts.
+- Vendor A cannot read/sign/download/activate vendor B; ordinary customer cannot call any vendor/admin path; non-review admin blocked.
+- Contract readable on desktop/mobile; PDF bytes and displayed clauses/version/parties agree; no sample text leaked.
+- OTP absent/wrong/expired/reused/resend/cooldown/exhausted attempts; old challenge invalidated after resend; no server trust in browser time.
+- Revision/hash changes invalidate signing and old OTP; signature consent boxes/name/role required; invalid/oversize PNG rejected.
+- Lost-response retry signs once with same idempotency key; duplicate clicks/requests cannot create duplicate PDFs/emails.
+- Signature creates PENDING_APPROVAL; no activation until actual admin decision and all other eligibility checks pass.
+- PDF generation/storage/email failures observable; retries safe; approval blocked on missing/invalid artifacts.
+- Registry unavailable/name mismatch/email unknown/hash mismatch -> approval blocked; signer authority checked separately.
+- Concurrent approve/reject/reissue/version changes resolve atomically and preserve audit trail.
+- Rejection reason visible to vendor; reissue creates a new ID and new OTP, old signature retained.
+- Final acceptance artifact preserves previous signed PDF; hashes verified against trusted stored objects; no public storage URLs.
+- Template publication preserves existing accepted agreements and draft work; explicit backfill covers existing vendors.
+- Direct API attempts to publish/go-live/receive new orders bypassing frontend are rejected when required agreement is inactive; existing-order handling explicitly tested.
+- Admin search/status/page/counts, all-pending reminders, audit events, UTC/Oslo DST, signed/final downloads, keyboard modal focus/escape, typed signature and touch drawing verified.
+
+ENABLEMENT / DEPLOYMENT
+1. Supply the real reviewed production PDF, signature-assurance decision and onboarding/backfill policy.
+2. Backend implements or proposes exact equivalent schema; validate every operation in OPERATIONS file against deployed schema.
+3. Run authenticated sandbox examples with realistic permissions/OTP/email/PDF jobs; never share credentials or actual OTPs in handoff.
+4. Only then set VITE_VENDOR_AGREEMENTS_ENABLED=true in VENDOR and ADMIN build environments and rebuild both.
+5. Coordinate backend enforcement/feature enablement so no existing store is accidentally blocked. Default-disabled frontend is intentionally non-functional for signing.
+6. Verify invitation/return paths use real vendor origin /agreement (not customer origin /vendor/agreement unless routing explicitly supports it).
+7. Backend must remain the enforcement boundary even if a user edits/removes the browser flag.
+
+REFERENCES / ASSURANCE LIMITS
+European Commission eSignature overview: https://ec.europa.eu/digital-building-blocks/sites/spaces/DIGITAL/pages/467109069/What+is+eSignature
+EDPB data protection basics: https://www.edpb.europa.eu/sme/learn-the-basics/data-protection-basics_en
+These describe assurance distinctions/data minimisation, not legal approval of this particular vendor agreement. No legal enforceability certification is claimed.
+
+
+CLIENT CONFIRMATION ADDENDUM - EMAIL OTP + TYPED/DRAWN SIGNING
+15 November 2026
+Forward this file to the backend developer. Existing schema and operations files
+named above remain the exact integration contract; this addendum adds clarification.
+
+Frontend now explicitly supports no-touch-screen signing: typed name is the default,
+with handwriting-style preview; drawing uses mouse, touchpad or finger. The preview
+is presentation only. Raw typed text or PNG is submitted via existing signature
+{kind,value}. Browser handwriting fonts vary by device. Backend must embed its own
+licensed signature font when rendering TYPED into the PDF; preserve raw Unicode text
+and accessibility/readability, never depend on a browser screenshot or client font.
+No new GraphQL fields are required for this UI update.
+
+BACKEND MUST PROVIDE BEFORE ENABLEMENT
+- Authenticated vendor signing session and tenant checks on EVERY operation.
+  Invitation links are short-lived, revocable, purpose-bound and require login;
+  an invitation link alone must never sign or activate the vendor.
+- Code to the account email verified by the server, not an input email supplied by
+  the browser. OTP bound to user + agreement ID + revision + document hash.
+  Hash OTP at rest; expiry, attempt limits, resend cooldown and rate limits enforced
+  server-side. Resending invalidates older codes. Consume OTP atomically with signing.
+- Validate full name/role and signature payload; enforce both consent booleans.
+  Store exact displayed consent wording/version, account and vendor identifiers,
+  company snapshot, verified email, signing method, server UTC timestamp, trusted
+  request IP and user agent, and the exact accepted PDF hash/version. Do not trust
+  arbitrary forwarded-IP headers; configure trusted reverse proxies. Never put raw
+  OTP, session tokens or invitation secrets in PDFs, email logs or audit evidence.
+- Preserve ORIGINAL, VENDOR_SIGNED and FINAL as separate immutable artifacts with
+  hashes, retention policy, private storage and short-lived authorised download URLs.
+  Vendor-signed PDF combines frozen contract, signature page and signing record.
+  Admin acceptance produces a separate FINAL artifact; never edit signed bytes.
+- Transactional signing + append-only event + reliable PDF/email outbox. Duplicate
+  submit must not create duplicate signatures or email jobs. UI must not report a
+  downloadable artifact until it exists; allow retries for generation/email failures.
+- Email signed copy after submission and final copy after approval. No fake frontend
+  delivery confirmation. Admin review verifies company AND signer authority; mailbox
+  access does not prove either. Reject with reason and reissue a new signing attempt.
+- Block go-live AND public listing/order acceptance on the backend until ACTIVE and
+  all other eligibility checks pass. UI banner alone is insufficient.
+- Document retention, access permissions and privacy notice for IP/email/device
+  evidence must be approved by the responsible business/legal owner.
+
+COST / ASSURANCE WORDING
+No paid external signing provider is required for this initial method, but hosting,
+email, PDF generation and maintenance still have costs. Do not promise zero cost.
+Email OTP + drawn/typed signature is not BankID, qualified signature, or automatic
+proof of company signing authority. Electronic form alone is not a reason to reject
+signature evidence; this does not guarantee enforceability for every contract.
+Have the actual Norwegian vendor contract and required assurance reviewed before
+launch. Official reference: https://www.regjeringen.no/no/dokumenter/prop.-71-ls-20172018/id2596007/?ch=12
+
+BANKID LATER
+Do not expose a nonfunctional BankID button now. A later provider needs additional
+backend session creation, redirect/callback verification, verified evidence storage
+and frontend integration. Reuse agreement states/artifacts but do not promise that
+adding a button alone requires no further implementation.
+
+ACCEPTANCE CHECKS
+Typed PC signature; drawn mouse/touchpad; finger on mobile; keyboard-only form;
+missing/blank name or role; either unchecked consent; expired/wrong/reused OTP;
+resend invalidation; stale revision/hash; wrong tenant; duplicate submit; PDF/email
+failure recovery; rejection/reissue; approval with evidence; blocked pre-approval
+store activation. Verify original and signed artifacts remain unchanged after approval.
+
+Still required: actual reviewed contract PDF, approved consent/privacy wording,
+implemented proposed APIs, email sender/storage configuration and end-to-end tests.
+Keep VITE_VENDOR_AGREEMENTS_ENABLED=false until these are ready.

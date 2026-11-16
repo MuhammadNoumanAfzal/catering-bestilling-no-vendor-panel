@@ -74,6 +74,7 @@ function extractFieldErrors(payload) {
 export function isAuthenticationError(payload) {
   const firstError = payload?.errors?.[0];
   const code = firstError?.extensions?.code;
+  if (["COMPANY_NOT_VERIFIED", "COMPANY_DETAILS_REQUIRED", "RATE_LIMITED", "OTP_INVALID", "OTP_EXPIRED", "AGREEMENT_CONFLICT", "AUTHORITY_REQUIRED", "DOCUMENT_NOT_READY", "AGREEMENT_REQUIRED"].includes(code)) return false;
   const message = firstError?.message?.toLowerCase?.() || "";
 
   return (
@@ -128,6 +129,8 @@ export async function executeGraphqlRequest(query, variables, options = {}) {
         getErrorMessage(payload, "Authentication request failed."),
       ),
     );
+    error.code = payload?.errors?.[0]?.extensions?.code;
+    error.graphqlErrors = payload.errors;
     error.isAuthenticationError = isAuthenticationError(payload);
     error.fieldErrors = extractFieldErrors(payload);
     throw error;

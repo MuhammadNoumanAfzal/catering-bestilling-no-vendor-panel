@@ -1,0 +1,30 @@
+URGENT: NEW VENDOR RECEIVES UNRELATED INVOICE NOTIFICATIONS
+Observed 16 November 2026 on new vendor Noan: notifications page shows 66 unread
+notifications including an INV-43 escalation predating this account's activity.
+This is an observed UI symptom; backend cause is not yet verified with private API data.
+
+Frontend uses JWT-authenticated myNotifications + myNotificationUnreadCount.
+No dummy fallback list and no browser vendorId selector. Frontend account-switch
+hardening added: route state remount, account-specific last-seen key, polling restart.
+
+Backend developer: reproduce with the NEW vendor's own session in a fresh browser.
+Verify these resolvers always scope by authenticated recipient AND vendor/tenant:
+myNotifications (all filters/pages), myNotificationUnreadCount, notification(id),
+markNotificationRead, markAllMyNotificationsRead, archiveNotification,
+unarchiveNotification. Guessing another vendor's ID must return a safe denial.
+Never return all audience=VENDOR records or all notifications when recipient is null.
+Admin-wide events such as order escalation must not broadcast to every vendor.
+Order/invoice events must target the vendor owning that order; public global notices
+need an explicit safe scope separate from private order messages.
+
+Check notification creation jobs, escalation recipient mapping, null recipient
+fallbacks, shared response caches (JWT/tenant keys), device-token reassignment and
+push unsubscribe/re-registration when switching accounts. Stop delivery of private
+cross-tenant push messages and audit existing wrongly assigned records before cleanup.
+Do not use client-side title/date filtering as a security fix.
+
+Acceptance: vendor A cannot list/read/count/change vendor B notifications; new vendor
+without orders sees no old private invoice notifications. Correct vendor still gets
+its own notices. Admin retains its authorised view. Same tests after pagination,
+status/date filters, account switch, browser reload and push device re-registration.
+Provide sanitised request/response samples with no JWTs, OTPs or private customer data.

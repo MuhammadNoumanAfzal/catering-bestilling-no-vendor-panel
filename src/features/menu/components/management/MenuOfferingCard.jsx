@@ -32,8 +32,8 @@ export default function MenuOfferingCard({actionsDisabled=false,item,onDelete,on
    <span className="absolute right-3 top-3 max-w-[55%] truncate rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-[#68574a]">{item.badge==="Menu"?t("menu.menuLabel"):item.badge==="Add-on"?t("menu.addonLabel"):item.badge}</span>
   </button>
   <div className="flex flex-1 flex-col p-4">
-   <button type="button" onClick={open} className="flex items-start justify-between gap-2 text-left text-[#282019] hover:text-[#b45c30] focus-visible:outline-2 focus-visible:outline-[#c96432]"><h3 className="line-clamp-2 min-h-12 text-base font-bold leading-6">{item.title}</h3><ArrowUpRight size={16} aria-hidden="true" className="mt-1 shrink-0 text-[#ac9a8a]"/></button>
-   <p className="mt-2 line-clamp-3 h-[60px] text-[13px] leading-5 text-[#837365]">{description}</p>
+   <button type="button" onClick={open} className="flex items-start justify-between gap-2 text-left text-[#282019] hover:text-[#b45c30] focus-visible:outline-2 focus-visible:outline-[#c96432]"><h3 className="menu-offering-title line-clamp-2 text-base font-bold leading-6">{item.title}</h3><ArrowUpRight size={16} aria-hidden="true" className="mt-1 shrink-0 text-[#ac9a8a]"/></button>
+   <p className="menu-offering-description mt-2 text-[13px] text-[#837365]">{description}</p>
    <div className="mt-auto pt-4">
     <strong className="block text-[19px] font-bold leading-7 tracking-tight text-[#2e231b]">{formatMenuCardPrice(item,t)}</strong>
     <span className="mt-0.5 block text-xs leading-5 text-[#9b8b7d]">{item.rawMenu?(item.minimumGuests?t("menu.minimumGuestLabel",{count:Number(item.minimumGuests)}):t("menu.flexibleGuests")):item.meta==="Available add-on"?t("menu.availableAddon"):item.meta}</span>

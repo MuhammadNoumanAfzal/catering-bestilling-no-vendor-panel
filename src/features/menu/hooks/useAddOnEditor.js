@@ -14,6 +14,7 @@ import {
   buildSaveVendorAddOnVariables,
   mapDietaryTagsToOptions,
   mapFoodTypesToOptions,
+  mapOccasionsToOptions,
   mapVendorAddOnDetailToForm,
   resolveMediaUrl,
 } from "../api/menuMappers";
@@ -38,6 +39,7 @@ function mapAddOnMutationErrors(errors = []) {
     categories: "categories",
     priceWithTax: "price",
     foodTypes: "mealTypes",
+    occasions: "selectedOccasions",
   };
 
   return errors.reduce((accumulator, item) => {
@@ -68,6 +70,7 @@ export function useAddOnEditor() {
 
   const [formState, setFormState] = useState(() => ({ ...getInitialAddOnState(), addOnType: initialType }));
   const [mealTypeOptions, setMealTypeOptions] = useState([]);
+  const [occasionOptions, setOccasionOptions] = useState([]);
   const [dietaryOptions, setDietaryOptions] = useState([]);
   const [allergenOptions, setAllergenOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState(emptyFieldErrors);
@@ -92,6 +95,7 @@ export function useAddOnEditor() {
         const nextMealTypeOptions = mapFoodTypesToOptions(bootstrapResult.foodTypes);
         const nextDietaryOptions = mapDietaryTagsToOptions(bootstrapResult.dietaryTags);
         setMealTypeOptions(nextMealTypeOptions);
+        setOccasionOptions(mapOccasionsToOptions(bootstrapResult.occasions));
         setDietaryOptions(nextDietaryOptions);
         setAllergenOptions((bootstrapResult.allergens || []).map((item) => ({ value: item.id, label: item.name })));
 
@@ -245,7 +249,7 @@ export function useAddOnEditor() {
   }
 
   async function handleDeleteMealType(id) {
-    const result = await deleteFoodType(id);
+    await deleteFoodType(id);
     setMealTypeOptions((currentOptions) =>
       currentOptions.filter((opt) => opt.value !== id),
     );
@@ -279,7 +283,7 @@ export function useAddOnEditor() {
         },
         { categoryIds: [] },
       );
-      const result = await saveVendorAddOn(variables);
+      await saveVendorAddOn(variables);
       setFieldErrors(emptyFieldErrors);
 
       await showVendorSuccessToast(
@@ -326,6 +330,7 @@ export function useAddOnEditor() {
     dietaryOptions,
     allergenOptions,
     mealTypeOptions,
+    occasionOptions,
     actions: {
       handleAddAnother,
       handleAddMealTypeClick,

@@ -1,3 +1,4 @@
+import "./OrdersTable.css";
 import OrderPaymentBadge from "./OrderPaymentBadge.jsx";
 import { ChevronDown, Eye, Users, X } from "lucide-react";
 import { useState } from "react";
@@ -128,8 +129,8 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-[14px] border border-[#ddd3ca] bg-white shadow-[0_2px_10px_rgba(42,27,18,0.05)]">
-      <table className="w-full border-collapse bg-white">
+    <div className="vendor-orders-table-wrap">
+      <table className="vendor-orders-table">
         <thead>
           <tr className="bg-[#fffdfb]">
             <th 
@@ -145,6 +146,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
             {[["orderId", "Order ID"], ["customer", "Customer"], ["event", "Event"], ["guests", "Guests"], ["deliveryDate", "Delivery date"], ["status", "Status"], ["actions", "Actions"]].map(([key, heading]) => (
               <th
                 key={key}
+                scope="col"
                 className="border-b border-[#eee7df] px-4 py-4 text-left text-[15px] font-extrabold text-[#17120e]"
               >
                 {t(`orders.${key}`, { defaultValue: heading })}
@@ -157,7 +159,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
             <tr
               key={`${row.rawId || row.id}-${translateCustomerLabel(t, row.customer)}-${index}`}
               className={`transition duration-150 cursor-pointer border-b border-[#eee7df] last:border-b-0 hover:bg-[#fff7f2] ${
-                row.statusTone === "is-new" ? "bg-[#eef8ff]/70" : "bg-white"
+                row.statusTone === "is-new" ? "order-row-new" : "bg-white"
               }`}
               onClick={() => onRowClick?.(row)}
             >
@@ -172,7 +174,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 />
               </td>
               <td className="px-4 py-4 text-[16px] font-extrabold text-[#1c1510]">
-                {row.displayId || row.id}
+                <span className="order-reference">{row.displayId || row.id}</span>
               </td>
               <td className="px-4 py-4 text-[15px] font-bold text-[#17120e]">
                 {translateCustomerLabel(t, row.customer)}
@@ -188,8 +190,8 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
               </td>
               <td className="px-4 py-4">
                 <div className="flex flex-col gap-0.5 text-[14px] font-semibold leading-[1.25] text-[#5e544d]">
-                  <span>{row.date}</span>
-                  <span className="text-[12px] text-[#8f7f73] font-medium">{row.time}</span>
+                  <span className="order-delivery-date">{row.date}</span>
+                  <span className="text-[12px] text-[#8f7f73] font-medium">{row.time?.replace(/^(\d{2}:\d{2}):00$/, "$1")}</span>
                 </div>
               </td>
               <td className="px-4 py-4">

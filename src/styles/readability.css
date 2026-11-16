@@ -1,0 +1,165 @@
+/* Shared readability: stronger body copy and light-surface secondary text.
+   Keep white text, brand/status colors, disabled controls and dark surfaces intact. */
+body { color: #302923; font-size: 16px; font-weight: 500; }
+#root :where(h1,h2,h3) { font-weight: 700; }
+#root :where(label,th) { font-weight: 600; }
+#root :where(input,select,textarea) { font-weight: 500; }
+#root :where(input,textarea)::placeholder { color: #77685d; opacity: 1; }
+#root :is(
+  [class~="text-[#9a8572]" i],
+  [class~="text-[#a48d79]" i],
+  [class~="text-[#8b8177]" i],
+  [class~="text-[#8b8580]" i],
+  [class~="text-[#746b63]" i],
+  [class~="text-[#6f6258]" i],
+  [class~="text-[#62676e]" i],
+  [class~="text-[#8a7a6d]" i],
+  [class~="text-[#7a6d63]" i],
+  [class~="text-[#746a62]" i],
+  [class~="text-[#8c7f73]" i],
+  [class~="text-[#8a7c70]" i],
+  [class~="text-[#8d7f73]" i],
+  [class~="text-[#6f6358]" i],
+  [class~="text-[#9b8f86]" i],
+  [class~="text-[#6f645d]" i],
+  [class~="text-[#8c8077]" i],
+  [class~="text-[#6f655e]" i],
+  [class~="text-[#7a6d66]" i],
+  [class~="text-[#9a8f86]" i],
+  [class~="text-[#8d8077]" i],
+  [class~="text-[#aa8f81]" i],
+  [class~="text-[#94867a]" i],
+  [class~="text-[#7b8793]" i],
+  [class~="text-[#8a7d72]" i],
+  [class~="text-[#7f7369]" i],
+  [class~="text-[#a59689]" i],
+  [class~="text-[#9a8b7e]" i],
+  [class~="text-[#8c7b6b]" i],
+  [class~="text-[#9c8c7b]" i],
+  [class~="text-[#8d7969]" i],
+  [class~="text-[#8d7764]" i],
+  [class~="text-[#947d69]" i],
+  [class~="text-[#9a8d7e]" i],
+  [class~="text-[#a18e7b]" i],
+  [class~="text-[#9b8876]" i],
+  [class~="text-[#9c8c7d]" i],
+  [class~="text-[#737f8b]" i],
+  [class~="text-[#8c7c6b]" i],
+  [class~="text-[#8b7d70]" i],
+  [class~="text-[#94877b]" i],
+  [class~="text-[#9e8f80]" i],
+  .text-gray-400,
+  .text-gray-500,
+  .text-slate-400,
+  .text-slate-500,
+  .text-stone-400,
+  .text-stone-500,
+  .text-neutral-400,
+  .text-neutral-500,
+  .text-gray-600,
+  .text-slate-600
+):not(:where(
+  [class*="bg-[#1"],
+  [class*="bg-[#1"] *,
+  [class*="bg-[#2"],
+  [class*="bg-[#2"] *,
+  [class*="bg-[#3"],
+  [class*="bg-[#3"] *,
+  [class*="bg-[#4"],
+  [class*="bg-[#4"] *,
+  [class*="bg-black"],
+  [class*="bg-black"] *,
+  [class*="bg-gray-8"],
+  [class*="bg-gray-8"] *,
+  [class*="bg-gray-9"],
+  [class*="bg-gray-9"] *,
+  [class*="bg-slate-8"],
+  [class*="bg-slate-8"] *,
+  [class*="bg-slate-9"],
+  [class*="bg-slate-9"] *,
+  .legal-page,
+  .legal-page *,
+  :disabled,
+  [aria-disabled="true"],
+  fieldset:disabled *
+)) { color: #3d3833; }
+/* Modest increases keep compact controls usable without scaling icons or badges. */
+#root .text-xs { font-size: 13px; line-height: 1.55; }
+#root .text-sm { font-size: 15px; line-height: 1.65; }
+#root [class~="text-[11px]"] { font-size: 12px; }
+#root [class~="text-[12px]"] { font-size: 13px; }
+#root [class~="text-[13px]"] { font-size: 14px; }
+#root [class~="text-[14px]"] { font-size: 15px; }
+@media print { body { color: #111; } }
+
+/* Vendor workspace hierarchy: readable forms, lists and financial figures. */
+#root :is(h1,h2,h3,h4,h5,h6) { font-weight: 750; line-height: 1.35; }
+#root :is(.type-h5,.type-h6) { font-weight: 700; }
+#root :is(label,legend,th) { font-weight: 650; }
+#root :is(p,td):not(:where(.font-semibold,.font-bold,.font-extrabold)) { font-weight: 500; }
+#root :is(.font-semibold,.font-bold) { font-weight: 700; }
+#root :is(input,select,textarea):not(:disabled) { font-size: 16px; font-weight: 550; }
+#root :is(.text-sm,[class~="text-[14px]"],[class~="text-[15px]"]) { font-size: 16px; line-height: 1.6; }
+#root :is(.text-xs,[class~="text-[12px]"],[class~="text-[13px]"]) { font-size: 14px; line-height: 1.55; }
+#root [class~="text-[11px]"] { font-size: 13px; line-height: 1.5; }
+#root :is(td,th) { line-height: 1.55; }
+#root th { font-size: 13px; letter-spacing: .025em; }
+#root td { font-size: 15px; }
+#root :is(.tabular-nums,[class~="text-[28px]"],[class~="text-[32px]"]) { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  #root :is(.text-sm,[class~="text-[14px]"],[class~="text-[15px]"]) { font-size: 15px; }
+}
+
+/* Include the semantic typography classes used throughout the vendor app. */
+#root .type-para { font-size: 16px; line-height: 1.65; font-weight: 550; }
+#root .type-subpara { font-size: 14px; line-height: 1.55; }
+#root :is(.type-h5,.type-h6) { font-size: 18px; line-height: 1.45; font-weight: 700; }
+#root .dashboard-stat-label { font-size: 17px; line-height: 1.4; font-weight: 700; color: #181512; }
+#root .dashboard-stat-value { font-size: 38px; font-weight: 800; }
+#root .dashboard-stat-helper { font-size: 16px; line-height: 1.55; font-weight: 550; color: #302b26; }
+#root .dashboard-order-amount { font-size: 22px; font-weight: 750; }
+@media (max-width: 720px) {
+  #root .dashboard-stat-label { font-size: 16px; }
+  #root .dashboard-stat-value { font-size: 32px; }
+  #root .dashboard-stat-helper { font-size: 15px; }
+}
+
+/* Shared route wrapper covers every vendor workspace screen. */
+#root .vendor-workspace { color: #211d19; font-size: 16px; line-height: 1.65; }
+#root .vendor-workspace :is(h1,.type-h1) { font-size: clamp(28px, 2.8vw, 36px); font-weight: 800; }
+#root .vendor-workspace :is(h2,.type-h2) { font-size: clamp(23px, 2.2vw, 28px); font-weight: 750; }
+#root .vendor-workspace :is(h3,.type-h3) { font-size: 21px; font-weight: 750; }
+#root .vendor-workspace :is(h4,h5,h6,.type-h4,.type-h5,.type-h6) { font-size: 18px; font-weight: 700; }
+#root .vendor-workspace :is(label,legend) { font-size: 15px; font-weight: 650; }
+#root .vendor-workspace :is(.type-para,.text-sm,[class~="text-[14px]"],[class~="text-[15px]"]) { font-size: 16px; line-height: 1.65; }
+#root .vendor-workspace :is(.type-subpara,.text-xs,[class~="text-[12px]"],[class~="text-[13px]"]) { font-size: 14px; line-height: 1.6; }
+#root .vendor-workspace :is(p,li,td):not(.font-bold,.font-semibold,.font-extrabold) { font-weight: 550; }
+#root .vendor-workspace :is(input,textarea,select):not(:disabled) { font-size: 16px; font-weight: 550; }
+#root .vendor-workspace th { font-size: 14px; font-weight: 700; }
+#root .vendor-workspace td { font-size: 15px; }
+@media (max-width: 640px) {
+  #root .vendor-workspace :is(.type-para,.text-sm,[class~="text-[14px]"],[class~="text-[15px]"]) { font-size: 15px; }
+}
+
+/* Match card text height to the enlarged typography; never crop half a line. */
+#root .vendor-workspace .menu-offering-title {
+  min-height: 56px;
+  font-size: 20px;
+  line-height: 28px;
+  overflow-wrap: anywhere;
+}
+#root .vendor-workspace .menu-offering-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  height: auto;
+  min-height: 72px;
+  max-height: 72px;
+  font-size: 15px;
+  line-height: 24px;
+  color: #51463c;
+  overflow-wrap: anywhere;
+  margin-bottom: 16px;
+}

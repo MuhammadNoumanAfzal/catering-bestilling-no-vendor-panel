@@ -32,15 +32,15 @@ export default function OrderCard({ onAccept, onReject, onViewDetails, order }) 
         <h3 className="type-h4 mt-[7px] text-[17px] text-[#1b1510]">
           {order.title}
         </h3>
-        <strong className="absolute right-3 top-[42px] type-h5 text-[#1b1510] max-[720px]:static max-[720px]:mt-2 max-[720px]:block">
+        <strong className="absolute right-3 top-[42px] dashboard-order-amount type-h5 text-[#1b1510] max-[720px]:static max-[720px]:mt-2 max-[720px]:block">
           {order.amount}
         </strong>
 
-        <p className="type-para mt-[10px] flex flex-wrap gap-[10px] text-[11px] font-bold text-[#211914]">
+        <p className="type-para mt-[10px] flex flex-wrap gap-[10px] text-[15px] font-bold text-[#211914]">
           <span>{order.guests}</span>
           <span>{order.timing}</span>
         </p>
-        <p className="type-para mt-1 text-[11px] font-semibold text-[#382d26]">
+        <p className="type-para mt-1 text-[15px] font-semibold text-[#382d26]">
           {order.address}
         </p>
       </div>

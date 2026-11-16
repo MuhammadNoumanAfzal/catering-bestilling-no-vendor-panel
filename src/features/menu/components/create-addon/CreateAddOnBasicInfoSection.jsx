@@ -24,6 +24,9 @@ export default function CreateAddOnBasicInfoSection({
   image,
   mealTypeOptions,
   mealTypes,
+  occasionOptions = [],
+  selectedOccasions = [],
+  onOccasionsChange,
   onAddOnNameChange,
   onDescriptionChange,
   onImageSelect,
@@ -32,7 +35,8 @@ export default function CreateAddOnBasicInfoSection({
   price,
   isStandalone = false,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const no = /^(no|nb|nn)/.test(i18n.resolvedLanguage || i18n.language);
 
   return (
     <div className="grid gap-7 border-b border-[#e5e7eb] py-6 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -55,11 +59,17 @@ export default function CreateAddOnBasicInfoSection({
             <MenuDescriptionEditor
               disabled={disabled}
               onChange={onDescriptionChange}
-              placeholder={t("menu.addOnDescriptionPlaceholder", { defaultValue: "Describe this add-on and how it complements your menus..." })}
+              placeholder={isStandalone ? (no ? "Beskriv produktet eller hele menyen, inkludert alle retter..." : "Describe this product or complete menu, including all dishes...") : t("menu.addOnDescriptionPlaceholder", { defaultValue: "Describe this add-on and how it complements your menus..." })}
               value={description}
             />
           </div>
 
+          {isStandalone && <div>
+            <Label>{no ? "Anledninger" : "Occasions"}</Label>
+            <MultiSelectInput disabled={disabled} options={occasionOptions} value={selectedOccasions} onChange={onOccasionsChange} placeholder={no ? "Velg en eller flere anledninger" : "Select one or more occasions"} />
+            <p className="mt-2 text-xs leading-5 text-[#7b8793]">{no ? "Velg for eksempel bryllup. Produktet vises sammen med menyer for valgte anledninger." : "For example, select Wedding. This product appears alongside menus for the selected occasions."}</p>
+            <FieldError message={fieldErrors?.selectedOccasions} />
+          </div>}
           <div className="grid grid-cols-2 gap-4 max-[680px]:grid-cols-1">
             <div>
               <Label>{t("menu.price", { defaultValue: "Price" })} <span className="ml-1 text-xs font-normal text-[#7b8793]">{isStandalone ? "NOK / gjest" : "NOK"}</span></Label>

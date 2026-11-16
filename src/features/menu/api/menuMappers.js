@@ -1,3 +1,4 @@
+import { occasionIds, productOccasionInput } from "../utils/productOccasions.js";
 import { formatMoney } from "../../../utils/formatMoney.js";
 import { independentAddOnsEnabled, isIndependentAddOn, standaloneInput } from "../utils/addOnTypes";
 import {
@@ -294,6 +295,7 @@ export function mapVendorAddOnDetailToForm(addOn) {
     minimumGuests: String(addOn.minimumGuests || 1),
     minimumQuantity: String(addOn.minimumQuantity || 1),
     allergens: safeArray(addOn.allergens).map((item) => item.id).filter(Boolean),
+    selectedOccasions: occasionIds(addOn.occasions),
     addOnName: addOn.name || "",
     description: addOn.description || "",
     price: addOn.priceWithTax ? String(addOn.priceWithTax) : "",
@@ -482,7 +484,7 @@ export function buildSaveVendorAddOnVariables(formState) {
   return {
     input: {
       ...(formState.id ? { id: formState.id } : {}),
-      ...(independentAddOnsEnabled ? standaloneInput(formState) : {}),
+      ...(independentAddOnsEnabled ? { ...standaloneInput(formState), ...productOccasionInput(formState) } : {}),
       name: formState.addOnName.trim(),
       description: formState.description?.trim() || "",
       categories: [],

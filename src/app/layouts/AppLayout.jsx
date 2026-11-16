@@ -1,6 +1,8 @@
+import AgreementBanner from '../../features/agreements/AgreementBanner';
 import { canShowCustomerContact } from "../../features/order/utils/customerVisibility.js";
 import {
   Bell,
+  FileCheck2,
   ChevronDown,
   X,
   Grid2x2,
@@ -31,6 +33,7 @@ import { getVendorOrdersPage } from "../../features/order/api/orderApi";
 import { getVendorMenus } from "../../features/menu/api/menuApi";
 
 const sidebarItems = [
+  { labelKey: "layout.nav.agreement", defaultLabel: "Agreement", to: "/agreement", icon: FileCheck2 },
   { labelKey: "layout.nav.dashboard", defaultLabel: "Dashboard", to: "/dashboard", icon: Grid2x2 },
   { labelKey: "layout.nav.orders", defaultLabel: "Orders", to: "/orders", icon: ShoppingBag },
   { labelKey: "layout.nav.menu", defaultLabel: "Menu", to: "/menu", icon: Utensils },
@@ -46,20 +49,20 @@ const NOTIFICATION_POLL_INTERVAL_MS = 10000;
 const LAST_SEEN_VENDOR_NOTIFICATION_KEY = "vendor-last-seen-notification-id";
 const VENDOR_FINANCE_NOTIFICATION_EVENT = "vendor-finance-notification-received";
 
-function readLastSeenVendorNotificationId() {
+function readLastSeenVendorNotificationId(userId) {
   if (typeof window === "undefined") {
     return null;
   }
 
-  return window.localStorage.getItem(LAST_SEEN_VENDOR_NOTIFICATION_KEY);
+  return window.localStorage.getItem(`${LAST_SEEN_VENDOR_NOTIFICATION_KEY}:${userId}`);
 }
 
-function writeLastSeenVendorNotificationId(notificationId) {
+function writeLastSeenVendorNotificationId(notificationId, userId) {
   if (typeof window === "undefined" || !notificationId) {
     return;
   }
 
-  window.localStorage.setItem(LAST_SEEN_VENDOR_NOTIFICATION_KEY, notificationId);
+  window.localStorage.setItem(`${LAST_SEEN_VENDOR_NOTIFICATION_KEY}:${userId}`, notificationId);
 }
 
 function getInitials(name) {
@@ -167,13 +170,14 @@ export default function AppLayout() {
     let isCancelled = false;
 
     async function loadNotificationCounts() {
+      if (!user?.id) return;
       try {
         const result = await getVendorNotifications({ first: 200, status: null });
         const connection = result?.vendorFinanceNotifications;
         const unreadCount = Number(connection?.unreadCount ?? 0) || 0;
         const latestNotification = connection?.edges?.[0]?.node || null;
         const latestNotificationId = latestNotification?.id || null;
-        const lastSeenNotificationId = readLastSeenVendorNotificationId();
+        const lastSeenNotificationId = readLastSeenVendorNotificationId(user?.id);
 
         if (!isCancelled) {
           setUnreadNotificationsCount(unreadCount);
@@ -192,7 +196,7 @@ export default function AppLayout() {
                 navigate("/notifications");
               }
             });
-            writeLastSeenVendorNotificationId(latestNotificationId);
+            writeLastSeenVendorNotificationId(latestNotificationId, user?.id);
 
             if (typeof window !== "undefined") {
               window.dispatchEvent(
@@ -235,7 +239,7 @@ export default function AppLayout() {
       window.removeEventListener("vendor-notifications-updated", handleRefreshCounts);
       document.removeEventListener("visibilitychange", handleRefreshCounts);
     };
-  }, [navigate, t]);
+  }, [navigate, t, user?.id]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -670,8 +674,9 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-5 max-[720px]:p-[14px] max-[960px]:pb-[92px]">
-          <Outlet />
+        <main className="vendor-workspace flex-1 p-5 max-[720px]:p-[14px] max-[960px]:pb-[92px]">
+          <AgreementBanner />
+          <Outlet key={user?.id || "signed-out"} />
         </main>
       </div>
 

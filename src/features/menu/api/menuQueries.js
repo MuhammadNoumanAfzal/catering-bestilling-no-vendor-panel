@@ -374,6 +374,7 @@ export const DELETE_VENDOR_MENU_MUTATION = `
 
 export const GET_VENDOR_ADD_ON_FORM_BOOTSTRAP_QUERY = `
   query GetVendorAddOnFormBootstrap {
+    occasions { id name slug iconUrl }
     allergens { id name slug }
     categories {
       edges {

@@ -1,3 +1,5 @@
+import AgreementProvider from '../../features/agreements/AgreementProvider';
+import VendorAgreementPage from '../../features/agreements/VendorAgreementPage';
 import { Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import VendorPageLoadingState from "../../components/shared/VendorPageLoadingState";
@@ -34,7 +36,10 @@ export default function AppRouter() {
       <Route path="/auth/verification" element={<VerificationPage />} />
       <Route path="/auth/new-password" element={<NewPasswordPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route element={<AgreementProvider />}>
         <Route path="/" element={<AppLayout />}>
+          <Route path="agreement" element={<VendorAgreementPage />} />
+          <Route path="agreement/sign" element={<Navigate to="/agreement" replace />} />
           <Route path="home" element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="orders" element={<OrdersPage />} />
@@ -58,6 +63,7 @@ export default function AppRouter() {
           } />
           <Route path="support/responses" element={<SupportResponsesPage />} />
           <Route path="settings" element={<SettingsPage />} />
+        </Route>
         </Route>
       </Route>
     </Routes>

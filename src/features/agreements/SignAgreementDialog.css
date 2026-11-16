@@ -1,0 +1,28 @@
+
+#root .agreement-sign-dialog, .agreement-sign-dialog {
+  width:min(94vw,640px); max-height:90dvh; overflow:hidden; border:1px solid #eadbd0;
+  border-radius:20px; box-shadow:0 28px 90px #28180f40;
+}
+.agreement-sign-dialog::backdrop { background:#271c16a6; backdrop-filter:blur(3px); }
+.agreement-sign-form { display:flex; flex-direction:column; max-height:90dvh; min-height:0; }
+.agreement-sign-form > header { flex-shrink:0; padding:20px 24px; background:#fff6ec; border-bottom:1px solid #ecd9c9; }
+#root .agreement-sign-dialog h2 { font-size:23px; line-height:1.35; }
+.agreement-sign-form > header > button { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:#fff; border:1px solid #e9d8c9; flex-shrink:0; }
+.agreement-sign-body { min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; -ms-overflow-style:none; padding:22px 24px; }
+.agreement-sign-body::-webkit-scrollbar { display:none; }
+.agreement-sign-form > footer { flex-shrink:0; align-items:center; padding:16px 24px; background:#fff; border-top:1px solid #eadfd5; box-shadow:0 -5px 18px #36241706; }
+.agreement-sign-form > footer > button:first-child { padding:9px 16px; border:1px solid #e6d9ce; border-radius:10px; font-size:14px; font-weight:600; }
+#root .agreement-sign-body label { font-size:14px; line-height:1.6; }
+#root .agreement-sign-body input:not([type="checkbox"]) { min-height:44px; font-size:15px; border-radius:10px; }
+.agreement-sign-body label > input[type="checkbox"] { flex-shrink:0; width:17px; height:17px; margin-top:3px; accent-color:#c76030; }
+.agreement-signature-input { padding:16px; border:1px solid #e8dcd1; border-radius:14px; background:#fffdfb; min-width:0; }
+.agreement-signature-input legend { padding:0 5px; font-weight:700; }
+.signature-mode-tabs { align-items:center; gap:6px; }
+.signature-mode-tabs > button { padding:8px 10px; border-radius:8px; font-size:12px; text-decoration:none; }
+.signature-mode-tabs > button[aria-pressed="true"] { color:#a84722; background:#ffead9; box-shadow:inset 0 0 0 1px #efc8ab; }
+.signature-mode-tabs > button[aria-pressed="false"] { background:#f5f0eb; color:#6b5849; }
+#root .agreement-signature-input > p { font-size:13px; line-height:1.6; }
+.agreement-signature-input [aria-label="Signature preview"] { padding:14px 16px; margin-top:12px; border-style:dashed; background:#fff9f2; }
+.agreement-sign-dialog button:focus-visible { outline:2px solid #c76030; outline-offset:3px; }
+@media(max-width:640px) { .agreement-sign-form > header,.agreement-sign-body,.agreement-sign-form > footer { padding:16px; } #root .agreement-sign-dialog h2 { font-size:20px; } .agreement-signature-input { padding:12px; } }
+@media(prefers-reduced-motion:no-preference) { .agreement-sign-dialog[open] { animation:sign-dialog-in .18s ease-out; } @keyframes sign-dialog-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } } }

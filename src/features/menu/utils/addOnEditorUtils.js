@@ -13,6 +13,7 @@ export function getInitialAddOnState() {
     customCategory: "",
     image: null,
     mealTypes: [],
+    selectedOccasions: [],
     selectedDietary: [],
     availableImmediately: true,
     status: "draft",

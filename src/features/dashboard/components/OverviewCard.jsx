@@ -40,10 +40,10 @@ export default function OverviewCard({
       <div className="inline-flex h-8 w-8 items-center justify-center rounded-[7px] bg-[#fff4ef]">
         {Icon ? <Icon className="text-[#d66c3a]" size={24} strokeWidth={2.2} /> : null}
       </div>
-      <p className="type-para mt-2 text-[13px] font-bold leading-[1.35] ">{label}</p>
+      <p className="dashboard-stat-label mt-3 ">{label}</p>
 
       <div className="mt-2 flex items-baseline justify-between gap-2">
-        <strong className="block text-[28px] font-extrabold leading-none tracking-[-0.035em] text-[#16110d] max-[720px]:text-[24px]">
+        <strong className="dashboard-stat-value block font-extrabold leading-none tracking-[-0.035em] text-[#16110d]">
           {value}
         </strong>
         {hasTrendBadge ? (
@@ -68,12 +68,12 @@ export default function OverviewCard({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="type-para mt-1.5 text-[13px] font-medium leading-[1.35] ">
+          <p className="dashboard-stat-helper mt-2 ">
             {helper}
           </p>
         </div>
       ) : (
-        <p className="type-para mt-2.5 flex items-center gap-[5px] text-[13px] font-medium leading-[1.35] ">
+        <p className="dashboard-stat-helper mt-3 flex items-center gap-[5px] ">
           {helperTone === "is-positive" ? (
             <span className="inline-flex shrink-0 text-[#2fbe5b]">
               <ArrowUp size={14} strokeWidth={2.2} />
@@ -84,7 +84,7 @@ export default function OverviewCard({
       )}
 
       {timeLabel ? (
-        <p className="type-para mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#8d7e72]">
+        <p className="type-para mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#48413b]">
           <span className="text-[8px]">•</span> {timeLabel}
         </p>
       ) : null}

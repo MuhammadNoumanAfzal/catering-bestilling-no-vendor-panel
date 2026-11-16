@@ -1,0 +1,51 @@
+# PROPOSED operations: exact frontend documents, backend implementation required.
+
+query VendorAgreement { vendorAgreement { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } }
+
+query AdminVendorAgreements($search: String, $status: VendorAgreementStatus, $page: Int!) { adminVendorAgreements(search: $search, status: $status, page: $page, pageSize: 20) { totalCount pageCount counts { pendingSignature pendingApproval active rejected } items { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } } }
+
+query AdminVendorAgreement($id: ID!) { adminVendorAgreement(id: $id) { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } }
+
+mutation RequestVendorAgreementCode($input: RequestVendorAgreementCodeInput!) { requestVendorAgreementCode(input: $input) { challengeId maskedEmail expiresAt resendAvailableAt } }
+
+mutation SignVendorAgreement($input: SignVendorAgreementInput!) { signVendorAgreement(input: $input) { agreement { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } } }
+
+mutation VendorAgreementDocumentAccess($input: VendorAgreementDocumentAccessInput!) { vendorAgreementDocumentAccess(input: $input) { url expiresAt sha256 } }
+
+mutation ReviewVendorAgreement($input: ReviewVendorAgreementInput!) { reviewVendorAgreement(input: $input) { agreement { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } } }
+
+mutation SendVendorAgreementReminder($input: SendVendorAgreementReminderInput!) { sendVendorAgreementReminder(input: $input) { queuedCount } }
+
+mutation PublishVendorAgreementTemplate($input: PublishVendorAgreementTemplateInput!) { publishVendorAgreementTemplate(input: $input) { id version } }
+
+mutation ReissueVendorAgreement($input: ReissueVendorAgreementInput!) { reissueVendorAgreement(input: $input) { agreement { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } } }
+
+mutation ActivateVendorStore($input: ActivateVendorStoreInput!) { activateVendorStore(input: $input) { agreement { id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt
+    checkedOrganisationNumber
+    registryCompanyName
+    verificationSource
+    verificationMessage } events { id label createdAt } } } }

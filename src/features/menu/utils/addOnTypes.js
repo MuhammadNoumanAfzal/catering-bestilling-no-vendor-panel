@@ -27,5 +27,5 @@ export function standaloneInput(form) {
 }
 
 export const addOnFields = independentAddOnsEnabled
-  ? "addOnType pricingType minimumGuests minimumQuantity allergens { id name slug }"
+  ? "addOnType pricingType minimumGuests minimumQuantity allergens { id name slug } occasions { edges { node { id name slug } } }"
   : "";
