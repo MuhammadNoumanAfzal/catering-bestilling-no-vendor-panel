@@ -1,0 +1,72 @@
+# Deployed offer contract integration, 16 November 2026. See backend handoff for outstanding server-side acceptance requirements.
+
+query myOfferRequests($status:OfferRequestStatus,$page:Int!){myOfferRequests(status:$status,page:$page,pageSize:20){totalCount pageCount items{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+query vendorOfferRequests($status:OfferRequestStatus,$page:Int!){vendorOfferRequests(status:$status,page:$page,pageSize:20){totalCount pageCount items{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+query myOfferRequest($id:ID!){myOfferRequest(id:$id){id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}
+
+query vendorOfferRequest($id:ID!){vendorOfferRequest(id:$id){id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}
+
+mutation requestMenuOffer($input:RequestMenuOfferInput!){requestMenuOffer(input:$input){request{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+mutation sendOfferMessage($input:SendOfferMessageInput!){sendOfferMessage(input:$input){request{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+mutation sendMenuOffer($input:SendMenuOfferInput!){sendMenuOffer(input:$input){request{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+mutation acceptMenuOffer($input:AcceptMenuOfferInput!){acceptMenuOffer(input:$input){request{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+mutation declineMenuOffer($input:DeclineMenuOfferInput!){declineMenuOffer(input:$input){request{id revision status createdAt updatedAt responseDueAt deliveryDate deliveryTime personCount postalCode menuId menuName vendor { id slug name } customerDisplayName normalPricePerPerson targetPricePerPerson orderId permissions { canMessage canQuote canAccept canDecline } quote { revision pricePerPerson expiresAt } messages { id side text createdAt moderated } checkoutSnapshot { vendor { id slug name } items { id productId name unitPrice catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions selectedAddons { productId name quantity unitPrice } isAddOn } }}}}
+
+
+  query OfferCheckoutPreview($input: CheckoutPreviewInput!) {
+    offerCheckoutPreview(input: $input) {
+      offerBinding { requestId quoteRevision foodTotal }
+      currency
+      availability {
+        isValid
+        errors {
+          code
+          message
+          field
+          meta
+        }
+        warnings {
+          code
+          message
+          field
+          meta
+        }
+      }
+      pricing { currency foodTotal grossTotal netTotal taxTotal deliveryFee minimumOrderShortfall catalogueDiscount tipAmount }
+      items {
+        productId
+        productName
+        pricingType
+        unitPrice
+        quantity
+        personCount
+        serves
+        lineSubtotal
+        lineTax
+        lineTotal
+        selectedOptions
+        selectedAddons {
+          name
+          unitPrice
+          quantity
+          totalPrice
+        }
+      }
+      promisedDeliveryWindow {
+        minMinutes
+        maxMinutes
+        label
+      }
+    }
+  }
+
+query OfferPaymentGuard($orderId: ID!) { offerPaymentGuard(orderId:$orderId) { allowed code message offerRequestId quoteRevision } }
+query OrderOfferSummaries($orderIds:[ID!]!) { orderOfferSummaries(orderIds:$orderIds) { orderId requestId quoteRevision pricePerPerson personCount amountPaid currency } }
+
+query PayableOffer($id:ID!) { myOfferRequest(id:$id) { id status quote { revision expiresAt } } }

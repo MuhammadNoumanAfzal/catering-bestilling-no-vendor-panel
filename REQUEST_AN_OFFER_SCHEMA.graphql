@@ -1,0 +1,103 @@
+﻿# Integration reference SDL with live pricing/payment field shapes, 16 November 2026.
+# This is not a full backend schema export. Reuse existing JSON scalar, availability,
+# pricing and preview-item object types where shapes are identical.
+scalar JSON
+
+enum OfferRequestStatus { WAITING_FOR_VENDOR OFFERED ACCEPTED DECLINED EXPIRED CLOSED ORDERED }
+enum OfferMessageSide { CUSTOMER VENDOR }
+type OfferVendor { id: ID! slug: String! name: String! }
+type OfferPermissions { canMessage: Boolean! canQuote: Boolean! canAccept: Boolean! canDecline: Boolean! }
+type MenuOfferQuote { revision: String! pricePerPerson: String! expiresAt: String! }
+type OfferMessage { id: ID! side: OfferMessageSide! text: String! createdAt: String! moderated: Boolean! }
+type OfferSnapshotAddon { productId: ID! name: String! quantity: Int! unitPrice: String! }
+type OfferSnapshotItem {
+ id: ID!
+ productId: ID!
+ name: String!
+ unitPrice: String!
+ catalogueUnitPrice: String!
+ pricingType: String!
+ quantity: Int!
+ personCount: Int
+ minimumGuests: Int
+ parentMenuItemId: ID
+ addOnKey: String
+ addOnType: String
+ selectedOptions: JSON
+ selectedAddons: [OfferSnapshotAddon!]!
+ isAddOn: Boolean!
+}
+type OfferCheckoutSnapshot { vendor: OfferVendor! items: [OfferSnapshotItem!]! }
+type MenuOfferRequest {
+ id: ID!
+ revision: String!
+ status: OfferRequestStatus!
+ createdAt: String!
+ updatedAt: String!
+ responseDueAt: String!
+ deliveryDate: String!
+ deliveryTime: String!
+ personCount: Int!
+ postalCode: String!
+ menuId: ID!
+ menuName: String!
+ vendor: OfferVendor!
+ customerDisplayName: String!
+ normalPricePerPerson: String!
+ targetPricePerPerson: String
+ orderId: ID
+ permissions: OfferPermissions!
+ quote: MenuOfferQuote
+ messages: [OfferMessage!]!
+ checkoutSnapshot: OfferCheckoutSnapshot
+}
+type OfferRequestPage { totalCount: Int! pageCount: Int! items: [MenuOfferRequest!]! }
+type OfferMutationPayload { request: MenuOfferRequest! }
+input RequestedOfferAddonInput { productId: ID! quantity: Int! }
+input RequestedOfferItemInput { productId: ID! quantity: Int! selectedOptions: JSON selectedAddons: [RequestedOfferAddonInput!]! }
+input RequestMenuOfferInput {
+ vendorId: ID!
+ menuId: ID!
+ deliveryDate: String!
+ deliveryTime: String!
+ personCount: Int!
+ postalCode: String!
+ message: String!
+ targetPricePerPerson: String
+ items: [RequestedOfferItemInput!]!
+ idempotencyKey: String!
+}
+input SendOfferMessageInput { requestId: ID! expectedRevision: String! message: String! idempotencyKey: String! }
+input SendMenuOfferInput { requestId: ID! expectedRevision: String! pricePerPerson: String! expiresAt: String! message: String idempotencyKey: String! }
+input AcceptMenuOfferInput { requestId: ID! expectedRevision: String! quoteRevision: String! idempotencyKey: String! }
+input DeclineMenuOfferInput { requestId: ID! expectedRevision: String! idempotencyKey: String! }
+type OrderOfferSummary { orderId: ID! requestId: ID! quoteRevision: String! pricePerPerson: String! personCount: Int! amountPaid: String! currency: String! }
+type OfferPaymentGuard { allowed: Boolean! code: String message: String offerRequestId: ID quoteRevision: String }
+type OfferCheckoutBinding { requestId: ID! quoteRevision: String! foodTotal: String! }
+# These types match the existing checkoutPreview selection, with included-VAT NOK money.
+type OfferAvailabilityIssue { code: String message: String field: String meta: JSON }
+type OfferAvailability { isValid: Boolean! errors: [OfferAvailabilityIssue!]! warnings: [OfferAvailabilityIssue!]! }
+type OfferPreviewPricing { currency: String! foodTotal: String! grossTotal: String! netTotal: String! taxTotal: String! deliveryFee: String! minimumOrderShortfall: String! catalogueDiscount: String! tipAmount: String! }
+type OfferPreviewAddon { name: String! unitPrice: String! quantity: Int! totalPrice: String! }
+type OfferPreviewItem { productId: ID! productName: String! pricingType: String! unitPrice: String! quantity: Int! personCount: Int serves: Int lineSubtotal: String! lineTax: String! lineTotal: String! selectedOptions: JSON selectedAddons: [OfferPreviewAddon!]! }
+type OfferDeliveryWindow { minMinutes: Int maxMinutes: Int label: String }
+type OfferCheckoutPreview { offerBinding: OfferCheckoutBinding! currency: String! availability: OfferAvailability! pricing: OfferPreviewPricing! items: [OfferPreviewItem!]! promisedDeliveryWindow: OfferDeliveryWindow }
+
+extend input CheckoutPreviewInput { offerRequestId: ID offerQuoteRevision: String }
+extend input PlaceClientOrderInput { offerRequestId: ID offerQuoteRevision: String }
+extend type Query {
+ myOfferRequests(status: OfferRequestStatus, page: Int! = 1, pageSize: Int! = 20): OfferRequestPage!
+ myOfferRequest(id: ID!): MenuOfferRequest!
+ vendorOfferRequests(status: OfferRequestStatus, page: Int! = 1, pageSize: Int! = 20): OfferRequestPage!
+ vendorOfferRequest(id: ID!): MenuOfferRequest!
+ orderOfferSummaries(orderIds: [ID!]!): [OrderOfferSummary!]!
+ offerPaymentGuard(orderId: ID!): OfferPaymentGuard!
+ offerCheckoutPreview(input: CheckoutPreviewInput!): OfferCheckoutPreview!
+}
+extend type Mutation {
+ requestMenuOffer(input: RequestMenuOfferInput!): OfferMutationPayload!
+ sendOfferMessage(input: SendOfferMessageInput!): OfferMutationPayload!
+ sendMenuOffer(input: SendMenuOfferInput!): OfferMutationPayload!
+ acceptMenuOffer(input: AcceptMenuOfferInput!): OfferMutationPayload!
+ declineMenuOffer(input: DeclineMenuOfferInput!): OfferMutationPayload!
+}

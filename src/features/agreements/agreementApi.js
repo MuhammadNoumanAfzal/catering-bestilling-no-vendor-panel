@@ -5,7 +5,7 @@ import { safeDocumentUrl } from "./agreementModel";
 // Operations validated against the deployed schema; authenticated acceptance testing is still required.
 export const agreementsEnabled =
   import.meta.env.VITE_VENDOR_AGREEMENTS_ENABLED === "true";
-export const agreementFields = `id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt checkedOrganisationNumber registryCompanyName verificationSource verificationMessage } events { id label createdAt }`;
+export const agreementFields = `id revision status version title companyName organisationNumber signerEmail sentAt signedAt approvedAt rejectionReason documentSha256 canSign canGoLive bodySections { heading paragraphs } signer { fullName role email } checks { signingOtpStatus signingOtpVerifiedAt originalDocumentIntegrityStatus signedDocumentIntegrityStatus companyFound companyNameMatches emailVerified documentIntegrityValid checkedAt checkedOrganisationNumber registryCompanyName verificationSource verificationMessage } events { id label createdAt }`;
 export const documents = {
   vendor: `query VendorAgreement { vendorAgreement { ${agreementFields} } }`,
   list: `query AdminVendorAgreements($search: String, $status: VendorAgreementStatus, $page: Int!) { adminVendorAgreements(search: $search, status: $status, page: $page, pageSize: 20) { totalCount pageCount counts { pendingSignature pendingApproval active rejected } items { ${agreementFields} } } }`,

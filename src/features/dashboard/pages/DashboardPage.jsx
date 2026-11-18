@@ -1,3 +1,4 @@
+import OfferDashboardCard from '../../offers/OfferDashboardCard';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -66,7 +67,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 max-[720px]:gap-3">
-      <header>
+      <OfferDashboardCard/><header>
         <div>
           <div className="flex flex-wrap items-center gap-3 max-[720px]:gap-2">
             <h1 className="m-0 text-[34px] font-bold tracking-[-0.04em] text-[#18120f]">

@@ -1,3 +1,4 @@
+import { useOfferText } from '../../features/offers/offerText';
 import AgreementBanner from '../../features/agreements/AgreementBanner';
 import { canShowCustomerContact } from "../../features/order/utils/customerVisibility.js";
 import {
@@ -35,6 +36,7 @@ import { getVendorMenus } from "../../features/menu/api/menuApi";
 const sidebarItems = [
   { labelKey: "layout.nav.agreement", defaultLabel: "Agreement", to: "/agreement", icon: FileCheck2 },
   { labelKey: "layout.nav.dashboard", defaultLabel: "Dashboard", to: "/dashboard", icon: Grid2x2 },
+  { labelKey: "layout.nav.offers", defaultLabel: "Offer requests", to: "/offers", icon: FileCheck2 },
   { labelKey: "layout.nav.orders", defaultLabel: "Orders", to: "/orders", icon: ShoppingBag },
   { labelKey: "layout.nav.menu", defaultLabel: "Menu", to: "/menu", icon: Utensils },
   { labelKey: "layout.nav.delivery", defaultLabel: "Delivery", to: "/delivery", icon: Truck },
@@ -81,6 +83,7 @@ function getInitials(name) {
 
 export default function AppLayout() {
   const navigate = useNavigate();
+  const offerText=useOfferText();
   const { t } = useTranslation();
   const { logout, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -404,7 +407,7 @@ export default function AppLayout() {
             <nav className="space-y-2" aria-label={t("layout.primaryNavigation", { defaultValue: "Primary navigation" })}>
               {sidebarItems.map(({ icon: Icon, labelKey, defaultLabel, to }) => {
                 const active = pathname === to || (to !== "/dashboard" && pathname.startsWith(`${to}/`));
-                const displayLabel = t(labelKey, { defaultValue: defaultLabel });
+                const displayLabel = to === "/offers" ? offerText("Offer requests","Tilbudsforespørsler") : t(labelKey, { defaultValue: defaultLabel });
 
                 return (
                   <NavLink
@@ -686,7 +689,7 @@ export default function AppLayout() {
         aria-label={t("layout.mobileNavigation", { defaultValue: "Mobile navigation" })}
       >
         {sidebarItems.map(({ icon: Icon, labelKey, defaultLabel, to }) => {
-          const displayLabel = t(labelKey, { defaultValue: defaultLabel });
+          const displayLabel = to === "/offers" ? offerText("Offer requests","Tilbudsforespørsler") : t(labelKey, { defaultValue: defaultLabel });
 
           return (
           <NavLink

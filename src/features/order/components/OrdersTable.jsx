@@ -1,3 +1,4 @@
+import OrderOfferBadge from '../../offers/OrderOfferBadge';
 import "./OrdersTable.css";
 import OrderPaymentBadge from "./OrderPaymentBadge.jsx";
 import { ChevronDown, Eye, Users, X } from "lucide-react";
@@ -174,7 +175,7 @@ export default function OrdersTable({ rows, onActionClick, onRowClick }) {
                 />
               </td>
               <td className="px-4 py-4 text-[16px] font-extrabold text-[#1c1510]">
-                <span className="order-reference">{row.displayId || row.id}</span>
+                <span className="order-reference">{row.displayId || row.id}</span><OrderOfferBadge orderId={row.rawId || row.id}/>
               </td>
               <td className="px-4 py-4 text-[15px] font-bold text-[#17120e]">
                 {translateCustomerLabel(t, row.customer)}

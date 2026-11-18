@@ -118,9 +118,14 @@ export async function executeGraphqlRequest(query, variables, options = {}) {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
+    const error = new Error(
       getErrorMessage(payload, "Unable to reach the authentication service right now."),
     );
+    error.status = response.status;
+    error.code = payload?.errors?.[0]?.extensions?.code;
+    error.graphqlErrors = payload?.errors;
+    error.isAuthenticationError = isAuthenticationError(payload);
+    throw error;
   }
 
   if (payload?.errors?.length) {

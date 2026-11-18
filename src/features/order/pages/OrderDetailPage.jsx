@@ -1,3 +1,4 @@
+import OrderOfferBadge from '../../offers/OrderOfferBadge';
 import { formatMoney } from "../../../utils/formatMoney.js";
 import i18n from "../../../i18n";
 import { useEffect, useMemo, useState } from "react";
@@ -566,7 +567,7 @@ export default function OrderDetailPage() {
           <h1 className="m-0 text-[34px] font-bold leading-tight tracking-[-0.04em] text-[#19130f]">
             {t("orders.detail.orderPrefix", { defaultValue: "Order" })}<span className="ml-0.5">{orderDetail.displayId || orderDetail.id}</span>
           </h1>
-          <p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
+          <OrderOfferBadge orderId={orderDetail.rawId || decodedOrderId}/><p className="m-0 text-[12px] font-semibold text-[#8a7a6d]">
             {orderDetail.date} | {orderDetail.time}
           </p>
           <button

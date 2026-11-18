@@ -1,3 +1,4 @@
+import OrderOfferBadge from '../../offers/OrderOfferBadge';
 const toneClasses = {
   "is-danger":
     "border-[#efc1bc] bg-[linear-gradient(180deg,#fff9f8_0%,#fffefe_100%)] shadow-[inset_4px_0_0_#d64537]",
@@ -20,7 +21,7 @@ export default function OrderCard({ onAccept, onReject, onViewDetails, order }) 
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <strong className="type-h3 text-[#18120e]">{order.id}</strong>
+          <strong className="type-h3 text-[#18120e]">{order.id}</strong><OrderOfferBadge orderId={order.rawId || order.id}/>
           <span
             className={`type-subpara inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-bold ${
               badgeToneClasses[order.tone] ?? badgeToneClasses["is-danger"]

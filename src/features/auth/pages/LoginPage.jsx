@@ -1,3 +1,4 @@
+import { loginReturnPath } from '../utils/loginReturnPath.js';
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +25,7 @@ export default function LoginPage() {
   });
 
   if (isAuthenticated) {
-    return <Navigate to={getVendorPostLoginPath(user)} replace />;
+    return <Navigate to={loginReturnPath(location.state?.from,getVendorPostLoginPath(user),window.location.origin)} replace />;
   }
 
   function handleFieldChange(field) {
@@ -59,7 +60,7 @@ export default function LoginPage() {
     try {
       const session = await login(formState);
       await showVendorSuccessToast(t("auth.login.success"));
-      const nextPath = location.state?.from?.pathname || getVendorPostLoginPath(session?.user);
+      const nextPath = loginReturnPath(location.state?.from,getVendorPostLoginPath(session?.user),window.location.origin);
       navigate(nextPath, { replace: true });
     } catch (error) {
       await showVendorErrorAlert(error.message || t("auth.login.failed"), t("auth.login.failed"));
