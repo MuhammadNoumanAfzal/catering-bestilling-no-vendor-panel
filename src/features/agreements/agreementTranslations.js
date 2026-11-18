@@ -1,6 +1,9 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from "react-i18next";
 const nb = {
+ "Your agreement needs attention from GoCatering before you can sign again.": "GoCatering m\u00e5 f\u00f8lge opp avtalen f\u00f8r du kan signere igjen.",
+ "Agreement requires an update": "Avtalen m\u00e5 oppdateres",
+ "GoCatering must issue a new signing attempt before you can sign again.": "GoCatering m\u00e5 opprette et nytt signeringsfors\u00f8k f\u00f8r du kan signere igjen.",
   "Vendor Agreement": "Leverandøravtale",
   "Vendor contracts": "Leverandøravtaler",
   "Vendor onboarding": "Leverandørregistrering",

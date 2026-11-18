@@ -40,3 +40,34 @@
 @media (prefers-reduced-motion:no-preference) { .agreement-hero,.agreement-steps,.agreement-contents { animation:agreement-enter .3s ease-out both; } @keyframes agreement-enter { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } } }
 @media(max-width:1100px) { .agreement-steps { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:640px) { .agreement-hero { padding:20px; } .agreement-hero-mark { display:none; } .agreement-contents-links { grid-template-columns:1fr; } .agreement-steps li { padding:14px 10px; } .agreement-steps strong { font-size:12px; } .agreement-steps li > div > span { font-size:10px; } .agreement-step-icon { width:28px; height:28px; } }
+
+/* Aligned agreement overview and review feedback. */
+.vendor-agreement-page { color:#211b17; }
+.vendor-agreement-page .agreement-hero { padding:24px 28px; border-radius:16px; background:#fff7ee; }
+.vendor-agreement-page .agreement-hero > div:first-child { flex:1; min-width:0; }
+.vendor-agreement-page .agreement-hero header { width:100%; gap:16px; align-items:flex-start; }
+.vendor-agreement-page .agreement-hero header > div { min-width:0; flex:1; }
+.vendor-agreement-page .agreement-hero-mark { width:144px; padding:16px 12px; border-radius:12px; }
+.vendor-agreement-page .agreement-steps li { padding:18px 14px; min-height:88px; align-items:center; }
+.vendor-agreement-page .agreement-steps small { top:8px; right:10px; font-size:10px; color:#77685c; }
+.vendor-agreement-page .agreement-steps li > div > span { color:#51463d; font-size:12px; }
+.vendor-agreement-page .agreement-steps .is-rejected { border-color:#e9b9ae; background:#fff8f5; }
+.vendor-agreement-page .is-rejected .agreement-step-icon { color:#a73521; background:#fbe6df; }
+.vendor-agreement-page .agreement-status-strip { padding:14px 18px; margin-bottom:16px; }
+.vendor-agreement-page .agreement-status-strip p { color:#30251e; line-height:1.6; flex:1; min-width:180px; }
+.agreement-review-notice { display:flex; align-items:flex-start; gap:13px; padding:20px; border:1px solid #edc7b8; border-radius:14px; background:#fff6f0; margin-bottom:20px; }
+.agreement-review-icon { display:grid; place-items:center; width:38px; height:38px; flex-shrink:0; border-radius:10px; background:#fbe4d8; color:#ac4828; }
+.agreement-review-notice > div { min-width:0; }
+.agreement-review-notice h2 { font-size:16px; font-weight:750; line-height:1.5; margin:0 0 6px; }
+.agreement-review-notice p { font-size:14px; line-height:1.7; margin:6px 0 0; color:#392a21; }
+.agreement-review-notice .agreement-review-reason { font-weight:650; white-space:pre-wrap; overflow-wrap:anywhere; }
+.agreement-review-notice a { display:inline-flex; margin-top:12px; padding:8px 12px; border:1px solid #dfb9a5; border-radius:8px; background:#fff; color:#8e3c20; font-size:13px; font-weight:700; }
+.vendor-agreement-page .agreement-contents-links a { color:#29221d; font-size:13px; }
+@media(max-width:640px) {
+ .vendor-agreement-page .agreement-hero { padding:20px; }
+ .vendor-agreement-page .agreement-hero header { flex-direction:column; }
+ .vendor-agreement-page .agreement-steps { gap:8px; }
+ .vendor-agreement-page .agreement-steps li { padding:18px 10px 12px; gap:8px; }
+ .vendor-agreement-page .agreement-steps li > div > span { font-size:11px; }
+ .agreement-review-notice { padding:16px; gap:10px; }
+}

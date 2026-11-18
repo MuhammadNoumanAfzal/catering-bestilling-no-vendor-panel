@@ -1,7 +1,7 @@
 import { ag, useAgreementLanguage, agreementDate } from "./agreementTranslations.js";
 import { Link } from "react-router-dom";
 import "./VendorAgreementPage.css";
-import { FileText, PenLine, ShieldCheck, Store, Check, ArrowDown, RefreshCw } from "lucide-react";
+import { FileText, PenLine, ShieldCheck, Store, Check, ArrowDown, RefreshCw, AlertCircle } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAgreement } from "./agreementContext";
 import { agreementRequest, downloadAgreement } from "./agreementApi";
@@ -63,16 +63,18 @@ export default function VendorAgreementPage() {
           <ol className="agreement-steps" aria-label={ag("Agreement stages")}>{[
  {label:ag("Review contract"), hint:ag("Read the complete agreement"), icon:FileText, done:Boolean(agreement.signedAt)},
  {label:ag("Your signature"), hint:ag("Name, consent and email code"), icon:PenLine, done:Boolean(agreement.signedAt)},
- {label:ag("Admin approval"), hint:ag("Company and authority review"), icon:ShieldCheck, done:agreement.status === "ACTIVE"},
+ {label:ag("Admin approval"), hint:ag("Company and authority review"), icon:ShieldCheck, done:agreement.status === "ACTIVE", rejected:agreement.status === "REJECTED"},
  {label:ag("Ready to go live"), hint:ag("Complete all onboarding checks"), icon:Store, done:canGoLive(agreement)},
-].map((step, index) => <li key={step.label} className={step.done ? "is-complete" : ""}><span className="agreement-step-icon">{step.done ? <Check size={18}/> : <step.icon size={18}/>}</span><div><strong>{step.label}</strong><span>{step.hint}</span></div><small>{String(index+1).padStart(2,"0")}</small></li>)}</ol>
+].map((step, index) => <li key={step.label} className={step.rejected ? "is-rejected" : step.done ? "is-complete" : ""}><span className="agreement-step-icon">{step.rejected ? <AlertCircle size={18}/> : step.done ? <Check size={18}/> : <step.icon size={18}/>}</span><div><strong>{step.label}</strong><span>{step.hint}</span></div><small>{String(index+1).padStart(2,"0")}</small></li>)}</ol>
           <div className="agreement-status-strip mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e8dfd5] bg-white p-4">
             <p className="text-sm text-[#786454]">
               {agreement.status === "ACTIVE"
                 ? ag("Your agreement is active. Other onboarding requirements still apply.")
                 : agreement.status === "PENDING_APPROVAL"
                   ? ag("Thank you. Your signed agreement has been submitted for review.")
-                  : ag("Review the complete contract before signing.")}
+                  : agreement.status === "REJECTED"
+                    ? ag("Your agreement needs attention from GoCatering before you can sign again.")
+                    : ag("Review the complete contract before signing.")}
             </p>
             <button
               type="button"
@@ -85,8 +87,8 @@ export default function VendorAgreementPage() {
           {agreement.rejectionReason && (
             <div
               role="status"
-              className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
-            >{ag("Review note:")}{agreement.rejectionReason}{ag(". GoCatering must issue a new signing attempt before you can sign again.")}</div>
+              className="agreement-review-notice"
+            ><span className="agreement-review-icon"><AlertCircle size={20}/></span><div><h2>{ag("Agreement requires an update")}</h2><p className="agreement-review-reason">{agreement.rejectionReason}</p><p>{ag("GoCatering must issue a new signing attempt before you can sign again.")}</p><a href="mailto:support@gocatering.no">{ag("Contact GoCatering")}</a></div></div>
           )}
           {actionError && <ErrorNotice message={actionError} />}
           {notice && (
