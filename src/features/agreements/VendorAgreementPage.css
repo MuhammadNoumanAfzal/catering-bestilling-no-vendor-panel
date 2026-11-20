@@ -71,3 +71,27 @@
  .vendor-agreement-page .agreement-steps li > div > span { font-size:11px; }
  .agreement-review-notice { padding:16px; gap:10px; }
 }
+
+/* Compact agreement summary, with all labels retained. */
+.vendor-agreement-page .agreement-hero { display:block; padding:18px 20px; border-radius:12px; background:#fff; border-color:#e5dfd7; margin-bottom:14px; }
+.vendor-agreement-page .agreement-eyebrow { font-size:10px; letter-spacing:.08em; }
+.vendor-agreement-page .agreement-hero header { margin:9px 0 0; gap:12px; align-items:flex-start; }
+#root .vendor-agreement-page .agreement-hero h1 { font-size:27px; line-height:1.25; font-weight:650; letter-spacing:-.025em; }
+.vendor-agreement-page .agreement-hero header > div > p:last-child { margin-top:6px; color:#655f58; font-size:13px; line-height:1.6; }
+.vendor-agreement-page .agreement-hero header > span { font-size:11px; border-radius:6px; padding:5px 9px; white-space:nowrap; }
+.vendor-agreement-page .agreement-hero-mark { display:flex; flex-direction:row; width:auto; gap:7px; margin-top:12px; padding:0; border:0; border-radius:0; background:none; color:#8a5a3b; }
+.vendor-agreement-page .agreement-hero-mark svg { width:16px; height:16px; }
+.vendor-agreement-page .agreement-hero-mark span { font-size:11px; font-weight:500; }
+.vendor-agreement-page .agreement-steps { gap:0; margin-bottom:14px; border:1px solid #e5dfd7; border-radius:10px; background:#fff; overflow:hidden; }
+.vendor-agreement-page .agreement-steps li { border:0; border-right:1px solid #eee7df; border-radius:0; padding:14px 12px; min-height:74px; gap:9px; align-items:center; }
+.vendor-agreement-page .agreement-steps li:last-child { border-right:0; }
+.vendor-agreement-page .agreement-step-icon { width:29px; height:29px; border-radius:8px; }
+.vendor-agreement-page .agreement-steps strong { font-size:12px; font-weight:650; line-height:1.5; }
+.vendor-agreement-page .agreement-steps li > div { min-width:0; }
+.vendor-agreement-page .agreement-steps li > div > span { font-size:11px; line-height:1.55; margin-top:2px; color:#6a6259; }
+.vendor-agreement-page .agreement-steps small { font-size:9px; color:#9a8f83; top:4px; right:6px; }
+.vendor-agreement-page .agreement-status-strip { padding:11px 14px; border-radius:9px; margin-bottom:14px; gap:10px; }
+.vendor-agreement-page .agreement-status-strip p { font-size:13px; }
+.vendor-agreement-page .agreement-refresh { font-size:12px; padding:7px 9px; }
+@media(max-width:1100px) { .vendor-agreement-page .agreement-steps li:nth-child(2) { border-right:0; } .vendor-agreement-page .agreement-steps li:nth-child(-n+2) { border-bottom:1px solid #eee7df; } }
+@media(max-width:640px) { .vendor-agreement-page .agreement-hero { padding:16px; } .vendor-agreement-page .agreement-hero header { flex-direction:row; flex-wrap:wrap; } #root .vendor-agreement-page .agreement-hero h1 { font-size:23px; } .vendor-agreement-page .agreement-steps li { padding:14px 10px; min-height:82px; align-items:flex-start; } .vendor-agreement-page .agreement-step-icon { width:25px; height:25px; } .vendor-agreement-page .agreement-steps strong { font-size:11px; } .vendor-agreement-page .agreement-steps li > div > span { font-size:10px; } }
