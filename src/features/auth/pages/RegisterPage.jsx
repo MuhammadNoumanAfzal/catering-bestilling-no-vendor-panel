@@ -316,14 +316,12 @@ export default function RegisterPage() {
             label: t("auth.register.firstName"),
                   name: "firstName",
                   onChange: handleFieldChange("firstName"),
-                  placeholder: "Sarah",
                   value: formState.firstName,
                 },
                 {
             label: t("auth.register.lastName"),
                   name: "lastName",
                   onChange: handleFieldChange("lastName"),
-                  placeholder: "Jensen",
                   value: formState.lastName,
                 },
                 {
@@ -331,7 +329,7 @@ export default function RegisterPage() {
                   autoComplete: "email",
                   name: "email",
                   onChange: handleFieldChange("email"),
-                  placeholder: "corporate.eats@example.com",
+
                   type: "email",
                   value: formState.email,
                   errorText: formErrors.email,
@@ -346,7 +344,7 @@ export default function RegisterPage() {
                   name: "phone",
                   onChange: handleFieldChange("phone"),
                   pattern: "[0-9]{8}",
-                  placeholder: "98765432",
+
                   prefixText: NORWAY_COUNTRY_CODE,
                   type: "tel",
                   autoComplete: "tel",
@@ -356,14 +354,12 @@ export default function RegisterPage() {
                   label: t("auth.register.company"),
                   name: "companyName",
                   onChange: handleFieldChange("companyName"),
-                  placeholder: "Nordic Gourmet Catering",
                   value: formState.companyName,
                 },
                 {
                   label: t("auth.register.postCode"),
                   name: "postCode",
                   onChange: handleFieldChange("postCode"),
-                  placeholder: "9021",
                   value: formState.postCode,
                 },
                 {
@@ -398,7 +394,6 @@ export default function RegisterPage() {
                       event.target.value.replace(/\D/g, "").slice(0, SIGNUP_OTP_LENGTH),
                     );
                   },
-                  placeholder: "Enter 6-digit code",
                   type: "text",
                   value: otpCode,
                   helperText: t("auth.register.codeHelp", { email: formState.email }),

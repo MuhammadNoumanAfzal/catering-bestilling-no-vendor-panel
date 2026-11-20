@@ -1,4 +1,4 @@
-import { ag, useAgreementLanguage, agreementDate } from "./agreementTranslations.js";
+import { ag, useAgreementLanguage, agreementDate, agreementSectionLabel } from "./agreementTranslations.js";
 import { Link } from "react-router-dom";
 import "./VendorAgreementPage.css";
 import { FileText, PenLine, ShieldCheck, Store, Check, ArrowDown, RefreshCw, AlertCircle } from "lucide-react";
@@ -101,7 +101,7 @@ export default function VendorAgreementPage() {
           )}
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
             <div className="min-w-0 space-y-5">
-              {agreement.bodySections?.length > 0 && <nav className="agreement-contents" aria-label={ag("Contract contents")}><div><span className="agreement-eyebrow">{ag("IN THIS AGREEMENT")}</span><span>{agreement.bodySections.length}{" " + ag("sections") + " "}<ArrowDown size={13}/></span></div><div className="agreement-contents-links">{agreement.bodySections.map((section,index)=><a key={index} href={"#agreement-clause-"+index}><span>{String(index+1).padStart(2,"0")}</span>{section.heading.replace(/^\d+[.)]\s*/, "")}</a>)}</div></nav>}
+              {agreement.bodySections?.length > 0 && <nav className="agreement-contents" aria-label={ag("Contract contents")}><div><span className="agreement-eyebrow">{ag("IN THIS AGREEMENT")}</span><span>{agreement.bodySections.length}{" " + ag("sections") + " "}<ArrowDown size={13}/></span></div><div className="agreement-contents-links">{agreement.bodySections.map((section,index)=><a key={index} href={"#agreement-clause-"+index}><span>{String(index+1).padStart(2,"0")}</span>{agreementSectionLabel(section.heading)}</a>)}</div></nav>}
               <AgreementText agreement={agreement} />
               <AgreementTimeline agreement={agreement} />
             </div>

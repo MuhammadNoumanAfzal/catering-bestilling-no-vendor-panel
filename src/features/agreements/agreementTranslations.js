@@ -1,6 +1,15 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from "react-i18next";
 const nb = {
+ "The contract could not be downloaded. Please try again.": "Avtalen kunne ikke lastes ned. Pr\u00f8v igjen.",
+ "The document service did not return a PDF. Please try again.": "Dokumenttjenesten returnerte ikke en PDF. Pr\u00f8v igjen.",
+ "Failed to fetch": "Kunne ikke hente dokumentet. Pr\u00f8v igjen.",
+ "Scope and Platform Intermediation": "Omfang og plattformformidling",
+ "Food Safety, Quality, and Fulfillment Standards": "Mattrygghet, kvalitet og leveringskrav",
+ "Pricing, Commission, and Payout Settlement": "Priser, provisjon og utbetaling",
+ "Order Modifications, Cancellations, and Refunds": "Bestillingsendringer, avbestilling og refusjon",
+ "Electronic Execution, OTP Verification, and Authority": "Elektronisk signering, kodebekreftelse og fullmakt",
+ "Term, Invoicing, and Termination": "Varighet, fakturering og oppsigelse",
  "Your agreement needs attention from GoCatering before you can sign again.": "GoCatering m\u00e5 f\u00f8lge opp avtalen f\u00f8r du kan signere igjen.",
  "Agreement requires an update": "Avtalen m\u00e5 oppdateres",
  "GoCatering must issue a new signing attempt before you can sign again.": "GoCatering m\u00e5 opprette et nytt signeringsfors\u00f8k f\u00f8r du kan signere igjen.",
@@ -194,4 +203,9 @@ export function agreementDate(value) {
  if (!value) return ag("Not yet");
  const d=new Date(value); if(Number.isNaN(d.getTime())) return ag("Unavailable");
  return new Intl.DateTimeFormat(/^(nb|no|nn)/i.test(i18n.resolvedLanguage || i18n.language || "en") ? "nb-NO":"en-GB", {dateStyle:"medium",timeStyle:"short",timeZone:"Europe/Oslo"}).format(d)+" (Oslo)";
+}
+
+export function agreementSectionLabel(value) {
+ const title=String(value||'').replace(/^\d+[.)]\s*/, '');
+ return ag(title);
 }

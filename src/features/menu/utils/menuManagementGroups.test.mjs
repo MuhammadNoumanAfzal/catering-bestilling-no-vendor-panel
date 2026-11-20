@@ -8,8 +8,11 @@ const extras = [
   { id: "single", status: "Active", rawAddon: { addOnType: "INDEPENDENT" } },
   { id: "paused", status: "Paused", rawAddon: { addOnType: "INDEPENDENT" } },
 ];
-test("All contains only menus, with add-ons and single products in separate tabs", () => {
-  assert.deepEqual(getMenuGroups("All", menus, extras)[0].items, menus);
+test("All includes menus, add-ons and single products while dedicated tabs remain scoped", () => {
+  const all = getMenuGroups("All", menus, extras);
+  assert.deepEqual(all.map(group=>group.type), ["menus", "addOns", "singleProducts"]);
+  assert.deepEqual(all.flatMap(group=>group.items.map(item=>item.id)), ["menu", "draft", "extra", "single", "paused"]);
+  assert.equal(new Set(all.flatMap(group=>group.items.map(item=>item.id))).size, 5);
   assert.deepEqual(getMenuGroups("Add-ons", menus, extras)[0].items.map((x) => x.id), ["extra"]);
   assert.deepEqual(getMenuGroups("Single Products", menus, extras)[0].items.map((x) => x.id), ["single", "paused"]);
 });

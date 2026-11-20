@@ -8,7 +8,7 @@ export function getMenuGroups(tab, menus, addOns) {
     { type: "addOns", items: addOns.filter((item) => !isSingleProduct(item)) },
     { type: "singleProducts", items: addOns.filter(isSingleProduct) },
   ];
-  if (tab === "All") return [groups[0]];
+  if (tab === "All") return groups;
   if (tab === "Add-ons") return [groups[1]];
   if (tab === "Single Products") return [groups[2]];
   return groups.map((group) => ({

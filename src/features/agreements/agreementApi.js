@@ -1,3 +1,4 @@
+import { downloadAgreementPdf } from './downloadAgreementPdf.js';
 import { ag } from "./agreementTranslations.js";
 import { agreementErrorMessage } from "./agreementErrors.js";
 import { executeProtectedGraphqlRequest } from "../../app/api/protectedGraphqlClient";
@@ -58,5 +59,7 @@ export async function downloadAgreement(id, kind) {
   });
   const url = safeDocumentUrl(result.url);
   if (!url) throw new Error("A secure document link is not available.");
-  window.location.assign(url);
+  const safeId=String(id).replace(/[^a-zA-Z0-9_-]/g,"_");
+  const suffix={ORIGINAL:"original",VENDOR_SIGNED:"signed",FINAL:"final"}[kind]||"document";
+  await downloadAgreementPdf(url,`GoCatering-agreement-${safeId}-${suffix}.pdf`);
 }

@@ -34,16 +34,16 @@ import { getVendorOrdersPage } from "../../features/order/api/orderApi";
 import { getVendorMenus } from "../../features/menu/api/menuApi";
 
 const sidebarItems = [
-  { labelKey: "layout.nav.agreement", defaultLabel: "Agreement", to: "/agreement", icon: FileCheck2 },
   { labelKey: "layout.nav.dashboard", defaultLabel: "Dashboard", to: "/dashboard", icon: Grid2x2 },
-  { labelKey: "layout.nav.offers", defaultLabel: "Offer requests", to: "/offers", icon: FileCheck2 },
   { labelKey: "layout.nav.orders", defaultLabel: "Orders", to: "/orders", icon: ShoppingBag },
+  { labelKey: "layout.nav.offers", defaultLabel: "Offer requests", to: "/offers", icon: FileCheck2 },
   { labelKey: "layout.nav.menu", defaultLabel: "Menu", to: "/menu", icon: Utensils },
   { labelKey: "layout.nav.delivery", defaultLabel: "Delivery", to: "/delivery", icon: Truck },
   { labelKey: "layout.nav.finance", defaultLabel: "Finance", to: "/finance", icon: Wallet },
   { labelKey: "layout.nav.reviews", defaultLabel: "Reviews", to: "/reviews", icon: MessageSquareText },
   { labelKey: "layout.nav.notifications", defaultLabel: "Notifications", to: "/notifications", icon: Bell },
   { labelKey: "layout.nav.support", defaultLabel: "Support", to: "/support", icon: LifeBuoy },
+  { labelKey: "layout.nav.agreement", defaultLabel: "Agreement", to: "/agreement", icon: FileCheck2 },
   { labelKey: "layout.nav.settings", defaultLabel: "Settings", to: "/settings", icon: Settings },
 ];
 
