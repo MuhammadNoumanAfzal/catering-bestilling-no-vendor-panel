@@ -8,6 +8,7 @@ export default function AgreementBanner() {
   if (!enabled) return null;
   const active = agreement?.status === "ACTIVE";
   const waiting = agreement?.status === "PENDING_APPROVAL";
+  if (active && !loading && !error) return null;
   return (
     <div
       role="status"
