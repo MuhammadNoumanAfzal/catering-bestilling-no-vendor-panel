@@ -1,5 +1,9 @@
 export function resolveVendorNotificationTarget(notification) {
   const type = String(notification?.rawType || notification?.type || "").toUpperCase();
+  if (/OFFER/.test(type) || /OFFER/.test(String(notification?.entity?.entityType || '').toUpperCase())) {
+    const id = /OFFER/i.test(notification?.entity?.entityType || '') ? notification.entity.entityId : null;
+    return id ? '/offers/' + encodeURIComponent(id) : '/offers';
+  }
   if (/PAYOUT|PAYMENT|SETTLEMENT|INVOICE|COMMISSION/.test(type) || ["PAYOUT","INVOICE","SETTLEMENT"].includes(notification?.entity?.entityType)) return "/finance";
   if (/SUPPORT|TICKET/.test(type)) return "/support/responses";
   if (/REVIEW|RATING/.test(type)) return "/reviews";
