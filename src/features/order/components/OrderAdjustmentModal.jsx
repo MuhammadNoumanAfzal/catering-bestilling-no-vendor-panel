@@ -2,7 +2,7 @@ import { formatMoney, parseMoney } from "../../../utils/formatMoney.js";
 import { AlertTriangle, ChevronRight, X, Search, Clock, Minus, Plus } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { showOrderStatusUpdated } from "../../../utils/vendorAlerts";
+import { showOrderStatusUpdated, showVendorValidationMessage } from "../../../utils/vendorAlerts";
 import { LocalizedDateField } from "../../dashboard/components/DateRangeDropdown";
 
 const MOCK_SUGGESTIONS = [
@@ -131,7 +131,7 @@ export default function OrderAdjustmentModal({ orderDetail, onClose, onSave }) {
 
   const handleAdjustOrderSubmit = async () => {
     if (!reason) {
-      alert(t("orders.adjustment.reasonRequired", { defaultValue: "Please select a reason for the change." }));
+      await showVendorValidationMessage(t("orders.adjustment.reasonRequired", { defaultValue: "Please select a reason for the change." }));
       return;
     }
 

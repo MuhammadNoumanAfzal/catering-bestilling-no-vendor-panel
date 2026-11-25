@@ -6,7 +6,7 @@ export default function OfferDetailHeader({ request, closed, text }) {
   const fields = [
     [text('Customer', 'Kunde'), request.customerDisplayName],
     [text('Delivery date', 'Leveringsdato'), deliveryLabel(request.deliveryDate, text)],
-    [text('Time', 'Tid'), String(request.deliveryTime || '').slice(0, 5)],
+    [text('Time (Norway time)', 'Tid (norsk tid)'), String(request.deliveryTime || '').slice(0, 5)],
     [text('Guests', 'Gjester'), request.personCount],
     [text('Postcode', 'Postnummer'), request.postalCode],
   ];

@@ -7,8 +7,9 @@ export function useOfferText() {
 }
 export function offerStatus(status, text) {
   const labels = {
-    WAITING_FOR_VENDOR:['Waiting for vendor','Venter på leverandør'], OFFERED:['Offer received','Tilbud mottatt'],
+    WAITING_FOR_VENDOR:['Customer is waiting for your offer','Kunden venter p\u00e5 tilbudet ditt'], OFFERED:['Offer sent','Tilbud sendt'],
     ACCEPTED:['Accepted · awaiting payment','Godtatt · venter på betaling'], DECLINED:['Declined','Avslått'],
+    WITHDRAWN:['Offer withdrawn','Tilbud trukket tilbake'],
     EXPIRED:['Expired','Utløpt'], CLOSED:['Closed','Lukket'], ORDERED:['Ordered','Bestilt'],
   };
   return text(...(labels[status] || ['Status unavailable','Status utilgjengelig']));

@@ -1,0 +1,246 @@
+REQUEST AN OFFER - CLIENT REQUIREMENTS AND EDGE-CASE TEST PLAN
+Date: 25 November 2026
+
+HOW TO RUN
+Use staging, dedicated customer C1/vendor V1 and a second customer C2/vendor V2.
+Use separate browser profiles for C1 and V1, a mail sink/test inbox and payment
+sandbox. Never use real customer requests or live charges for destructive tests.
+Keep both detail pages and notification bells open. Record request ID, request
+revision, quote revision, screenshots, API errors, notification/event IDs and mail
+delivery evidence. Replace example IDs with actual IDs in diagnostic queries.
+Mark each test PASS / FAIL / BLOCKED with evidence. A mocked test is not a live
+backend pass. A schema field existing is not proof its resolver works correctly.
+
+BASE FIXTURE
+Menu: NOK 700/person; 30 guests; customer target NOK 500/person.
+Vendor quote: NOK 550/person; default validity 5 days.
+Food original = NOK 21,000; agreed food = NOK 16,500; saving = NOK 4,500.
+Use a future deliverable Norway date/time and valid delivery postcode.
+Delivery, add-ons, tip and minimum-order charges are separate, server calculated.
+Reset with a NEW request for each terminal-state scenario.
+
+CLIENT REQUIREMENTS: ALL 21 POINTS
+
+01. Customer sees quote price and Accept
+Steps: C1 requests; V1 sends NOK 550; keep C1 detail and list open.
+Expect: C1 sees Offer received, NOK 550/person and exactly one Accept action.
+V1 sees Offer sent and same price/revision. No page reload required while online.
+Open detail updates within the 2-second polling interval plus network latency;
+list/counts within 5 seconds plus latency. Polling is not an instant guarantee.
+
+02. One checkout action
+Steps: inspect offered, accepted and ordered states at desktop/mobile widths.
+Expect: offered has one Accept and go to checkout; accepted has one Continue to
+checkout; ordered has View order. Never two simultaneous checkout buttons.
+
+03. Accept opens normal checkout with correct discount
+Steps: click Accept once, then inspect normal /checkout/private?offerRequest=ID.
+Expect: one accept write; agreed unit NOK 550, food NOK 16,500, original food
+NOK 21,000, saving NOK 4,500. No false failure toast and no second discount.
+Server preview includes exact agreed quote revision; payable totals include only
+verified additional charges. Continue through sandbox payment and order totals.
+
+04. Hide Decline after acceptance
+Steps: accept; return to detail; reload and open same request on another device.
+Expect: Decline absent, even if a stale permissions response says canDecline=true.
+Direct server decline/edit/withdraw after acceptance must be denied too.
+
+05. My offers in account side menu
+Steps: sign in, open account sidebar and dropdown, click My offers.
+Expect: correct list, active navigation, sidebar on list and detail; works mobile.
+Sign out and open private URL: authentication required, no private data leakage.
+
+06. Vendor success popup
+Steps: submit valid quote once, including by keyboard.
+Expect: custom Offer sent popup after confirmed save, one quote revision/event.
+No browser alert/confirm/prompt. Failed save must not show success.
+
+07. Vendor card and chat show sent price
+Steps: send quote, then change NOK 550 to NOK 525; inspect both list/detail/chat.
+Expect: latest card shows correct price/status; separate persisted SENT and
+CHANGED events preserve their respective historical prices on both sides.
+
+08. Waiting label
+Steps: open a new request with no vendor quote.
+Expect: vendor says Customer is waiting for your offer; customer says Waiting
+for vendor. Declined/expired/withdrawn requests never say Awaiting a price.
+
+09. Withdraw offer and Reject request
+Steps A: send quote; cancel withdrawal confirmation; then confirm withdrawal.
+Expect: cancel changes nothing; confirmed withdrawal gives WITHDRAWN, disables
+old acceptance/checkout, preserves history and allows chat/new vendor quote.
+Steps B: on another offered request, cancel then confirm Reject request.
+Expect: cancel changes nothing; confirm gives terminal DECLINED and closes chat.
+New quote after withdrawal has a NEW revision; old quote remains unpayable.
+
+10. Validity choices
+Steps: inspect quote form and Accept requested price dialog; try 3, 5 and 7 days.
+Expect: default 5, only these choices, no date/time picker or past date options.
+Expiry calculated when submitted: 72/120/168 elapsed hours, not form-open time.
+Server rejects invalid/past expiry even if a crafted request bypasses the form.
+
+11. Norway time
+Steps: choose delivery 10:10, send quote/message and inspect both panels, email,
+notifications and checkout. Repeat with browsers in Karachi, Oslo and New York.
+Expect: delivery stays 10:10 Norway time; timestamp instants render Europe/Oslo.
+UTC instant 2027-01-01T16:30:00Z renders Fri 1 Jan 2027, 17:30 (Norway time).
+2027-07-01T15:30:00Z renders Thu 1 Jul 2027, 17:30 (Norway time).
+
+12. Active agreement toggle
+Steps: inspect ACTIVE agreement, reload, then inspect non-active agreement.
+Expect: activation toggle/control hidden for ACTIVE; correct action for other
+statuses remains. Agreement and onboarding restrictions still enforced server-side.
+
+13. Every offer transition in both chats
+Steps: request -> send -> change -> withdraw -> send new quote -> accept.
+Use separate request for decline. Compare both timelines after refresh/relogin.
+Expect: persisted requested/sent/changed/withdrawn/accepted/declined events use
+same IDs/order/instants across roles, correct actor and historical price/revision.
+No duplicate event when polling, refreshing or retrying the same UUID.
+Ordinary messages appear once, own messages right, other participant left.
+
+14. Consistent status
+Steps: perform each transition while opposite list/detail remains open; refresh.
+Expect: same authoritative state on both sides and corresponding counts updated.
+Delayed pre-decline data cannot reopen chat or restore Awaiting a price.
+Delayed pre-withdrawal data cannot reactivate the same withdrawn quote revision.
+
+15. First click, reliable success/error
+Steps: send/accept/decline/withdraw/message with normal network; double click;
+repeat with throttling, offline, lost response and server validation failure.
+Expect: one user action produces one effect; busy button prevents duplicate
+submits. No automatic repeated uncertain write. A confirmed saved action followed
+by detail-refresh failure says saved/refresh needed, not that the action failed.
+Unconfirmed actions stay errors unless the exact saved result is verified.
+
+16. Custom popups only
+Steps: exercise quote success, reject/withdraw confirmation and cart replacement.
+Expect: themed custom dialogs, clear cancel/confirm, keyboard focus visible,
+Escape/cancel behavior correct, no native browser popup. Cancel preserves state.
+
+17. Email, notifications, bell
+For requested/sent/changed/withdrawn/declined/accepted/message: inspect recipient
+inbox, notification feed and bell. Confirm actors do not get unread self-events.
+Acceptance confirmation says awaiting checkout, not paid.
+Expect: one event/recipient/channel, safe text, correct role link, persisted unread
+state. Read one -> bell decreases once; read-all -> feed/bell agree after reload
+and on another device. Archived rows excluded as designed. Email worker outage
+does not fail saved actions; retry sends once and provider delivery is logged.
+If more than 200 unread offer rows exist, test pagination/authoritative count;
+current recent-200 frontend window needs the additional backend contract at scale.
+
+18. Decline closes immediately
+Steps: customer declines offered quote; repeat with vendor rejecting new/offered
+request; try sending message at same time from the other profile.
+Expect: locally confirmed decline removes composer/actions immediately, even if
+detail fetch is slow. Remote closes on next visible poll plus latency. Server
+rejects messages/quotes/accept/checkout committed after decline. History remains.
+Failed/cancelled decline must leave the conversation usable.
+
+19. Colors and readability
+Steps: desktop 1200/1440px; tablet 768px; mobile 320/393px; 200% zoom.
+Expect: solid orange main buttons, readable solid status badges, black/dark text,
+font sizes consistent with adjacent platform pages. Enabled actions look enabled;
+disabled actions truly disabled. No clipped amounts, overlap or page overflow.
+Long menu/customer names, large NOK totals and wrapped messages remain readable.
+
+20. Named URLs
+Steps: open /my-offers/jordbaer-lime-terte-7 and vendor equivalent; open legacy
+ID-only and /account/my-offers/7 links; refresh, back/forward and use notification.
+Expect: same request loads, canonical named URL replaces legacy URL safely, drafts
+not lost during canonicalization. Nordic letters/spaces/punctuation slug safely.
+Unknown/deleted/cross-account IDs return safe failure; malformed URL never leaks
+data or redirects to arbitrary external sites. Verify opaque IDs if supported.
+
+21. Date format
+Steps: inspect English/Norwegian list, detail, chat, validity and checkout dates.
+Expect: weekday, day, month, year and 24-hour time with Norway time label where
+time is displayed. No raw ISO text, browser-zone shift or invalid-date output.
+Delivery date-only fields must not shift to a previous/next day.
+
+ADDITIONAL EDGE CASES
+
+A. PRICES / INPUT
+- Empty, zero, negative, nonnumeric, Infinity, excessive decimals, comma decimal,
+  whitespace and extremely large quote/target: clear validation, no corrupt write.
+- Quote equal to or higher than catalogue: verify agreed discount policy and
+  consistent frontend/server validation; current frontend requires lower price.
+- Optional customer target absent: show menu price accurately, no fake target.
+- Accept requested price sends exactly the valid target, not a rounded substitute.
+- Blank/whitespace message: no empty message. Unicode, emoji, multiline and very
+  long text: safe rendering and documented server length validation.
+- HTML/script payload renders as text; no execution. Contact redaction preserves
+  ordinary guest counts/postcodes and follows the platform moderation policy.
+
+B. CHECKOUT TERMS / CART
+- 30 -> 31 guests: agreed price removed and normal price recalculated. Back to 30:
+  restore only a freshly verified accepted quote with ALL original terms matching.
+- Repeat changes to date, time, postcode, menu, add-ons and selected options.
+  Restoring guests alone must not restore an offer if another term still differs.
+- Expired/withdrawn/superseded/unaccepted quote never restores a discount.
+- Existing cart: cancel replacement keeps it unchanged; confirm replaces only
+  intended vendor cart, preserves other vendors and binds correct customer.
+- Reload/direct checkout/new browser/no storage marker: verify authorized server
+  snapshot/guard; never trust URL or localStorage price edits.
+- Missing snapshot, missing vendor slug, multiple primary lines, wrong primary
+  quantity/unit price/catalogue price: stop checkout with useful recovery message.
+- Add-ons, delivery, free-delivery threshold, minimum supplement, tip and VAT:
+  totals agree with server, savings informational only. Small ore rounding checked.
+- Final total such as 16 500,- stays readable and does not split awkwardly.
+
+C. EXPIRY / SCHEDULE / DST
+- Just before start, exactly start, just before expiry and exactly expiry:
+  acceptance/payment denied until active and denied at/after deadline server-side.
+- isActive=false or isScheduled=true: no accept/payment, accurate available-from
+  message; malformed startsAt/expiry fail closed, never say active by default.
+- A legacy quote without optional startsAt remains compatible if otherwise valid.
+- Test Norway DST transitions on 28 March and 31 October 2027. Elapsed validity
+  remains 72/120/168 hours even if displayed wall-clock hour changes across DST.
+- Delivery during missing/ambiguous DST hour: backend must explicitly validate
+  or disambiguate; confirm business policy, do not silently shift the user's time.
+- Browser clock deliberately wrong: server remains authority, cannot extend quote.
+
+D. RACES / RETRIES / NETWORK
+- V1 changes price while C1 accepts old revision: stale acceptance rejected;
+  no checkout using old quote. Refresh shows latest quote and price.
+- Withdraw versus accept, reject versus accept, two vendor tabs quote at once:
+  one valid transition wins atomically, loser gets recoverable conflict.
+- Same idempotency key replay: same outcome, no duplicate event/mail/notification.
+  Same key with different payload: reject conflict, never silently apply new data.
+- Saved action plus timeout/500/nested resolver failure: exact persisted result
+  recovered without another write. Unrelated new status/message is not recovery.
+- Server rejects action before commit: no success, no phantom event or closed chat.
+- Switch request while old read pending: previous response cannot overwrite new
+  detail. Background tab resumes/online reconnect refreshes latest state.
+- Logout/session expiry/account switch mid-action: no previous user's cart/data.
+
+E. SECURITY / PAYMENT
+- C2/V2 cannot read/mutate/pay C1/V1 request or mark their notification read.
+- Crafted permission flags, price, request ID, quote revision, expiry and cart
+  storage cannot bypass server authorization, amount validation or payment guard.
+- Payment guard missing, false, error, wrong request/revision or unavailable:
+  block payment safely; never assume allowed from a truthy string.
+- Expire or revoke quote after preview but before payment/order creation: server
+  rechecks. Double-click payment never creates duplicate order/charge.
+- Sandbox cancellation/failure/retry and successful callback replay: correct order
+  state, no false paid status and no duplicated charge/email/event.
+
+F. ACCESSIBILITY / DISPLAY / NAVIGATION
+- Keyboard-only dialog controls, focus return and visible focus; labels/error
+  messages understandable; screen reader announces success/error appropriately.
+- Long conversations scroll to new messages appropriately; multiline/long words
+  do not overflow. Refresh retains saved history; unsent draft behavior predictable.
+- Empty list, no matching filter, last page after status change, one/many pages,
+  API error and reload: correct counts/empty/loading/retry states, no stale rows.
+- English/Norwegian text and currency formatting; no broken encoded characters.
+
+RELEASE GATE
+Do not mark production ready solely from unit tests/builds. Required evidence:
+1. All 21 client requirement scenarios pass in staging with both real test roles.
+2. Negative ownership, stale revisions, terminal-state and payment guards pass.
+3. One complete sandbox payment has matching quote, cart, preview and order totals.
+4. Notification read/bell and actual email delivery proven for every offer step.
+5. No duplicate effects under retries/races; no misleading saved-action errors.
+6. Mobile, Norway time/DST, named links and custom dialogs pass.
+Any unavailable backend/provider test is BLOCKED, not PASS. Attach failures to
+offer-backend-remaining-requirements.txt and include sanitized reproducible steps.

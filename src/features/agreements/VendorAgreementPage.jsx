@@ -145,12 +145,14 @@ export default function VendorAgreementPage() {
                   disabled={busy}
                 >{ag("Sign agreement")}</button>
               )}
+              {agreement.status !== 'ACTIVE' && <>
               <button
                 className={buttonClass + " w-full"}
                 disabled={busy || !canGoLive(agreement)}
                 onClick={() => action(goLive)}
               >{ag("Go live")}</button>
               <p className="text-xs leading-5 text-[#8b7766]">{ag("Going live is available only after agreement approval and completion of the server's onboarding checks.")}</p>
+              </>}
               <a
                 href="mailto:support@gocatering.no"
                 className="block text-xs underline"

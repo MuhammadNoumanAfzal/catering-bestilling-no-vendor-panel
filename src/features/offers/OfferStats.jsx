@@ -8,10 +8,21 @@ export default function OfferStats({ text, filter, onFilter }) {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    let active = true;
-    fetchOfferStats().then(result => { if (active) { setCounts(result); setFailed(false); } })
-      .catch(() => { if (active) setFailed(true); });
-    return () => { active = false; };
+    let active = true, inFlight = false;
+    const update = async () => {
+      if (!active || inFlight || document.visibilityState !== 'visible') return;
+      inFlight = true;
+      try {
+        const result = await fetchOfferStats();
+        if (active) { setCounts(result); setFailed(false); }
+      } catch { if (active) setFailed(true); }
+      finally { inFlight = false; }
+    };
+    void update();
+    const timer = setInterval(update, 5000);
+    window.addEventListener('focus', update);
+    document.addEventListener('visibilitychange', update);
+    return () => { active = false; clearInterval(timer); window.removeEventListener('focus', update); document.removeEventListener('visibilitychange', update); };
   }, [attempt]);
 
   if (failed) return (

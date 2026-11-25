@@ -314,3 +314,12 @@ export function promptVendorAuthRequired() {
     }),
   );
 }
+
+export function showVendorValidationMessage(message) {
+  return Swal.fire(withBaseOptions({
+    icon: 'warning',
+    titleText: i18n.t('vendorMessages.checkDetails', { defaultValue: i18n.language?.startsWith('no') || i18n.language?.startsWith('nb') ? 'Kontroller opplysningene' : 'Check the details' }),
+    text: message,
+    confirmButtonText: i18n.t('vendorMessages.continue'),
+  }));
+}

@@ -1,3 +1,4 @@
+import { quoteTiming } from './offerTiming.js';
 export const OPEN_STATUSES = new Set(['WAITING_FOR_VENDOR', 'OFFERED', 'ACCEPTED']);
 export function moneyToOre(value) {
   const text = String(value ?? '').trim().replace(',', '.');
@@ -18,7 +19,7 @@ export function redactContact(message = '') {
 }
 export function hasContactDetails(message) { return redactContact(message) !== String(message); }
 export function isOfferCurrent(offer, now = Date.now()) {
-  return Boolean(offer?.quote?.revision && ['OFFERED', 'ACCEPTED'].includes(offer.status) && Number.isFinite(Date.parse(offer.quote.expiresAt)) && Date.parse(offer.quote.expiresAt) > now);
+  return Boolean(offer?.quote?.revision && ['OFFERED', 'ACCEPTED'].includes(offer.status) && quoteTiming(offer.quote, now) === 'active');
 }
 export function cartSignature(summary) {
   return JSON.stringify((summary?.items || []).map(item => ({
@@ -43,7 +44,7 @@ export function acceptedOfferCart(request) {
   if(main.length!==1 || Number(main[0].quantity)!==1 || main[0].pricingType!=="per-person" || Number(main[0].unitPrice)!==Number(request.quote.pricePerPerson) || snapshot.items.some(item=>!Number.isFinite(Number(item.catalogueUnitPrice)) || Number(item.catalogueUnitPrice)<=0)) throw new Error("Invalid negotiated cart prices.");
   const items = snapshot.items.map(item => ({ ...item, id: item.id || item.productId, price: 0, details: [], isAddOn: Boolean(item.isAddOn) }));
   const summary = { items, deliveryDate: request.deliveryDate, deliveryTime: request.deliveryTime, personCount: request.personCount, deliveryAddress: request.postalCode, tipRate:0, vendorNote:'', pricing:null, previewItems:[], availability:null };
-  summary.offer = { requestId:request.id, requestRevision:request.revision, quoteRevision:request.quote.revision, expiresAt:request.quote.expiresAt, vendorId:String(snapshot.vendor.id), deliveryDate:request.deliveryDate, deliveryTime:request.deliveryTime, personCount:request.personCount, postalCode:request.postalCode, itemsSignature:cartSignature(summary), pricePerPerson:request.quote.pricePerPerson };
+  summary.offer = { requestId:request.id, requestRevision:request.revision, quoteRevision:request.quote.revision, expiresAt:request.quote.expiresAt, startsAt:request.quote.startsAt, vendorId:String(snapshot.vendor.id), deliveryDate:request.deliveryDate, deliveryTime:request.deliveryTime, personCount:request.personCount, postalCode:request.postalCode, itemsSignature:cartSignature(summary), pricePerPerson:request.quote.pricePerPerson };
   return { vendor:snapshot.vendor, orderSummary:summary };
 }
 

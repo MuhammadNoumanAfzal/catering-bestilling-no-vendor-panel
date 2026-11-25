@@ -43,7 +43,7 @@ export default function AppRouter() {
           <Route path="agreement/sign" element={<Navigate to="/agreement" replace />} />
           <Route path="home" element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="orders" element={<OrdersPage />} /><Route path="offers" element={<OffersPage />} /><Route path="offers/:requestId" element={<OffersPage />} />
+          <Route path="orders" element={<OrdersPage />} /><Route path="offers" element={<OffersPage />} /><Route path="offers/:requestId/:menuSlug?" element={<OffersPage />} />
           <Route path="orders/:orderId" element={<OrderDetailPage />} />
           <Route path="orders/:orderId/adjust" element={<OrderAdjustmentPage />} />
           <Route

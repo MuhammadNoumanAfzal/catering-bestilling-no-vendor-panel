@@ -1,0 +1,109 @@
+REQUEST AN OFFER - REMAINING BACKEND WORK / RELEASE VERIFICATION
+Date: 25 November 2026
+Send this file to the backend developer.
+
+The new withdrawal, event and quote-timing schema is live and the frontend is
+integrated. Do not implement those fields again. Public schema validation cannot
+prove authenticated behavior, transaction safety, email delivery or payment.
+Please check the following and fix anything that does not pass.
+
+1. EMAIL, NOTIFICATIONS AND BELL - REQUIRED RELEASE CHECK
+For request, quote sent, quote changed, withdrawn, declined, accepted and chat
+message: persist the opposite participant's unread notification and an email
+outbox entry with the committed action. Email failure must not turn a saved
+action into an API error. Retry delivery without duplicating notifications/mail.
+Acceptance confirmation must say awaiting checkout, not paid.
+Confirm the production sales migration, running outbox worker, provider sender
+verification and retry/failure logging. Email dates must use Europe/Oslo and say
+Norway time. Use dedicated customer/vendor accounts and a test inbox/mail sink.
+Please return event ID, notification ID, unread count before/after, provider
+message ID and delivery outcome for each step. Do not send credentials.
+
+Customer notification links: /my-offers/<menu-slug>-<request-ID>
+Vendor notification links: /offers/<menu-slug>-<request-ID>
+Persist entityType=OFFER_REQUEST and entityId=<request-ID>.
+
+Existing diagnostic queries/mutations (no new email mutation needed):
+query OfferNotifications {
+ myNotifications(first:200,filter:{status:ALL}) {
+  edges { node { id type title message isRead isArchived createdAt
+   entity { entityType entityId actionUrl } } }
+  counts { total unread read archived highPriority }
+  pageInfo { endCursor hasNextPage totalCount }
+ }
+ myNotificationUnreadCount { count }
+}
+mutation ReadNotification($id:ID!) {
+ markNotificationRead(id:$id) { success message notification { id isRead } }
+}
+mutation ReadAllNotifications {
+ markAllMyNotificationsRead { success message updatedCount }
+}
+Run as each intended recipient; confirm read/read-all and bell counts agree.
+
+2. ACCEPTED CHECKOUT SNAPSHOT - REQUIRED RELEASE CHECK
+The developer's example used dishName/price. The LIVE schema supports the
+frontend's name/unitPrice/catalogueUnitPrice fields below. Keep that contract.
+After acceptance, return vendor id AND slug and exactly one primary menu line:
+quantity=1, pricingType=per-person, unitPrice=accepted quote price,
+catalogueUnitPrice=original menu price. Preserve add-ons/options and agreed guests,
+delivery date/time/postcode. Never subtract the negotiated saving twice.
+
+query AcceptedCheckoutSnapshot($id:ID!) {
+ myOfferRequest(id:$id) {
+  id revision status deliveryDate deliveryTime personCount postalCode
+  quote { revision pricePerPerson startsAt isActive isScheduled expiresAt }
+  checkoutSnapshot {
+   vendor { id slug name }
+   items { id productId name unitPrice catalogueUnitPrice pricingType quantity
+    personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions
+    selectedAddons { productId name quantity unitPrice } isAddOn }
+  }
+ }
+}
+Variables: {"id":"<actual accepted request ID>"}, as the accepting customer.
+Confirm offerCheckoutPreview and offerPaymentGuard reject other accounts,
+superseded/withdrawn/inactive/expired quotes and changed payable amounts.
+Payment guard allowed must be explicitly true. Use a real normal-checkout order
+ID for the guard, not the request ID. Test payment in the provider sandbox.
+
+3. PERSISTED EVENTS / STATE - REQUIRED RELEASE CHECK
+Both participants must receive the same persisted event IDs and historical
+prices for OFFER_REQUESTED, OFFER_SENT, OFFER_CHANGED, OFFER_WITHDRAWN,
+OFFER_DECLINED and OFFER_ACCEPTED. Ordinary messages stay in messages.
+Confirm whether older requests will be backfilled. Do not invent old quote
+prices or timestamps if the source history does not exist; document that limit.
+Declined is terminal: deny chat, quote, accept and checkout immediately.
+Withdrawn invalidates the quote but permits chat and a new quote revision.
+Accepted denies decline/withdraw/quote edits. Server permissions must agree.
+Identical UUID retries must return the saved outcome without duplicate effects.
+Simulate a lost mutation response and an email outage; a committed action must
+still return a reliable acknowledgement. Reject stale revisions atomically.
+
+4. VALIDITY / TIME - REQUIRED RELEASE CHECK
+Offers start when sent. Vendor choices are 3, 5 or 7 elapsed days, default 5.
+Frontend omits startsAt for this flow and sends expiresAt in UTC. Server time is
+authoritative. Confirm startsAt/isActive/isScheduled resolve consistently for
+OFFERED and ACCEPTED quotes. The frontend blocks scheduled/explicitly inactive
+quotes. Test start/expiry boundaries and Norway summer/winter offsets.
+Delivery date/time are Norway wall-clock fields; timestamps need Z or an offset.
+
+5. OPTIONAL NEW CONTRACTS FOR SCALE / TRUE REALTIME
+These are additional capabilities, not confirmed defects in the deployed API.
+- Customer offer notifications currently load the recent 200 rows. If more than
+  200 unread offers are possible, provide an authoritative offer-only unread
+  count plus paginated/filterable offer notifications. Return stable shared
+  event/entity IDs so legacy feeds can be deduplicated. Send exact SDL/query
+  examples before frontend integration; do not use a global count as offer-only.
+- Truly immediate remote updates need authenticated SSE/subscriptions/push.
+  Current frontend polls the open detail every 2 seconds and lists every 5 seconds
+  while visible. If instant delivery is required, provide transport URL/schema,
+  authentication, event payload (request ID/revision), reconnect and replay rules.
+  No unimplemented endpoint or subscription name is assumed by the frontend.
+
+PLEASE RETURN
+- Which checks passed, deployed commit/migration and test results.
+- Sanitized checkout snapshot and event/notification/delivery evidence above.
+- Any failing checks fixed, and exact new SDL/contracts for optional additions.
+
+Full existing contract reference: offer-flow-backend-handoff.txt in this folder.

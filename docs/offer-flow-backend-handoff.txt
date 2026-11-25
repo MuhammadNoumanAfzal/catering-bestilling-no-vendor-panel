@@ -1,0 +1,313 @@
+﻿REQUEST AN OFFER - SINGLE BACKEND HANDOFF
+Updated: 25 November 2026
+Frontend repositories: catering-bestilling-no and catering-bestilling-no-vendor-panel.
+Backend source is not available in this workspace. No backend writes or production
+emails were sent while checking the schema. This file replaces the earlier
+notifications and future-start-date handoffs.
+
+CURRENT REQUIREMENT (supersedes selectable start/end dates)
+Offer starts when sent. Vendor chooses valid for 3, 5 or 7 days; default 5.
+Frontend sends expiresAt as a UTC ISO instant calculated at submit time. Duration
+means 72/120/168 elapsed hours. Display all instants in Europe/Oslo, with the label
+(Norway time), e.g. Fri 1 Jan 2027, 17:30 (Norway time). Delivery date/time fields
+are Norway wall-clock time. Return timestamps with Z or an explicit UTC offset.
+Do not reinterpret a UTC instant using the server's or browser's local timezone.
+Do not require startsAt for this updated flow. Server time is authoritative.
+
+SCHEMA VERIFIED TODAY
+Existing mutations: requestMenuOffer, sendOfferMessage, sendMenuOffer,
+acceptMenuOffer, declineMenuOffer.
+SendMenuOfferInput: requestId, expectedRevision, pricePerPerson, expiresAt,
+message, idempotencyKey.
+Quote fields: revision, pricePerPerson, startsAt, isActive, isScheduled, expiresAt.
+Request has messages, quote, permissions, checkoutSnapshot and revision.
+LIVE VERIFIED: withdrawMenuOffer, canWithdraw, WITHDRAWN state and persisted events
+are now exposed by https://api.gocatering.no/graphql/. Both full customer and
+vendor detail selections were validated against the deployed schema without
+executing authenticated resolvers or business mutations.
+Frontend capability detection keeps withdrawal disabled until the complete
+contract below exists; it never substitutes rejection for withdrawal. Existing
+queries continue to work when optional capability fields are absent. Reload the
+frontend after deploying the new schema to refresh capability detection.
+
+1. OFFER STATE AND PERMISSIONS
+WAITING_FOR_VENDOR: vendor can send a quote or reject the request.
+OFFERED: customer can accept or decline; vendor can change/withdraw the quote or
+reject the request. Vendor UI says Offer sent; customer UI says Offer received.
+ACCEPTED: hide/deny decline, withdrawal and quote edits. Customer can continue to
+normal checkout. Acceptance is not payment/order confirmation.
+DECLINED: terminal. Deny messages, quoting, accepting and checkout for this request.
+WITHDRAWN: current quote is inactive; deny acceptance/checkout of that quote.
+Request/chat may stay open and vendor may send a new quote. Preserve historical
+quote/events; next quote gets a NEW quote revision.
+EXPIRED/CLOSED/ORDERED: enforce the respective terminal/payment rules server-side.
+Every change increments request revision and updates permissions atomically.
+Reject stale expectedRevision, stale quoteRevision, unauthorized actors and
+invalid/expired prices without partially committing state or outbound events.
+
+2. WITHDRAWAL - DEPLOYED CONTRACT USED BY THE FRONTEND
+Deployed: WITHDRAWN in OfferRequestStatus and canWithdraw in OfferPermissions.
+Add input WithdrawMenuOfferInput {
+ requestId: ID!, expectedRevision: String!, quoteRevision: String!, idempotencyKey: String!
+}
+Add withdrawMenuOffer(input: WithdrawMenuOfferInput!): payload with request { id }.
+Allow only the owning vendor while OFFERED, with matching current revisions.
+Withdraw invalidates the current quote and returns WITHDRAWN, canAccept=false,
+canWithdraw=false. A new quote may be sent later on the same open request.
+Do not call declineMenuOffer for withdrawal: decline closes the entire request.
+Re-check quote state/revision in preview, accept, payment guard and order creation
+so a withdrawn or superseded quote cannot be paid using a cached checkout.
+
+mutation WithdrawOffer($input: WithdrawMenuOfferInput!) {
+ withdrawMenuOffer(input:$input) { request { id } }
+}
+Variables example:
+{"input":{"requestId":"7","expectedRevision":"<fresh revision>",
+"quoteRevision":"<fresh quote revision>","idempotencyKey":"<UUID>"}}
+
+3. PERSISTED CHAT EVENTS - DEPLOYED CONTRACT USED BY THE FRONTEND
+Deployed: events on MenuOfferRequestType.
+OfferEventType fields queried by frontend:
+ id: ID!, type: String! (an enum with the values below is also acceptable),
+ side: OfferMessageSide or String!, text: String, createdAt: String!,
+ pricePerPerson: String, status: OfferRequestStatus, quoteRevision: String.
+Types: OFFER_REQUESTED, OFFER_SENT, OFFER_CHANGED, OFFER_WITHDRAWN,
+OFFER_DECLINED, OFFER_ACCEPTED.
+Side: CUSTOMER / VENDOR / SYSTEM. Include actor display data in safe localized
+text if needed; never leak another customer's identity or contact information.
+Write each event once in the same transaction as its actual state change.
+Quote-change events keep their historical price, revision and deadline in text
+or additional fields; never replace earlier event rows with the newest quote.
+Ordinary chat messages remain in messages; do not duplicate them as offer events.
+Both roles read the SAME persisted event IDs, order and timestamps. Frontend
+merges these with ordinary messages by timestamp and ID. If the events capability is absent on an older environment it shows the latest
+quote/status card, not fabricated historical messages.
+
+query CustomerOffer($id:ID!) {
+ myOfferRequest(id:$id) {
+  id revision status updatedAt menuName deliveryDate deliveryTime personCount postalCode
+  vendor { id slug name }
+  normalPricePerPerson targetPricePerPerson orderId
+  permissions { canMessage canQuote canAccept canDecline canWithdraw }
+  quote { revision pricePerPerson expiresAt }
+  messages { id side text createdAt moderated }
+  events { id type side text createdAt pricePerPerson status quoteRevision }
+ }
+}
+query VendorOffer($id:ID!) {
+ vendorOfferRequest(id:$id) {
+  id revision status updatedAt menuName customerDisplayName deliveryDate deliveryTime
+  personCount postalCode normalPricePerPerson targetPricePerPerson orderId
+  vendor { id slug name }
+  permissions { canMessage canQuote canAccept canDecline canWithdraw }
+  quote { revision pricePerPerson expiresAt }
+  messages { id side text createdAt moderated }
+  events { id type side text createdAt pricePerPerson status quoteRevision }
+ }
+}
+Variables: {"id":"7"}. canWithdraw/events are confirmed in the deployed schema. Frontend still queries
+them only after schema capability detection confirms support.
+
+4. EXISTING WRITES - KEEP THESE COMPATIBLE
+Mutation responses must serialize reliably and return committed request { id }.
+A committed action must not report failure because an optional nested resolver,
+PDF, SMTP, push provider or email worker failed. Frontend fetches details separately.
+
+mutation SendOffer($input:SendMenuOfferInput!) {
+ sendMenuOffer(input:$input) { request { id } }
+}
+{"input":{"requestId":"7","expectedRevision":"<fresh revision>",
+"pricePerPerson":"500.00","expiresAt":"<UTC ISO instant now + 3/5/7 days>",
+"message":"Optional quote message","idempotencyKey":"<UUID>"}}
+
+mutation AcceptOffer($input:AcceptMenuOfferInput!) {
+ acceptMenuOffer(input:$input) { request { id } }
+}
+{"input":{"requestId":"7","expectedRevision":"<fresh revision>",
+"quoteRevision":"<current quote revision>","idempotencyKey":"<UUID>"}}
+
+mutation DeclineOffer($input:DeclineMenuOfferInput!) {
+ declineMenuOffer(input:$input) { request { id } }
+}
+{"input":{"requestId":"7","expectedRevision":"<fresh revision>",
+"idempotencyKey":"<UUID>"}}
+
+mutation SendMessage($input:SendOfferMessageInput!) {
+ sendOfferMessage(input:$input) { request { id } }
+}
+{"input":{"requestId":"7","expectedRevision":"<fresh revision>",
+"message":"Message text","idempotencyKey":"<UUID>"}}
+
+Validate state, ownership, expected revisions and idempotency in one transaction.
+Identical retries must return the same saved outcome, with no duplicate event,
+message, notification or email. Never automatically repeat an uncertain payment.
+Frontend writes once and can recover a lost response only when the exact saved
+state/quote/message is visible on a fresh authorized read.
+
+5. NORMAL CHECKOUT WITH AGREED PRICE - REQUIRED SERVER DATA
+After accepting, myOfferRequest must return status ACCEPTED, current quote and
+checkoutSnapshot { vendor {id slug name} items {id productId name unitPrice
+catalogueUnitPrice pricingType quantity personCount minimumGuests parentMenuItemId
+addOnKey addOnType selectedOptions selectedAddons {productId name quantity unitPrice}
+isAddOn} }.
+Main line: exactly one non-add-on, quantity=1, pricingType="per-person",
+unitPrice=accepted quote price. Preserve catalogueUnitPrice from the server's
+original menu snapshot, positive and valid. Vendor ID/slug must be present.
+Dates, time, guests, postcode, menu/add-ons and revision must match the accepted
+request. All money is NOK. Do not return a catalogue-priced main line under an
+accepted discounted quote. Frontend deliberately rejects that mismatch.
+Normal checkout is /checkout/private?offerRequest=<ID>.
+Show original and agreed food totals plus savings as INFORMATION: negotiated
+unit prices already include this saving. Do not subtract the discount twice.
+Frontend still checks offerCheckoutPreview, offerPaymentGuard and server-bound
+quote revision. Keep these server-authoritative and revoke withdrawn/stale offers.
+No extra payment endpoint or fabricated order is required for vendor acceptance
+of a customer's target: vendor sends a quote at that price; customer accepts it.
+
+6. EMAIL + IN-APP NOTIFICATIONS + BELL FOR EVERY STEP
+Persist recipient notification and durable email-outbox event in the SAME
+transaction as request/quote/message/event changes. Dispatch mail only after
+commit. Do not ask browser code to invoke a separate 'send email' mutation.
+Notify the opposite participant for requested/sent/changed/withdrawn/declined/
+accepted/message events. Email the opposite participant for each offer step and
+message; optional message grouping must not suppress unread in-app events.
+Acceptance also sends a customer confirmation, clearly 'awaiting checkout', not
+'paid'. Actors get an appropriate confirmation email, no unread self-notification.
+Notification entity: {entityType:"OFFER_REQUEST",entityId:"7",actionUrl:<role link>}.
+Type must contain OFFER, e.g. OFFER_SENT, OFFER_CHANGED, OFFER_WITHDRAWN,
+OFFER_DECLINED, OFFER_ACCEPTED, OFFER_MESSAGE_RECEIVED, OFFER_REQUESTED.
+Persist per-recipient isRead=false, isArchived=false, createdAt, localized title
+and safely moderated message. Route customer /my-offers/<menu-slug>-<ID>, vendor
+/offers/<menu-slug>-<ID>. ID-only links remain supported and canonicalize on load.
+Return events through myNotifications and include them in authoritative unread
+counts. Bell/feed and read/read-all must agree on persisted recipient state.
+Client currently merges offer feed with existing finance/order/support feeds;
+if those legacy feeds duplicate unified events, provide stable shared entity/event
+IDs for deduplication. Do not double-count across feeds. Offer feed currently
+loads the recent 200 rows: provide type-filtered offer unread total/pagination
+if an account can have more unread offers than that window.
+
+query OfferNotifications {
+ myNotifications(first:200,filter:{status:ALL}) {
+  edges { node { id type title message isRead isArchived createdAt
+   entity { entityType entityId actionUrl } } }
+  counts { total unread read archived highPriority }
+  pageInfo { endCursor hasNextPage totalCount }
+ }
+ myNotificationUnreadCount { count }
+}
+mutation ReadNotification($id:ID!) {
+ markNotificationRead(id:$id) { success message notification { id isRead } }
+}
+mutation ReadAllNotifications {
+ markAllMyNotificationsRead { success message updatedCount }
+}
+Read variables: {"id":"<backend notification ID, no frontend prefix>"}.
+Read-all affects all unified notifications, not just offers. Always scope to the
+current authenticated user, and deny reading/marking another recipient's rows.
+
+Outbox: deduplicate event+recipient+channel; retry delivery with backoff, store
+provider message ID, attempts and failures for admin investigation. Email failure
+must NEVER make an already-saved offer action look failed. Configure verified
+sender, SPF/DKIM/DMARC, application origins, worker/queue and provider credentials
+on the server. Validate actual delivery using logs and test inboxes. Frontend
+cannot verify or implement SMTP/SES delivery without the backend source/access.
+
+7. LATEST BACKEND REPORT INTEGRATION / REMAINING RELEASE EVIDENCE
+The developer reports applying the sales migration and passing 12 backend tests.
+Schema availability is independently confirmed; migration records, private data,
+mail delivery and deployed worker behavior are not accessible from this workspace.
+Quote startsAt, isActive and isScheduled are also live. Frontend detects these
+fields, queries them on cards/details and before payment, and blocks future-start
+or explicitly inactive quotes. Historical quotes without optional timing fields
+remain compatible. Vendor still selects 3/5/7 days, default 5, starting when sent.
+No future-start picker is reintroduced.
+
+IMPORTANT: the developer's example snapshot used dishName/price. The deployed
+schema validates the existing frontend selection in section 5 and the appendix:
+items name/unitPrice/catalogueUnitPrice and vendor id/slug/name. Do not change the
+frontend to dishName/price or omit slug. An accepted snapshot must satisfy those
+price and ownership invariants, not merely expose the fields in introspection.
+
+Remaining backend/release evidence needed (no new frontend email mutation):
+- Run section 9 with dedicated customer/vendor accounts and a mail sink; provide
+  notification IDs, unread counts and provider delivery IDs for every transition.
+- Confirm historical event backfill policy: frontend cannot reconstruct missing
+  old quote revisions from the latest quote. Newly persisted events render on
+  both sides automatically.
+- Confirm migration on every production instance, active outbox worker, retries,
+  sender verification and Norway timezone in outbound email templates.
+- Verify accepted checkout snapshot contains the agreed unit price, catalogue
+  price and vendor slug using the accepting customer's authenticated account.
+- True immediate cross-device updates still need SSE/subscriptions; current
+  frontend refresh interval is 2 seconds for an open conversation.
+
+8. FRONTEND BEHAVIOR ALREADY IMPLEMENTED / RECHECKED
+One checkout action; decline hidden after customer acceptance; normal checkout
+binding and original/negotiated savings display; account side-menu My offers;
+custom success/confirmation dialogs; solid status/main colors; named URLs with
+legacy compatibility; 3/5/7 day validity; Norway timestamps and weekday dates;
+active agreement activation control hidden; locally confirmed decline closes
+chat immediately and remote status is polled every 2s while visible (plus network
+latency). List/counts poll every 5s. Delayed pre-decline data cannot reopen chat.
+Cross-device truly instant updates need subscriptions/SSE or push; polling is not
+an instant delivery guarantee. Send durable events/notifications even when one
+party has the browser closed. No frontend-only fake event/email success is used.
+
+9. RELEASE ACCEPTANCE TESTS (DEDICATED TEST ACCOUNTS / MAIL SINK)
+- Request -> vendor notification/email/bell. Quote -> customer notification/email,
+  customer sees price and one Accept action, vendor sees Offer sent.
+- Quote 3/5/7 days -> server expiry matches duration; default=5; DST and timezone
+  tests show Norway time consistently on client, vendor, emails and checkout.
+- Change quote -> new revision and second chat event, stale quote cannot be paid.
+- Withdraw -> WITHDRAWN event/email/bell, customer cannot accept/pay old quote;
+  vendor can send new quote. Reject -> DECLINED event/email/bell, chat closes.
+- Accept once -> ACCEPTED, no decline, normal checkout with negotiated price,
+  original food total and savings, no second discount subtraction.
+- Retry each UUID -> no duplicated writes/events/notifications/email deliveries.
+- Simulate lost mutation response, nested serialization error, email outage and
+  stale reads: committed action stays successful; rejected action stays rejected.
+- Test cancelled custom confirmation leaves cart/request unchanged.
+- Test future/stale/expired/withdrawn/cross-account payment attempts fail closed.
+- Verify both participants' timelines contain the same persisted event IDs and
+  price history; terminal state never says 'Awaiting a price'.
+- Check notification mark/read-all and bell count, worker retries and test inbox.
+- Check /my-offers/jordbaer-lime-terte-7 and legacy /account/my-offers/7 links.
+
+APPENDIX - ACCEPTED CHECKOUT DIAGNOSTIC QUERIES (EXISTING SCHEMA)
+query AcceptedCheckoutSnapshot($id:ID!) {
+ myOfferRequest(id:$id) {
+  id revision status deliveryDate deliveryTime personCount postalCode
+  quote { revision pricePerPerson expiresAt }
+  checkoutSnapshot {
+   vendor { id slug name }
+   items { id productId name unitPrice catalogueUnitPrice pricingType quantity
+    personCount minimumGuests parentMenuItemId addOnKey addOnType selectedOptions
+    selectedAddons { productId name quantity unitPrice } isAddOn }
+  }
+ }
+}
+Variables: {"id":"7"} using the accepting customer's account.
+
+query OfferCheckoutPreview($input:CheckoutPreviewInput!) {
+ offerCheckoutPreview(input:$input) {
+  offerBinding { requestId quoteRevision foodTotal }
+  currency
+  pricing { currency foodTotal grossTotal netTotal taxTotal deliveryFee
+   minimumOrderShortfall catalogueDiscount tipAmount }
+ }
+}
+Use the normal authenticated CheckoutPreviewInput from checkout with the additional
+existing fields offerRequestId and offerQuoteRevision. Preserve delivery details,
+products/options/add-ons and guest count from the accepted snapshot. Use real
+fresh request/quote revisions, never the literal example placeholders.
+
+query OfferPaymentGuard($orderId:ID!) {
+ offerPaymentGuard(orderId:$orderId) {
+  allowed code message offerRequestId quoteRevision
+ }
+}
+Variables: {"orderId":"<actual order ID from normal checkout>"}.
+allowed must be explicitly true for payment to proceed. Backend must validate
+ownership, accepted/current quote revision, expiry, current request state and
+exact payable amount. Do not use a quote/request ID as an order ID.
