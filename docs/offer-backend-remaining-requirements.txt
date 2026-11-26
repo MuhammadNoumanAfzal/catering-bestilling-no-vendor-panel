@@ -1,3 +1,16 @@
+UPDATE - 26 November 2026: CUSTOM VALIDITY (supersedes preset-only wording below)
+Vendor retains 3/5/7-day shortcuts and default 5 days, with custom whole days
+from 1 to 30. Requested-price acceptance also accepts 1-30 days. Empty, zero,
+negative, fractional and greater-than-30 values are blocked by frontend.
+Expiry remains UTC submission time + days * 24 elapsed hours, shown in Norway
+ time. No new GraphQL field: SendMenuOfferInput.expiresAt is unchanged.
+Backend: confirm the deployed expiry validation accepts 1-30 days; schema alone
+cannot establish its maximum duration policy. If it has a shorter limit, align
+that policy with this requested custom-duration flow and return a clear error.
+QA: test custom 1, 2, 4, 14, 30 days in both send/change quote and target-price
+acceptance; test invalid values and switching between presets/custom. No preview
+crash or write for invalid duration; default remains 5. Verify server-saved expiry.
+
 REQUEST AN OFFER - REMAINING BACKEND WORK / RELEASE VERIFICATION
 Date: 25 November 2026
 Send this file to the backend developer.

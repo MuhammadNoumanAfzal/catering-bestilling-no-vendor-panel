@@ -8,7 +8,7 @@ import { offerRequest, newIdempotencyKey } from './offerApi';
 import { isVendorApp, offersBasePath, useOfferAuth, storeAcceptedOffer } from './offerBridge';
 import { requestedPriceQuote, suggestedQuoteExpiry } from './requestedPriceQuote';
 import { formatMoney } from './offerFormat';
-import { quoteExpiresAt } from './quoteDuration';
+import { validOfferDuration, quoteExpiresAt } from './quoteDuration';
 import { acceptedOfferCart, isOfferCurrent } from './offerModel';
 import { useOfferText, offerStatus, offerError } from './offerText';
 import { confirmVendorAction, showVendorSuccessToast } from '../../utils/vendorAlerts';
@@ -107,13 +107,14 @@ function OfferWorkspace() {
   const requestRevision=request.revision;
   const decision=await Swal.fire({
    titleText:text('Accept requested price?', 'Godta \u00f8nsket pris?'),
-   text:text('Send the customer an offer at '+formatMoney(quote.pricePerPerson,text)+' per person. The customer must confirm it before checkout. Valid from when sent. Choose 3, 5 or 7 days. Times are shown in Norway time.', 'Send kunden et tilbud p\u00e5 '+formatMoney(quote.pricePerPerson,text)+' per person. Kunden m\u00e5 bekrefte f\u00f8r betaling. Gyldig fra sending. Velg 3, 5 eller 7 dager. Tidspunkter vises i norsk tid.'),
-   input:'select',inputLabel:text('Offer valid for','Tilbudet gjelder i'),inputOptions:{3:text('3 days','3 dager'),5:text('5 days','5 dager'),7:text('7 days','7 dager')},inputValue:'5',
+   text:text('Send the customer an offer at '+formatMoney(quote.pricePerPerson,text)+' per person. The customer must confirm it before checkout. Valid from when sent. Choose validity from 1 to 30 days. Times are shown in Norway time.', 'Send kunden et tilbud p\u00e5 '+formatMoney(quote.pricePerPerson,text)+' per person. Kunden m\u00e5 bekrefte f\u00f8r betaling. Gyldig fra sending. Velg gyldighet fra 1 til 30 dager. Tidspunkter vises i norsk tid.'),
+   input:'number',inputLabel:text('Offer valid for (days, 1-30)','Tilbudet gjelder i (dager, 1-30)'),inputAttributes:{min:'1',max:'30',step:'1',inputmode:'numeric'},inputValue:'5',
    showCancelButton:true,confirmButtonText:text('Accept and send offer', 'Godta og send tilbud'),cancelButtonText:text('Cancel','Avbryt'),
    confirmButtonColor:'#cf6e38',background:'#fffaf6',color:'#201b17',reverseButtons:true,
    preConfirm:value=>{
+    if(!validOfferDuration(value)){Swal.showValidationMessage(text('Enter a whole number from 1 to 30 days.','Skriv et heltall fra 1 til 30 dager.'));return false;}
     const input=requestedPriceQuote(request,quoteExpiresAt(value));
-    if(!input){Swal.showValidationMessage(text('Choose a future date and time.','Velg en fremtidig dato og tid.'));return false;}
+    if(!input){Swal.showValidationMessage(text('This request can no longer receive an offer.','Denne forespurselen kan ikke lenger motta et tilbud.'));return false;}
     return input;
    }
   });
